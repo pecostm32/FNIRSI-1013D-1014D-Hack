@@ -1,0 +1,12 @@
+It looks like port E is being setup in FUN_00000150, FUN_000001F8, FUN_000002A0
+
+From there it calls FUN_000017D8 to setup the pins
+
+
+
+In FUN_000002F4, FUN_0000033C, FUN_00000384 and FUN_000003E0 it does someting with the data register of port E so might be the first interaction with the FPGA, or it is checking the two power indicator pins
+
+From there it calls FUN_000018D4 and FUN_000018C0 to do something
+
+
+In FUN_00001970 it is also setting up port E pins (0 and 1 via FUN_000017D8) and is doing things with UART0 (01C25000), so could it be that UART0 is used to communicate with the FPGA?

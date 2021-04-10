@@ -1,0 +1,159 @@
+                            ;************************************************************************************************
+                            ;*                                           FUNCTION                                           *
+                            ;************************************************************************************************
+                            ;undefined FUN_800177c4()
+          ;local_18      undefined4         -18                      ;XREF[1,0]:   800177c8
+          ;local_24      undefined1         -24                      ;XREF[2,0]:   800177e4,800177ec
+                                                          ;XREF[228,0]: 8001a3d0,8001b684,8001b768,8001dac8
+                                                          ;             8001db20,8001db3c,8001db4c,8001db70
+                                                          ;             8001db8c,8001db9c,8001dbe8,8001dc04
+                                                          ;             8001dc5c,8001dc6c,8001dcc0,8001dcd0
+                                                          ;             8001dd10,8001dd20,8001dd60,8001dd70
+                                                          ;             8001ddb4,8001ddc4,8001de08,8001de18
+                                                          ;             8001de5c,8001de6c,8001deb0,8001dec0
+                                                          ;             8001df08,8001df18,8001df3c,8001df4c
+                                                          ;             8001df94,8001dfb0,8001e010,8001e020
+                                                          ;             8001e074,8001e084,8001e0c4,8001e0d4
+                                                          ;             8001e114,8001e124,8001e168,8001e178
+                                                          ;             8001e1bc,8001e1cc,8001e214,8001e224
+                                                          ;             8001e26c,8001e27c,8001e2c0,8001e2d0
+                                                          ;             8001e2f4,8001e304,8001e34c,8001e374
+                                                          ;             8001e384,8001e3d8,8001e3f8,8001e46c
+                                                          ;             8001e47c,8001e4f4,8001e504,8001e57c
+                                                          ;             8001e58c,8001e5d4,8001e5e4,8001e630
+                                                          ;             8001e640,8001e690,8001e6a0,8001e6f0
+                                                          ;             8001e700,8001e724,8001e734,8001e788
+                                                          ;             8001e7b0,8001e84c,8001e85c,8001e8ec
+                                                          ;             8001e8fc,8001e990,8001e9a0,8001ea44
+                                                          ;             8001ea54,8001eae8,8001eaf8,8001eb88
+                                                          ;             8001eb98,8001ec2c,8001ec3c,8001eccc
+                                                          ;             8001ecdc,8001ed74,8001ed84,8001ee18
+                                                          ;             8001ee28,8001eec0,8001eed0,8001ef64
+                                                          ;             8001ef74,8001f008,8001f018,8001f0b0
+                                                          ;             8001f0c0,8001f158,8001f168,8001f200
+                                                          ;             8001f210,8001f2a0,8001f2b0,8001f344
+                                                          ;             8001f354,8001f3e8,8001f3f8,8001f48c
+                                                          ;             8001f49c,8001f530,8001f540,8001f5d8
+                                                          ;             8001f5e8,8001f680,8001f690,8001f728
+                                                          ;             8001f738,8001f764,8001f774,8001f7f0
+                                                          ;             8001f81c,8001f834,8001f894,8001f8c0
+                                                          ;             8001f8d8,8001f928,8001f958,8001f970
+                                                          ;             8001f9ac,8001fa74,8001fab0,8001fac8
+                                                          ;             8001faf4,8001fb58,8001fb8c,8001fba4
+                                                          ;             8001fbe4,8001fc18,8001fc30,8001fc70
+                                                          ;             8001fcb0,8001fcc8,8001fd24,8001fd6c
+                                                          ;             8001fd90,8001fda8,8001fdec,8001fe94
+                                                          ;             8001feac,8001fef0,8001ff98,8001ffb0
+                                                          ;             8001fff4,8002009c,800200b4,80020104
+                                                          ;             800201ac,800201c4,80020220,80020250
+                                                          ;             80020268,80020294,800202b8,800202d0
+                                                          ;             8002220c,80022248,80022280,800222b8
+                                                          ;             800222f0,80022328,8002235c,800223b0
+                                                          ;             80022434,800224bc,80022544,800225c8
+                                                          ;             8002264c,800226d0,80022754,800227d8
+                                                          ;             80022858,800228d8,80022958,800229dc
+                                                          ;             80022a58,80022ad4,80022b50,80022fd4
+                                                          ;             80023010,80023050,8002307c,800230c4
+                                                          ;             800230f4,8002311c,8002314c,80023198
+                                                          ;             800231e0,8002322c,80023278,80025644
+                                                          ;             80025814,800269c0,800269f8,80028684
+                                                          ;             80028860,800288b8,80028930,8002899c
+                                                          ;             80028a08,80028aa4,80028b50,80028bec
+                                                          ;             80028ca4,80028d50,80028eb0,80028fb8
+                                                          ;             80029080,80029f4c,8002b0f8,8002b10c
+ram:800177c4    e0412de9        stmdb       sp!,{r5 r6 r7 r8 lr}                    
+ram:800177c8    04402de5        str         r4,[sp,#local_18+0x14]!                 
+ram:800177cc    40419fe5        ldr         r4,[DAT_80017914]                       ;= 0000814Eh
+ram:800177d0    18d04de2        sub         sp,sp,#0x18                             
+ram:800177d4    0050a0e3        mov         r5,#0x0                                 
+ram:800177d8    0120a0e3        mov         r2,#0x1                                 
+ram:800177dc    0c108de2        add         r1,sp,#0xc                              
+ram:800177e0    0400a0e1        mov         r0,r4                                   
+ram:800177e4    0c50cde5        strb        r5,[sp,#local_24+0x30]                  
+ram:800177e8    b90000eb        bl          FUN_80017ad4                            ;undefined FUN_80017ad4()
+ram:800177ec    0c00dde5        ldrb        r0,[sp,#local_24+0x30]                  
+ram:800177f0    800010e3        tst         r0,#0x80                                
+ram:800177f4    18d08d02        addeq       sp,sp,#0x18                             
+ram:800177f8    f001bd08        ldmiaeq     sp!,{r4 r5 r6 r7 r8}                    
+ram:800177fc    04f09d04        ldreq       pc,[sp],#0x4                            
+ram:80017800    0120a0e3        mov         r2,#0x1                                 
+ram:80017804    10108de2        add         r1,sp,#0x10                             
+ram:80017808    0400a0e1        mov         r0,r4                                   
+ram:8001780c    1050cde5        strb        r5,[sp,#0x10]                           
+ram:80017810    450100eb        bl          FUN_80017d2c                            ;undefined FUN_80017d2c()
+ram:80017814    0c00dde5        ldrb        r0,[sp,#0xc]                            
+ram:80017818    f8609fe5        ldr         r6,[DAT_80017918]                       ;= 8036B792h
+ram:8001781c    f8409fe5        ldr         r4,[PTR_DAT_8001791c]                   ;= 80192f02
+ram:80017820    0f0000e2        and         r0,r0,#0xf                              
+ram:80017824    010040e2        sub         r0,r0,#0x1                              
+ram:80017828    040050e3        cmp         r0,#0x4                                 
+ram:8001782c    328ea0e3        mov         r8,#0x320                               
+ram:80017830    1e7ea0e3        mov         r7,#0x1e0                               
+ram:80017834    2d00008a        bhi         LAB_800178f0                            
+ram:80017838    4100a0e3        mov         r0,#0x41                                
+ram:8001783c    6dfcffeb        bl          FUN_800169f8                            ;undefined FUN_800169f8()
+ram:80017840    02fcffeb        bl          FUN_80016850                            ;undefined FUN_80016850()
+ram:80017844    ff1ca0e3        mov         r1,#0xff00                              
+ram:80017848    005401e0        and         r5,r1,r0, lsl #0x8                      
+ram:8001784c    fffbffeb        bl          FUN_80016850                            ;undefined FUN_80016850()
+ram:80017850    050080e1        orr         r0,r0,r5                                
+ram:80017854    0420a0e3        mov         r2,#0x4                                 
+ram:80017858    0d10a0e1        mov         r1,sp                                   
+ram:8001785c    9c0000eb        bl          FUN_80017ad4                            ;undefined FUN_80017ad4()
+ram:80017860    0010dde5        ldrb        r1,[sp,#0x0]                            
+ram:80017864    0130dde5        ldrb        r3,[sp,#0x1]                            
+ram:80017868    6420a0e3        mov         r2,#0x64                                
+ram:8001786c    ac009fe5        ldr         r0,[DAT_80017920]                       ;= 8019CF7Ch
+ram:80017870    031481e0        add         r1,r1,r3, lsl #0x8                      
+ram:80017874    0118c1e3        bic         r1,r1,#0x10000                          
+ram:80017878    920101e0        mul         r1,r2,r1                                
+ram:8001787c    6430a0e3        mov         r3,#0x64                                
+ram:80017880    a113a0e1        mov         r1,r1, lsr #0x7                         
+ram:80017884    320e51e3        cmp         r1,#0x320                               
+ram:80017888    b210c0e1        strh        r1,[r0,#0x2]=>DAT_8019cf7e              
+ram:8001788c    b280c081        strhhi      r8,[r0,#0x2]=>DAT_8019cf7e              
+ram:80017890    b210d0e1        ldrh        r1,[r0,#0x2]=>DAT_8019cf7e              
+ram:80017894    88209fe5        ldr         r2,[DAT_80017924]                       ;= 10624DD3h
+ram:80017898    b210c6e1        strh        r1,[r6,#0x2]=>DAT_8036b794              
+ram:8001789c    b210c4e1        strh        r1,[r4,#0x2]=>DAT_80192f04              ;= 1009h
+ram:800178a0    0210dde5        ldrb        r1,[sp,#0x2]                            
+ram:800178a4    03c0dde5        ldrb        r12,[sp,#0x3]                           
+ram:800178a8    0c1481e0        add         r1,r1,r12, lsl #0x8                     
+ram:800178ac    0118c1e3        bic         r1,r1,#0x10000                          
+ram:800178b0    930101e0        mul         r1,r3,r1                                
+ram:800178b4    923181e0        umull       r3,r1,r2,r1                             
+ram:800178b8    a111a0e1        mov         r1,r1, lsr #0x3                         
+ram:800178bc    7f18c1e3        bic         r1,r1,#0x7f0000                         
+ram:800178c0    1e0e51e3        cmp         r1,#0x1e0                               
+ram:800178c4    b410c0e1        strh        r1,[r0,#0x4]=>DAT_8019cf80              
+ram:800178c8    b470c081        strhhi      r7,[r0,#0x4]=>DAT_8019cf80              
+ram:800178cc    b400d0e1        ldrh        r0,[r0,#0x4]=>DAT_8019cf80              
+ram:800178d0    0110a0e3        mov         r1,#0x1                                 
+ram:800178d4    b400c6e1        strh        r0,[r6,#0x4]=>DAT_8036b796              
+ram:800178d8    b400c4e1        strh        r0,[r4,#0x4]=>DAT_80192f06              ;= 0970h
+ram:800178dc    0010c6e5        strb        r1,[r6,#0x0]=>DAT_8036b792              
+ram:800178e0    0010c4e5        strb        r1,[r4,#0x0]=>DAT_80192f02              ;= 4Eh
+ram:800178e4    18d08de2        add         sp,sp,#0x18                             
+ram:800178e8    f001bde8        ldmia       sp!,{r4 r5 r6 r7 r8}                    
+ram:800178ec    04f09de4        ldr         pc,[sp],#0x4                            
+                            LAB_800178f0:                 ;XREF[1,0]:   80017834
+ram:800178f0    b280c6e1        strh        r8,[r6,#0x2]=>DAT_8036b794              
+ram:800178f4    b280c4e1        strh        r8,[r4,#0x2]=>DAT_80192f04              ;= 1009h
+ram:800178f8    b470c6e1        strh        r7,[r6,#0x4]=>DAT_8036b796              
+ram:800178fc    b470c4e1        strh        r7,[r4,#0x4]=>DAT_80192f06              ;= 0970h
+ram:80017900    0050c6e5        strb        r5,[r6,#0x0]=>DAT_8036b792              
+ram:80017904    0050c4e5        strb        r5,[r4,#0x0]=>DAT_80192f02              ;= 4Eh
+ram:80017908    18d08de2        add         sp,sp,#0x18                             
+ram:8001790c    f001bde8        ldmia       sp!,{r4 r5 r6 r7 r8}                    
+ram:80017910    04f09de4        ldr         pc,[sp],#0x4                            
+                            DAT_80017914:                 ;XREF[1,0]:   800177cc
+ram:80017914    4e810000        undefined4  0000814Eh                               
+                            DAT_80017918:                 ;XREF[1,0]:   80017818
+ram:80017918    92b73680        undefined4  8036B792h                               
+                            PTR_DAT_8001791c:             ;XREF[1,0]:   8001781c
+ram:8001791c    022f1980        addr        DAT_80192f02                            ;= 4Eh
+                            DAT_80017920:                 ;XREF[1,0]:   8001786c
+ram:80017920    7ccf1980        undefined4  8019CF7Ch                               
+                            DAT_80017924:                 ;XREF[1,0]:   80017894
+ram:80017924    d34d6210        undefined4  10624DD3h                               
+

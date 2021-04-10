@@ -1,0 +1,30 @@
+                            ;************************************************************************************************
+                            ;*                                           FUNCTION                                           *
+                            ;************************************************************************************************
+                            ;undefined FUN_000003e0()
+          ;local_8       undefined4          -8                      ;XREF[1,0]:   0000040c
+                                                          ;XREF[1,0]:   00000444
+ram:000003e0    01402de9        stmdb       sp!,{r0 lr}                             
+ram:000003e4    83ffffeb        bl          FUN_000001f8                            ;undefined FUN_000001f8()
+ram:000003e8    0910a0e3        mov         r1,#0x9                                 
+ram:000003ec    30039fe5        ldr         r0,[DAT_00000724]                       ;= 01C20890h
+ram:000003f0    320500eb        bl          FUN_000018c0                            ;undefined FUN_000018c0()
+ram:000003f4    0a10a0e3        mov         r1,#0xa                                 
+ram:000003f8    24039fe5        ldr         r0,[DAT_00000724]                       ;= 01C20890h
+ram:000003fc    2f0500eb        bl          FUN_000018c0                            ;undefined FUN_000018c0()
+ram:00000400    20039fe5        ldr         r0,[DAT_00000728]                       ;= 01C208A0h
+ram:00000404    000090e5        ldr         r0,[r0,#0x0]=>DAT_01c208a0              
+ram:00000408    ff00c0e3        bic         r0,r0,#0xff                             
+ram:0000040c    00109de5        ldr         r1,[sp,#0x0]=>local_8                   
+ram:00000410    ff1001e2        and         r1,r1,#0xff                             
+ram:00000414    010080e1        orr         r0,r0,r1                                
+ram:00000418    08139fe5        ldr         r1,[DAT_00000728]                       ;= 01C208A0h
+ram:0000041c    000081e5        str         r0,[r1,#0x0]=>DAT_01c208a0              
+ram:00000420    0810a0e3        mov         r1,#0x8                                 
+ram:00000424    f8029fe5        ldr         r0,[DAT_00000724]                       ;= 01C20890h
+ram:00000428    290500eb        bl          FUN_000018d4                            ;undefined FUN_000018d4()
+ram:0000042c    0810a0e3        mov         r1,#0x8                                 
+ram:00000430    ec029fe5        ldr         r0,[DAT_00000724]                       ;= 01C20890h
+ram:00000434    210500eb        bl          FUN_000018c0                            ;undefined FUN_000018c0()
+ram:00000438    0880bde8        ldmia       sp!,{r3 pc}                             
+

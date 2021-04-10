@@ -1,0 +1,48 @@
+                            ;************************************************************************************************
+                            ;*                                           FUNCTION                                           *
+                            ;************************************************************************************************
+                            ;undefined FUN_000001f8()
+                                                          ;XREF[2,0]:   00000388,000003e4
+ram:000001f8    10402de9        stmdb       sp!,{r4 lr}                             
+ram:000001fc    0030a0e3        mov         r3,#0x0                                 
+ram:00000200    0120a0e3        mov         r2,#0x1                                 
+ram:00000204    0310a0e1        mov         r1,r3                                   
+ram:00000208    14059fe5        ldr         r0,[DAT_00000724]                       ;= 01C20890h
+ram:0000020c    710500eb        bl          FUN_000017d8                            ;undefined FUN_000017d8()
+ram:00000210    0030a0e3        mov         r3,#0x0                                 
+ram:00000214    0120a0e3        mov         r2,#0x1                                 
+ram:00000218    0210a0e1        mov         r1,r2                                   
+ram:0000021c    00059fe5        ldr         r0,[DAT_00000724]                       ;= 01C20890h
+ram:00000220    6c0500eb        bl          FUN_000017d8                            ;undefined FUN_000017d8()
+ram:00000224    0030a0e3        mov         r3,#0x0                                 
+ram:00000228    0120a0e3        mov         r2,#0x1                                 
+ram:0000022c    0210a0e3        mov         r1,#0x2                                 
+ram:00000230    ec049fe5        ldr         r0,[DAT_00000724]                       ;= 01C20890h
+ram:00000234    670500eb        bl          FUN_000017d8                            ;undefined FUN_000017d8()
+ram:00000238    0030a0e3        mov         r3,#0x0                                 
+ram:0000023c    0120a0e3        mov         r2,#0x1                                 
+ram:00000240    0310a0e3        mov         r1,#0x3                                 
+ram:00000244    d8049fe5        ldr         r0,[DAT_00000724]                       ;= 01C20890h
+ram:00000248    620500eb        bl          FUN_000017d8                            ;undefined FUN_000017d8()
+ram:0000024c    0030a0e3        mov         r3,#0x0                                 
+ram:00000250    0120a0e3        mov         r2,#0x1                                 
+ram:00000254    0410a0e3        mov         r1,#0x4                                 
+ram:00000258    c4049fe5        ldr         r0,[DAT_00000724]                       ;= 01C20890h
+ram:0000025c    5d0500eb        bl          FUN_000017d8                            ;undefined FUN_000017d8()
+ram:00000260    0030a0e3        mov         r3,#0x0                                 
+ram:00000264    0120a0e3        mov         r2,#0x1                                 
+ram:00000268    0510a0e3        mov         r1,#0x5                                 
+ram:0000026c    b0049fe5        ldr         r0,[DAT_00000724]                       ;= 01C20890h
+ram:00000270    580500eb        bl          FUN_000017d8                            ;undefined FUN_000017d8()
+ram:00000274    0030a0e3        mov         r3,#0x0                                 
+ram:00000278    0120a0e3        mov         r2,#0x1                                 
+ram:0000027c    0610a0e3        mov         r1,#0x6                                 
+ram:00000280    9c049fe5        ldr         r0,[DAT_00000724]                       ;= 01C20890h
+ram:00000284    530500eb        bl          FUN_000017d8                            ;undefined FUN_000017d8()
+ram:00000288    0030a0e3        mov         r3,#0x0                                 
+ram:0000028c    0120a0e3        mov         r2,#0x1                                 
+ram:00000290    0710a0e3        mov         r1,#0x7                                 
+ram:00000294    88049fe5        ldr         r0,[DAT_00000724]                       ;= 01C20890h
+ram:00000298    4e0500eb        bl          FUN_000017d8                            ;undefined FUN_000017d8()
+ram:0000029c    1080bde8        ldmia       sp!,{r4 pc}                             
+ 

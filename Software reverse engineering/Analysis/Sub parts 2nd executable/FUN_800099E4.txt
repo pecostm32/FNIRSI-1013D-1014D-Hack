@@ -1,0 +1,45 @@
+                            ;************************************************************************************************
+                            ;*                                           FUNCTION                                           *
+                            ;* Using Port A config register                                                                 *
+                            ;************************************************************************************************
+                            ;undefined FUN_800099e4()
+          ;local_8       undefined4          -8                      ;XREF[1,0]:   80009a5c
+                                                          ;XREF[9,0]:   80017af4,80017b04,80017b10,80017b20
+                                                          ;             80017c5c,80017d50,80017d60,80017d6c
+                                                          ;             80017d84
+ram:800099e4    10402de9        stmdb       sp!,{r4 lr}                             
+ram:800099e8    78409fe5        ldr         r4,[DAT_80009a68]                       ;= 01C20800h
+ram:800099ec    0030a0e3        mov         r3,#0x0                                 
+ram:800099f0    0120a0e3        mov         r2,#0x1                                 
+ram:800099f4    0210a0e3        mov         r1,#0x2                                 
+ram:800099f8    0400a0e1        mov         r0,r4                                   
+ram:800099fc    123700eb        bl          FUN_8001764c                            ;undefined FUN_8001764c()
+ram:80009a00    0030a0e3        mov         r3,#0x0                                 
+ram:80009a04    0120a0e3        mov         r2,#0x1                                 
+ram:80009a08    0310a0e3        mov         r1,#0x3                                 
+ram:80009a0c    0400a0e1        mov         r0,r4                                   
+ram:80009a10    0d3700eb        bl          FUN_8001764c                            ;undefined FUN_8001764c()
+ram:80009a14    0210a0e3        mov         r1,#0x2                                 
+ram:80009a18    0400a0e1        mov         r0,r4                                   
+ram:80009a1c    453700eb        bl          FUN_80017738                            ;undefined FUN_80017738()
+ram:80009a20    0a00a0e3        mov         r0,#0xa                                 
+ram:80009a24    820800eb        bl          FUN_8000bc34                            ;undefined FUN_8000bc34()
+ram:80009a28    0310a0e3        mov         r1,#0x3                                 
+ram:80009a2c    0400a0e1        mov         r0,r4                                   
+ram:80009a30    403700eb        bl          FUN_80017738                            ;undefined FUN_80017738()
+ram:80009a34    0a00a0e3        mov         r0,#0xa                                 
+ram:80009a38    7d0800eb        bl          FUN_8000bc34                            ;undefined FUN_8000bc34()
+ram:80009a3c    0310a0e3        mov         r1,#0x3                                 
+ram:80009a40    0400a0e1        mov         r0,r4                                   
+ram:80009a44    403700eb        bl          FUN_8001774c                            ;undefined FUN_8001774c()
+ram:80009a48    0a00a0e3        mov         r0,#0xa                                 
+ram:80009a4c    780800eb        bl          FUN_8000bc34                            ;undefined FUN_8000bc34()
+ram:80009a50    0310a0e3        mov         r1,#0x3                                 
+ram:80009a54    0400a0e1        mov         r0,r4                                   
+ram:80009a58    363700eb        bl          FUN_80017738                            ;undefined FUN_80017738()
+ram:80009a5c    1040bde8        ldmia       sp!,{r4 lr}=>local_8                    
+ram:80009a60    0a00a0e3        mov         r0,#0xa                                 
+ram:80009a64    720800ea        b           FUN_8000bc34                            
+                            DAT_80009a68:                 ;XREF[1,0]:   800099e8
+ram:80009a68    0008c201        undefined4  01C20800h                               
+

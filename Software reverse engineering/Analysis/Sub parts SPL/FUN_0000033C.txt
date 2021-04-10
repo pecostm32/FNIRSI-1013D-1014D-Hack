@@ -1,0 +1,23 @@
+                            ;************************************************************************************************
+                            ;*                                           FUNCTION                                           *
+                            ;************************************************************************************************
+                            ;undefined FUN_0000033c()
+ram:0000033c    10402de9        stmdb       sp!,{r4 lr}                             
+ram:00000340    82ffffeb        bl          FUN_00000150                            ;undefined FUN_00000150()
+ram:00000344    0910a0e3        mov         r1,#0x9                                 
+ram:00000348    d4039fe5        ldr         r0,[DAT_00000724]                       ;= 01C20890h
+ram:0000034c    600500eb        bl          FUN_000018d4                            ;undefined FUN_000018d4()
+ram:00000350    0a10a0e3        mov         r1,#0xa                                 
+ram:00000354    c8039fe5        ldr         r0,[DAT_00000724]                       ;= 01C20890h
+ram:00000358    580500eb        bl          FUN_000018c0                            ;undefined FUN_000018c0()
+ram:0000035c    0810a0e3        mov         r1,#0x8                                 
+ram:00000360    bc039fe5        ldr         r0,[DAT_00000724]                       ;= 01C20890h
+ram:00000364    5a0500eb        bl          FUN_000018d4                            ;undefined FUN_000018d4()
+ram:00000368    0810a0e3        mov         r1,#0x8                                 
+ram:0000036c    b0039fe5        ldr         r0,[DAT_00000724]                       ;= 01C20890h
+ram:00000370    520500eb        bl          FUN_000018c0                            ;undefined FUN_000018c0()
+ram:00000374    ac039fe5        ldr         r0,[DAT_00000728]                       ;= 01C208A0h
+ram:00000378    000090e5        ldr         r0,[r0,#0x0]=>DAT_01c208a0              
+ram:0000037c    ff0000e2        and         r0,r0,#0xff                             
+ram:00000380    1080bde8        ldmia       sp!,{r4 pc}                             
+

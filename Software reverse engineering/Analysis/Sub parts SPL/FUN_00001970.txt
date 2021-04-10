@@ -1,0 +1,94 @@
+                            ;************************************************************************************************
+                            ;*                                           FUNCTION                                           *
+                            ;************************************************************************************************
+                            ;undefined FUN_00001970()
+                                                          ;XREF[1,0]:   00000524
+ram:00001970    f0412de9        stmdb       sp!,{r4 r5 r6 r7 r8 lr}                 
+ram:00001974    0060a0e1        mov         r6,r0                                   
+ram:00001978    50869fe5        ldr         r8,[DAT_00001fd0]                       ;= 06146580h
+ram:0000197c    0610a0e1        mov         r1,r6                                   
+ram:00001980    0800a0e1        mov         r0,r8                                   
+ram:00001984    6e0500eb        bl          FUN_00002f44                            ;undefined FUN_00002f44()
+ram:00001988    2072a0e1        mov         r7,r0, lsr #0x4                         
+ram:0000198c    0030a0e3        mov         r3,#0x0                                 
+ram:00001990    0520a0e3        mov         r2,#0x5                                 
+ram:00001994    0310a0e1        mov         r1,r3                                   
+ram:00001998    34069fe5        ldr         r0,[DAT_00001fd4]                       ;= 01C20890h
+ram:0000199c    8dffffeb        bl          FUN_000017d8                            ;undefined FUN_000017d8()
+ram:000019a0    0030a0e3        mov         r3,#0x0                                 
+ram:000019a4    0520a0e3        mov         r2,#0x5                                 
+ram:000019a8    0110a0e3        mov         r1,#0x1                                 
+ram:000019ac    20069fe5        ldr         r0,[DAT_00001fd4]                       ;= 01C20890h
+ram:000019b0    88ffffeb        bl          FUN_000017d8                            ;undefined FUN_000017d8()
+ram:000019b4    1c469fe5        ldr         r4,[DAT_00001fd8]                       ;= 01C20068h
+ram:000019b8    0400a0e1        mov         r0,r4                                   
+ram:000019bc    0010a0e3        mov         r1,#0x0                                 
+ram:000019c0    daffffeb        bl          FUN_00001930                            ;undefined FUN_00001930()
+ram:000019c4    0050a0e1        mov         r5,r0                                   
+ram:000019c8    015685e3        orr         r5,r5,#0x100000                         
+ram:000019cc    0520a0e1        mov         r2,r5                                   
+ram:000019d0    0400a0e1        mov         r0,r4                                   
+ram:000019d4    0010a0e3        mov         r1,#0x0                                 
+ram:000019d8    e0ffffeb        bl          FUN_00001960                            ;undefined FUN_00001960()
+ram:000019dc    9a4f84e2        add         r4,r4,#0x268                            
+ram:000019e0    0400a0e1        mov         r0,r4                                   
+ram:000019e4    0010a0e3        mov         r1,#0x0                                 
+ram:000019e8    d0ffffeb        bl          FUN_00001930                            ;undefined FUN_00001930()
+ram:000019ec    0050a0e1        mov         r5,r0                                   
+ram:000019f0    015685e3        orr         r5,r5,#0x100000                         
+ram:000019f4    0520a0e1        mov         r2,r5                                   
+ram:000019f8    0400a0e1        mov         r0,r4                                   
+ram:000019fc    0010a0e3        mov         r1,#0x0                                 
+ram:00001a00    d6ffffeb        bl          FUN_00001960                            ;undefined FUN_00001960()
+ram:00001a04    d0459fe5        ldr         r4,[DAT_00001fdc]                       ;= 01C25000h
+ram:00001a08    0020a0e3        mov         r2,#0x0                                 
+ram:00001a0c    040084e2        add         r0,r4,#0x4                              
+ram:00001a10    0210a0e1        mov         r1,r2                                   
+ram:00001a14    d1ffffeb        bl          FUN_00001960                            ;undefined FUN_00001960()
+ram:00001a18    f720a0e3        mov         r2,#0xf7                                
+ram:00001a1c    080084e2        add         r0,r4,#0x8                              
+ram:00001a20    0010a0e3        mov         r1,#0x0                                 
+ram:00001a24    cdffffeb        bl          FUN_00001960                            ;undefined FUN_00001960()
+ram:00001a28    0020a0e3        mov         r2,#0x0                                 
+ram:00001a2c    100084e2        add         r0,r4,#0x10                             
+ram:00001a30    0210a0e1        mov         r1,r2                                   
+ram:00001a34    c9ffffeb        bl          FUN_00001960                            ;undefined FUN_00001960()
+ram:00001a38    0c0084e2        add         r0,r4,#0xc                              
+ram:00001a3c    0010a0e3        mov         r1,#0x0                                 
+ram:00001a40    baffffeb        bl          FUN_00001930                            ;undefined FUN_00001930()
+ram:00001a44    0050a0e1        mov         r5,r0                                   
+ram:00001a48    805085e3        orr         r5,r5,#0x80                             
+ram:00001a4c    0520a0e1        mov         r2,r5                                   
+ram:00001a50    0c0084e2        add         r0,r4,#0xc                              
+ram:00001a54    0010a0e3        mov         r1,#0x0                                 
+ram:00001a58    c0ffffeb        bl          FUN_00001960                            ;undefined FUN_00001960()
+ram:00001a5c    ff2007e2        and         r2,r7,#0xff                             
+ram:00001a60    0400a0e1        mov         r0,r4                                   
+ram:00001a64    0010a0e3        mov         r1,#0x0                                 
+ram:00001a68    bcffffeb        bl          FUN_00001960                            ;undefined FUN_00001960()
+ram:00001a6c    0708a0e1        mov         r0,r7, lsl #0x10                        
+ram:00001a70    202ca0e1        mov         r2,r0, lsr #0x18                        
+ram:00001a74    040084e2        add         r0,r4,#0x4                              
+ram:00001a78    0010a0e3        mov         r1,#0x0                                 
+ram:00001a7c    b7ffffeb        bl          FUN_00001960                            ;undefined FUN_00001960()
+ram:00001a80    0c0084e2        add         r0,r4,#0xc                              
+ram:00001a84    0010a0e3        mov         r1,#0x0                                 
+ram:00001a88    a8ffffeb        bl          FUN_00001930                            ;undefined FUN_00001930()
+ram:00001a8c    0050a0e1        mov         r5,r0                                   
+ram:00001a90    8050c5e3        bic         r5,r5,#0x80                             
+ram:00001a94    0520a0e1        mov         r2,r5                                   
+ram:00001a98    0c0084e2        add         r0,r4,#0xc                              
+ram:00001a9c    0010a0e3        mov         r1,#0x0                                 
+ram:00001aa0    aeffffeb        bl          FUN_00001960                            ;undefined FUN_00001960()
+ram:00001aa4    0c0084e2        add         r0,r4,#0xc                              
+ram:00001aa8    0010a0e3        mov         r1,#0x0                                 
+ram:00001aac    9fffffeb        bl          FUN_00001930                            ;undefined FUN_00001930()
+ram:00001ab0    0050a0e1        mov         r5,r0                                   
+ram:00001ab4    1f50c5e3        bic         r5,r5,#0x1f                             
+ram:00001ab8    035085e3        orr         r5,r5,#0x3                              
+ram:00001abc    0520a0e1        mov         r2,r5                                   
+ram:00001ac0    0c0084e2        add         r0,r4,#0xc                              
+ram:00001ac4    0010a0e3        mov         r1,#0x0                                 
+ram:00001ac8    a4ffffeb        bl          FUN_00001960                            ;undefined FUN_00001960()
+ram:00001acc    f081bde8        ldmia       sp!,{r4 r5 r6 r7 r8 pc}                 
+

@@ -1,0 +1,72 @@
+                            ;************************************************************************************************
+                            ;*                                           FUNCTION                                           *
+                            ;************************************************************************************************
+                            ;undefined FUN_000017d8()
+                                                          ;XREF[22,0]:  00000164,00000178,0000018c,000001a0
+                                                          ;             000001b4,000001c8,000001dc,000001f0
+                                                          ;             0000020c,00000220,00000234,00000248
+                                                          ;             0000025c,00000270,00000284,00000298
+                                                          ;             000002b4,000002c8,000002dc,0000199c
+                                                          ;             000019b0,00002d10
+ram:000017d8    30402de9        stmdb       sp!,{r4 r5 lr}                          
+ram:000017dc    a1c1a0e1        mov         r12,r1, lsr #0x3                        
+ram:000017e0    0cc190e7        ldr         r12,[r0,r12,lsl #0x2]                   
+ram:000017e4    814ea0e1        mov         r4,r1, lsl #0x1d                        
+ram:000017e8    a44da0e1        mov         r4,r4, lsr #0x1b                        
+ram:000017ec    0f50a0e3        mov         r5,#0xf                                 
+ram:000017f0    15c4cce1        bic         r12,r12,r5, lsl r4                      
+ram:000017f4    a141a0e1        mov         r4,r1, lsr #0x3                         
+ram:000017f8    04c180e7        str         r12,[r0,r4,lsl #0x2]                    
+ram:000017fc    000052e3        cmp         r2,#0x0                                 
+ram:00001800    0800001a        bne         LAB_00001828                            
+ram:00001804    a1c1a0e1        mov         r12,r1, lsr #0x3                        
+ram:00001808    0cc190e7        ldr         r12,[r0,r12,lsl #0x2]                   
+ram:0000180c    814ea0e1        mov         r4,r1, lsl #0x1d                        
+ram:00001810    a44da0e1        mov         r4,r4, lsr #0x1b                        
+ram:00001814    0150a0e3        mov         r5,#0x1                                 
+ram:00001818    15c4cce1        bic         r12,r12,r5, lsl r4                      
+ram:0000181c    a141a0e1        mov         r4,r1, lsr #0x3                         
+ram:00001820    04c180e7        str         r12,[r0,r4,lsl #0x2]                    
+ram:00001824    110000ea        b           LAB_00001870                            
+                            LAB_00001828:                 ;XREF[1,0]:   00001800
+ram:00001828    010052e3        cmp         r2,#0x1                                 
+ram:0000182c    0800001a        bne         LAB_00001854                            
+ram:00001830    a1c1a0e1        mov         r12,r1, lsr #0x3                        
+ram:00001834    0cc190e7        ldr         r12,[r0,r12,lsl #0x2]                   
+ram:00001838    814ea0e1        mov         r4,r1, lsl #0x1d                        
+ram:0000183c    a44da0e1        mov         r4,r4, lsr #0x1b                        
+ram:00001840    0150a0e3        mov         r5,#0x1                                 
+ram:00001844    15c48ce1        orr         r12,r12,r5, lsl r4                      
+ram:00001848    a141a0e1        mov         r4,r1, lsr #0x3                         
+ram:0000184c    04c180e7        str         r12,[r0,r4,lsl #0x2]                    
+ram:00001850    060000ea        b           LAB_00001870                            
+                            LAB_00001854:                 ;XREF[1,0]:   0000182c
+ram:00001854    a1c1a0e1        mov         r12,r1, lsr #0x3                        
+ram:00001858    0cc190e7        ldr         r12,[r0,r12,lsl #0x2]                   
+ram:0000185c    814ea0e1        mov         r4,r1, lsl #0x1d                        
+ram:00001860    a44da0e1        mov         r4,r4, lsr #0x1b                        
+ram:00001864    12c48ce1        orr         r12,r12,r2, lsl r4                      
+ram:00001868    a141a0e1        mov         r4,r1, lsr #0x3                         
+ram:0000186c    04c180e7        str         r12,[r0,r4,lsl #0x2]                    
+                            LAB_00001870:                 ;XREF[2,0]:   00001824,00001850
+ram:00001870    21c2a0e1        mov         r12,r1, lsr #0x4                        
+ram:00001874    1c4080e2        add         r4,r0,#0x1c                             
+ram:00001878    0cc194e7        ldr         r12,[r4,r12,lsl #0x2]                   
+ram:0000187c    014ea0e1        mov         r4,r1, lsl #0x1c                        
+ram:00001880    a44da0e1        mov         r4,r4, lsr #0x1b                        
+ram:00001884    0350a0e3        mov         r5,#0x3                                 
+ram:00001888    15c4cce1        bic         r12,r12,r5, lsl r4                      
+ram:0000188c    2142a0e1        mov         r4,r1, lsr #0x4                         
+ram:00001890    1c5080e2        add         r5,r0,#0x1c                             
+ram:00001894    04c185e7        str         r12,[r5,r4,lsl #0x2]                    
+ram:00001898    21c2a0e1        mov         r12,r1, lsr #0x4                        
+ram:0000189c    1c4080e2        add         r4,r0,#0x1c                             
+ram:000018a0    0cc194e7        ldr         r12,[r4,r12,lsl #0x2]                   
+ram:000018a4    014ea0e1        mov         r4,r1, lsl #0x1c                        
+ram:000018a8    a44da0e1        mov         r4,r4, lsr #0x1b                        
+ram:000018ac    13c48ce1        orr         r12,r12,r3, lsl r4                      
+ram:000018b0    2142a0e1        mov         r4,r1, lsr #0x4                         
+ram:000018b4    1c5080e2        add         r5,r0,#0x1c                             
+ram:000018b8    04c185e7        str         r12,[r5,r4,lsl #0x2]                    
+ram:000018bc    3080bde8        ldmia       sp!,{r4 r5 pc}                          
+

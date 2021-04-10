@@ -1,0 +1,24 @@
+                            ;************************************************************************************************
+                            ;*                                           FUNCTION                                           *
+                            ;************************************************************************************************
+                            ;undefined FUN_8003a31c()
+                                                          ;XREF[3,0]:   8000bc58,8002d480,8002d494
+ram:8003a31c    a01bb0e1        movs        r1,r0, lsr #0x17                        
+ram:8003a320    9e2071e2        rsbs        r2,r1,#0x9e                             
+ram:8003a324    030000ba        blt         LAB_8003a338                            
+ram:8003a328    0034a0e1        mov         r3,r0, lsl #0x8                         
+ram:8003a32c    023183e3        orr         r3,r3,#0x80000000                       
+ram:8003a330    3302a0e1        mov         r0,r3, lsr r2                           
+ram:8003a334    1eff2fe1        bx          lr                                      
+                            LAB_8003a338:                 ;XREF[1,0]:   8003a324
+ram:8003a338    000010e1        tst         r0,r0                                   
+ram:8003a33c    0400005a        bpl         LAB_8003a354                            
+ram:8003a340    8010a0e1        mov         r1,r0, lsl #0x1                         
+ram:8003a344    7f0451e3        cmp         r1,#0x7f000000                          
+ram:8003a348    0100002a        bcs         LAB_8003a354                            
+ram:8003a34c    0000a0e3        mov         r0,#0x0                                 
+ram:8003a350    1eff2fe1        bx          lr                                      
+                            LAB_8003a354:                 ;XREF[2,0]:   8003a33c,8003a348
+ram:8003a354    10402de9        stmdb       sp!,{r4 lr}                             
+ram:8003a358    7b0000eb        bl          FUN_8003a54c                            ;undefined FUN_8003a54c(undefined par...
+

@@ -1,0 +1,64 @@
+                            ;************************************************************************************************
+                            ;*                                           FUNCTION                                           *
+                            ;************************************************************************************************
+                            ;undefined FUN_8003a44c()
+                                                          ;XREF[24,0]:  80004920,80004930,80007694,800076a4
+                                                          ;             8000bc50,80016640,80016650,80016668
+                                                          ;             80016678,8001670c,8001671c,80016734
+                                                          ;             80016744,8002d0a4,8002d47c,8002d490
+                                                          ;             8002d4ac,8002d4c8,8002d4ec,8002d508
+                                                          ;             8002d52c,8002d548,8002d56c,8002d588
+ram:8003a44c    ffc8a0e3        mov         r12,#0xff0000                           
+ram:8003a450    a0231ce0        ands        r2,r12,r0, lsr #0x7                     
+ram:8003a454    a1331c10        andnes      r3,r12,r1, lsr #0x7                     
+ram:8003a458    0c003211        teqne       r2,r12                                  
+ram:8003a45c    0c003311        teqne       r3,r12                                  
+ram:8003a460    2000000a        beq         LAB_8003a4e8                            
+ram:8003a464    010030e1        teq         r0,r1                                   
+ram:8003a468    02c1a0e3        mov         r12,#0x80000000                         
+ram:8003a46c    012c8243        orrmi       r2,r2,#0x100                            
+ram:8003a470    00048ce1        orr         r0,r12,r0, lsl #0x8                     
+ram:8003a474    01148ce1        orr         r1,r12,r1, lsl #0x8                     
+ram:8003a478    032082e0        add         r2,r2,r3                                
+ram:8003a47c    901183e0        umull       r1,r3,r0,r1                             
+ram:8003a480    022542e2        sub         r2,r2,#0x800000                         
+ram:8003a484    000051e3        cmp         r1,#0x0                                 
+ram:8003a488    01308313        orrne       r3,r3,#0x1                              
+ram:8003a48c    8330b0e1        movs        r3,r3, lsl #0x1                         
+ram:8003a490    4228a2e0        adc         r2,r2,r2, asr #0x10                     
+ram:8003a494    6330a021        movcs       r3,r3, rrx                              
+ram:8003a498    23c4b0e1        movs        r12,r3, lsr #0x8                        
+ram:8003a49c    7f001323        tstcs       r3,#0x7f                                
+ram:8003a4a0    820bace0        adc         r0,r12,r2, lsl #0x17                    
+ram:8003a4a4    3f075213        cmpne       r2,#0xfc0000                            
+ram:8003a4a8    1eff2f31        bxcc        lr                                      
+ram:8003a4ac    0100c003        biceq       r0,r0,#0x1                              
+ram:8003a4b0    3f0752e3        cmp         r2,#0xfc0000                            
+ram:8003a4b4    1eff2f31        bxcc        lr                                      
+ram:8003a4b8    0500005a        bpl         LAB_8003a4d4                            
+ram:8003a4bc    ff2022e2        eor         r2,r2,#0xff                             
+ram:8003a4c0    010872e3        cmn         r2,#0x10000                             
+ram:8003a4c4    1eff2fc1        bxgt        lr                                      
+ram:8003a4c8    060280e2        add         r0,r0,#0x60000000                       
+ram:8003a4cc    020100d2        andle       r0,r0,#0x80000000                       
+ram:8003a4d0    1eff2fe1        bx          lr                                      
+                            LAB_8003a4d4:                 ;XREF[1,0]:   8003a4b8
+ram:8003a4d4    02c580e2        add         r12,r0,#0x800000                        
+ram:8003a4d8    8cc0b0e1        movs        r12,r12, lsl #0x1                       
+ram:8003a4dc    1eff2f41        bxmi        lr                                      
+ram:8003a4e0    060250e2        subs        r0,r0,#0x60000000                       
+ram:8003a4e4    400000ea        b           LAB_8003a5ec                            
+                            LAB_8003a4e8:                 ;XREF[1,0]:   8003a460
+ram:8003a4e8    010030e1        teq         r0,r1                                   
+ram:8003a4ec    012c8243        orrmi       r2,r2,#0x100                            
+ram:8003a4f0    0c0052e1        cmp         r2,r12                                  
+ram:8003a4f4    a1330ce0        and         r3,r12,r1, lsr #0x7                     
+ram:8003a4f8    0c005331        cmpcc       r3,r12                                  
+ram:8003a4fc    0200002a        bcs         LAB_8003a50c                            
+ram:8003a500    010020e0        eor         r0,r0,r1                                
+ram:8003a504    020100e2        and         r0,r0,#0x80000000                       
+ram:8003a508    1eff2fe1        bx          lr                                      
+                            LAB_8003a50c:                 ;XREF[1,0]:   8003a4fc
+ram:8003a50c    10402de9        stmdb       sp!,{r4 lr}                             
+ram:8003a510    0d0000eb        bl          FUN_8003a54c                            ;undefined FUN_8003a54c(undefined par...
+

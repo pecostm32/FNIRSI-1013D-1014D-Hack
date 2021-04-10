@@ -1,0 +1,57 @@
+                            ;************************************************************************************************
+                            ;*                                           FUNCTION                                           *
+                            ;************************************************************************************************
+                            ;undefined FUN_8000bc34()
+          ;local_18      undefined4         -18                      ;XREF[4,0]:   8000bc64,8000bc90,8000bc98,8000bc9c
+          ;local_1c      undefined4         -1c                      ;XREF[4,0]:   8000bc70,8000bc78,8000bc80,8000bc84
+          ;local_20      undefined4         -20                      ;XREF[3,0]:   8000bc5c,8000bca0,8000bcac
+                                                          ;XREF[41,0]:  80000f24,80009a24,80009a38,80009a4c
+                                                          ;             80009a64,80009aac,80009ac0,80009ad4
+                                                          ;             80009aec,800179d8,800179ec,80017a00
+                                                          ;             80017a1c,80017a90,80017b60,80017b78
+                                                          ;             80017bac,80017c18,80017c2c,80017c40
+                                                          ;             80017c54,80017ca8,80017cbc,80017cd8
+                                                          ;             80017de4,80017df8,80017e0c,80023fec
+                                                          ;             80024000,8002402c,80024924,80024930
+                                                          ;             8002494c,80024ae4,80024e34,800359f0
+                                                          ;             80035c70,8003919c,800391b0,800391c4
+                                                          ;             800391e8
+ram:8000bc34    f0402de9        stmdb       sp!,{r4 r5 r6 r7 lr}                    
+ram:8000bc38    0e002de9        stmdb       sp!,{r1 r2 r3}                          
+ram:8000bc3c    0040a0e1        mov         r4,r0                                   
+ram:8000bc40    0400a0e1        mov         r0,r4                                   
+ram:8000bc44    c9b900eb        bl          FUN_8003a370                            ;undefined FUN_8003a370()
+ram:8000bc48    0060a0e1        mov         r6,r0                                   
+ram:8000bc4c    60109fe5        ldr         r1,[DAT_8000bcb4]                       ;= 41A00000h
+ram:8000bc50    fdb900eb        bl          FUN_8003a44c                            ;undefined FUN_8003a44c()
+ram:8000bc54    0050a0e1        mov         r5,r0                                   
+ram:8000bc58    afb900eb        bl          FUN_8003a31c                            ;undefined FUN_8003a31c()
+ram:8000bc5c    00008de5        str         r0,[sp,#0x0]=>local_20                  
+ram:8000bc60    0000a0e3        mov         r0,#0x0                                 
+ram:8000bc64    08008de5        str         r0,[sp,#local_18+0x20]                  
+ram:8000bc68    0b0000ea        b           LAB_8000bc9c                            
+                            LAB_8000bc6c:                 ;XREF[1,0]:   8000bca8
+ram:8000bc6c    0000a0e3        mov         r0,#0x0                                 
+ram:8000bc70    04008de5        str         r0,[sp,#local_1c+0x20]                  
+ram:8000bc74    020000ea        b           LAB_8000bc84                            
+                            LAB_8000bc78:                 ;XREF[1,0]:   8000bc8c
+ram:8000bc78    04009de5        ldr         r0,[sp,#local_1c+0x20]                  
+ram:8000bc7c    010080e2        add         r0,r0,#0x1                              
+ram:8000bc80    04008de5        str         r0,[sp,#local_1c+0x20]                  
+                            LAB_8000bc84:                 ;XREF[1,0]:   8000bc74
+ram:8000bc84    04009de5        ldr         r0,[sp,#local_1c+0x20]                  
+ram:8000bc88    000050e3        cmp         r0,#0x0                                 
+ram:8000bc8c    f9ffff0a        beq         LAB_8000bc78                            
+ram:8000bc90    08009de5        ldr         r0,[sp,#local_18+0x20]                  
+ram:8000bc94    010080e2        add         r0,r0,#0x1                              
+ram:8000bc98    08008de5        str         r0,[sp,#local_18+0x20]                  
+                            LAB_8000bc9c:                 ;XREF[1,0]:   8000bc68
+ram:8000bc9c    08009de5        ldr         r0,[sp,#local_18+0x20]                  
+ram:8000bca0    00109de5        ldr         r1,[sp,#0x0]=>local_20                  
+ram:8000bca4    010050e1        cmp         r0,r1                                   
+ram:8000bca8    efffff3a        bcc         LAB_8000bc6c                            
+ram:8000bcac    3e00bde8        ldmia       sp!,{r1 r2 r3 r4 r5}=>local_20          
+ram:8000bcb0    c080bde8        ldmia       sp!,{r6 r7 pc}                          
+                            DAT_8000bcb4:                 ;XREF[1,0]:   8000bc4c
+ram:8000bcb4    0000a041        undefined4  41A00000h                               
+

@@ -1,0 +1,76 @@
+                            ;************************************************************************************************
+                            ;*                                           FUNCTION                                           *
+                            ;************************************************************************************************
+                            ;undefined FUN_8003a54c(undefined param_1, undefined param_2, undefined param_3, undefined param_4, undefined4 param_5)
+          ;param_1       undefined           r0                      
+          ;param_2       undefined           r1                      
+          ;param_3       undefined           r2                      
+          ;param_4       undefined           r3                      
+          ;param_5       undefined4           0                      ;XREF[1,0]:   8003a5b0
+                                                          ;XREF[9,0]:   80039fb8,8003a094,8003a218,8003a2c4
+                                                          ;             8003a300,8003a358,8003a438,8003a510
+                                                          ;             8003a768
+ram:8003a54c    04409ee4        ldr         r4,[lr],#0x4                            
+ram:8003a550    040014e1        tst         r4,r4                                   
+ram:8003a554    0200004a        bmi         LAB_8003a564                            
+ram:8003a558    8120a0e1        mov         param_3,param_2, lsl #0x1               
+ram:8003a55c    ff0452e3        cmp         param_3,#0xff000000                     
+ram:8003a560    0900008a        bhi         LAB_8003a58c                            
+                            LAB_8003a564:                 ;XREF[1,0]:   8003a554
+ram:8003a564    8030a0e1        mov         param_4,param_1, lsl #0x1               
+ram:8003a568    ff0453e3        cmp         param_4,#0xff000000                     
+ram:8003a56c    0600008a        bhi         LAB_8003a58c                            
+ram:8003a570    0700001a        bne         LAB_8003a594                            
+ram:8003a574    a0cfa0e1        mov         r12,param_1, lsr #0x1f                  
+ram:8003a578    ff0452e3        cmp         param_3,#0xff000000                     
+ram:8003a57c    8cc08ce0        add         r12,r12,r12, lsl #0x1                   
+ram:8003a580    02c08ce2        add         r12,r12,#0x2                            
+ram:8003a584    a1cfac00        adceq       r12,r12,param_2, lsr #0x1f              
+ram:8003a588    020000ea        b           LAB_8003a598                            
+                            LAB_8003a58c:                 ;XREF[2,0]:   8003a560,8003a56c
+ram:8003a58c    08c0a0e3        mov         r12,#0x8                                
+ram:8003a590    000000ea        b           LAB_8003a598                            
+                            LAB_8003a594:                 ;XREF[1,0]:   8003a570
+ram:8003a594    a1cfa0e1        mov         r12,param_2, lsr #0x1f                  
+                            LAB_8003a598:                 ;XREF[2,0]:   8003a588,8003a590
+ram:8003a598    8c308ce0        add         param_4,r12,r12, lsl #0x1               
+ram:8003a59c    3443a0e1        mov         r4,r4, lsr param_4                      
+ram:8003a5a0    074004e2        and         r4,r4,#0x7                              
+ram:8003a5a4    04c054e2        subs        r12,r4,#0x4                             
+ram:8003a5a8    0200002a        bcs         switchD_8003a5b8::switchD               
+                            caseD_4:                      ;XREF[1,0]:   8003a5b8
+ram:8003a5ac    04c18ee0        add         r12,lr,r4, lsl #0x2                     
+ram:8003a5b0    1040bde8        ldmia       sp!,{r4 lr}=>param_5                    
+ram:8003a5b4    1cff2fe1        bx          r12                                     
+                            switchD:                      ;XREF[1,0]:   8003a5a8
+                                                          ; FWD[5,0]:   8003a5ac,8003a5c0,8003a5c4,8003a5c8
+                                                          ;             8003a5cc
+ram:8003a5b8    0cf18fe0        add         pc,pc,r12, lsl #0x2                     
+ram:8003a5bc    00              ??          00h                                     
+ram:8003a5bd    00              ??          00h                                     
+ram:8003a5be    a0              ??          A0h                                     
+ram:8003a5bf    e1              ??          E1h                                     
+                            caseD_4:                      ;XREF[1,0]:   8003a5b8
+ram:8003a5c0    040000ea        b           LAB_8003a5d8                            
+                            caseD_5:                      ;XREF[1,0]:   8003a5b8
+ram:8003a5c4    040000ea        b           LAB_8003a5dc                            
+                            caseD_6:                      ;XREF[1,0]:   8003a5b8
+ram:8003a5c8    ffffffea        b           switchD_8003a5b8::caseD_7               
+                            caseD_7:                      ;XREF[2,0]:   8003a5b8,8003a5c8
+ram:8003a5cc    0201a0e3        mov         param_1,#0x80000000                     
+ram:8003a5d0    010540e2        sub         param_1,param_1,#0x400000               
+ram:8003a5d4    1080bde8        ldmia       sp!,{r4 pc}                             
+                            LAB_8003a5d8:                 ;XREF[1,0]:   8003a5c0
+ram:8003a5d8    0100a0e1        mov         param_1,param_2                         
+                            LAB_8003a5dc:                 ;XREF[1,0]:   8003a5c4
+ram:8003a5dc    8020b0e1        movs        param_3,param_1, lsl #0x1               
+ram:8003a5e0    01247212        rsbnes      param_3,param_3,#0x1000000              
+ram:8003a5e4    02010082        andhi       param_1,param_1,#0x80000000             
+ram:8003a5e8    1080bde8        ldmia       sp!,{r4 pc}                             
+                            LAB_8003a5ec:                 ;XREF[5,0]:   8003924c,8003a054,8003a1e4,8003a24c
+                                                          ;             8003a4e4
+ram:8003a5ec    ff10b0e3        movs        r1,#0xff                                
+ram:8003a5f0    a00b81e1        orr         r0,r1,r0, lsr #0x17                     
+ram:8003a5f4    800bb0e1        movs        r0,r0, lsl #0x17                        
+ram:8003a5f8    1eff2fe1        bx          lr                                      
+

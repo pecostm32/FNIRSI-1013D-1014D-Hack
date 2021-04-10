@@ -1,0 +1,5 @@
+It looks like port d is being setup in FUN_00002CF0
+
+From there it calls FUN_000017D8 16 times to setup the 16 pins used for the LCD
+
+After setup the data port is probably not used since there is a dedicated LCD driver system in the MCU

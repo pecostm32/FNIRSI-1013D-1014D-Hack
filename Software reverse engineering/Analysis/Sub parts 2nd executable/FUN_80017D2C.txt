@@ -1,0 +1,73 @@
+                            ;************************************************************************************************
+                            ;*                                           FUNCTION                                           *
+                            ;* Using Port A config register                                                                 *
+                            ;************************************************************************************************
+                            ;undefined FUN_80017d2c()
+          ;local_18      undefined4         -18                      ;XREF[2,0]:   80017d30,80017e14
+                                                          ;XREF[4,0]:   80017810,80017a38,80017a88,80017aa8
+ram:80017d2c    e0412de9        stmdb       sp!,{r5 r6 r7 r8 lr}                    
+ram:80017d30    04402de5        str         r4,[sp,#local_18+0x14]!                 
+ram:80017d34    0250a0e1        mov         r5,r2                                   
+ram:80017d38    0160a0e1        mov         r6,r1                                   
+ram:80017d3c    0040a0e1        mov         r4,r0                                   
+ram:80017d40    0070a0e3        mov         r7,#0x0                                 
+ram:80017d44    48c7ffeb        bl          FUN_80009a6c                            ;undefined FUN_80009a6c()
+ram:80017d48    2800a0e3        mov         r0,#0x28                                
+ram:80017d4c    fc8400eb        bl          FUN_80039144                            ;undefined FUN_80039144()
+ram:80017d50    23c7ffeb        bl          FUN_800099e4                            ;undefined FUN_800099e4()
+ram:80017d54    0408a0e1        mov         r0,r4, lsl #0x10                        
+ram:80017d58    200ca0e1        mov         r0,r0, lsr #0x18                        
+ram:80017d5c    f88400eb        bl          FUN_80039144                            ;undefined FUN_80039144()
+ram:80017d60    1fc7ffeb        bl          FUN_800099e4                            ;undefined FUN_800099e4()
+ram:80017d64    ff0004e2        and         r0,r4,#0xff                             
+ram:80017d68    f58400eb        bl          FUN_80039144                            ;undefined FUN_80039144()
+ram:80017d6c    1cc7ffeb        bl          FUN_800099e4                            ;undefined FUN_800099e4()
+ram:80017d70    000055e3        cmp         r5,#0x0                                 
+ram:80017d74    0040a0e3        mov         r4,#0x0                                 
+ram:80017d78    0a00009a        bls         LAB_80017da8                            
+                            LAB_80017d7c:                 ;XREF[1,0]:   80017da4
+ram:80017d7c    0400d6e7        ldrb        r0,[r6,r4]                              
+ram:80017d80    ef8400eb        bl          FUN_80039144                            ;undefined FUN_80039144()
+ram:80017d84    16c7ffeb        bl          FUN_800099e4                            ;undefined FUN_800099e4()
+ram:80017d88    050054e1        cmp         r4,r5                                   
+ram:80017d8c    0100001a        bne         LAB_80017d98                            
+ram:80017d90    0170a0e3        mov         r7,#0x1                                 
+ram:80017d94    030000ea        b           LAB_80017da8                            
+                            LAB_80017d98:                 ;XREF[1,0]:   80017d8c
+ram:80017d98    010084e2        add         r0,r4,#0x1                              
+ram:80017d9c    ff4000e2        and         r4,r0,#0xff                             
+ram:80017da0    050054e1        cmp         r4,r5                                   
+ram:80017da4    f4ffff3a        bcc         LAB_80017d7c                            
+                            LAB_80017da8:                 ;XREF[2,0]:   80017d78,80017d94
+ram:80017da8    6c409fe5        ldr         r4,[DAT_80017e1c]                       ;= 01C20800h
+ram:80017dac    0030a0e3        mov         r3,#0x0                                 
+ram:80017db0    0120a0e3        mov         r2,#0x1                                 
+ram:80017db4    0310a0e3        mov         r1,#0x3                                 
+ram:80017db8    0400a0e1        mov         r0,r4                                   
+ram:80017dbc    22feffeb        bl          FUN_8001764c                            ;undefined FUN_8001764c()
+ram:80017dc0    0030a0e3        mov         r3,#0x0                                 
+ram:80017dc4    0120a0e3        mov         r2,#0x1                                 
+ram:80017dc8    0210a0e3        mov         r1,#0x2                                 
+ram:80017dcc    0400a0e1        mov         r0,r4                                   
+ram:80017dd0    1dfeffeb        bl          FUN_8001764c                            ;undefined FUN_8001764c()
+ram:80017dd4    0210a0e3        mov         r1,#0x2                                 
+ram:80017dd8    0400a0e1        mov         r0,r4                                   
+ram:80017ddc    55feffeb        bl          FUN_80017738                            ;undefined FUN_80017738()
+ram:80017de0    0a00a0e3        mov         r0,#0xa                                 
+ram:80017de4    92cfffeb        bl          FUN_8000bc34                            ;undefined FUN_8000bc34()
+ram:80017de8    0310a0e3        mov         r1,#0x3                                 
+ram:80017dec    0400a0e1        mov         r0,r4                                   
+ram:80017df0    55feffeb        bl          FUN_8001774c                            ;undefined FUN_8001774c()
+ram:80017df4    0a00a0e3        mov         r0,#0xa                                 
+ram:80017df8    8dcfffeb        bl          FUN_8000bc34                            ;undefined FUN_8000bc34()
+ram:80017dfc    0210a0e3        mov         r1,#0x2                                 
+ram:80017e00    0400a0e1        mov         r0,r4                                   
+ram:80017e04    50feffeb        bl          FUN_8001774c                            ;undefined FUN_8001774c()
+ram:80017e08    0a00a0e3        mov         r0,#0xa                                 
+ram:80017e0c    88cfffeb        bl          FUN_8000bc34                            ;undefined FUN_8000bc34()
+ram:80017e10    0700a0e1        mov         r0,r7                                   
+ram:80017e14    f001bde8        ldmia       sp!,{r4 r5 r6 r7 r8}=>local_18          
+ram:80017e18    04f09de4        ldr         pc,[sp],#0x4                            
+                            DAT_80017e1c:                 ;XREF[1,0]:   80017da8
+ram:80017e1c    0008c201        undefined4  01C20800h                               
+
