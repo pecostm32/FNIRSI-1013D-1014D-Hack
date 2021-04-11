@@ -5,5 +5,3 @@ As part of what is on EEVBLOG, resources for the reverse engineering of the FNIR
 
 As it is an ongoing process more and more data will be added over time.
 
-The first section added is for the hardware of the scope.
-Second part is for the software
