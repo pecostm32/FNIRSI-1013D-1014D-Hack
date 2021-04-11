@@ -29,3 +29,25 @@ Used a breakout board to connect the usb serial and putty on the linux mint mach
 
 See "readme.tx" and "location of uart1 connections.jpg" in the "images/lichee_nano_uboot_uart0_linux_uart1" directory for connection of an USB to serial adapter
 
+
+I had to change four files in the u-boot archive to get the image to only use uart1:
+
+1) /uboot-nano-v2018.01/arch/arm/mach-sunxi/board.c
+Added:
+#elif CONFIG_CONS_INDEX == 2 && defined(CONFIG_MACH_SUNIV)
+   sunxi_gpio_set_cfgpin(SUNXI_GPA(2), SUNIV_GPA_UART1);
+   sunxi_gpio_set_cfgpin(SUNXI_GPA(3), SUNIV_GPA_UART1);
+   sunxi_gpio_set_pull(SUNXI_GPA(3), SUNXI_GPIO_PULL_UP);
+
+2) /uboot-nano-v2018.01/include/asm/arch-sunxi/gpio.h
+Added:
+#define SUNIV_GPA_UART1      5
+
+3) /uboot-nano-v2018.01/include/configs/sunxi-common.h
+Added:
+#elif CONFIG_CONS_INDEX == 2 && defined(CONFIG_MACH_SUNIV)
+#define OF_STDOUT_PATH      "/soc@01c00000/serial@01c25400:115200"
+
+4) /uboot-nano-v2018.01/configs/lichee_nano_defconfig
+Added:
+CONFIG_CONS_INDEX=2
