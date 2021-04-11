@@ -8,7 +8,8 @@ What I did to build the image:
 
 4) Then I followed te instructions here: "https://unframework.com/2020/05/27/setting-up-embedded-linux-on-lichee-pi-nano/" to build the linux with uart0 for the lichee nano
    Had to resolve some errors due to missing packages. "sudo apt-get install swig python-dev libssl-dev" Also needed to change the defconfig to overcome legacy options.
-   Then to get uart1 in the picture I had to make modifications to some .dts and .dtsi files. The latter is found in several places and concerns these suniv-f1c100s.dtsi or suniv.dtsi. Not sure editing which did the trick. This actualy has to be done in the linux source archive.
+   Then to get uart1 in the picture I had to make modifications to some .dts and .dtsi files. The latter is found in several places and concerns these suniv-f1c100s.dtsi or suniv.dtsi. Not sure editing which did the trick.
+   This actualy has to be done in the linux source archive.
 
 5) I moved the files from unframework into the buildroot directory and modified them to work from there.
 
