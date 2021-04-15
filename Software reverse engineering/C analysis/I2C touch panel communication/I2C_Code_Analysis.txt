@@ -1,5 +1,6 @@
 //========================================================================================================================================================================================================================================================
 //The code that handles the I2C communication with the touch panel has been analysed.
+//There is room for improvement on how the bit banging is done.
 
 //It starts with an initialization function
 
