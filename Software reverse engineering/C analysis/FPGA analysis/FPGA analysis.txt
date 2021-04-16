@@ -1,0 +1,103 @@
+//========================================================================================================================================================================================================================================================
+//It looks like the interface with the FPGA is an eight bit databus with tree control signals
+
+//PE0:7 Databus
+//PE08  Clock
+//PE09  read/write     0 = read, 1 = write
+//PE10  data/command   0 = data, 1 = command
+
+//========================================================================================================================================================================================================================================================
+//A search in Ghidra for FUN_800169f8 gives a list with al the positions where a command is written to the FPGA. So far the following commands have been found.
+//What they actually do needs to be investigated further
+
+//List of commands
+//0x01
+//0x02
+//0x03
+//0x04
+//0x05
+//0x06
+//0x0A
+//0x0D
+//0x0E    Write 4 bytes to fpga via data register
+//0x0F
+//0x14
+//0x15
+//0x16
+//0x17
+//0x1A
+//0x1F
+//0x20
+//0x21    Return bytes for storing into DRAM (signal data?? channel 1??)
+//0x23    Return bytes for storing into DRAM (signal data?? channel 2??)
+//0x24    Return bytes for summation
+//0x26    Return bytes for summation
+//0x28
+//0x32
+//0x33
+//0x34
+//0x35
+//0x36
+//0x37
+//0x38    Set display brightness
+//0x3C
+//0x41    Return touch panel coordinates register address
+//0x64    Some sort of reset? Is send twice in a row. Send before reading configuration parameters
+//0x65    Some sort of reset? Is send twice in a row. Send before writting configuration parameters
+//0x66    Start command? no data read or written after it
+//0x67    Have the fpga return a status flag to see if it is ready. Always preceeded by command 0x66?
+//0x68    -
+//0x69     |
+//0x6A     |
+//0x6B     |- fpga channel configuration controls
+//0x6C     |
+//0x6D     |
+//0x6E    -
+//0xFF
+
+//========================================================================================================================================================================================================================================================
+//Setup, read and write functions
+void FUN_800168a0(void)                  //Initialize the FPGA control bus
+void FUN_800167a0(void)                  //Set the databus for input
+void FUN_800169f8(byte Command)          //Write a byte to the command register
+void FUN_800168fc(byte Data)             //Write a byte to the data register
+uint FUN_80016850(void)                  //Read a byte from the data register
+
+undefined FUN_8001b058(uint count)       //Send command 0x24 and read a number of data bytes from the FPGA and sum them together
+undefined FUN_8001b260(uint count)       //Send command 0x26 and read a number of data bytes from the FPGA and sum them together
+void FUN_8001b0f4(void)                  //Send command 0x21 and read either 1500 or 750 bytes from FPGA into memory. Global variable is used to select between 1500 and 750 bytes.
+void FUN_8001b2fc(void)                  //Send command 0x23 and read either 1500 or 750 bytes from FPGA into memory. Global variable is used to select between 1500 and 750 bytes.
+void FUN_8001af9c(void)                  //Send command 0xZZ and read either 1500 or 750 bytes from FPGA into memory. Global variable is used to select between 1500 and 750 bytes. The command is set, based on 0x0C and a global variable.
+void FUN_8001b1a4(void)                  //Send command 0xZZ and read either 1500 or 750 bytes from FPGA into memory. Global variable is used to select between 1500 and 750 bytes. The command is set, based on 0x0D and a global variable.
+uint FUN_800011a4(int type)              //Send command based on type and read 100 bytes into memory and return some processed data
+
+void FUN_800267c4(void)                  //Do some data processing, write command 0x17 and write a byte to the fpga data register
+
+
+//========================================================================================================================================================================================================================================================
+//Functions that do a lot and take a lot of effort to analyze
+void FUN_80025468(void)
+void FUN_800253e8(void)
+void FUN_80025468(void)
+
+//There are more functions like these. It is time for a more hands on figuring out what the commands do.
+
+//========================================================================================================================================================================================================================================================
+//FPGA initialization functions
+uint FUN_800248f8(undefined4 param_1,undefined4 param_2)   //Write configuration bytes from FPGA, read them back and do some processing on it. Called from among others FUN_8001af9c and FUN_8001b1a4
+void FUN_80024ee0(int param_1,uint param_2)                //Do some form of initialization of the FPGA. Called from FUN_800248F8
+                                                   
+
+//========================================================================================================================================================================================================================================================
+//Data process functions
+void FUN_80024b14(void)                             //Do something with FPGA configuration bytes.
+void FUN_80024c7c(void)                             //Do something with FPGA configuration bytes.
+longlong FUN_80000dc4(uint param_1,uint param_2)    //Data processing used through out the code
+void FUN_8000b4d4(undefined4 param_1,uint param_2)
+longlong FUN_8000090c(uint param_1,uint param_2)
+
+
+
+
+
+
