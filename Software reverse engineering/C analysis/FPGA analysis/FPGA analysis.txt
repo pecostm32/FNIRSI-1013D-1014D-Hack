@@ -7,22 +7,22 @@
 //PE10  data/command   0 = data, 1 = command
 
 //========================================================================================================================================================================================================================================================
-//A search in Ghidra for FUN_800169f8 gives a list with al the positions where a command is written to the FPGA. So far the following commands have been found.
+//A search in Ghidra for FUN_800169f8 (Instruction Operands) gives a list with al the positions where a command is written to the FPGA. So far the following commands have been found.
 //What they actually do needs to be investigated further
 
 //List of commands
 //0x01
-//0x02
-//0x03
+//0x02    Write a data byte (0x00 or 0x01)
+//0x03    Write a data byte (0x00 or 0x01)
 //0x04
 //0x05
-//0x06
+//0x06    Check on FPGA version????
 //0x0A
 //0x0D
 //0x0E    Write 4 bytes to fpga via data register
 //0x0F
 //0x14
-//0x15
+//0x15    Write a data byte
 //0x16
 //0x17
 //0x1A
@@ -32,28 +32,48 @@
 //0x23    Return bytes for storing into DRAM (signal data?? channel 2??)
 //0x24    Return bytes for summation
 //0x26    Return bytes for summation
-//0x28
-//0x32
-//0x33
-//0x34
-//0x35
-//0x36
+//0x28    Write a byte to data register
+//0x32    Write two bytes to data register
+//0x33    Write a byte to data register  (0x05 or 0x06)
+//0x34    Write a data byte (0x00 or 0x01)
+//0x35    Write two bytes to data register
+//0x36    Write a byte to data register  (0x05 or 0x06)
 //0x37
-//0x38    Set display brightness
+//0x38    Set display brightness. Two bytes. Set in FUN_8001d380 (User based control of brightness) and FUN_8001c138 (Default setting 0xEA60 for error message)
 //0x3C
-//0x41    Return touch panel coordinates register address
-//0x64    Some sort of reset? Is send twice in a row. Send before reading configuration parameters
-//0x65    Some sort of reset? Is send twice in a row. Send before writting configuration parameters
-//0x66    Start command? no data read or written after it
+
+//0x41    Return touch panel coordinates register address. Always 0x8150 ?? (GT911 point 1 lsb X coordinate). There is a check in te software to see if this number is returned from the FPGA. It falls into an endless loop if this is not the case.
+
+//Commands to interface with the I2C chip connected to the FPGA
+//0x64    Some sort of reset? Is send twice in a row. Send before reading configuration parameters. Prepare I2C bus for reading  
+//0x65    Some sort of reset? Is send twice in a row. Send before writing configuration parameters. Prepare I2C bus for writing
+//0x66    Start command? no data read or written after it. Start communication with the I2C bus?
 //0x67    Have the fpga return a status flag to see if it is ready. Always preceeded by command 0x66?
 //0x68    -
 //0x69     |
 //0x6A     |
-//0x6B     |- fpga channel configuration controls
-//0x6C     |
+//0x6B     |- Commands to address the I2C data bytes. Measurements done on the FPGA ==> some unkown ic ==> I2C bus showed a constant sequence of 8 bytes (1 slave address and 7 databytes)
+//0x6C     |  And what a coincidence, let there be 7 commands here.
 //0x6D     |
 //0x6E    -
+
+
 //0xFF
+
+
+//========================================================================================================================================================================================================================================================
+//Commands to interface with the I2C chip connected to the FPGA
+//0x64    Prepare bus for reading. Send twice in a row.
+//0x65    Prepare bus for writing. Send twice in a row.
+//0x66    Start the communication.
+//0x67    Read the status flag. Bit 0 needs to become 1. Needs to be preceded by 0x66
+//0x68    Not clear about this one. Is read from a memory address and Ghidra sees it as 0x09. Possibly some command byte for the storage chip? Filled in on an initial I2C read. On reception it is used to do some bit manipulation on the other bytes
+//0x69    Parameter id and byte count. iiiiiicc. 6 bits id and 2 bits count.
+//0x6A    Checksum. sum of the other 6 bytes
+//0x6B    Value byte 3 MSB. 0x69 when not used.
+//0x6C    Value byte 2. 0x96 when not used.
+//0x6D    Value byte 1. 0x99 when not used.
+//0x6E    Value byte 0 LSB.
 
 //========================================================================================================================================================================================================================================================
 //Setup, read and write functions
@@ -83,15 +103,15 @@ void FUN_80025468(void)
 //There are more functions like these. It is time for a more hands on figuring out what the commands do.
 
 //========================================================================================================================================================================================================================================================
-//FPGA initialization functions
-uint FUN_800248f8(undefined4 param_1,undefined4 param_2)   //Write configuration bytes from FPGA, read them back and do some processing on it. Called from among others FUN_8001af9c and FUN_8001b1a4
-void FUN_80024ee0(int param_1,uint param_2)                //Do some form of initialization of the FPGA. Called from FUN_800248F8
-                                                   
+//FPGA I2C chip parameter storage functions
+uint FUN_800248f8(undefined4 param_1,undefined4 param_2)   //Write to the I2C parameter storage, read from the I2C parameter storage and do some processing on it. Called from among others FUN_8001af9c and FUN_8001b1a4
+void FUN_80024ee0(int param_1,uint param_2)                //Write to the I2C parameter storage. Called from FUN_800248F8
+void FUN_80024e18(void)                                    //Read from the I2C parameter storage. Called on startup. Needed to set the global variable used for next 0x68 command.
 
 //========================================================================================================================================================================================================================================================
 //Data process functions
-void FUN_80024b14(void)                             //Do something with FPGA configuration bytes.
-void FUN_80024c7c(void)                             //Do something with FPGA configuration bytes.
+void FUN_80024b14(void)                             //Do something with FPGA I2C storage parameter bytes.
+void FUN_80024c7c(void)                             //Do something with FPGA I2C storage parameter bytes.
 longlong FUN_80000dc4(uint param_1,uint param_2)    //Data processing used through out the code
 void FUN_8000b4d4(undefined4 param_1,uint param_2)
 longlong FUN_8000090c(uint param_1,uint param_2)
