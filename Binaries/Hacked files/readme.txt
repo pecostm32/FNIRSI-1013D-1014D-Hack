@@ -3,7 +3,7 @@ Make sure to get the sources that have the SPI flash in them.
 
 See: https://github.com/pecostm32/FNIRSI-1013D-Hack/tree/main/Linux/images/fel_boot
 
-First thing to do is create a SD card with the FEL boot image. It can be found on the internet, but also added here.
+First thing to do is create a SD card with the FEL boot image. It can be found on the internet, but is also added here.
 
 Change /dev/sdb to where your SD card is mounted
 sudo dd if=fel-sdboot.sunxi of=/dev/sdb bs=1024 seek=8
