@@ -281,7 +281,7 @@ void FPGA_Init(void)
 
 
 
-void FUN_0000046c(int param_1,int param_2,int param_3,int param_4,undefined2 *param_5)
+void display_bitmap(uint xpos,uint ypos,uint xsize,uint ysize,uint *source)
 
 {
   int iVar1;
@@ -289,13 +289,14 @@ void FUN_0000046c(int param_1,int param_2,int param_3,int param_4,undefined2 *pa
   int iVar3;
   
   iVar2 = 0;
-  while (iVar2 < param_4) {
+  while (iVar2 < (int)ysize) {
     iVar3 = *(int *)PTR_DAT_00000730;
     iVar1 = 0;
-    while (iVar1 < param_3) {
-      *(undefined2 *)(iVar3 + (param_2 + iVar2) * 0x640 + param_1 * 2 + iVar1 * 2) = *param_5;
+    while (iVar1 < (int)xsize) {
+      *(undefined2 *)(iVar3 + (ypos + iVar2) * 0x640 + xpos * 2 + iVar1 * 2) = *(undefined2 *)source
+      ;
       iVar1 = iVar1 + 1;
-      param_5 = param_5 + 1;
+      source = (uint *)((int)source + 2);
     }
     iVar2 = iVar2 + 1;
   }
@@ -335,7 +336,7 @@ void main(void)
   sys_spi_flash_read(iRam00000748,(void *)0x81000000,
                      ((uint)local_1d << 0x18 | (uint)local_1e << 0x10 | (uint)local_1f << 8 |
                      (uint)local_20) - 0x28);
-  FUN_00001fe0(0x4b0);
+  delay(0x4b0);
   FPGA_Init();
   *(undefined4 *)PTR_DAT_00000730 = 0x81b00000;
   iVar1 = iRam0000074c;
@@ -344,7 +345,8 @@ void main(void)
     iVar1 = iVar1 + -1;
   }
   sys_init_display(800,0x1e0,0x81b00000,0x81b00000);
-  FUN_0000046c(800 - local_16 >> 1,0x1e0 - local_14 >> 1,(uint)local_16,(uint)local_14,0x81000000);
+  display_bitmap(800 - local_16 >> 1,0x1e0 - local_14 >> 1,(uint)local_16,(uint)local_14,
+                 (uint *)0x81000000);
   Set_Default_Brightness();
   sys_spi_flash_read(0x27000,auStack48,0x20);
   iVar1 = 0;
@@ -355,7 +357,7 @@ void main(void)
     sys_spi_flash_read(iRam00000750,(void *)0x80000000,
                        ((uint)local_1d << 0x18 | (uint)local_1e << 0x10 | (uint)local_1f << 8 |
                        (uint)local_20) - 0x20);
-    FUN_00001fe0(100);
+    delay(100);
     (*(code *)0x80000000)();
   }
   else {
@@ -368,7 +370,7 @@ void main(void)
       sys_spi_flash_read(iRam00000754,(void *)0x80000000,
                          ((uint)local_1d << 0x18 | (uint)local_1e << 0x10 | (uint)local_1f << 8 |
                          (uint)local_20) - 0x20);
-      FUN_00001fe0(100);
+      delay(100);
       (*(code *)0x80000000)();
     }
   }
@@ -1558,14 +1560,14 @@ LAB_00001f1c:
 
 
 
-void FUN_00001fe0(int param_1)
+void delay(uint loops)
 
 {
   uint local_c;
   uint local_8;
   
   local_8 = 0;
-  while (local_8 < (uint)(param_1 * 0x42)) {
+  while (local_8 < loops * 0x42) {
     local_c = 0;
     while (local_c < 0x14) {
       local_c = local_c + 1;
@@ -1904,14 +1906,14 @@ void FUN_0000266c(int param_1)
   write__32(PLL_VIDEO_CTRL_REG,0x3004003);
   uVar2 = FUN_0000262c(PLL_VIDEO_CTRL_REG,0);
   write__32(PLL_VIDEO_CTRL_REG,uVar2 | 0x80000000);
-  FUN_00001fe0(1);
+  delay(1);
   uVar2 = FUN_0000262c(BUS_CLK_GATING_REG1,0);
   write__32(BUS_CLK_GATING_REG1,uVar2 | 0x10);
   uVar2 = FUN_0000262c(TCON_CLK_REG,0);
   write__32(TCON_CLK_REG,uVar2 | 0x80000000);
   uVar2 = FUN_0000262c(BUS_SOFT_RST_REG1,0);
   write__32(BUS_SOFT_RST_REG1,uVar2 | 0x10);
-  FUN_00001fe0(1);
+  delay(1);
   uVar2 = FUN_0000262c(ptr,0);
   write__32(ptr,uVar2 & 0xfffffffe);
   write__32(ptr + 0x10,
@@ -1955,7 +1957,7 @@ void FUN_000028e4(int param_1)
   write__32(BUS_CLK_GATING_REG1,uVar1 | 0x1000);
   uVar1 = FUN_0000262c(BUS_SOFT_RST_REG1,0);
   write__32(BUS_SOFT_RST_REG1,uVar1 | 0x1000);
-  FUN_00001fe0(1);
+  delay(1);
   uVar1 = FUN_0000262c(iVar2 + 0x800,0);
   write__32((uint *)(iVar2 + 0x800),uVar1 | 1);
   write__32((uint *)(iVar2 + 0x808),
