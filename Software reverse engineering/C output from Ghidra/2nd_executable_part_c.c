@@ -1,4 +1,4 @@
-#include "2nd_executable_part_c1.h"
+#include "2nd_executable_part_c.h"
 
 
 
@@ -2066,7 +2066,7 @@ undefined4 FUN_80000e94(void)
     } while (iVar6 == 0);
     FUN_80006948(uVar13);
     FUN_80009694(uVar13);
-    FUN_8000bc34(1000);
+    delay(1000);
     FUN_80026698(0x14);
     uVar5 = FUN_800011a4(1);
     puVar9[uVar11] = uVar5;
@@ -2231,6 +2231,7 @@ uint FUN_800011a4(int param_1)
 
 {
   ushort uVar1;
+  uint *ptr;
   ushort *puVar2;
   int iVar3;
   int iVar4;
@@ -2259,18 +2260,18 @@ uint FUN_800011a4(int param_1)
       }
     }
   }
-  FUN_800169f8(param_1);
-  FUN_800167a0();
-  iVar3 = DAT_800012b0;
-  FUN_80017738(DAT_800012b0,9);
-  FUN_80017738(iVar3,10);
+  fpga_write_cmd((uchar)param_1);
+  fpga_bus_dir_in();
+  ptr = DAT_800012b0;
+  set_gpio_pin_low(DAT_800012b0,9);
+  set_gpio_pin_low(ptr,10);
   uVar5 = 0;
   do {
-    FUN_80017738(iVar3,8);
-    FUN_8001774c(iVar3,8);
+    set_gpio_pin_low(ptr,8);
+    set_gpio_pin_high(ptr,8);
     puVar2 = unaff_r4 + uVar5;
     uVar5 = uVar5 + 1 & 0xfffeffff;
-    *puVar2 = (ushort)*(undefined4 *)(iVar3 + 0x10) & 0xff;
+    *puVar2 = (ushort)ptr[4] & 0xff;
   } while (uVar5 < 100);
   uVar5 = (uint)*unaff_r4;
   uVar1 = unaff_r4[1];
@@ -2293,24 +2294,23 @@ uint FUN_800011a4(int param_1)
 void FUN_800012b8(void)
 
 {
-  int iVar1;
-  undefined4 unaff_r4;
+  uint *ptr;
   
-  FUN_800169f8(0x28);
-  iVar1 = DAT_800169f4;
-  FUN_8001764c(DAT_800169f4,0,1,0,unaff_r4);
-  FUN_8001764c(iVar1,1,1,0);
-  FUN_8001764c(iVar1,2,1,0);
-  FUN_8001764c(iVar1,3,1,0);
-  FUN_8001764c(iVar1,4,1,0);
-  FUN_8001764c(iVar1,5,1,0);
-  FUN_8001764c(iVar1,6,1,0);
-  FUN_8001764c(iVar1,7,1,0);
-  FUN_8001774c(iVar1,9);
-  FUN_80017738(iVar1,10);
-  *(uint *)(iVar1 + 0x10) = *(uint *)(iVar1 + 0x10) & 0xffffff00 | 1;
-  FUN_80017738(iVar1,8);
-  *(uint *)(iVar1 + 0x10) = *(uint *)(iVar1 + 0x10) | 0x100;
+  fpga_write_cmd('(');
+  ptr = PE_CFG0;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = ptr[4] & 0xffffff00 | 1;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
@@ -3617,28 +3617,29 @@ void FUN_80002050(void)
 
 {
   char *pcVar1;
-  bool bVar2;
-  int iVar3;
-  uint uVar4;
-  char cVar5;
-  char cVar6;
-  undefined2 uVar7;
-  short sVar8;
-  ushort uVar9;
-  int iVar10;
+  char cVar2;
+  bool bVar3;
+  int iVar4;
+  uint uVar5;
+  uchar uVar6;
+  char cVar7;
+  undefined2 uVar8;
+  short sVar9;
+  ushort uVar10;
   int iVar11;
-  uint uVar12;
-  char *pcVar13;
-  uint uVar14;
-  char *pcVar15;
-  uint uVar16;
+  int iVar12;
+  uint uVar13;
+  char *pcVar14;
+  uint uVar15;
+  char *pcVar16;
   uint uVar17;
   uint uVar18;
-  ushort *puVar19;
-  bool bVar20;
+  uint uVar19;
+  ushort *puVar20;
   bool bVar21;
   bool bVar22;
   bool bVar23;
+  bool bVar24;
   uint local_50;
   uint local_4c;
   uint local_48;
@@ -3646,18 +3647,18 @@ void FUN_80002050(void)
   uint local_34;
   uint local_30;
   
-  pcVar15 = DAT_80002758;
+  pcVar16 = DAT_80002758;
   DAT_80002758[0x3a] = '\0';
-  *(undefined2 *)(pcVar15 + 6) = 200;
-  *(undefined2 *)(pcVar15 + 0x12) = 200;
-  *(undefined2 *)(pcVar15 + 0x24) = 0x16a;
+  *(undefined2 *)(pcVar16 + 6) = 200;
+  *(undefined2 *)(pcVar16 + 0x12) = 200;
+  *(undefined2 *)(pcVar16 + 0x24) = 0x16a;
   *(undefined2 *)PTR_DAT_8000275c = 0;
   *(undefined2 *)PTR_DAT_80002760 = 400;
   *(undefined2 *)PTR_DAT_80002764 = 0;
   *(undefined2 *)PTR_DAT_80002768 = 400;
-  pcVar15[0x21] = '\0';
-  bVar22 = false;
-  bVar2 = false;
+  pcVar16[0x21] = '\0';
+  bVar23 = false;
+  bVar3 = false;
   local_30 = 6;
   local_34 = 6;
   FUN_8000696c();
@@ -3666,343 +3667,343 @@ void FUN_80002050(void)
   FUN_8001267c(0);
   FUN_80002790();
   FUN_80010944(0);
-  pcVar15[10] = '\x10';
+  pcVar16[10] = '\x10';
   FUN_800266c4();
   FUN_800012b8();
-  iVar3 = DAT_8000276c;
-  uVar18 = 0;
+  iVar4 = DAT_8000276c;
+  uVar19 = 0;
   do {
-    cVar6 = (char)uVar18;
-    pcVar15[3] = cVar6;
-    pcVar15[0xf] = cVar6;
-    FUN_800169f8(0x33);
-    if (pcVar15[3] == '\x06') {
-      cVar5 = '\x05';
+    cVar7 = (char)uVar19;
+    pcVar16[3] = cVar7;
+    pcVar16[0xf] = cVar7;
+    fpga_write_cmd('3');
+    if (pcVar16[3] == '\x06') {
+      uVar6 = '\x05';
     }
     else {
-      cVar5 = pcVar15[3];
+      uVar6 = pcVar16[3];
     }
-    FUN_800168fc(cVar5);
-    FUN_800169f8(0x36);
-    if (pcVar15[0xf] == '\x06') {
-      cVar5 = '\x05';
+    fpga_write_data(uVar6);
+    fpga_write_cmd('6');
+    if (pcVar16[0xf] == '\x06') {
+      uVar6 = '\x05';
     }
     else {
-      cVar5 = pcVar15[0xf];
+      uVar6 = pcVar16[0xf];
     }
-    FUN_800168fc(cVar5);
+    fpga_write_data(uVar6);
     FUN_8000696c();
     FUN_800096b8();
     FUN_8000bc00(0x3c);
-    iVar11 = DAT_80002770;
-    uVar17 = 0;
+    iVar12 = DAT_80002770;
+    uVar18 = 0;
     do {
-      iVar10 = (uVar17 * 0x14 & 0xffe0ffff) - 1;
+      iVar11 = (uVar18 * 0x14 & 0xffe0ffff) - 1;
       do {
-        bVar23 = SCARRY4(iVar10,1);
-        bVar20 = iVar10 + 1 < 0;
-        bVar21 = iVar10 != -1;
-        if (bVar21 && bVar20 == bVar23) {
-          iVar10 = iVar10 + -1;
+        bVar24 = SCARRY4(iVar11,1);
+        bVar21 = iVar11 + 1 < 0;
+        bVar22 = iVar11 != -1;
+        if (bVar22 && bVar21 == bVar24) {
+          iVar11 = iVar11 + -1;
         }
-      } while (bVar21 && bVar20 == bVar23);
-      uVar7 = FUN_8001b058(1);
-      *(undefined2 *)(iVar11 + uVar17 * 2) = uVar7;
-      uVar7 = FUN_8001b260(1);
-      iVar10 = uVar17 * 2;
-      uVar17 = uVar17 + 1 & 0xfffeffff;
-      *(undefined2 *)(iVar3 + iVar10) = uVar7;
-      uVar4 = DAT_80002774;
-    } while (uVar17 < 1000);
-    uVar17 = 0;
-    if ((*pcVar15 != '\0') && (!bVar22)) {
+      } while (bVar22 && bVar21 == bVar24);
+      uVar8 = FUN_8001b058(1);
+      *(undefined2 *)(iVar12 + uVar18 * 2) = uVar8;
+      uVar8 = FUN_8001b260(1);
+      iVar11 = uVar18 * 2;
+      uVar18 = uVar18 + 1 & 0xfffeffff;
+      *(undefined2 *)(iVar4 + iVar11) = uVar8;
+      uVar5 = DAT_80002774;
+    } while (uVar18 < 1000);
+    uVar18 = 0;
+    if ((*pcVar16 != '\0') && (!bVar23)) {
       FUN_800060a8();
       FUN_800061a4();
       FUN_80003dc0();
       FUN_80006170();
-      iVar11 = 0x3d4;
-      puVar19 = DAT_80002778;
-      uVar12 = uVar4;
+      iVar12 = 0x3d4;
+      puVar20 = DAT_80002778;
+      uVar13 = uVar5;
       do {
-        uVar16 = (uint)*puVar19;
-        puVar19 = puVar19 + 1;
-        if (uVar17 < uVar16) {
-          uVar17 = uVar16;
+        uVar17 = (uint)*puVar20;
+        puVar20 = puVar20 + 1;
+        if (uVar18 < uVar17) {
+          uVar18 = uVar17;
         }
-        if (uVar16 < uVar12) {
-          uVar12 = uVar16;
+        if (uVar17 < uVar13) {
+          uVar13 = uVar17;
         }
-        iVar11 = iVar11 + -1;
-      } while (iVar11 != 0);
-      local_4c = uVar17 - uVar12 & 0xffff;
-      local_48 = uVar17 + uVar12 >> 1;
-      if (pcVar15[0xc] == '\0') {
-        uVar16 = 0x6e;
+        iVar12 = iVar12 + -1;
+      } while (iVar12 != 0);
+      local_4c = uVar18 - uVar13 & 0xffff;
+      local_48 = uVar18 + uVar13 >> 1;
+      if (pcVar16[0xc] == '\0') {
+        uVar17 = 0x6e;
       }
       else {
-        uVar16 = 0x46;
+        uVar17 = 0x46;
       }
-      if (uVar17 < 0x12d) {
-        if (uVar12 < 100) {
-          cVar5 = pcVar15[0xc];
+      if (uVar18 < 0x12d) {
+        if (uVar13 < 100) {
+          cVar2 = pcVar16[0xc];
         }
         else {
-          if (local_4c <= uVar16) goto LAB_80002288;
-          cVar5 = pcVar15[0xc];
+          if (local_4c <= uVar17) goto LAB_80002288;
+          cVar2 = pcVar16[0xc];
         }
       }
       else {
-        cVar5 = pcVar15[0xc];
+        cVar2 = pcVar16[0xc];
       }
-      bVar22 = true;
-      local_30 = uVar18 & 0xff;
-      local_30._0_1_ = cVar6;
-      if (cVar5 == '\0') break;
+      bVar23 = true;
+      local_30 = uVar19 & 0xff;
+      local_30._0_1_ = cVar7;
+      if (cVar2 == '\0') break;
     }
 LAB_80002288:
-    uVar17 = 0;
-    if ((pcVar15[0xc] != '\0') && (!bVar2)) {
+    uVar18 = 0;
+    if ((pcVar16[0xc] != '\0') && (!bVar3)) {
       FUN_80008e04();
       FUN_80008f00();
       FUN_80006be0();
       FUN_80008ecc();
-      iVar11 = 0x3d4;
-      puVar19 = DAT_8000277c;
-      uVar12 = uVar4;
+      iVar12 = 0x3d4;
+      puVar20 = DAT_8000277c;
+      uVar13 = uVar5;
       do {
-        uVar16 = (uint)*puVar19;
-        puVar19 = puVar19 + 1;
-        if (uVar17 < uVar16) {
-          uVar17 = uVar16;
+        uVar17 = (uint)*puVar20;
+        puVar20 = puVar20 + 1;
+        if (uVar18 < uVar17) {
+          uVar18 = uVar17;
         }
-        if (uVar16 < uVar12) {
-          uVar12 = uVar16;
+        if (uVar17 < uVar13) {
+          uVar13 = uVar17;
         }
-        iVar11 = iVar11 + -1;
-      } while (iVar11 != 0);
-      local_40 = uVar17 - uVar12 & 0xffff;
-      local_50 = uVar17 + uVar12 >> 1;
-      if (*pcVar15 == '\0') {
-        uVar16 = 0x6e;
+        iVar12 = iVar12 + -1;
+      } while (iVar12 != 0);
+      local_40 = uVar18 - uVar13 & 0xffff;
+      local_50 = uVar18 + uVar13 >> 1;
+      if (*pcVar16 == '\0') {
+        uVar17 = 0x6e;
       }
       else {
-        uVar16 = 0x46;
+        uVar17 = 0x46;
       }
-      if (uVar17 < 0x12d) {
-        if (uVar12 < 100) {
-          cVar5 = *pcVar15;
+      if (uVar18 < 0x12d) {
+        if (uVar13 < 100) {
+          cVar2 = *pcVar16;
         }
         else {
-          if (local_40 <= uVar16) goto LAB_80002374;
-          cVar5 = *pcVar15;
+          if (local_40 <= uVar17) goto LAB_80002374;
+          cVar2 = *pcVar16;
         }
       }
       else {
-        cVar5 = *pcVar15;
+        cVar2 = *pcVar16;
       }
-      bVar2 = true;
-      local_34 = uVar18 & 0xff;
-      local_34._0_1_ = cVar6;
-      if (cVar5 == '\0') break;
+      bVar3 = true;
+      local_34 = uVar19 & 0xff;
+      local_34._0_1_ = cVar7;
+      if (cVar2 == '\0') break;
     }
 LAB_80002374:
-    if ((bVar22 && bVar2) || (uVar18 = uVar18 + 1 & 0xfffeffff, 6 < uVar18)) break;
+    if ((bVar23 && bVar3) || (uVar19 = uVar19 + 1 & 0xfffeffff, 6 < uVar19)) break;
   } while( true );
-  uVar18 = DAT_80002780;
-  cVar6 = *pcVar15;
-  bVar20 = cVar6 != '\0';
-  if (bVar20) {
-    cVar6 = pcVar15[0xc];
+  uVar19 = DAT_80002780;
+  cVar7 = *pcVar16;
+  bVar21 = cVar7 != '\0';
+  if (bVar21) {
+    cVar7 = pcVar16[0xc];
   }
-  if (bVar20 && cVar6 != '\0') {
-    uVar12 = 100;
-    uVar17 = 300;
+  if (bVar21 && cVar7 != '\0') {
+    uVar13 = 100;
+    uVar18 = 300;
   }
   else {
-    uVar12 = 200;
-    uVar17 = uVar12;
+    uVar13 = 200;
+    uVar18 = uVar13;
   }
-  if (*pcVar15 == '\0') {
-    uVar17 = 0;
+  if (*pcVar16 == '\0') {
+    uVar18 = 0;
     local_4c = 0;
   }
-  uVar7 = (undefined2)DAT_80002780;
-  if (*pcVar15 != '\0') {
-    if (local_48 < uVar17) {
-      *(short *)(pcVar15 + 6) = ((short)uVar17 - (short)local_48) + *(short *)(pcVar15 + 6);
-      if (uVar18 < *(ushort *)(pcVar15 + 6)) {
-        *(undefined2 *)(pcVar15 + 6) = uVar7;
+  uVar8 = (undefined2)DAT_80002780;
+  if (*pcVar16 != '\0') {
+    if (local_48 < uVar18) {
+      *(short *)(pcVar16 + 6) = ((short)uVar18 - (short)local_48) + *(short *)(pcVar16 + 6);
+      if (uVar19 < *(ushort *)(pcVar16 + 6)) {
+        *(undefined2 *)(pcVar16 + 6) = uVar8;
       }
     }
     else {
-      pcVar1 = (char *)(local_48 - uVar17 & 0xffff);
-      pcVar13 = pcVar1;
-      if ((char *)(uint)*(ushort *)(pcVar15 + 6) < pcVar1) {
-        pcVar13 = pcVar15;
+      pcVar1 = (char *)(local_48 - uVar18 & 0xffff);
+      pcVar14 = pcVar1;
+      if ((char *)(uint)*(ushort *)(pcVar16 + 6) < pcVar1) {
+        pcVar14 = pcVar16;
       }
-      sVar8 = (short)pcVar13;
-      if ((char *)(uint)*(ushort *)(pcVar15 + 6) < pcVar1) {
-        sVar8 = *(short *)(pcVar15 + 6);
+      sVar9 = (short)pcVar14;
+      if ((char *)(uint)*(ushort *)(pcVar16 + 6) < pcVar1) {
+        sVar9 = *(short *)(pcVar16 + 6);
       }
-      *(short *)(pcVar15 + 6) = *(short *)(pcVar15 + 6) - sVar8;
+      *(short *)(pcVar16 + 6) = *(short *)(pcVar16 + 6) - sVar9;
     }
   }
-  uVar17 = (uint)(byte)pcVar15[0xc];
-  if ((byte)pcVar15[0xc] != 0) {
-    uVar17 = local_40;
-    if (local_50 < uVar12) {
-      *(short *)(pcVar15 + 0x12) = ((short)uVar12 - (short)local_50) + *(short *)(pcVar15 + 0x12);
-      if (uVar18 < *(ushort *)(pcVar15 + 0x12)) {
-        *(undefined2 *)(pcVar15 + 0x12) = uVar7;
+  uVar18 = (uint)(byte)pcVar16[0xc];
+  if ((byte)pcVar16[0xc] != 0) {
+    uVar18 = local_40;
+    if (local_50 < uVar13) {
+      *(short *)(pcVar16 + 0x12) = ((short)uVar13 - (short)local_50) + *(short *)(pcVar16 + 0x12);
+      if (uVar19 < *(ushort *)(pcVar16 + 0x12)) {
+        *(undefined2 *)(pcVar16 + 0x12) = uVar8;
       }
     }
     else {
-      pcVar1 = (char *)(local_50 - uVar12 & 0xffff);
-      pcVar13 = pcVar1;
-      if ((char *)(uint)*(ushort *)(pcVar15 + 0x12) < pcVar1) {
-        pcVar13 = pcVar15;
+      pcVar1 = (char *)(local_50 - uVar13 & 0xffff);
+      pcVar14 = pcVar1;
+      if ((char *)(uint)*(ushort *)(pcVar16 + 0x12) < pcVar1) {
+        pcVar14 = pcVar16;
       }
-      sVar8 = (short)pcVar13;
-      if ((char *)(uint)*(ushort *)(pcVar15 + 0x12) < pcVar1) {
-        sVar8 = *(short *)(pcVar15 + 0x12);
+      sVar9 = (short)pcVar14;
+      if ((char *)(uint)*(ushort *)(pcVar16 + 0x12) < pcVar1) {
+        sVar9 = *(short *)(pcVar16 + 0x12);
       }
-      *(short *)(pcVar15 + 0x12) = *(short *)(pcVar15 + 0x12) - sVar8;
+      *(short *)(pcVar16 + 0x12) = *(short *)(pcVar16 + 0x12) - sVar9;
     }
   }
-  local_40 = uVar17;
-  if (*pcVar15 == '\0') {
-    pcVar15[3] = '\0';
-    FUN_800169f8(0x33);
-    cVar6 = pcVar15[3];
+  local_40 = uVar18;
+  if (*pcVar16 == '\0') {
+    pcVar16[3] = '\0';
+    fpga_write_cmd('3');
+    cVar7 = pcVar16[3];
   }
   else {
-    pcVar15[3] = (char)local_30;
-    FUN_800169f8(0x33);
-    cVar6 = pcVar15[3];
+    pcVar16[3] = (char)local_30;
+    fpga_write_cmd('3');
+    cVar7 = pcVar16[3];
   }
-  if (cVar6 == '\x06') {
-    cVar6 = '\x05';
+  if (cVar7 == '\x06') {
+    uVar6 = '\x05';
   }
   else {
-    cVar6 = pcVar15[3];
+    uVar6 = pcVar16[3];
   }
-  FUN_800168fc(cVar6);
+  fpga_write_data(uVar6);
   FUN_8000696c();
-  if (pcVar15[0xc] == '\0') {
-    pcVar15[0xf] = '\0';
-    FUN_800169f8(0x36);
-    cVar6 = pcVar15[0xf];
+  if (pcVar16[0xc] == '\0') {
+    pcVar16[0xf] = '\0';
+    fpga_write_cmd('6');
+    cVar7 = pcVar16[0xf];
   }
   else {
-    pcVar15[0xf] = (char)local_34;
-    FUN_800169f8(0x36);
-    cVar6 = pcVar15[0xf];
+    pcVar16[0xf] = (char)local_34;
+    fpga_write_cmd('6');
+    cVar7 = pcVar16[0xf];
   }
-  if (cVar6 == '\x06') {
-    cVar6 = '\x05';
+  if (cVar7 == '\x06') {
+    uVar6 = '\x05';
   }
   else {
-    cVar6 = pcVar15[0xf];
+    uVar6 = pcVar16[0xf];
   }
-  FUN_800168fc(cVar6);
+  fpga_write_data(uVar6);
   FUN_800096b8();
   FUN_8000bc00(0x32);
-  if (pcVar15[0x23] == '\0') {
-    uVar7 = 300;
+  if (pcVar16[0x23] == '\0') {
+    uVar8 = 300;
   }
   else {
-    uVar7 = 100;
+    uVar8 = 100;
   }
-  *(undefined2 *)(pcVar15 + 0x26) = uVar7;
-  if (*pcVar15 != pcVar15[0xc]) {
-    *(undefined2 *)(pcVar15 + 0x26) = 200;
+  *(undefined2 *)(pcVar16 + 0x26) = uVar8;
+  if (*pcVar16 != pcVar16[0xc]) {
+    *(undefined2 *)(pcVar16 + 0x26) = 200;
   }
   FUN_800267c4();
-  bVar20 = 0x18 < local_4c;
-  if (!bVar20) {
+  bVar21 = 0x18 < local_4c;
+  if (!bVar21) {
     local_4c = local_40;
   }
-  if (bVar20 || 0x18 < local_4c) {
+  if (bVar21 || 0x18 < local_4c) {
     FUN_8000d9bc(0);
     FUN_8000ddb8(0);
-    uVar9 = 0x1d;
-    pcVar15[0x48] = '\x01';
-    iVar3 = DAT_80002784;
+    uVar10 = 0x1d;
+    pcVar16[0x48] = '\x01';
+    iVar4 = DAT_80002784;
     do {
-      pcVar15[10] = (char)uVar9;
+      pcVar16[10] = (char)uVar10;
       FUN_800266c4();
       FUN_80025468();
-      if (pcVar15[0x23] == '\0') {
+      if (pcVar16[0x23] == '\0') {
         FUN_800049a0();
-        iVar11 = DAT_8000278c;
+        iVar12 = DAT_8000278c;
       }
       else {
         FUN_80007714();
-        iVar11 = DAT_80002788;
+        iVar12 = DAT_80002788;
       }
-      uVar12 = 0;
-      puVar19 = (ushort *)(iVar11 + 0x14);
-      uVar17 = 0;
-      uVar18 = uVar4;
-      iVar10 = iVar3;
+      uVar13 = 0;
+      puVar20 = (ushort *)(iVar12 + 0x14);
+      uVar18 = 0;
+      uVar19 = uVar5;
+      iVar11 = iVar4;
       do {
-        uVar16 = (uint)*puVar19;
-        puVar19 = puVar19 + 1;
-        if (uVar17 < uVar16) {
-          uVar17 = uVar16;
+        uVar17 = (uint)*puVar20;
+        puVar20 = puVar20 + 1;
+        if (uVar18 < uVar17) {
+          uVar18 = uVar17;
         }
-        if (uVar16 < uVar18) {
-          uVar18 = uVar16;
+        if (uVar17 < uVar19) {
+          uVar19 = uVar17;
         }
-        iVar10 = iVar10 + -1;
-      } while (iVar10 != 0);
-      uVar14 = 10;
-      uVar16 = uVar17 - uVar18 & 0xffff;
-      *(short *)(pcVar15 + 0x26) = (short)(uVar17 + uVar18 >> 1);
+        iVar11 = iVar11 + -1;
+      } while (iVar11 != 0);
+      uVar15 = 10;
+      uVar17 = uVar18 - uVar19 & 0xffff;
+      *(short *)(pcVar16 + 0x26) = (short)(uVar18 + uVar19 >> 1);
       do {
-        iVar10 = iVar11 + uVar14 * 2;
-        if (((*(ushort *)(iVar10 + -2) < *(ushort *)(pcVar15 + 0x26)) &&
-            (*(ushort *)(pcVar15 + 0x26) < *(ushort *)(iVar10 + 2))) ||
-           ((*(ushort *)(pcVar15 + 0x26) < *(ushort *)(iVar10 + -2) &&
-            (*(ushort *)(iVar10 + 2) < *(ushort *)(pcVar15 + 0x26))))) {
-          uVar12 = uVar12 + 1 & 0xfffeffff;
-          uVar14 = uVar14 + 10 & 0xfffeffff;
+        iVar11 = iVar12 + uVar15 * 2;
+        if (((*(ushort *)(iVar11 + -2) < *(ushort *)(pcVar16 + 0x26)) &&
+            (*(ushort *)(pcVar16 + 0x26) < *(ushort *)(iVar11 + 2))) ||
+           ((*(ushort *)(pcVar16 + 0x26) < *(ushort *)(iVar11 + -2) &&
+            (*(ushort *)(iVar11 + 2) < *(ushort *)(pcVar16 + 0x26))))) {
+          uVar13 = uVar13 + 1 & 0xfffeffff;
+          uVar15 = uVar15 + 10 & 0xfffeffff;
         }
-        uVar14 = uVar14 + 1 & 0xfffeffff;
-      } while (uVar14 < 0x2e4);
-      bVar22 = uVar12 == 7;
-      if (6 < uVar12) {
-        bVar22 = uVar16 == 0x28;
+        uVar15 = uVar15 + 1 & 0xfffeffff;
+      } while (uVar15 < 0x2e4);
+      bVar23 = uVar13 == 7;
+      if (6 < uVar13) {
+        bVar23 = uVar17 == 0x28;
       }
-    } while (((6 >= uVar12 || uVar16 < 0x28) || bVar22) && (uVar9 = uVar9 - 1, 8 < uVar9));
-    pcVar15[0x48] = '\0';
+    } while (((6 >= uVar13 || uVar17 < 0x28) || bVar23) && (uVar10 = uVar10 - 1, 8 < uVar10));
+    pcVar16[0x48] = '\0';
     FUN_800267c4();
     FUN_800266c4();
   }
   else {
-    pcVar15[0x48] = '\0';
-    pcVar15[10] = '\x13';
-    if (!bVar22) {
-      pcVar15[3] = '\0';
-      FUN_800169f8(0x33);
-      if (pcVar15[3] == '\x06') {
-        cVar6 = '\x05';
+    pcVar16[0x48] = '\0';
+    pcVar16[10] = '\x13';
+    if (!bVar23) {
+      pcVar16[3] = '\0';
+      fpga_write_cmd('3');
+      if (pcVar16[3] == '\x06') {
+        uVar6 = '\x05';
       }
       else {
-        cVar6 = pcVar15[3];
+        uVar6 = pcVar16[3];
       }
-      FUN_800168fc(cVar6);
+      fpga_write_data(uVar6);
     }
-    if (!bVar2) {
-      pcVar15[0xf] = '\0';
-      FUN_800169f8(0x36);
-      if (pcVar15[0xf] == '\x06') {
-        cVar6 = '\x05';
+    if (!bVar3) {
+      pcVar16[0xf] = '\0';
+      fpga_write_cmd('6');
+      if (pcVar16[0xf] == '\x06') {
+        uVar6 = '\x05';
       }
       else {
-        cVar6 = pcVar15[0xf];
+        uVar6 = pcVar16[0xf];
       }
-      FUN_800168fc(cVar6);
+      fpga_write_data(uVar6);
     }
     FUN_8000696c();
     FUN_800096b8();
@@ -4016,108 +4017,108 @@ LAB_80002374:
   FUN_80019730(PTR_PTR_FUN_800124d0);
   switch(*(undefined *)(DAT_800124d4 + 10)) {
   case 0:
-    pcVar15 = s_50S_div_800124dc;
+    pcVar16 = s_50S_div_800124dc;
     break;
   case 1:
-    pcVar15 = s_20S_div_800124e4;
+    pcVar16 = s_20S_div_800124e4;
     break;
   case 2:
-    pcVar15 = s_10S_div_800124ec;
+    pcVar16 = s_10S_div_800124ec;
     break;
   case 3:
-    pcVar15 = s_5S_div_800124f4;
+    pcVar16 = s_5S_div_800124f4;
     break;
   case 4:
-    pcVar15 = s_2S_div_800124fc;
+    pcVar16 = s_2S_div_800124fc;
     break;
   case 5:
-    pcVar15 = s_1S_div_80012504;
+    pcVar16 = s_1S_div_80012504;
     break;
   case 6:
-    pcVar15 = s_500mS_div_8001250c;
+    pcVar16 = s_500mS_div_8001250c;
     break;
   case 7:
-    pcVar15 = s_200mS_div_80012518;
+    pcVar16 = s_200mS_div_80012518;
     break;
   case 8:
-    pcVar15 = s_100mS_div_80012524;
+    pcVar16 = s_100mS_div_80012524;
     break;
   case 9:
-    pcVar15 = s_50mS_div_80012530;
+    pcVar16 = s_50mS_div_80012530;
     break;
   case 10:
-    pcVar15 = s_20mS_div_8001253c;
+    pcVar16 = s_20mS_div_8001253c;
     break;
   case 0xb:
-    pcVar15 = s_10mS_div_80012548;
+    pcVar16 = s_10mS_div_80012548;
     break;
   case 0xc:
-    pcVar15 = s_5mS_div_80012554;
+    pcVar16 = s_5mS_div_80012554;
     break;
   case 0xd:
-    pcVar15 = s_2mS_div_8001255c;
+    pcVar16 = s_2mS_div_8001255c;
     break;
   case 0xe:
-    pcVar15 = s_1mS_div_80012564;
+    pcVar16 = s_1mS_div_80012564;
     break;
   case 0xf:
-    pcVar15 = s_500uS_div_8001256c;
+    pcVar16 = s_500uS_div_8001256c;
     break;
   case 0x10:
-    pcVar15 = s_200uS_div_80012578;
+    pcVar16 = s_200uS_div_80012578;
     break;
   case 0x11:
-    pcVar15 = s_100uS_div_80012584;
+    pcVar16 = s_100uS_div_80012584;
     break;
   case 0x12:
-    pcVar15 = s_50uS_div_80012590;
+    pcVar16 = s_50uS_div_80012590;
     break;
   case 0x13:
-    pcVar15 = s_20uS_div_8001259c;
+    pcVar16 = s_20uS_div_8001259c;
     break;
   case 0x14:
-    pcVar15 = s_10uS_div_800125a8;
+    pcVar16 = s_10uS_div_800125a8;
     break;
   case 0x15:
-    pcVar15 = s_5uS_div_800125b4;
+    pcVar16 = s_5uS_div_800125b4;
     break;
   case 0x16:
-    pcVar15 = s_2uS_div_800125bc;
+    pcVar16 = s_2uS_div_800125bc;
     break;
   case 0x17:
-    pcVar15 = s_1uS_div_800125c4;
+    pcVar16 = s_1uS_div_800125c4;
     break;
   case 0x18:
-    pcVar15 = s_500nS_div_800125cc;
+    pcVar16 = s_500nS_div_800125cc;
     break;
   case 0x19:
-    pcVar15 = s_250nS_div_80012640;
+    pcVar16 = s_250nS_div_80012640;
     break;
   case 0x1a:
-    pcVar15 = s_100nS_div_8001264c;
+    pcVar16 = s_100nS_div_8001264c;
     break;
   case 0x1b:
-    pcVar15 = s_50nS_div_80012658;
+    pcVar16 = s_50nS_div_80012658;
     break;
   case 0x1c:
-    pcVar15 = s_25nS_div_80012664;
+    pcVar16 = s_25nS_div_80012664;
     break;
   case 0x1d:
-    pcVar15 = s_10nS_div_80012670;
+    pcVar16 = s_10nS_div_80012670;
     break;
   default:
     goto switchD_800122c0_caseD_1e;
   }
-  FUN_80018bf8(pcVar15,DAT_800124d8,0x10);
+  FUN_80018bf8(pcVar16,DAT_800124d8,0x10);
 switchD_800122c0_caseD_1e:
-  iVar11 = DAT_8001cd30;
-  iVar3 = DAT_8001cd2c;
-  uVar18 = 5;
+  iVar12 = DAT_8001cd30;
+  iVar4 = DAT_8001cd2c;
+  uVar19 = 5;
   do {
-    iVar10 = uVar18 * 800 + 0x17c;
-    FUN_80000608(iVar11 + iVar10 * 2,iVar3 + iVar10 * 2,0x5f);
-    uVar18 = uVar18 + 1;
-  } while (uVar18 < 0x2a);
+    iVar11 = uVar19 * 800 + 0x17c;
+    FUN_80000608(iVar12 + iVar11 * 2,iVar4 + iVar11 * 2,0x5f);
+    uVar19 = uVar19 + 1;
+  } while (uVar19 < 0x2a);
   return;
 }
 
@@ -4128,8 +4129,7 @@ void FUN_80002790(void)
 {
   byte bVar1;
   char *pcVar2;
-  int iVar3;
-  undefined4 unaff_r4;
+  uint *ptr;
   
   pcVar2 = DAT_8000280c;
   if ((*DAT_8000280c == '\0') || (DAT_8000280c[0xc] != '\0')) {
@@ -4141,29 +4141,29 @@ void FUN_80002790(void)
     }
     DAT_8000280c[0x23] = '\x01';
     FUN_8001267c(0);
-    FUN_800169f8(0x15);
+    fpga_write_cmd('\x15');
     bVar1 = pcVar2[0x23];
   }
   else {
     DAT_8000280c[0x23] = '\0';
     FUN_8001267c();
-    FUN_800169f8(0x15);
+    fpga_write_cmd('\x15');
     bVar1 = pcVar2[0x23];
   }
-  iVar3 = DAT_800169f4;
-  FUN_8001764c(DAT_800169f4,0,1,0,unaff_r4);
-  FUN_8001764c(iVar3,1,1,0);
-  FUN_8001764c(iVar3,2,1,0);
-  FUN_8001764c(iVar3,3,1,0);
-  FUN_8001764c(iVar3,4,1,0);
-  FUN_8001764c(iVar3,5,1,0);
-  FUN_8001764c(iVar3,6,1,0);
-  FUN_8001764c(iVar3,7,1,0);
-  FUN_8001774c(iVar3,9);
-  FUN_80017738(iVar3,10);
-  *(uint *)(iVar3 + 0x10) = (uint)bVar1 | *(uint *)(iVar3 + 0x10) & 0xffffff00;
-  FUN_80017738(iVar3,8);
-  *(uint *)(iVar3 + 0x10) = *(uint *)(iVar3 + 0x10) | 0x100;
+  ptr = PE_CFG0;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = (uint)bVar1 | ptr[4] & 0xffffff00;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
@@ -4414,16 +4414,16 @@ void FUN_80002b3c(void)
 undefined4 FUN_80002b7c(void)
 
 {
-  undefined4 uVar1;
+  undefined4 *port;
   
   FUN_800012d0();
-  uVar1 = DAT_80002c00;
-  FUN_8001764c(DAT_80002c00,0xc,0,1);
-  FUN_8001764c(uVar1,0xb,0,1);
-  FUN_8001764c(uVar1,0xb,6,1);
+  port = DAT_80002c00;
+  gpio_config_pin(DAT_80002c00,0xc,0);
+  gpio_config_pin(port,0xb,0);
+  gpio_config_pin(port,0xb,6);
   FUN_800176b4(1,0xb);
   FUN_800176f0(1,0xb);
-  FUN_8001c5c0(1,0x27,PTR_LAB_80002c04,3);
+  setup_some_interrupt(1,0x27);
   return 0;
 }
 
@@ -4534,7 +4534,7 @@ bool FUN_8000317c(void)
   bool bVar3;
   bool bVar4;
   ushort *puVar5;
-  undefined uVar6;
+  uchar uVar6;
   byte bVar7;
   ushort uVar8;
   short sVar9;
@@ -4560,20 +4560,21 @@ bool FUN_8000317c(void)
   bVar4 = false;
   FUN_80026728();
   uVar17 = 200;
-  FUN_800169f8(0x32);
-  FUN_800168fc(0);
-  FUN_800168fc(200);
-  FUN_800169f8(0x35);
-  FUN_800168fc(0);
-  FUN_800168fc(200);
+  fpga_write_cmd('2');
+  fpga_write_data('\0');
+  fpga_write_data(-0x38);
+  fpga_write_cmd('5');
+  fpga_write_data('\0');
+  fpga_write_data(-0x38);
   FUN_8000bc00(0x32);
   do {
-    FUN_800169f8(0x32);
-    FUN_800168fc(uVar17 >> 8);
-    FUN_800168fc(uVar17);
-    FUN_800169f8(0x35);
-    FUN_800168fc(uVar17 >> 8);
-    FUN_800168fc(uVar17);
+    fpga_write_cmd('2');
+    uVar6 = (uchar)(uVar17 >> 8);
+    fpga_write_data(uVar6);
+    fpga_write_data((uchar)uVar17);
+    fpga_write_cmd('5');
+    fpga_write_data(uVar6);
+    fpga_write_data((uchar)uVar17);
     FUN_8000bc00(0x32);
     FUN_80025b24();
     do {
@@ -4606,12 +4607,13 @@ bool FUN_8000317c(void)
   bVar4 = false;
   uVar17 = DAT_80003c20;
   do {
-    FUN_800169f8(0x32);
-    FUN_800168fc(uVar17 >> 8);
-    FUN_800168fc(uVar17);
-    FUN_800169f8(0x35);
-    FUN_800168fc(uVar17 >> 8);
-    FUN_800168fc(uVar17);
+    fpga_write_cmd('2');
+    uVar6 = (uchar)(uVar17 >> 8);
+    fpga_write_data(uVar6);
+    fpga_write_data((uchar)uVar17);
+    fpga_write_cmd('5');
+    fpga_write_data(uVar6);
+    fpga_write_data((uchar)uVar17);
     FUN_8000bc00(0x32);
     FUN_80025b24();
     do {
@@ -4662,23 +4664,23 @@ bool FUN_8000317c(void)
   uVar18 = 1;
   do {
     *(char *)(iVar10 + 3) = (char)uVar18;
-    FUN_800169f8(0x33);
+    fpga_write_cmd('3');
     if (*(char *)(iVar10 + 3) == '\x06') {
-      uVar6 = 5;
+      uVar6 = '\x05';
     }
     else {
-      uVar6 = *(undefined *)(iVar10 + 3);
+      uVar6 = *(uchar *)(iVar10 + 3);
     }
-    FUN_800168fc(uVar6);
+    fpga_write_data(uVar6);
     *(char *)(iVar10 + 0xf) = (char)uVar18;
-    FUN_800169f8(0x36);
+    fpga_write_cmd('6');
     if (*(char *)(iVar10 + 0xf) == '\x06') {
-      uVar6 = 5;
+      uVar6 = '\x05';
     }
     else {
-      uVar6 = *(undefined *)(iVar10 + 0xf);
+      uVar6 = *(uchar *)(iVar10 + 0xf);
     }
-    FUN_800168fc(uVar6);
+    fpga_write_data(uVar6);
     FUN_8000bc00(100);
     FUN_80025b24();
     do {
@@ -4930,22 +4932,22 @@ bool FUN_8000317c(void)
     while( true ) {
       *(undefined2 *)(iVar10 + 6) = 200;
       *(undefined2 *)(iVar10 + 0x12) = 200;
-      FUN_800169f8(0x33);
+      fpga_write_cmd('3');
       if (*(char *)(iVar10 + 3) == '\x06') {
-        uVar6 = 5;
+        uVar6 = '\x05';
       }
       else {
-        uVar6 = *(undefined *)(iVar10 + 3);
+        uVar6 = *(uchar *)(iVar10 + 3);
       }
-      FUN_800168fc(uVar6);
-      FUN_800169f8(0x36);
+      fpga_write_data(uVar6);
+      fpga_write_cmd('6');
       if (*(char *)(iVar10 + 0xf) == '\x06') {
-        uVar6 = 5;
+        uVar6 = '\x05';
       }
       else {
-        uVar6 = *(undefined *)(iVar10 + 0xf);
+        uVar6 = *(uchar *)(iVar10 + 0xf);
       }
-      FUN_800168fc(uVar6);
+      fpga_write_data(uVar6);
       FUN_8000696c();
       FUN_800096b8();
       FUN_8000bc00(100);
@@ -7922,31 +7924,30 @@ LAB_80006828:
 void FUN_8000689c(void)
 
 {
-  int iVar1;
-  uint uVar2;
-  undefined4 unaff_r4;
+  uint *ptr;
+  uint uVar1;
   
-  FUN_800169f8(0x33);
-  iVar1 = DAT_800169f4;
+  fpga_write_cmd('3');
+  ptr = PE_CFG0;
   if (*(char *)(DAT_800068d0 + 3) == '\x06') {
-    uVar2 = 5;
+    uVar1 = 5;
   }
   else {
-    uVar2 = (uint)*(byte *)(DAT_800068d0 + 3);
+    uVar1 = (uint)*(byte *)(DAT_800068d0 + 3);
   }
-  FUN_8001764c(DAT_800169f4,0,1,0,unaff_r4);
-  FUN_8001764c(iVar1,1,1,0);
-  FUN_8001764c(iVar1,2,1,0);
-  FUN_8001764c(iVar1,3,1,0);
-  FUN_8001764c(iVar1,4,1,0);
-  FUN_8001764c(iVar1,5,1,0);
-  FUN_8001764c(iVar1,6,1,0);
-  FUN_8001764c(iVar1,7,1,0);
-  FUN_8001774c(iVar1,9);
-  FUN_80017738(iVar1,10);
-  *(uint *)(iVar1 + 0x10) = uVar2 | *(uint *)(iVar1 + 0x10) & 0xffffff00;
-  FUN_80017738(iVar1,8);
-  *(uint *)(iVar1 + 0x10) = *(uint *)(iVar1 + 0x10) | 0x100;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = uVar1 | ptr[4] & 0xffffff00;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
@@ -7956,25 +7957,24 @@ void FUN_800068d4(void)
 
 {
   char cVar1;
-  int iVar2;
-  undefined4 unaff_r4;
+  uint *ptr;
   
-  FUN_800169f8(0x34);
-  iVar2 = DAT_800169f4;
+  fpga_write_cmd('4');
+  ptr = PE_CFG0;
   cVar1 = *(char *)(DAT_80006908 + 1);
-  FUN_8001764c(DAT_800169f4,0,1,0,unaff_r4);
-  FUN_8001764c(iVar2,1,1,0);
-  FUN_8001764c(iVar2,2,1,0);
-  FUN_8001764c(iVar2,3,1,0);
-  FUN_8001764c(iVar2,4,1,0);
-  FUN_8001764c(iVar2,5,1,0);
-  FUN_8001764c(iVar2,6,1,0);
-  FUN_8001764c(iVar2,7,1,0);
-  FUN_8001774c(iVar2,9);
-  FUN_80017738(iVar2,10);
-  *(uint *)(iVar2 + 0x10) = (uint)(cVar1 == '\0') | *(uint *)(iVar2 + 0x10) & 0xffffff00;
-  FUN_80017738(iVar2,8);
-  *(uint *)(iVar2 + 0x10) = *(uint *)(iVar2 + 0x10) | 0x100;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = (uint)(cVar1 == '\0') | ptr[4] & 0xffffff00;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
@@ -7984,30 +7984,29 @@ void FUN_8000690c(void)
 
 {
   char cVar1;
-  int iVar2;
-  undefined4 unaff_r4;
+  uint *ptr;
   
   cVar1 = *DAT_80006944;
   if (cVar1 == '\0') {
-    FUN_800169f8(2);
+    fpga_write_cmd('\x02');
   }
   else {
-    FUN_800169f8(2);
+    fpga_write_cmd('\x02');
   }
-  iVar2 = DAT_800169f4;
-  FUN_8001764c(DAT_800169f4,0,1,0,unaff_r4);
-  FUN_8001764c(iVar2,1,1,0);
-  FUN_8001764c(iVar2,2,1,0);
-  FUN_8001764c(iVar2,3,1,0);
-  FUN_8001764c(iVar2,4,1,0);
-  FUN_8001764c(iVar2,5,1,0);
-  FUN_8001764c(iVar2,6,1,0);
-  FUN_8001764c(iVar2,7,1,0);
-  FUN_8001774c(iVar2,9);
-  FUN_80017738(iVar2,10);
-  *(uint *)(iVar2 + 0x10) = (uint)(cVar1 != '\0') | *(uint *)(iVar2 + 0x10) & 0xffffff00;
-  FUN_80017738(iVar2,8);
-  *(uint *)(iVar2 + 0x10) = *(uint *)(iVar2 + 0x10) | 0x100;
+  ptr = PE_CFG0;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = (uint)(cVar1 != '\0') | ptr[4] & 0xffffff00;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
@@ -8016,25 +8015,24 @@ void FUN_8000690c(void)
 void FUN_80006948(uint param_1)
 
 {
-  int iVar1;
-  undefined4 unaff_r4;
+  uint *ptr;
   
-  FUN_800169f8(0x32);
-  FUN_800168fc(param_1 >> 8);
-  iVar1 = DAT_800169f4;
-  FUN_8001764c(DAT_800169f4,0,1,0,unaff_r4);
-  FUN_8001764c(iVar1,1,1,0);
-  FUN_8001764c(iVar1,2,1,0);
-  FUN_8001764c(iVar1,3,1,0);
-  FUN_8001764c(iVar1,4,1,0);
-  FUN_8001764c(iVar1,5,1,0);
-  FUN_8001764c(iVar1,6,1,0);
-  FUN_8001764c(iVar1,7,1,0);
-  FUN_8001774c(iVar1,9);
-  FUN_80017738(iVar1,10);
-  *(uint *)(iVar1 + 0x10) = param_1 & 0xff | *(uint *)(iVar1 + 0x10) & 0xffffff00;
-  FUN_80017738(iVar1,8);
-  *(uint *)(iVar1 + 0x10) = *(uint *)(iVar1 + 0x10) | 0x100;
+  fpga_write_cmd('2');
+  fpga_write_data((uchar)(param_1 >> 8));
+  ptr = PE_CFG0;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = param_1 & 0xff | ptr[4] & 0xffffff00;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
@@ -8043,34 +8041,29 @@ void FUN_80006948(uint param_1)
 void FUN_8000696c(undefined4 param_1,uint param_2)
 
 {
+  uint *ptr;
   int iVar1;
-  int iVar2;
   uint unaff_r4;
-  uint uVar3;
-  undefined4 unaff_r5;
-  undefined4 unaff_r6;
-  undefined4 in_lr;
   
-  uVar3 = unaff_r4;
   switch(*(undefined *)(DAT_80006a84 + 3)) {
   case 0:
-    uVar3 = (uint)DAT_80006a88[1];
+    unaff_r4 = (uint)DAT_80006a88[1];
     break;
   case 1:
-    uVar3 = (uint)DAT_80006a88[2];
+    unaff_r4 = (uint)DAT_80006a88[2];
     break;
   case 2:
-    uVar3 = (uint)DAT_80006a88[3];
+    unaff_r4 = (uint)DAT_80006a88[3];
     break;
   case 3:
-    uVar3 = (uint)DAT_80006a88[4];
+    unaff_r4 = (uint)DAT_80006a88[4];
     break;
   case 4:
-    uVar3 = (uint)DAT_80006a88[5];
+    unaff_r4 = (uint)DAT_80006a88[5];
     break;
   case 5:
   case 6:
-    uVar3 = (uint)DAT_80006a88[6];
+    unaff_r4 = (uint)DAT_80006a88[6];
   }
   switch(*(undefined *)(DAT_80006a84 + 3)) {
   case 0:
@@ -8098,23 +8091,23 @@ void FUN_8000696c(undefined4 param_1,uint param_2)
                 ((longlong)DAT_80006a90 *
                 (longlong)(int)((uint)*(ushort *)(DAT_80006a84 + 6) * (uint)*DAT_80006a88)) >> 0x20)
   ;
-  iVar2 = FUN_8000090c((uint)*DAT_80006a8c * ((iVar1 >> 5) - (iVar1 >> 0x1f)),param_2);
-  FUN_800169f8(0x32);
-  FUN_800168fc((uVar3 - iVar2 & 0xffff) >> 8);
-  iVar1 = DAT_800169f4;
-  FUN_8001764c(DAT_800169f4,0,1,0,unaff_r4,unaff_r5,unaff_r6,in_lr);
-  FUN_8001764c(iVar1,1,1,0);
-  FUN_8001764c(iVar1,2,1,0);
-  FUN_8001764c(iVar1,3,1,0);
-  FUN_8001764c(iVar1,4,1,0);
-  FUN_8001764c(iVar1,5,1,0);
-  FUN_8001764c(iVar1,6,1,0);
-  FUN_8001764c(iVar1,7,1,0);
-  FUN_8001774c(iVar1,9);
-  FUN_80017738(iVar1,10);
-  *(uint *)(iVar1 + 0x10) = uVar3 - iVar2 & 0xff | *(uint *)(iVar1 + 0x10) & 0xffffff00;
-  FUN_80017738(iVar1,8);
-  *(uint *)(iVar1 + 0x10) = *(uint *)(iVar1 + 0x10) | 0x100;
+  iVar1 = FUN_8000090c((uint)*DAT_80006a8c * ((iVar1 >> 5) - (iVar1 >> 0x1f)),param_2);
+  fpga_write_cmd('2');
+  fpga_write_data((uchar)(unaff_r4 - iVar1 >> 8));
+  ptr = PE_CFG0;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = unaff_r4 - iVar1 & 0xff | ptr[4] & 0xffffff00;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
@@ -11099,31 +11092,30 @@ LAB_80009574:
 void FUN_800095e8(void)
 
 {
-  int iVar1;
-  uint uVar2;
-  undefined4 unaff_r4;
+  uint *ptr;
+  uint uVar1;
   
-  FUN_800169f8(0x36);
-  iVar1 = DAT_800169f4;
+  fpga_write_cmd('6');
+  ptr = PE_CFG0;
   if (*(char *)(DAT_8000961c + 0xf) == '\x06') {
-    uVar2 = 5;
+    uVar1 = 5;
   }
   else {
-    uVar2 = (uint)*(byte *)(DAT_8000961c + 0xf);
+    uVar1 = (uint)*(byte *)(DAT_8000961c + 0xf);
   }
-  FUN_8001764c(DAT_800169f4,0,1,0,unaff_r4);
-  FUN_8001764c(iVar1,1,1,0);
-  FUN_8001764c(iVar1,2,1,0);
-  FUN_8001764c(iVar1,3,1,0);
-  FUN_8001764c(iVar1,4,1,0);
-  FUN_8001764c(iVar1,5,1,0);
-  FUN_8001764c(iVar1,6,1,0);
-  FUN_8001764c(iVar1,7,1,0);
-  FUN_8001774c(iVar1,9);
-  FUN_80017738(iVar1,10);
-  *(uint *)(iVar1 + 0x10) = uVar2 | *(uint *)(iVar1 + 0x10) & 0xffffff00;
-  FUN_80017738(iVar1,8);
-  *(uint *)(iVar1 + 0x10) = *(uint *)(iVar1 + 0x10) | 0x100;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = uVar1 | ptr[4] & 0xffffff00;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
@@ -11133,25 +11125,24 @@ void FUN_80009620(void)
 
 {
   char cVar1;
-  int iVar2;
-  undefined4 unaff_r4;
+  uint *ptr;
   
-  FUN_800169f8(0x37);
-  iVar2 = DAT_800169f4;
+  fpga_write_cmd('7');
+  ptr = PE_CFG0;
   cVar1 = *(char *)(DAT_80009654 + 0xd);
-  FUN_8001764c(DAT_800169f4,0,1,0,unaff_r4);
-  FUN_8001764c(iVar2,1,1,0);
-  FUN_8001764c(iVar2,2,1,0);
-  FUN_8001764c(iVar2,3,1,0);
-  FUN_8001764c(iVar2,4,1,0);
-  FUN_8001764c(iVar2,5,1,0);
-  FUN_8001764c(iVar2,6,1,0);
-  FUN_8001764c(iVar2,7,1,0);
-  FUN_8001774c(iVar2,9);
-  FUN_80017738(iVar2,10);
-  *(uint *)(iVar2 + 0x10) = (uint)(cVar1 == '\0') | *(uint *)(iVar2 + 0x10) & 0xffffff00;
-  FUN_80017738(iVar2,8);
-  *(uint *)(iVar2 + 0x10) = *(uint *)(iVar2 + 0x10) | 0x100;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = (uint)(cVar1 == '\0') | ptr[4] & 0xffffff00;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
@@ -11160,31 +11151,30 @@ void FUN_80009620(void)
 void FUN_80009658(void)
 
 {
-  int iVar1;
-  undefined4 unaff_r4;
-  bool bVar2;
+  uint *ptr;
+  bool bVar1;
   
-  bVar2 = *(char *)(DAT_80009690 + 0xc) == '\0';
-  if (bVar2) {
-    FUN_800169f8(3);
+  bVar1 = *(char *)(DAT_80009690 + 0xc) == '\0';
+  if (bVar1) {
+    fpga_write_cmd('\x03');
   }
   else {
-    FUN_800169f8(3);
+    fpga_write_cmd('\x03');
   }
-  iVar1 = DAT_800169f4;
-  FUN_8001764c(DAT_800169f4,0,1,0,unaff_r4);
-  FUN_8001764c(iVar1,1,1,0);
-  FUN_8001764c(iVar1,2,1,0);
-  FUN_8001764c(iVar1,3,1,0);
-  FUN_8001764c(iVar1,4,1,0);
-  FUN_8001764c(iVar1,5,1,0);
-  FUN_8001764c(iVar1,6,1,0);
-  FUN_8001764c(iVar1,7,1,0);
-  FUN_8001774c(iVar1,9);
-  FUN_80017738(iVar1,10);
-  *(uint *)(iVar1 + 0x10) = (uint)!bVar2 | *(uint *)(iVar1 + 0x10) & 0xffffff00;
-  FUN_80017738(iVar1,8);
-  *(uint *)(iVar1 + 0x10) = *(uint *)(iVar1 + 0x10) | 0x100;
+  ptr = PE_CFG0;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = (uint)!bVar1 | ptr[4] & 0xffffff00;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
@@ -11193,25 +11183,24 @@ void FUN_80009658(void)
 void FUN_80009694(uint param_1)
 
 {
-  int iVar1;
-  undefined4 unaff_r4;
+  uint *ptr;
   
-  FUN_800169f8(0x35);
-  FUN_800168fc(param_1 >> 8);
-  iVar1 = DAT_800169f4;
-  FUN_8001764c(DAT_800169f4,0,1,0,unaff_r4);
-  FUN_8001764c(iVar1,1,1,0);
-  FUN_8001764c(iVar1,2,1,0);
-  FUN_8001764c(iVar1,3,1,0);
-  FUN_8001764c(iVar1,4,1,0);
-  FUN_8001764c(iVar1,5,1,0);
-  FUN_8001764c(iVar1,6,1,0);
-  FUN_8001764c(iVar1,7,1,0);
-  FUN_8001774c(iVar1,9);
-  FUN_80017738(iVar1,10);
-  *(uint *)(iVar1 + 0x10) = param_1 & 0xff | *(uint *)(iVar1 + 0x10) & 0xffffff00;
-  FUN_80017738(iVar1,8);
-  *(uint *)(iVar1 + 0x10) = *(uint *)(iVar1 + 0x10) | 0x100;
+  fpga_write_cmd('5');
+  fpga_write_data((uchar)(param_1 >> 8));
+  ptr = PE_CFG0;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = param_1 & 0xff | ptr[4] & 0xffffff00;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
@@ -11220,34 +11209,29 @@ void FUN_80009694(uint param_1)
 void FUN_800096b8(undefined4 param_1,uint param_2)
 
 {
+  uint *ptr;
   int iVar1;
-  int iVar2;
   uint unaff_r4;
-  uint uVar3;
-  undefined4 unaff_r5;
-  undefined4 unaff_r6;
-  undefined4 in_lr;
   
-  uVar3 = unaff_r4;
   switch(*(undefined *)(DAT_800097d0 + 0xf)) {
   case 0:
-    uVar3 = (uint)*(ushort *)(DAT_800097d4 + 0x10);
+    unaff_r4 = (uint)*(ushort *)(DAT_800097d4 + 0x10);
     break;
   case 1:
-    uVar3 = (uint)*(ushort *)(DAT_800097d4 + 0x12);
+    unaff_r4 = (uint)*(ushort *)(DAT_800097d4 + 0x12);
     break;
   case 2:
-    uVar3 = (uint)*(ushort *)(DAT_800097d4 + 0x14);
+    unaff_r4 = (uint)*(ushort *)(DAT_800097d4 + 0x14);
     break;
   case 3:
-    uVar3 = (uint)*(ushort *)(DAT_800097d4 + 0x16);
+    unaff_r4 = (uint)*(ushort *)(DAT_800097d4 + 0x16);
     break;
   case 4:
-    uVar3 = (uint)*(ushort *)(DAT_800097d4 + 0x18);
+    unaff_r4 = (uint)*(ushort *)(DAT_800097d4 + 0x18);
     break;
   case 5:
   case 6:
-    uVar3 = (uint)*(ushort *)(DAT_800097d4 + 0x1a);
+    unaff_r4 = (uint)*(ushort *)(DAT_800097d4 + 0x1a);
   }
   switch(*(undefined *)(DAT_800097d0 + 0xf)) {
   case 0:
@@ -11276,23 +11260,23 @@ void FUN_800096b8(undefined4 param_1,uint param_2)
                 (longlong)
                 (int)((uint)*(ushort *)(DAT_800097d0 + 0x12) * (uint)*(ushort *)(DAT_800097d4 + 0xe)
                      )) >> 0x20);
-  iVar2 = FUN_8000090c((uint)*DAT_800097d8 * ((iVar1 >> 5) - (iVar1 >> 0x1f)),param_2);
-  FUN_800169f8(0x35);
-  FUN_800168fc((uVar3 - iVar2 & 0xffff) >> 8);
-  iVar1 = DAT_800169f4;
-  FUN_8001764c(DAT_800169f4,0,1,0,unaff_r4,unaff_r5,unaff_r6,in_lr);
-  FUN_8001764c(iVar1,1,1,0);
-  FUN_8001764c(iVar1,2,1,0);
-  FUN_8001764c(iVar1,3,1,0);
-  FUN_8001764c(iVar1,4,1,0);
-  FUN_8001764c(iVar1,5,1,0);
-  FUN_8001764c(iVar1,6,1,0);
-  FUN_8001764c(iVar1,7,1,0);
-  FUN_8001774c(iVar1,9);
-  FUN_80017738(iVar1,10);
-  *(uint *)(iVar1 + 0x10) = uVar3 - iVar2 & 0xff | *(uint *)(iVar1 + 0x10) & 0xffffff00;
-  FUN_80017738(iVar1,8);
-  *(uint *)(iVar1 + 0x10) = *(uint *)(iVar1 + 0x10) | 0x100;
+  iVar1 = FUN_8000090c((uint)*DAT_800097d8 * ((iVar1 >> 5) - (iVar1 >> 0x1f)),param_2);
+  fpga_write_cmd('5');
+  fpga_write_data((uchar)(unaff_r4 - iVar1 >> 8));
+  ptr = PE_CFG0;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = unaff_r4 - iVar1 & 0xff | ptr[4] & 0xffffff00;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
@@ -11783,24 +11767,25 @@ void FUN_80009904(int param_1,undefined4 param_2,uint param_3,uint param_4)
 
 
 
-void FUN_800099e4(void)
+void tp_i2c_clock_ack(void)
 
 {
   bool bVar1;
+  uint *ptr;
   undefined4 uVar2;
   uint uVar3;
   uint uStack24;
   
-  uVar2 = DAT_80009a68;
-  FUN_8001764c(DAT_80009a68,2,1,0);
-  FUN_8001764c(uVar2,3);
-  FUN_80017738(uVar2,2);
-  FUN_8000bc34(10);
-  FUN_80017738(uVar2,3);
-  FUN_8000bc34(10);
-  FUN_8001774c(uVar2,3);
-  FUN_8000bc34(10);
-  FUN_80017738(uVar2,3);
+  ptr = DAT_80009a68;
+  gpio_config_pin(DAT_80009a68,2,1);
+  gpio_config_pin(ptr,3,1);
+  set_gpio_pin_low(ptr,2);
+  delay(10);
+  set_gpio_pin_low(ptr,3);
+  delay(10);
+  set_gpio_pin_high(ptr,3);
+  delay(10);
+  set_gpio_pin_low(ptr,3);
   uVar2 = FUN_8003a370(10);
   FUN_8003a44c(uVar2,DAT_8000bcb4);
   uVar3 = FUN_8003a31c();
@@ -11817,24 +11802,25 @@ void FUN_800099e4(void)
 
 
 
-void FUN_80009a6c(void)
+void tp_send_i2c_start(void)
 
 {
   bool bVar1;
+  uint *ptr;
   undefined4 uVar2;
   uint uVar3;
   uint uStack24;
   
-  uVar2 = DAT_80009af0;
-  FUN_8001764c(DAT_80009af0,3,1,0);
-  FUN_8001764c(uVar2,2);
-  FUN_8001774c(uVar2,2);
-  FUN_8000bc34(10);
-  FUN_8001774c(uVar2,3);
-  FUN_8000bc34(10);
-  FUN_80017738(uVar2,2);
-  FUN_8000bc34(10);
-  FUN_80017738(uVar2,3);
+  ptr = DAT_80009af0;
+  gpio_config_pin(DAT_80009af0,3,1);
+  gpio_config_pin(ptr,2,1);
+  set_gpio_pin_high(ptr,2);
+  delay(10);
+  set_gpio_pin_high(ptr,3);
+  delay(10);
+  set_gpio_pin_low(ptr,2);
+  delay(10);
+  set_gpio_pin_low(ptr,3);
   uVar2 = FUN_8003a370(10);
   FUN_8003a44c(uVar2,DAT_8000bcb4);
   uVar3 = FUN_8003a31c();
@@ -12294,16 +12280,16 @@ void FUN_8000a024(void)
             uVar5 == (local_74 << 8 | local_70 << 0x10 | local_6c << 0x18 | local_7c))) {
           FUN_80000878(DAT_8000a548,1000);
           FUN_800251a8(0x27000,DAT_8000a548,1000);
-          FUN_80028174();
+          sys_init_watchdog();
           return;
         }
       }
     }
   }
   *(undefined *)(DAT_8000a524 + 2) = 100;
-  FUN_800169f8(0x38);
-  FUN_800168fc(0xea);
-  FUN_800168fc(DAT_8000a528);
+  fpga_write_cmd('8');
+  fpga_write_data(-0x16);
+  fpga_write_data((uchar)DAT_8000a528);
   FUN_80019704(0xff0000);
   FUN_800197c8(0);
   FUN_80019730(PTR_PTR_FUN_8000a52c);
@@ -13406,7 +13392,7 @@ void FUN_8000bc00(undefined4 param_1,undefined4 param_2,undefined4 param_3,undef
 
 
 
-void FUN_8000bc34(undefined4 param_1)
+void delay(uint time)
 
 {
   bool bVar1;
@@ -13414,7 +13400,7 @@ void FUN_8000bc34(undefined4 param_1)
   uint uVar3;
   uint local_18;
   
-  uVar2 = FUN_8003a370(param_1);
+  uVar2 = FUN_8003a370(time);
   FUN_8003a44c(uVar2,DAT_8000bcb4);
   uVar3 = FUN_8003a31c();
   local_18 = 0;
@@ -18553,24 +18539,23 @@ void FUN_80012920(int param_1)
 void FUN_80012a4c(void)
 
 {
-  int iVar1;
-  undefined4 unaff_r4;
+  uint *ptr;
   
-  FUN_800169f8(4);
-  iVar1 = DAT_800169f4;
-  FUN_8001764c(DAT_800169f4,0,1,0,unaff_r4);
-  FUN_8001764c(iVar1,1,1,0);
-  FUN_8001764c(iVar1,2,1,0);
-  FUN_8001764c(iVar1,3,1,0);
-  FUN_8001764c(iVar1,4,1,0);
-  FUN_8001764c(iVar1,5,1,0);
-  FUN_8001764c(iVar1,6,1,0);
-  FUN_8001764c(iVar1,7,1,0);
-  FUN_8001774c(iVar1,9);
-  FUN_80017738(iVar1,10);
-  *(uint *)(iVar1 + 0x10) = *(uint *)(iVar1 + 0x10) & 0xffffff00 | 1;
-  FUN_80017738(iVar1,8);
-  *(uint *)(iVar1 + 0x10) = *(uint *)(iVar1 + 0x10) | 0x100;
+  fpga_write_cmd('\x04');
+  ptr = PE_CFG0;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = ptr[4] & 0xffffff00 | 1;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
@@ -21224,38 +21209,38 @@ LAB_80016770:
 // WARNING: Removing unreachable block (ram,0x800176a0)
 // WARNING: Removing unreachable block (ram,0x800176a4)
 
-void FUN_800167a0(void)
+void fpga_bus_dir_in(void)
 
 {
-  uint *puVar1;
+  uint *port;
   
-  puVar1 = DAT_8001684c;
-  FUN_8001764c(DAT_8001684c,0,0);
-  FUN_8001764c(puVar1,1,0);
-  FUN_8001764c(puVar1,2,0);
-  FUN_8001764c(puVar1,3,0);
-  FUN_8001764c(puVar1,4,0);
-  FUN_8001764c(puVar1,5,0);
-  FUN_8001764c(puVar1,6,0);
-  *puVar1 = *puVar1 & 0xfffffff;
-  *puVar1 = *puVar1 & 0xefffffff;
+  port = PE_CFG0;
+  gpio_config_pin(PE_CFG0,0,0);
+  gpio_config_pin(port,1,0);
+  gpio_config_pin(port,2,0);
+  gpio_config_pin(port,3,0);
+  gpio_config_pin(port,4,0);
+  gpio_config_pin(port,5,0);
+  gpio_config_pin(port,6,0);
+  *port = *port & 0xfffffff;
+  *port = *port & 0xefffffff;
   return;
 }
 
 
 
-uint FUN_80016850(void)
+uchar fpga_read_data(void)
 
 {
-  int iVar1;
+  uint *ptr;
   
-  FUN_800167a0();
-  iVar1 = DAT_8001689c;
-  FUN_80017738(DAT_8001689c,9);
-  FUN_80017738(iVar1,10);
-  FUN_80017738(iVar1,8);
-  FUN_8001774c(iVar1,8);
-  return *(uint *)(iVar1 + 0x10) & 0xff;
+  fpga_bus_dir_in();
+  ptr = PE_CFG0;
+  set_gpio_pin_low(PE_CFG0,9);
+  set_gpio_pin_low(ptr,10);
+  set_gpio_pin_low(ptr,8);
+  set_gpio_pin_high(ptr,8);
+  return (uchar)ptr[4];
 }
 
 
@@ -21270,27 +21255,24 @@ uint FUN_80016850(void)
 // WARNING: Removing unreachable block (ram,0x800176a0)
 // WARNING: Removing unreachable block (ram,0x800176a4)
 
-void FUN_800168a0(void)
+void fpga_init(void)
 
 {
   uint *puVar1;
-  undefined4 uVar2;
-  undefined4 unaff_r4;
-  undefined4 in_lr;
   
-  uVar2 = DAT_800168f8;
-  FUN_8001764c(DAT_800168f8,9,1,0);
-  FUN_8001764c(uVar2,10,1,0);
-  FUN_8001764c(uVar2,8,1,0);
-  FUN_8001774c(uVar2,8);
-  puVar1 = DAT_8001684c;
-  FUN_8001764c(DAT_8001684c,0,0,0,unaff_r4,in_lr);
-  FUN_8001764c(puVar1,1,0);
-  FUN_8001764c(puVar1,2,0);
-  FUN_8001764c(puVar1,3,0);
-  FUN_8001764c(puVar1,4,0);
-  FUN_8001764c(puVar1,5,0);
-  FUN_8001764c(puVar1,6,0);
+  puVar1 = PE_CFG0;
+  gpio_config_pin(PE_CFG0,9,1);
+  gpio_config_pin(puVar1,10,1);
+  gpio_config_pin(puVar1,8,1);
+  set_gpio_pin_high(puVar1,8);
+  puVar1 = PE_CFG0;
+  gpio_config_pin(PE_CFG0,0,0);
+  gpio_config_pin(puVar1,1,0);
+  gpio_config_pin(puVar1,2,0);
+  gpio_config_pin(puVar1,3,0);
+  gpio_config_pin(puVar1,4,0);
+  gpio_config_pin(puVar1,5,0);
+  gpio_config_pin(puVar1,6,0);
   *puVar1 = *puVar1 & 0xfffffff;
   *puVar1 = *puVar1 & 0xefffffff;
   return;
@@ -21298,49 +21280,49 @@ void FUN_800168a0(void)
 
 
 
-void FUN_800168fc(uint param_1)
+void fpga_write_data(uchar data)
 
 {
-  int iVar1;
+  uint *ptr;
   
-  iVar1 = DAT_800169f4;
-  FUN_8001764c(DAT_800169f4,0,1);
-  FUN_8001764c(iVar1,1,1,0);
-  FUN_8001764c(iVar1,2,1,0);
-  FUN_8001764c(iVar1,3,1,0);
-  FUN_8001764c(iVar1,4,1,0);
-  FUN_8001764c(iVar1,5,1,0);
-  FUN_8001764c(iVar1,6,1,0);
-  FUN_8001764c(iVar1,7,1,0);
-  FUN_8001774c(iVar1,9);
-  FUN_80017738(iVar1,10);
-  *(uint *)(iVar1 + 0x10) = param_1 & 0xff | *(uint *)(iVar1 + 0x10) & 0xffffff00;
-  FUN_80017738(iVar1,8);
-  *(uint *)(iVar1 + 0x10) = *(uint *)(iVar1 + 0x10) | 0x100;
+  ptr = PE_CFG0;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = (uint)data | ptr[4] & 0xffffff00;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
 
 
-void FUN_800169f8(uint param_1)
+void fpga_write_cmd(uchar cmd)
 
 {
-  int iVar1;
+  uint *ptr;
   
-  iVar1 = DAT_80016af0;
-  FUN_8001764c(DAT_80016af0,0,1);
-  FUN_8001764c(iVar1,1,1,0);
-  FUN_8001764c(iVar1,2,1,0);
-  FUN_8001764c(iVar1,3,1,0);
-  FUN_8001764c(iVar1,4,1,0);
-  FUN_8001764c(iVar1,5,1,0);
-  FUN_8001764c(iVar1,6,1,0);
-  FUN_8001764c(iVar1,7,1,0);
-  FUN_8001774c(iVar1,9);
-  FUN_8001774c(iVar1,10);
-  *(uint *)(iVar1 + 0x10) = param_1 & 0xff | *(uint *)(iVar1 + 0x10) & 0xffffff00;
-  FUN_80017738(iVar1,8);
-  *(uint *)(iVar1 + 0x10) = *(uint *)(iVar1 + 0x10) | 0x100;
+  ptr = PE_CFG0;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_high(ptr,10);
+  ptr[4] = (uint)cmd | ptr[4] & 0xffffff00;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
@@ -22224,31 +22206,31 @@ LAB_80017584:
 
 
 
-void FUN_8001764c(int param_1,uint param_2,uint param_3)
+void gpio_config_pin(undefined4 *port,uint pin,uint mode)
 
 {
   uint uVar1;
   uint uVar2;
   bool bVar3;
   
-  uVar1 = param_2 >> 3;
-  uVar2 = (param_2 << 0x1d) >> 0x1b;
-  bVar3 = param_3 == 0;
-  *(uint *)(param_1 + uVar1 * 4) = *(uint *)(param_1 + uVar1 * 4) & ~(0xf << uVar2);
+  uVar1 = pin >> 3;
+  uVar2 = (pin << 0x1d) >> 0x1b;
+  bVar3 = mode == 0;
+  port[uVar1] = port[uVar1] & ~(0xf << uVar2);
   if (bVar3) {
-    param_3 = *(uint *)(param_1 + uVar1 * 4);
+    mode = port[uVar1];
   }
   if (bVar3) {
-    param_3 = param_3 & ~(1 << uVar2);
+    uVar2 = mode & ~(1 << uVar2);
   }
   else {
-    if (param_3 == 1) {
-      *(uint *)(param_1 + uVar1 * 4) = *(uint *)(param_1 + uVar1 * 4) | 1 << uVar2;
+    if (mode == 1) {
+      port[uVar1] = port[uVar1] | 1 << uVar2;
       return;
     }
-    param_3 = param_3 << uVar2 | *(uint *)(param_1 + uVar1 * 4);
+    uVar2 = mode << uVar2 | port[uVar1];
   }
-  *(uint *)(param_1 + uVar1 * 4) = param_3;
+  port[uVar1] = uVar2;
   return;
 }
 
@@ -22299,19 +22281,19 @@ uint FUN_80017724(int param_1,uint param_2)
 
 
 
-void FUN_80017738(int param_1,uint param_2)
+void set_gpio_pin_low(uint *ptr,uint pin)
 
 {
-  *(uint *)(param_1 + 0x10) = *(uint *)(param_1 + 0x10) & ~(1 << (param_2 & 0xff));
+  ptr[4] = ptr[4] & ~(1 << (pin & 0xff));
   return;
 }
 
 
 
-void FUN_8001774c(int param_1,uint param_2)
+void set_gpio_pin_high(uint *ptr,uint pin)
 
 {
-  *(uint *)(param_1 + 0x10) = *(uint *)(param_1 + 0x10) | 1 << (param_2 & 0xff);
+  ptr[4] = ptr[4] | 1 << (pin & 0xff);
   return;
 }
 
@@ -22350,15 +22332,16 @@ undefined4 FUN_80017790(void)
 // WARNING (jumptable): Heritage AFTER dead removal. Example location: s0xffffffdc : 0x80017814
 // WARNING: Restarted to delay deadcode elimination for space: stack
 
-void FUN_800177c4(void)
+void tp_i2c_read_status(void)
 
 {
   undefined2 uVar1;
-  undefined4 uVar2;
+  uint *reg_addr;
+  undefined *puVar2;
   undefined *puVar3;
-  undefined *puVar4;
-  int iVar5;
-  uint uVar6;
+  int iVar4;
+  uchar uVar5;
+  uchar uVar6;
   uint uVar7;
   code *in_lr;
   byte bStack48;
@@ -22366,60 +22349,60 @@ void FUN_800177c4(void)
   byte bStack46;
   byte bStack45;
   byte local_24 [4];
-  undefined auStack32 [8];
+  uchar auStack32 [8];
   code *UNRECOVERED_JUMPTABLE;
   
-  uVar2 = DAT_80017914;
+  reg_addr = TP_GT911_STATUS_REG;
   local_24[0] = 0;
   UNRECOVERED_JUMPTABLE = in_lr;
-  FUN_80017ad4(DAT_80017914,local_24,1);
+  tp_i2c_read_data(TP_GT911_STATUS_REG,local_24,1);
   if ((local_24[0] & 0x80) == 0) {
                     // WARNING: Could not recover jumptable at 0x800177fc. Too many branches
                     // WARNING: Treating indirect jump as call
     (*UNRECOVERED_JUMPTABLE)();
     return;
   }
-  auStack32[0] = 0;
-  FUN_80017d2c(uVar2,auStack32,1);
-  puVar4 = PTR_DAT_8001791c;
-  puVar3 = DAT_80017918;
+  auStack32[0] = '\0';
+  tp_send_i2c_data(reg_addr,auStack32,1);
+  puVar3 = PTR_DAT_8001791c;
+  puVar2 = DAT_80017918;
   if (4 < (local_24[0] & 0xf) - 1) {
     *(undefined2 *)(DAT_80017918 + 2) = 800;
-    *(undefined2 *)(puVar4 + 2) = 800;
+    *(undefined2 *)(puVar3 + 2) = 800;
+    *(undefined2 *)(puVar2 + 4) = 0x1e0;
     *(undefined2 *)(puVar3 + 4) = 0x1e0;
-    *(undefined2 *)(puVar4 + 4) = 0x1e0;
+    *puVar2 = 0;
     *puVar3 = 0;
-    *puVar4 = 0;
                     // WARNING: Could not recover jumptable at 0x80017910. Too many branches
                     // WARNING: Treating indirect jump as call
     (*UNRECOVERED_JUMPTABLE)();
     return;
   }
-  FUN_800169f8(0x41);
-  uVar6 = FUN_80016850();
-  uVar7 = FUN_80016850(uVar6,0xff00);
-  FUN_80017ad4(uVar7 | (uVar6 & 0xff) << 8,&bStack48,4);
-  iVar5 = DAT_80017920;
-  uVar6 = ((uint)bStack48 + (uint)bStack47 * 0x100 & 0xfffeffff) * 100 >> 7;
-  *(short *)(DAT_80017920 + 2) = (short)uVar6;
-  if (800 < uVar6) {
-    *(undefined2 *)(iVar5 + 2) = 800;
+  fpga_write_cmd('A');
+  uVar5 = fpga_read_data();
+  uVar6 = fpga_read_data();
+  tp_i2c_read_data((uint *)(uint)CONCAT11(uVar5,uVar6),&bStack48,4);
+  iVar4 = DAT_80017920;
+  uVar7 = ((uint)bStack48 + (uint)bStack47 * 0x100 & 0xfffeffff) * 100 >> 7;
+  *(short *)(DAT_80017920 + 2) = (short)uVar7;
+  if (800 < uVar7) {
+    *(undefined2 *)(iVar4 + 2) = 800;
   }
-  uVar6 = DAT_80017924;
-  uVar1 = *(undefined2 *)(iVar5 + 2);
+  uVar7 = DAT_80017924;
+  uVar1 = *(undefined2 *)(iVar4 + 2);
+  *(undefined2 *)(puVar2 + 2) = uVar1;
   *(undefined2 *)(puVar3 + 2) = uVar1;
-  *(undefined2 *)(puVar4 + 2) = uVar1;
-  uVar6 = (uint)((ulonglong)(((uint)bStack46 + (uint)bStack45 * 0x100 & 0xfffeffff) * 100) *
-                 (ulonglong)uVar6 >> 0x23) & 0xff80ffff;
-  *(short *)(iVar5 + 4) = (short)uVar6;
-  if (0x1e0 < uVar6) {
-    *(undefined2 *)(iVar5 + 4) = 0x1e0;
+  uVar7 = (uint)((ulonglong)(((uint)bStack46 + (uint)bStack45 * 0x100 & 0xfffeffff) * 100) *
+                 (ulonglong)uVar7 >> 0x23) & 0xff80ffff;
+  *(short *)(iVar4 + 4) = (short)uVar7;
+  if (0x1e0 < uVar7) {
+    *(undefined2 *)(iVar4 + 4) = 0x1e0;
   }
-  uVar1 = *(undefined2 *)(iVar5 + 4);
+  uVar1 = *(undefined2 *)(iVar4 + 4);
+  *(undefined2 *)(puVar2 + 4) = uVar1;
   *(undefined2 *)(puVar3 + 4) = uVar1;
-  *(undefined2 *)(puVar4 + 4) = uVar1;
+  *puVar2 = 1;
   *puVar3 = 1;
-  *puVar4 = 1;
                     // WARNING: Could not recover jumptable at 0x800178ec. Too many branches
                     // WARNING: Treating indirect jump as call
   (*UNRECOVERED_JUMPTABLE)();
@@ -22428,139 +22411,138 @@ void FUN_800177c4(void)
 
 
 
-uint FUN_80017928(void)
+ushort fpga_get_tp_status_reg_address(void)
 
 {
-  uint uVar1;
-  uint uVar2;
+  uchar uVar1;
+  uchar uVar2;
   
-  FUN_800169f8(0x41);
-  uVar1 = FUN_80016850();
-  uVar2 = FUN_80016850();
-  return uVar2 | (uVar1 & 0xff) << 8;
+  fpga_write_cmd('A');
+  uVar1 = fpga_read_data();
+  uVar2 = fpga_read_data();
+  return CONCAT11(uVar1,uVar2);
 }
 
 
 
 // WARNING: Could not reconcile some variable overlaps
 
-undefined4 FUN_8001794c(void)
+void tp_i2c_setup(void)
 
 {
-  char *pcVar1;
-  undefined4 uVar2;
-  byte bVar3;
+  uint *puVar1;
+  byte bVar2;
+  uint uVar3;
   uint uVar4;
   undefined4 in_r3;
-  int iVar5;
   undefined4 local_10;
   
-  uVar2 = DAT_80017ab4;
+  puVar1 = PA_CFG0;
   local_10 = in_r3;
-  FUN_8001764c(DAT_80017ab4,3,1,0);
-  FUN_8001764c(uVar2,2,1,0);
-  FUN_8001774c(uVar2,3);
-  FUN_8001774c(uVar2,2);
-  FUN_8001764c(uVar2,0,1);
-  FUN_8001764c(uVar2,1,1,0);
-  FUN_80017738(uVar2,0);
-  FUN_80017738(uVar2,1);
-  FUN_8000bc34(100);
-  FUN_8001774c(uVar2,1);
-  FUN_8000bc34(DAT_80017ab8);
-  FUN_8001774c(uVar2,0);
-  FUN_8000bc34(DAT_80017abc);
-  FUN_8001764c(uVar2,1,0);
-  FUN_8000bc34(DAT_80017ac0);
-  uVar2 = DAT_80017ac4;
+  gpio_config_pin(PA_CFG0,3,1);
+  gpio_config_pin(puVar1,2,1);
+  set_gpio_pin_high(puVar1,3);
+  set_gpio_pin_high(puVar1,2);
+  gpio_config_pin(puVar1,0,1);
+  gpio_config_pin(puVar1,1,1);
+  set_gpio_pin_low(puVar1,0);
+  set_gpio_pin_low(puVar1,1);
+  delay(100);
+  set_gpio_pin_high(puVar1,1);
+  delay(DAT_80017ab8);
+  set_gpio_pin_high(puVar1,0);
+  delay(DAT_80017abc);
+  gpio_config_pin(puVar1,1,0);
+  delay(DAT_80017ac0);
+  puVar1 = TP_GT911_CMD_REG;
   local_10._0_1_ = 2;
-  FUN_80017d2c(DAT_80017ac4,&local_10,1);
-  bVar3 = 0;
-  uVar4 = 0;
+  tp_send_i2c_data(TP_GT911_CMD_REG,(uchar *)&local_10,1);
+  bVar2 = 0;
+  uVar3 = 0;
   do {
-    pcVar1 = (char *)(DAT_80017ac8 + uVar4);
-    iVar5 = DAT_80017ac8 + uVar4;
-    uVar4 = uVar4 + 2 & 0xfffeffff;
-    bVar3 = *(char *)(iVar5 + 1) + bVar3 + *pcVar1;
+    uVar4 = uVar3 + 2 & 0xfffeffff;
+    bVar2 = DAT_80017ac8[uVar3 + 1] + bVar2 + DAT_80017ac8[uVar3];
+    uVar3 = uVar4;
   } while (uVar4 < 0xb8);
-  *(byte *)(DAT_80017ac8 + 0xb8) = ~bVar3 + 1;
-  FUN_80017d2c(DAT_80017acc,DAT_80017ac8,0xba);
-  FUN_8000bc34(DAT_80017ad0);
+  DAT_80017ac8[0xb8] = ~bVar2 + 1;
+  tp_send_i2c_data(TP_GT911_CFG_REG,DAT_80017ac8,0xba);
+  delay(DAT_80017ad0);
   local_10 = (uint)local_10._1_3_ << 8;
-  FUN_80017d2c(uVar2,&local_10,1);
-  return 0;
+  tp_send_i2c_data(puVar1,(uchar *)&local_10,1);
+  return;
 }
 
 
 
-void FUN_80017ad4(uint param_1,int param_2,uint param_3)
+void tp_i2c_read_data(uint *reg_addr,uchar *buffer,uint size)
 
 {
   bool bVar1;
+  uint *ptr;
   byte bVar2;
   undefined4 uVar3;
   int iVar4;
   uint uVar5;
   uint uVar6;
   
-  FUN_80009a6c();
-  FUN_80039144(0x28);
-  FUN_800099e4();
-  FUN_80039144((param_1 << 0x10) >> 0x18);
-  FUN_800099e4();
-  FUN_80039144(param_1 & 0xff);
-  FUN_800099e4();
-  FUN_80009a6c();
-  FUN_80039144(0x29);
-  FUN_800099e4();
-  uVar3 = DAT_80017cdc;
+  tp_send_i2c_start();
+  tp_i2c_send_byte('(');
+  tp_i2c_clock_ack();
+  tp_i2c_send_byte((uchar)((uint)((int)reg_addr << 0x10) >> 0x18));
+  tp_i2c_clock_ack();
+  tp_i2c_send_byte((uchar)reg_addr);
+  tp_i2c_clock_ack();
+  tp_send_i2c_start();
+  tp_i2c_send_byte(')');
+  tp_i2c_clock_ack();
+  ptr = DAT_80017cdc;
   uVar6 = 0;
-  if (param_3 != 0) {
+  if (size != 0) {
     do {
       uVar5 = 0;
-      FUN_8001764c(uVar3,2,0,0);
-      FUN_80017738(uVar3,3);
-      FUN_8000bc34(10);
+      gpio_config_pin(ptr,2,0);
+      set_gpio_pin_low(ptr,3);
+      delay(10);
       bVar2 = 0;
       do {
-        FUN_8001774c(uVar3,3);
-        FUN_8000bc34(10);
+        set_gpio_pin_high(ptr,3);
+        delay(10);
         uVar5 = (uVar5 << 0x19) >> 0x18;
-        iVar4 = FUN_80017724(uVar3,2);
+        iVar4 = FUN_80017724(ptr,2);
         if (iVar4 != 0) {
           uVar5 = uVar5 | 1;
         }
-        FUN_80017738(uVar3,3);
-        FUN_8000bc34(10);
+        set_gpio_pin_low(ptr,3);
+        delay(10);
         bVar2 = bVar2 + 1;
       } while (bVar2 < 8);
-      FUN_8001764c(uVar3,2,1,0);
-      *(char *)(param_2 + uVar6) = (char)uVar5;
-      if (uVar6 == param_3 - 1) {
-        FUN_8001764c(uVar3,2,1,0);
-        FUN_8001764c(uVar3,3,1,0);
-        FUN_8001774c(uVar3,2);
-        FUN_8000bc34(10);
-        FUN_80017738(uVar3,3);
-        FUN_8000bc34(10);
-        FUN_8001774c(uVar3,3);
-        FUN_8000bc34(10);
-        FUN_80017738(uVar3,3);
-        FUN_8000bc34(10);
+      gpio_config_pin(ptr,2,1);
+      buffer[uVar6] = (uchar)uVar5;
+      if (uVar6 == size - 1) {
+        gpio_config_pin(ptr,2,1);
+        gpio_config_pin(ptr,3,1);
+        set_gpio_pin_high(ptr,2);
+        delay(10);
+        set_gpio_pin_low(ptr,3);
+        delay(10);
+        set_gpio_pin_high(ptr,3);
+        delay(10);
+        set_gpio_pin_low(ptr,3);
+        delay(10);
       }
       else {
-        FUN_800099e4();
+        tp_i2c_clock_ack();
       }
       uVar6 = uVar6 + 1 & 0xff;
-    } while (uVar6 < param_3);
+    } while (uVar6 < size);
   }
-  FUN_8001764c(uVar3,3,1,0);
-  FUN_8001764c(uVar3,2);
-  FUN_80017738(uVar3,2);
-  FUN_8000bc34(10);
-  FUN_8001774c(uVar3,3);
-  FUN_8000bc34(10);
-  FUN_8001774c(uVar3,2);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,2,1);
+  set_gpio_pin_low(ptr,2);
+  delay(10);
+  set_gpio_pin_high(ptr,3);
+  delay(10);
+  set_gpio_pin_high(ptr,2);
   uVar3 = FUN_8003a370(10);
   FUN_8003a44c(uVar3,DAT_8000bcb4);
   uVar6 = FUN_8003a31c();
@@ -22580,70 +22562,69 @@ void FUN_80017ad4(uint param_1,int param_2,uint param_3)
 void FUN_80017ce0(void)
 
 {
-  int iVar1;
-  uint uVar2;
-  undefined4 unaff_r4;
+  uint *ptr;
+  uint uVar1;
   
-  uVar2 = FUN_800248f8(0x16,(ushort)*(byte *)(DAT_80017d28 + 0x38) * *(short *)(DAT_80017d28 + 0x12)
+  uVar1 = FUN_800248f8(0x16,(ushort)*(byte *)(DAT_80017d28 + 0x38) * *(short *)(DAT_80017d28 + 0x12)
                       );
-  FUN_800169f8(0x3c);
-  FUN_800168fc((~uVar2 & 0xffff) >> 8);
-  iVar1 = DAT_800169f4;
-  FUN_8001764c(DAT_800169f4,0,1,0,unaff_r4);
-  FUN_8001764c(iVar1,1,1,0);
-  FUN_8001764c(iVar1,2,1,0);
-  FUN_8001764c(iVar1,3,1,0);
-  FUN_8001764c(iVar1,4,1,0);
-  FUN_8001764c(iVar1,5,1,0);
-  FUN_8001764c(iVar1,6,1,0);
-  FUN_8001764c(iVar1,7,1,0);
-  FUN_8001774c(iVar1,9);
-  FUN_80017738(iVar1,10);
-  *(uint *)(iVar1 + 0x10) = ~uVar2 & 0xff | *(uint *)(iVar1 + 0x10) & 0xffffff00;
-  FUN_80017738(iVar1,8);
-  *(uint *)(iVar1 + 0x10) = *(uint *)(iVar1 + 0x10) | 0x100;
+  fpga_write_cmd('<');
+  fpga_write_data((uchar)(~uVar1 >> 8));
+  ptr = PE_CFG0;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = ~uVar1 & 0xff | ptr[4] & 0xffffff00;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
 
 
-undefined4 FUN_80017d2c(uint param_1,int param_2,uint param_3)
+int tp_send_i2c_data(uint *reg_addr,uchar *buffer,uint size)
 
 {
-  undefined4 uVar1;
-  uint uVar2;
-  undefined4 uVar3;
+  uint *ptr;
+  uint uVar1;
+  int iVar2;
   
-  uVar3 = 0;
-  FUN_80009a6c();
-  FUN_80039144(0x28);
-  FUN_800099e4();
-  FUN_80039144((param_1 << 0x10) >> 0x18);
-  FUN_800099e4();
-  FUN_80039144(param_1 & 0xff);
-  FUN_800099e4();
-  uVar2 = 0;
-  if (param_3 != 0) {
+  iVar2 = 0;
+  tp_send_i2c_start();
+  tp_i2c_send_byte('(');
+  tp_i2c_clock_ack();
+  tp_i2c_send_byte((uchar)((uint)((int)reg_addr << 0x10) >> 0x18));
+  tp_i2c_clock_ack();
+  tp_i2c_send_byte((uchar)reg_addr);
+  tp_i2c_clock_ack();
+  uVar1 = 0;
+  if (size != 0) {
     do {
-      FUN_80039144(*(undefined *)(param_2 + uVar2));
-      FUN_800099e4();
-      if (uVar2 == param_3) {
-        uVar3 = 1;
+      tp_i2c_send_byte(buffer[uVar1]);
+      tp_i2c_clock_ack();
+      if (uVar1 == size) {
+        iVar2 = 1;
         break;
       }
-      uVar2 = uVar2 + 1 & 0xff;
-    } while (uVar2 < param_3);
+      uVar1 = uVar1 + 1 & 0xff;
+    } while (uVar1 < size);
   }
-  uVar1 = DAT_80017e1c;
-  FUN_8001764c(DAT_80017e1c,3,1,0);
-  FUN_8001764c(uVar1,2,1,0);
-  FUN_80017738(uVar1,2);
-  FUN_8000bc34(10);
-  FUN_8001774c(uVar1,3);
-  FUN_8000bc34(10);
-  FUN_8001774c(uVar1,2);
-  FUN_8000bc34(10);
-  return uVar3;
+  ptr = PA_CFG0;
+  gpio_config_pin(PA_CFG0,3,1);
+  gpio_config_pin(ptr,2,1);
+  set_gpio_pin_low(ptr,2);
+  delay(10);
+  set_gpio_pin_high(ptr,3);
+  delay(10);
+  set_gpio_pin_high(ptr,2);
+  delay(10);
+  return iVar2;
 }
 
 
@@ -25295,6 +25276,7 @@ void FUN_8001a3b4(void)
   char cVar1;
   ushort uVar2;
   ushort uVar3;
+  uint *ptr;
   undefined *puVar4;
   undefined *puVar5;
   short sVar6;
@@ -25328,7 +25310,7 @@ void FUN_8001a3b4(void)
     }
   }
   else {
-    FUN_800177c4();
+    tp_i2c_read_status();
     puVar5 = PTR_DAT_8001a5bc;
     if (*PTR_DAT_8001a5bc == '\0') {
       *puVar4 = 0;
@@ -25556,8 +25538,8 @@ joined_r0x8001a6a4:
                    0x20);
       iVar8 = FUN_8000090c((uint)*DAT_80006a8c * ((iVar8 >> 5) - (iVar8 >> 0x1f)),uVar10);
       uVar10 = unaff_r4 - iVar8 & 0xffff;
-      FUN_800169f8(0x32);
-      FUN_800168fc(uVar10 >> 8);
+      fpga_write_cmd('2');
+      fpga_write_data((uchar)(uVar10 >> 8));
       goto code_r0x800168fc;
     }
     if (puVar4[1] != '\x03') {
@@ -25666,23 +25648,23 @@ joined_r0x8001a6a4:
                      )) >> 0x20);
   iVar8 = FUN_8000090c((uint)*DAT_800097d8 * ((iVar8 >> 5) - (iVar8 >> 0x1f)),uVar10);
   uVar10 = unaff_r4 - iVar8 & 0xffff;
-  FUN_800169f8(0x35);
-  FUN_800168fc(uVar10 >> 8);
+  fpga_write_cmd('5');
+  fpga_write_data((uchar)(uVar10 >> 8));
 code_r0x800168fc:
-  iVar8 = DAT_800169f4;
-  FUN_8001764c(DAT_800169f4,0,1);
-  FUN_8001764c(iVar8,1,1,0);
-  FUN_8001764c(iVar8,2,1,0);
-  FUN_8001764c(iVar8,3,1,0);
-  FUN_8001764c(iVar8,4,1,0);
-  FUN_8001764c(iVar8,5,1,0);
-  FUN_8001764c(iVar8,6,1,0);
-  FUN_8001764c(iVar8,7,1,0);
-  FUN_8001774c(iVar8,9);
-  FUN_80017738(iVar8,10);
-  *(uint *)(iVar8 + 0x10) = uVar10 & 0xff | *(uint *)(iVar8 + 0x10) & 0xffffff00;
-  FUN_80017738(iVar8,8);
-  *(uint *)(iVar8 + 0x10) = *(uint *)(iVar8 + 0x10) | 0x100;
+  ptr = PE_CFG0;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = uVar10 & 0xff | ptr[4] & 0xffffff00;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
@@ -25696,6 +25678,7 @@ void FUN_8001a5d0(void)
 {
   ushort uVar1;
   ushort uVar2;
+  uint *ptr;
   undefined *puVar3;
   undefined *puVar4;
   short sVar5;
@@ -25822,23 +25805,23 @@ FUN_8000696c:
                 ((longlong)DAT_80006a90 *
                 (longlong)(int)((uint)*(ushort *)(DAT_80006a84 + 6) * (uint)*DAT_80006a88)) >> 0x20)
   ;
-  iVar7 = FUN_8000090c((uint)*DAT_80006a8c * ((iVar6 >> 5) - (iVar6 >> 0x1f)),uVar8);
-  FUN_800169f8(0x32);
-  FUN_800168fc((unaff_r4 - iVar7 & 0xffff) >> 8);
-  iVar6 = DAT_800169f4;
-  FUN_8001764c(DAT_800169f4,0,1);
-  FUN_8001764c(iVar6,1,1,0);
-  FUN_8001764c(iVar6,2,1,0);
-  FUN_8001764c(iVar6,3,1,0);
-  FUN_8001764c(iVar6,4,1,0);
-  FUN_8001764c(iVar6,5,1,0);
-  FUN_8001764c(iVar6,6,1,0);
-  FUN_8001764c(iVar6,7,1,0);
-  FUN_8001774c(iVar6,9);
-  FUN_80017738(iVar6,10);
-  *(uint *)(iVar6 + 0x10) = unaff_r4 - iVar7 & 0xff | *(uint *)(iVar6 + 0x10) & 0xffffff00;
-  FUN_80017738(iVar6,8);
-  *(uint *)(iVar6 + 0x10) = *(uint *)(iVar6 + 0x10) | 0x100;
+  iVar6 = FUN_8000090c((uint)*DAT_80006a8c * ((iVar6 >> 5) - (iVar6 >> 0x1f)),uVar8);
+  fpga_write_cmd('2');
+  fpga_write_data((uchar)(unaff_r4 - iVar6 >> 8));
+  ptr = PE_CFG0;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = unaff_r4 - iVar6 & 0xff | ptr[4] & 0xffffff00;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
@@ -25853,6 +25836,7 @@ void FUN_8001a764(void)
   ushort uVar1;
   ushort uVar2;
   undefined2 uVar3;
+  uint *ptr;
   undefined *puVar4;
   undefined *puVar5;
   short sVar6;
@@ -25955,23 +25939,23 @@ void FUN_8001a764(void)
                   (longlong)
                   (int)((uint)*(ushort *)(DAT_800097d0 + 0x12) *
                        (uint)*(ushort *)(DAT_800097d4 + 0xe))) >> 0x20);
-    iVar8 = FUN_8000090c((uint)*DAT_800097d8 * ((iVar7 >> 5) - (iVar7 >> 0x1f)),uVar9);
-    FUN_800169f8(0x35);
-    FUN_800168fc((unaff_r4 - iVar8 & 0xffff) >> 8);
-    iVar7 = DAT_800169f4;
-    FUN_8001764c(DAT_800169f4,0,1);
-    FUN_8001764c(iVar7,1,1,0);
-    FUN_8001764c(iVar7,2,1,0);
-    FUN_8001764c(iVar7,3,1,0);
-    FUN_8001764c(iVar7,4,1,0);
-    FUN_8001764c(iVar7,5,1,0);
-    FUN_8001764c(iVar7,6,1,0);
-    FUN_8001764c(iVar7,7,1,0);
-    FUN_8001774c(iVar7,9);
-    FUN_80017738(iVar7,10);
-    *(uint *)(iVar7 + 0x10) = unaff_r4 - iVar8 & 0xff | *(uint *)(iVar7 + 0x10) & 0xffffff00;
-    FUN_80017738(iVar7,8);
-    *(uint *)(iVar7 + 0x10) = *(uint *)(iVar7 + 0x10) | 0x100;
+    iVar7 = FUN_8000090c((uint)*DAT_800097d8 * ((iVar7 >> 5) - (iVar7 >> 0x1f)),uVar9);
+    fpga_write_cmd('5');
+    fpga_write_data((uchar)(unaff_r4 - iVar7 >> 8));
+    ptr = PE_CFG0;
+    gpio_config_pin(PE_CFG0,0,1);
+    gpio_config_pin(ptr,1,1);
+    gpio_config_pin(ptr,2,1);
+    gpio_config_pin(ptr,3,1);
+    gpio_config_pin(ptr,4,1);
+    gpio_config_pin(ptr,5,1);
+    gpio_config_pin(ptr,6,1);
+    gpio_config_pin(ptr,7,1);
+    set_gpio_pin_high(ptr,9);
+    set_gpio_pin_low(ptr,10);
+    ptr[4] = unaff_r4 - iVar7 & 0xff | ptr[4] & 0xffffff00;
+    set_gpio_pin_low(ptr,8);
+    ptr[4] = ptr[4] | 0x100;
     return;
   }
                     // WARNING: Could not recover jumptable at 0x8001a77c. Too many branches
@@ -26507,33 +26491,33 @@ void FUN_8001af9c(void)
 
 {
   int iVar1;
+  uint *ptr;
   int iVar2;
-  int iVar3;
-  undefined uVar4;
-  uint uVar5;
-  uint uVar6;
+  uchar cmd;
+  uint uVar3;
+  uint uVar4;
   code *UNRECOVERED_JUMPTABLE_00;
   
-  uVar6 = DAT_8001b048;
+  uVar4 = DAT_8001b048;
   if (*(byte *)(DAT_8001b044 + 10) < 0xb) {
-    uVar6 = DAT_8001b04c;
+    uVar4 = DAT_8001b04c;
   }
-  uVar4 = FUN_800248f8(0xc,*(undefined *)(DAT_8001b044 + 0x23));
-  FUN_800169f8(uVar4);
-  FUN_800167a0();
-  iVar2 = DAT_8001b050;
-  FUN_80017738(DAT_8001b050,9);
-  FUN_80017738(iVar2,10);
-  iVar3 = DAT_8001b054;
-  uVar5 = 0;
-  if (uVar6 != 0) {
+  cmd = FUN_800248f8(0xc,*(undefined *)(DAT_8001b044 + 0x23));
+  fpga_write_cmd(cmd);
+  fpga_bus_dir_in();
+  ptr = DAT_8001b050;
+  set_gpio_pin_low(DAT_8001b050,9);
+  set_gpio_pin_low(ptr,10);
+  iVar2 = DAT_8001b054;
+  uVar3 = 0;
+  if (uVar4 != 0) {
     do {
-      FUN_80017738(iVar2,8);
-      FUN_8001774c(iVar2,8);
-      iVar1 = uVar5 * 2;
-      uVar5 = uVar5 + 1 & 0xfffeffff;
-      *(ushort *)(iVar3 + iVar1) = (ushort)*(undefined4 *)(iVar2 + 0x10) & 0xff;
-    } while (uVar5 < uVar6);
+      set_gpio_pin_low(ptr,8);
+      set_gpio_pin_high(ptr,8);
+      iVar1 = uVar3 * 2;
+      uVar3 = uVar3 + 1 & 0xfffeffff;
+      *(ushort *)(iVar2 + iVar1) = (ushort)ptr[4] & 0xff;
+    } while (uVar3 < uVar4);
                     // WARNING: Could not recover jumptable at 0x8001b040. Too many branches
                     // WARNING: Treating indirect jump as call
     (*UNRECOVERED_JUMPTABLE_00)();
@@ -26550,28 +26534,28 @@ void FUN_8001af9c(void)
 undefined FUN_8001b058(uint param_1)
 
 {
-  int iVar1;
-  undefined uVar2;
+  uint *ptr;
+  undefined uVar1;
+  uint uVar2;
   uint uVar3;
-  uint uVar4;
   
-  uVar4 = 0;
-  FUN_800169f8(0x24);
-  FUN_800167a0();
-  iVar1 = DAT_8001b0f0;
-  FUN_80017738(DAT_8001b0f0,9);
-  FUN_80017738(iVar1,10);
   uVar3 = 0;
+  fpga_write_cmd('$');
+  fpga_bus_dir_in();
+  ptr = DAT_8001b0f0;
+  set_gpio_pin_low(DAT_8001b0f0,9);
+  set_gpio_pin_low(ptr,10);
+  uVar2 = 0;
   if (param_1 != 0) {
     do {
-      FUN_80017738(iVar1,8);
-      FUN_8001774c(iVar1,8);
-      uVar3 = uVar3 + 1 & 0xfffeffff;
-      uVar4 = (*(uint *)(iVar1 + 0x10) & 0xff) + uVar4 & 0xfffeffff;
-    } while (uVar3 < param_1);
+      set_gpio_pin_low(ptr,8);
+      set_gpio_pin_high(ptr,8);
+      uVar2 = uVar2 + 1 & 0xfffeffff;
+      uVar3 = (ptr[4] & 0xff) + uVar3 & 0xfffeffff;
+    } while (uVar2 < param_1);
   }
-  uVar2 = FUN_80000dc4(uVar4,param_1);
-  return uVar2;
+  uVar1 = FUN_80000dc4(uVar3,param_1);
+  return uVar1;
 }
 
 
@@ -26583,31 +26567,31 @@ void FUN_8001b0f4(void)
 
 {
   int iVar1;
+  uint *ptr;
   int iVar2;
-  int iVar3;
+  uint uVar3;
   uint uVar4;
-  uint uVar5;
   code *UNRECOVERED_JUMPTABLE_00;
   
-  uVar5 = DAT_8001b194;
+  uVar4 = DAT_8001b194;
   if (*(byte *)(DAT_8001b190 + 10) < 0xb) {
-    uVar5 = DAT_8001b198;
+    uVar4 = DAT_8001b198;
   }
-  FUN_800169f8(0x21);
-  FUN_800167a0();
-  iVar2 = DAT_8001b19c;
-  FUN_80017738(DAT_8001b19c,9);
-  FUN_80017738(iVar2,10);
-  iVar3 = DAT_8001b1a0;
-  uVar4 = 0;
-  if (uVar5 != 0) {
+  fpga_write_cmd('!');
+  fpga_bus_dir_in();
+  ptr = DAT_8001b19c;
+  set_gpio_pin_low(DAT_8001b19c,9);
+  set_gpio_pin_low(ptr,10);
+  iVar2 = DAT_8001b1a0;
+  uVar3 = 0;
+  if (uVar4 != 0) {
     do {
-      FUN_80017738(iVar2,8);
-      FUN_8001774c(iVar2,8);
-      iVar1 = uVar4 * 2;
-      uVar4 = uVar4 + 1 & 0xfffeffff;
-      *(ushort *)(iVar3 + iVar1) = (ushort)*(undefined4 *)(iVar2 + 0x10) & 0xff;
-    } while (uVar4 < uVar5);
+      set_gpio_pin_low(ptr,8);
+      set_gpio_pin_high(ptr,8);
+      iVar1 = uVar3 * 2;
+      uVar3 = uVar3 + 1 & 0xfffeffff;
+      *(ushort *)(iVar2 + iVar1) = (ushort)ptr[4] & 0xff;
+    } while (uVar3 < uVar4);
                     // WARNING: Could not recover jumptable at 0x8001b18c. Too many branches
                     // WARNING: Treating indirect jump as call
     (*UNRECOVERED_JUMPTABLE_00)();
@@ -26628,33 +26612,33 @@ void FUN_8001b1a4(void)
 
 {
   int iVar1;
+  uint *ptr;
   int iVar2;
-  int iVar3;
-  undefined uVar4;
-  uint uVar5;
-  uint uVar6;
+  uchar cmd;
+  uint uVar3;
+  uint uVar4;
   code *UNRECOVERED_JUMPTABLE_00;
   
-  uVar6 = DAT_8001b250;
+  uVar4 = DAT_8001b250;
   if (*(byte *)(DAT_8001b24c + 10) < 0xb) {
-    uVar6 = DAT_8001b254;
+    uVar4 = DAT_8001b254;
   }
-  uVar4 = FUN_800248f8(0xd,*(undefined *)(DAT_8001b24c + 0x23));
-  FUN_800169f8(uVar4);
-  FUN_800167a0();
-  iVar2 = DAT_8001b258;
-  FUN_80017738(DAT_8001b258,9);
-  FUN_80017738(iVar2,10);
-  iVar3 = DAT_8001b25c;
-  uVar5 = 0;
-  if (uVar6 != 0) {
+  cmd = FUN_800248f8(0xd,*(undefined *)(DAT_8001b24c + 0x23));
+  fpga_write_cmd(cmd);
+  fpga_bus_dir_in();
+  ptr = DAT_8001b258;
+  set_gpio_pin_low(DAT_8001b258,9);
+  set_gpio_pin_low(ptr,10);
+  iVar2 = DAT_8001b25c;
+  uVar3 = 0;
+  if (uVar4 != 0) {
     do {
-      FUN_80017738(iVar2,8);
-      FUN_8001774c(iVar2,8);
-      iVar1 = uVar5 * 2;
-      uVar5 = uVar5 + 1 & 0xfffeffff;
-      *(ushort *)(iVar3 + iVar1) = (ushort)*(undefined4 *)(iVar2 + 0x10) & 0xff;
-    } while (uVar5 < uVar6);
+      set_gpio_pin_low(ptr,8);
+      set_gpio_pin_high(ptr,8);
+      iVar1 = uVar3 * 2;
+      uVar3 = uVar3 + 1 & 0xfffeffff;
+      *(ushort *)(iVar2 + iVar1) = (ushort)ptr[4] & 0xff;
+    } while (uVar3 < uVar4);
                     // WARNING: Could not recover jumptable at 0x8001b248. Too many branches
                     // WARNING: Treating indirect jump as call
     (*UNRECOVERED_JUMPTABLE_00)();
@@ -26671,28 +26655,28 @@ void FUN_8001b1a4(void)
 undefined FUN_8001b260(uint param_1)
 
 {
-  int iVar1;
-  undefined uVar2;
+  uint *ptr;
+  undefined uVar1;
+  uint uVar2;
   uint uVar3;
-  uint uVar4;
   
-  uVar4 = 0;
-  FUN_800169f8(0x26);
-  FUN_800167a0();
-  iVar1 = DAT_8001b2f8;
-  FUN_80017738(DAT_8001b2f8,9);
-  FUN_80017738(iVar1,10);
   uVar3 = 0;
+  fpga_write_cmd('&');
+  fpga_bus_dir_in();
+  ptr = DAT_8001b2f8;
+  set_gpio_pin_low(DAT_8001b2f8,9);
+  set_gpio_pin_low(ptr,10);
+  uVar2 = 0;
   if (param_1 != 0) {
     do {
-      FUN_80017738(iVar1,8);
-      FUN_8001774c(iVar1,8);
-      uVar3 = uVar3 + 1 & 0xfffeffff;
-      uVar4 = (*(uint *)(iVar1 + 0x10) & 0xff) + uVar4 & 0xfffeffff;
-    } while (uVar3 < param_1);
+      set_gpio_pin_low(ptr,8);
+      set_gpio_pin_high(ptr,8);
+      uVar2 = uVar2 + 1 & 0xfffeffff;
+      uVar3 = (ptr[4] & 0xff) + uVar3 & 0xfffeffff;
+    } while (uVar2 < param_1);
   }
-  uVar2 = FUN_80000dc4(uVar4,param_1);
-  return uVar2;
+  uVar1 = FUN_80000dc4(uVar3,param_1);
+  return uVar1;
 }
 
 
@@ -26704,31 +26688,31 @@ void FUN_8001b2fc(void)
 
 {
   int iVar1;
+  uint *ptr;
   int iVar2;
-  int iVar3;
+  uint uVar3;
   uint uVar4;
-  uint uVar5;
   code *UNRECOVERED_JUMPTABLE_00;
   
-  uVar5 = DAT_8001b39c;
+  uVar4 = DAT_8001b39c;
   if (*(byte *)(DAT_8001b398 + 10) < 0xb) {
-    uVar5 = DAT_8001b3a0;
+    uVar4 = DAT_8001b3a0;
   }
-  FUN_800169f8(0x23);
-  FUN_800167a0();
-  iVar2 = DAT_8001b3a4;
-  FUN_80017738(DAT_8001b3a4,9);
-  FUN_80017738(iVar2,10);
-  iVar3 = DAT_8001b3a8;
-  uVar4 = 0;
-  if (uVar5 != 0) {
+  fpga_write_cmd('#');
+  fpga_bus_dir_in();
+  ptr = DAT_8001b3a4;
+  set_gpio_pin_low(DAT_8001b3a4,9);
+  set_gpio_pin_low(ptr,10);
+  iVar2 = DAT_8001b3a8;
+  uVar3 = 0;
+  if (uVar4 != 0) {
     do {
-      FUN_80017738(iVar2,8);
-      FUN_8001774c(iVar2,8);
-      iVar1 = uVar4 * 2;
-      uVar4 = uVar4 + 1 & 0xfffeffff;
-      *(ushort *)(iVar3 + iVar1) = (ushort)*(undefined4 *)(iVar2 + 0x10) & 0xff;
-    } while (uVar4 < uVar5);
+      set_gpio_pin_low(ptr,8);
+      set_gpio_pin_high(ptr,8);
+      iVar1 = uVar3 * 2;
+      uVar3 = uVar3 + 1 & 0xfffeffff;
+      *(ushort *)(iVar2 + iVar1) = (ushort)ptr[4] & 0xff;
+    } while (uVar3 < uVar4);
                     // WARNING: Could not recover jumptable at 0x8001b394. Too many branches
                     // WARNING: Treating indirect jump as call
     (*UNRECOVERED_JUMPTABLE_00)();
@@ -27067,14 +27051,15 @@ void FUN_8001bd80(void)
 uint FUN_8001bec4(void)
 
 {
-  uint uVar1;
-  uint uVar2;
+  byte bVar1;
+  byte bVar2;
+  uint uVar3;
   
-  FUN_800169f8(0x14);
-  uVar1 = FUN_80016850();
-  uVar2 = FUN_80016850();
-  uVar1 = FUN_800248f8(0x11,uVar1 & 0xf | (uVar1 & 0xf) << 0xc | (uVar2 & 0xff) << 4);
-  return uVar1 & 0xfff;
+  fpga_write_cmd('\x14');
+  bVar1 = fpga_read_data();
+  bVar2 = fpga_read_data();
+  uVar3 = FUN_800248f8(0x11,bVar1 & 0xf | (bVar1 & 0xf) << 0xc | (uint)bVar2 << 4);
+  return uVar3 & 0xfff;
 }
 
 
@@ -27458,14 +27443,17 @@ LAB_80037754:
 void FUN_8001c138(void)
 
 {
-  int iVar1;
-  uint uVar2;
-  uint uVar3;
-  char *pcVar4;
-  undefined8 uVar5;
+  uchar uVar1;
+  uchar uVar2;
+  ushort uVar3;
+  uint uVar4;
+  int iVar5;
+  char *pcVar6;
+  undefined8 uVar7;
+  uint uVar8;
   
-  iVar1 = FUN_8002330c();
-  if (iVar1 == 2) {
+  iVar5 = FUN_8002330c();
+  if (iVar5 == 2) {
     return;
   }
   FUN_80027d88();
@@ -27484,18 +27472,18 @@ void FUN_8001c138(void)
   FUN_80026828();
   FUN_8000696c();
   FUN_800096b8();
-  FUN_800169f8(0x38);
-  FUN_800168fc(0xea);
-  FUN_800168fc(DAT_8001c4a8);
+  fpga_write_cmd('8');
+  fpga_write_data(-0x16);
+  fpga_write_data((uchar)DAT_8001c4a8);
   FUN_80017778();
   FUN_80019704(0);
   FUN_80018f6c(0,0,800,0x1e0);
   FUN_80019730(PTR_PTR_FUN_8001c4ac);
   FUN_800197c8(0);
-  FUN_800169f8(6);
-  uVar2 = FUN_80016850();
-  uVar3 = FUN_80016850();
-  if ((uVar3 | (uVar2 & 0xff) << 8) != 0x1432) {
+  fpga_write_cmd('\x06');
+  uVar1 = fpga_read_data();
+  uVar2 = fpga_read_data();
+  if (CONCAT11(uVar1,uVar2) != 0x1432) {
     FUN_80019704(0xff0000);
     FUN_80018bf8(&DAT_8001c4b0,0x1e,0x5a);
     FUN_80018bf8(s_Failed_8001c4b8,100,0x5a);
@@ -27507,8 +27495,8 @@ void FUN_8001c138(void)
   FUN_80018bf8(&DAT_8001c4b0,0x1e,0x5a);
   FUN_80018bf8(&DAT_8001c4c0,100,0x5a);
   FUN_80017ce0();
-  iVar1 = FUN_80017928();
-  if (iVar1 != 0x8150) {
+  uVar3 = fpga_get_tp_status_reg_address();
+  if (uVar3 != 0x8150) {
     FUN_80019704(0xff0000);
     FUN_80018bf8(s_Encrypt_8001c4c4,0x1e,0x6e);
     FUN_80018bf8(s_Failed_8001c4b8,100,0x6e);
@@ -27519,9 +27507,9 @@ void FUN_8001c138(void)
   FUN_80019704(0xffffff);
   FUN_80018bf8(s_Encrypt_8001c4c4,0x1e,0x6e);
   FUN_80018bf8(&DAT_8001c4c0,100,0x6e);
-  iVar1 = FUN_80000e94();
-  if (iVar1 != 3) {
-    if (iVar1 == 1) {
+  iVar5 = FUN_80000e94();
+  if (iVar5 != 3) {
+    if (iVar5 == 1) {
       FUN_80019704(0xff0000);
       FUN_80018bf8(s_AD9288_2_8001c4f8,0x1e,0x82);
       FUN_80018bf8(s_Failed_8001c4b8,0x78,0x82);
@@ -27529,7 +27517,7 @@ void FUN_8001c138(void)
                     // WARNING: Do nothing block with infinite loop
       } while( true );
     }
-    if (iVar1 != 2) {
+    if (iVar5 != 2) {
       FUN_80019704(0xff0000);
       FUN_80018bf8(s_AD9288_1_2_8001c4cc,0x1e,0x82);
       FUN_80018bf8(s_Failed_8001c4b8,0x78,0x82);
@@ -27547,8 +27535,8 @@ void FUN_8001c138(void)
   FUN_80019704(0xffffff);
   FUN_80018bf8(s_AD9288_8001c4d8,0x1e,0x82);
   FUN_80018bf8(&DAT_8001c4c0,100,0x82);
-  iVar1 = FUN_80027ef8();
-  if (iVar1 == 0) {
+  iVar5 = FUN_80027ef8();
+  if (iVar5 == 0) {
     FUN_80019704(0xff0000);
     FUN_80018bf8(s_Analog_8001c4e0,0x1e,0x96);
     FUN_80018bf8(s_Failed_8001c4b8,100,0x96);
@@ -27562,39 +27550,39 @@ void FUN_8001c138(void)
   FUN_80019704(0xffffff);
   FUN_80018bf8(s_Touch_8001c4e8,0x1e,0xaa);
   FUN_80018bf8(&DAT_8001c4f0,0x67,0xa7);
-  iVar1 = FUN_80028568();
-  if (iVar1 == 0) {
+  iVar5 = FUN_80028568();
+  if (iVar5 == 0) {
     FUN_80019704(0xff0000);
-    pcVar4 = s_Failed_8001c4b8;
+    pcVar6 = s_Failed_8001c4b8;
   }
   else {
     FUN_80019704(0xffffff);
-    pcVar4 = &DAT_8001c4f4;
+    pcVar6 = &DAT_8001c4f4;
   }
-  FUN_80018bf8(pcVar4,100,0xaa);
-  if (iVar1 == 0) {
+  FUN_80018bf8(pcVar6,100,0xaa);
+  if (iVar5 == 0) {
     return;
   }
   FUN_80019704(0xffffff);
   FUN_80018bf8(s_Hard_Checked_Successful___8001c510,0x1e,0xbe);
-  iVar1 = DAT_8001c52c;
+  iVar5 = DAT_8001c52c;
   *(undefined *)(DAT_8001c52c + 3) = 0;
-  *(undefined2 *)(iVar1 + 6) = 300;
-  *(undefined *)(iVar1 + 0xf) = 0;
-  *(undefined2 *)(iVar1 + 0x12) = 100;
-  *(undefined *)(iVar1 + 10) = 0x13;
+  *(undefined2 *)(iVar5 + 6) = 300;
+  *(undefined *)(iVar5 + 0xf) = 0;
+  *(undefined2 *)(iVar5 + 0x12) = 100;
+  *(undefined *)(iVar5 + 10) = 0x13;
   FUN_8000696c();
   FUN_800096b8();
   FUN_8000689c();
   FUN_800095e8();
   FUN_800266c4();
   FUN_80025bb0();
-  uVar3 = FUN_80023564(0,500);
-  uVar2 = uVar3;
+  uVar4 = FUN_80023564(0,500);
+  uVar8 = uVar4;
   do {
-    uVar5 = FUN_80023564(uVar3);
-    uVar3 = (int)uVar5 - uVar2;
-  } while (uVar3 < (uint)((ulonglong)uVar5 >> 0x20));
+    uVar7 = FUN_80023564(uVar4);
+    uVar4 = (int)uVar7 - uVar8;
+  } while (uVar4 < (uint)((ulonglong)uVar7 >> 0x20));
   return;
 }
 
@@ -27627,18 +27615,19 @@ void FUN_8001c530(void)
 
 
 
-undefined4 FUN_8001c5c0(undefined4 param_1,uint param_2,undefined4 param_3,int param_4)
+void setup_some_interrupt(uint p1,uint p2)
 
 {
+  undefined4 in_r2;
+  int in_r3;
   uint *puVar1;
   
   if (*DAT_8001c678 == '\0') {
     *DAT_8001c678 = '\x01';
   }
-  switch(param_1) {
+  switch(p1) {
   case 0:
-    param_1 = *(undefined4 *)(DAT_8001c67c + param_2 * 4);
-    *(undefined4 *)(DAT_8001c67c + param_2 * 4) = param_3;
+    *(undefined4 *)(DAT_8001c67c + p2 * 4) = in_r2;
     break;
   case 1:
   case 2:
@@ -27647,16 +27636,14 @@ undefined4 FUN_8001c5c0(undefined4 param_1,uint param_2,undefined4 param_3,int p
   case 5:
   case 6:
   case 7:
-    param_1 = *(undefined4 *)(DAT_8001c680 + param_2 * 4);
-    *(undefined4 *)(DAT_8001c680 + param_2 * 4) = param_3;
+    *(undefined4 *)(DAT_8001c680 + p2 * 4) = in_r2;
   }
-  puVar1 = (uint *)(DAT_8001c684 + (param_2 * 0x89 >> 0xb) * 4);
-  *puVar1 = *puVar1 | param_4 <<
-                      (((uint)((ulonglong)param_2 * (ulonglong)DAT_8001c688 >> 0x23) * -0xf +
-                       param_2) * 2 & 0xff);
-  puVar1 = (uint *)(DAT_8001c68c + (param_2 >> 5) * 4);
-  *puVar1 = *puVar1 | 1 << (param_2 & 0x1f);
-  return param_1;
+  puVar1 = (uint *)(INTC_PRIO_REG0 + (p2 * 0x89 >> 0xb) * 4);
+  *puVar1 = *puVar1 | in_r3 << (((uint)((ulonglong)p2 * (ulonglong)DAT_8001c688 >> 0x23) * -0xf + p2
+                                ) * 2 & 0xff);
+  puVar1 = (uint *)(INTC_EN_REG0 + (p2 >> 5) * 4);
+  *puVar1 = *puVar1 | 1 << (p2 & 0x1f);
+  return;
 }
 
 
@@ -27822,28 +27809,27 @@ void FUN_8001c6f0(uint param_1,uint param_2,uint param_3,uint param_4)
 
 
 
-void FUN_8001c79c(void)
+void turn_off_brightness(void)
 
 {
-  int iVar1;
-  undefined4 unaff_r4;
+  uint *ptr;
   
-  FUN_800169f8(0x38);
-  FUN_800168fc(0);
-  iVar1 = DAT_800169f4;
-  FUN_8001764c(DAT_800169f4,0,1,0,unaff_r4);
-  FUN_8001764c(iVar1,1,1,0);
-  FUN_8001764c(iVar1,2,1,0);
-  FUN_8001764c(iVar1,3,1,0);
-  FUN_8001764c(iVar1,4,1,0);
-  FUN_8001764c(iVar1,5,1,0);
-  FUN_8001764c(iVar1,6,1,0);
-  FUN_8001764c(iVar1,7,1,0);
-  FUN_8001774c(iVar1,9);
-  FUN_80017738(iVar1,10);
-  *(uint *)(iVar1 + 0x10) = *(uint *)(iVar1 + 0x10) & 0xffffff00;
-  FUN_80017738(iVar1,8);
-  *(uint *)(iVar1 + 0x10) = *(uint *)(iVar1 + 0x10) | 0x100;
+  fpga_write_cmd('8');
+  fpga_write_data('\0');
+  ptr = PE_CFG0;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = ptr[4] & 0xffffff00;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
@@ -28606,27 +28592,26 @@ void FUN_8001d348(void)
 void FUN_8001d380(void)
 
 {
-  int iVar1;
-  uint uVar2;
-  undefined4 unaff_r4;
+  uint *ptr;
+  uint uVar1;
   
-  uVar2 = FUN_800248f8(0x10,*(undefined *)(DAT_8001d3b8 + 2));
-  FUN_800169f8(0x38);
-  FUN_800168fc((uVar2 & 0xffff) >> 8);
-  iVar1 = DAT_800169f4;
-  FUN_8001764c(DAT_800169f4,0,1,0,unaff_r4);
-  FUN_8001764c(iVar1,1,1,0);
-  FUN_8001764c(iVar1,2,1,0);
-  FUN_8001764c(iVar1,3,1,0);
-  FUN_8001764c(iVar1,4,1,0);
-  FUN_8001764c(iVar1,5,1,0);
-  FUN_8001764c(iVar1,6,1,0);
-  FUN_8001764c(iVar1,7,1,0);
-  FUN_8001774c(iVar1,9);
-  FUN_80017738(iVar1,10);
-  *(uint *)(iVar1 + 0x10) = uVar2 & 0xff | *(uint *)(iVar1 + 0x10) & 0xffffff00;
-  FUN_80017738(iVar1,8);
-  *(uint *)(iVar1 + 0x10) = *(uint *)(iVar1 + 0x10) | 0x100;
+  uVar1 = FUN_800248f8(0x10,*(undefined *)(DAT_8001d3b8 + 2));
+  fpga_write_cmd('8');
+  fpga_write_data((uchar)(uVar1 >> 8));
+  ptr = PE_CFG0;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = uVar1 & 0xff | ptr[4] & 0xffffff00;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
@@ -28789,29 +28774,28 @@ void FUN_8001d5d4(void)
   int iVar2;
   int iVar3;
   undefined4 uVar4;
-  undefined4 uVar5;
-  undefined4 *puVar6;
-  uint *puVar7;
-  int iVar8;
-  int *piVar9;
+  undefined4 *puVar5;
+  uint *puVar6;
+  int iVar7;
+  int *piVar8;
   
-  uVar5 = DAT_8001d62c;
-  iVar8 = 0;
+  puVar5 = DAT_8001d62c;
+  iVar7 = 0;
   *DAT_8001d628 = DAT_8001d624;
   do {
-    FUN_8001764c(uVar5,iVar8,2,0);
+    gpio_config_pin(puVar5,iVar7,2);
     uVar4 = DAT_8001d624;
     iVar3 = DAT_800164e0;
     iVar2 = DAT_800164dc;
     iVar1 = DAT_800164d8;
-    iVar8 = iVar8 + 1;
-  } while (iVar8 < 0x16);
-  iVar8 = DAT_800164d8 + -0x254000;
-  piVar9 = (int *)(DAT_800164e0 + 8);
+    iVar7 = iVar7 + 1;
+  } while (iVar7 < 0x16);
+  iVar7 = DAT_800164d8 + -0x254000;
+  piVar8 = (int *)(DAT_800164e0 + 8);
   *(int *)(DAT_800164dc + 4) = DAT_800164e0;
-  *piVar9 = iVar1;
+  *piVar8 = iVar1;
   *(undefined4 *)(iVar3 + 0xc) = 0;
-  *(int *)(iVar3 + 0x10) = iVar8;
+  *(int *)(iVar3 + 0x10) = iVar7;
   *(undefined4 *)(iVar3 + 0x1c) = 800;
   *(undefined4 *)(iVar3 + 0x20) = 0x1e0;
   *(undefined4 *)(iVar3 + 0x2c) = 0x10;
@@ -28830,22 +28814,22 @@ void FUN_8001d5d4(void)
   *(undefined4 *)(iVar3 + 0x30) = 2;
   *(undefined4 *)(iVar3 + 0x34) = 0;
   *(undefined4 *)(iVar3 + 0x38) = uVar4;
-  iVar8 = 0x800;
+  iVar7 = 0x800;
   *(undefined4 *)(iVar3 + 0x3c) = 0;
   do {
-    *(undefined4 *)(DAT_800164d8 + iVar8) = 0;
-    iVar8 = iVar8 + 4;
-  } while (iVar8 < 0x1000);
-  puVar6 = *(undefined4 **)(iVar3 + 0x10);
-  *puVar6 = 0;
-  puVar6[1] = 0;
-  puVar6[0x11] = puVar6[0x11] & 0xfffffff;
-  puVar6[0x23] = 0xffffffff;
-  puVar6[0x3d] = 0xffffffff;
+    *(undefined4 *)(DAT_800164d8 + iVar7) = 0;
+    iVar7 = iVar7 + 4;
+  } while (iVar7 < 0x1000);
+  puVar5 = *(undefined4 **)(iVar3 + 0x10);
+  *puVar5 = 0;
+  puVar5[1] = 0;
+  puVar5[0x11] = puVar5[0x11] & 0xfffffff;
+  puVar5[0x23] = 0xffffffff;
+  puVar5[0x3d] = 0xffffffff;
   FUN_8000b8f8(*(undefined4 *)(iVar2 + 4));
   FUN_80028200(*(undefined4 *)(iVar2 + 4));
-  puVar7 = *(uint **)(*(int *)(iVar2 + 4) + 0x10);
-  *puVar7 = *puVar7 | 0x80000000;
+  puVar6 = *(uint **)(*(int *)(iVar2 + 4) + 0x10);
+  *puVar6 = *puVar6 | 0x80000000;
   return;
 }
 
@@ -32526,7 +32510,7 @@ undefined4 FUN_80022204(void)
   bool bVar10;
   bool bVar11;
   
-  FUN_800177c4();
+  tp_i2c_read_status();
   pcVar4 = DAT_80022bbc;
   puVar3 = PTR_DAT_80022bb8;
   uVar5 = (uint)*(ushort *)(PTR_DAT_80022bb8 + 2);
@@ -32534,7 +32518,7 @@ undefined4 FUN_80022204(void)
     if (uVar2 < 0x50) {
       cVar1 = *PTR_DAT_80022bb8;
       while (cVar1 != '\0') {
-        FUN_800177c4();
+        tp_i2c_read_status();
         cVar1 = *puVar3;
       }
       FUN_8002b0f4();
@@ -32544,7 +32528,7 @@ undefined4 FUN_80022204(void)
       if (uVar2 < 0xa0) {
         cVar1 = *PTR_DAT_80022bb8;
         while (cVar1 != '\0') {
-          FUN_800177c4();
+          tp_i2c_read_status();
           cVar1 = *puVar3;
         }
         FUN_8002b0f4();
@@ -32554,7 +32538,7 @@ undefined4 FUN_80022204(void)
         if (uVar2 < 0xf0) {
           cVar1 = *PTR_DAT_80022bb8;
           while (cVar1 != '\0') {
-            FUN_800177c4();
+            tp_i2c_read_status();
             cVar1 = *puVar3;
           }
           FUN_8002b0f4();
@@ -32564,7 +32548,7 @@ undefined4 FUN_80022204(void)
           if (uVar2 < 0x140) {
             cVar1 = *PTR_DAT_80022bb8;
             while (cVar1 != '\0') {
-              FUN_800177c4();
+              tp_i2c_read_status();
               cVar1 = *puVar3;
             }
             FUN_8002b0f4();
@@ -32575,7 +32559,7 @@ undefined4 FUN_80022204(void)
             if (!bVar10) {
               cVar1 = *PTR_DAT_80022bb8;
               while (cVar1 != '\0') {
-                FUN_800177c4();
+                tp_i2c_read_status();
                 cVar1 = *puVar3;
               }
               FUN_8002b0f4();
@@ -32587,7 +32571,7 @@ undefined4 FUN_80022204(void)
             if (!bVar10) {
               cVar1 = *PTR_DAT_80022bb8;
               while (cVar1 != '\0') {
-                FUN_800177c4();
+                tp_i2c_read_status();
                 cVar1 = *puVar3;
               }
               FUN_8002b0f4();
@@ -32603,7 +32587,7 @@ undefined4 FUN_80022204(void)
      (*(ushort *)(PTR_DAT_80022bb8 + 4) != 0 && *(ushort *)(PTR_DAT_80022bb8 + 4) < 0x75)) {
     cVar1 = *PTR_DAT_80022bb8;
     while (cVar1 != '\0') {
-      FUN_800177c4();
+      tp_i2c_read_status();
       cVar1 = *puVar3;
     }
     FUN_8002b0f4();
@@ -32625,7 +32609,7 @@ undefined4 FUN_80022204(void)
        (*(ushort *)(PTR_DAT_80022bb8 + 4) != 0 && *(ushort *)(PTR_DAT_80022bb8 + 4) < 0x75)) {
       cVar1 = *PTR_DAT_80022bb8;
       while (cVar1 != '\0') {
-        FUN_800177c4();
+        tp_i2c_read_status();
         cVar1 = *puVar3;
       }
       FUN_8002b0f4();
@@ -32647,7 +32631,7 @@ undefined4 FUN_80022204(void)
          (*(ushort *)(PTR_DAT_80022bb8 + 4) != 0 && *(ushort *)(PTR_DAT_80022bb8 + 4) < 0x75)) {
         cVar1 = *PTR_DAT_80022bb8;
         while (cVar1 != '\0') {
-          FUN_800177c4();
+          tp_i2c_read_status();
           cVar1 = *puVar3;
         }
         FUN_8002b0f4();
@@ -32669,7 +32653,7 @@ undefined4 FUN_80022204(void)
            (*(ushort *)(PTR_DAT_80022bb8 + 4) != 0 && *(ushort *)(PTR_DAT_80022bb8 + 4) < 0x75)) {
           cVar1 = *PTR_DAT_80022bb8;
           while (cVar1 != '\0') {
-            FUN_800177c4();
+            tp_i2c_read_status();
             cVar1 = *puVar3;
           }
           FUN_8002b0f4();
@@ -32690,7 +32674,7 @@ undefined4 FUN_80022204(void)
              (*(ushort *)(PTR_DAT_80022bb8 + 4) < 0xec)) {
             cVar1 = *PTR_DAT_80022bb8;
             while (cVar1 != '\0') {
-              FUN_800177c4();
+              tp_i2c_read_status();
               cVar1 = *puVar3;
             }
             FUN_8002b0f4();
@@ -32711,7 +32695,7 @@ undefined4 FUN_80022204(void)
                (*(ushort *)(PTR_DAT_80022bb8 + 4) < 0xec)) {
               cVar1 = *PTR_DAT_80022bb8;
               while (cVar1 != '\0') {
-                FUN_800177c4();
+                tp_i2c_read_status();
                 cVar1 = *puVar3;
               }
               FUN_8002b0f4();
@@ -32732,7 +32716,7 @@ undefined4 FUN_80022204(void)
                  (*(ushort *)(PTR_DAT_80022bb8 + 4) < 0xec)) {
                 cVar1 = *PTR_DAT_80022bb8;
                 while (cVar1 != '\0') {
-                  FUN_800177c4();
+                  tp_i2c_read_status();
                   cVar1 = *puVar3;
                 }
                 FUN_8002b0f4();
@@ -32753,7 +32737,7 @@ undefined4 FUN_80022204(void)
                    (*(ushort *)(PTR_DAT_80022bb8 + 4) < 0xec)) {
                   cVar1 = *PTR_DAT_80022bb8;
                   while (cVar1 != '\0') {
-                    FUN_800177c4();
+                    tp_i2c_read_status();
                     cVar1 = *puVar3;
                   }
                   FUN_8002b0f4();
@@ -32781,7 +32765,7 @@ undefined4 FUN_80022204(void)
                     if (bVar11 && !bVar10) {
                       cVar1 = *PTR_DAT_80022bb8;
                       while (cVar1 != '\0') {
-                        FUN_800177c4();
+                        tp_i2c_read_status();
                         cVar1 = *puVar3;
                       }
                       FUN_8002b0f4();
@@ -32811,7 +32795,7 @@ undefined4 FUN_80022204(void)
                     if (bVar11 && !bVar10) {
                       cVar1 = *PTR_DAT_80022bb8;
                       while (cVar1 != '\0') {
-                        FUN_800177c4();
+                        tp_i2c_read_status();
                         cVar1 = *puVar3;
                       }
                       FUN_8002b0f4();
@@ -32841,7 +32825,7 @@ undefined4 FUN_80022204(void)
                     if (bVar11 && !bVar10) {
                       cVar1 = *PTR_DAT_80022bb8;
                       while (cVar1 != '\0') {
-                        FUN_800177c4();
+                        tp_i2c_read_status();
                         cVar1 = *puVar3;
                       }
                       FUN_8002b0f4();
@@ -32871,7 +32855,7 @@ undefined4 FUN_80022204(void)
                     if (bVar11 && !bVar10) {
                       cVar1 = *PTR_DAT_80022bb8;
                       while (cVar1 != '\0') {
-                        FUN_800177c4();
+                        tp_i2c_read_status();
                         cVar1 = *puVar3;
                       }
                       FUN_8002b0f4();
@@ -32912,7 +32896,7 @@ undefined4 FUN_80022204(void)
                         if ((bVar10 && DAT_80022bc4 < uVar5) && uVar5 < uVar9) {
                           cVar1 = *PTR_DAT_80022bb8;
                           while (cVar1 != '\0') {
-                            FUN_800177c4();
+                            tp_i2c_read_status();
                             cVar1 = *puVar3;
                           }
                           FUN_8002b0f4();
@@ -32933,7 +32917,7 @@ undefined4 FUN_80022204(void)
                       else {
                         cVar1 = *PTR_DAT_80022bb8;
                         while (cVar1 != '\0') {
-                          FUN_800177c4();
+                          tp_i2c_read_status();
                           cVar1 = *puVar3;
                         }
                         FUN_8002b0f4();
@@ -32954,7 +32938,7 @@ undefined4 FUN_80022204(void)
                     else {
                       cVar1 = *PTR_DAT_80022bb8;
                       while (cVar1 != '\0') {
-                        FUN_800177c4();
+                        tp_i2c_read_status();
                         cVar1 = *puVar3;
                       }
                       FUN_8002b0f4();
@@ -32975,7 +32959,7 @@ undefined4 FUN_80022204(void)
                   else {
                     cVar1 = *PTR_DAT_80022bb8;
                     while (cVar1 != '\0') {
-                      FUN_800177c4();
+                      tp_i2c_read_status();
                       cVar1 = *puVar3;
                     }
                     FUN_8002b0f4();
@@ -33211,7 +33195,7 @@ undefined4 FUN_80022fd0(void)
   bool bVar4;
   bool bVar5;
   
-  FUN_800177c4();
+  tp_i2c_read_status();
   puVar2 = PTR_DAT_80023098;
   if (*(ushort *)(PTR_DAT_80023098 + 2) - 0x11e < 0x4a) {
     uVar3 = (uint)*(ushort *)(PTR_DAT_80023098 + 4);
@@ -33224,7 +33208,7 @@ undefined4 FUN_80022fd0(void)
     if (bVar5 && !bVar4) {
       cVar1 = *PTR_DAT_80023098;
       while (cVar1 != '\0') {
-        FUN_800177c4();
+        tp_i2c_read_status();
         cVar1 = *puVar2;
       }
       goto LAB_8002308c;
@@ -33241,7 +33225,7 @@ undefined4 FUN_80022fd0(void)
     if (bVar5 && !bVar4) {
       cVar1 = *PTR_DAT_80023098;
       while (cVar1 != '\0') {
-        FUN_800177c4();
+        tp_i2c_read_status();
         cVar1 = *puVar2;
       }
       FUN_8002b0f4();
@@ -33252,7 +33236,7 @@ undefined4 FUN_80022fd0(void)
     return 2;
   }
   do {
-    FUN_800177c4();
+    tp_i2c_read_status();
   } while (*puVar2 != '\0');
 LAB_8002308c:
   FUN_8002b0f4();
@@ -33278,12 +33262,12 @@ undefined4 FUN_800230a0(void)
   uVar6 = DAT_800232a8;
   puVar2 = PTR_DAT_800232a4;
   if (*PTR_DAT_800232a4 == '\0') {
-    FUN_800177c4();
+    tp_i2c_read_status();
     if ((*(ushort *)(puVar4 + 2) - 1 < uVar6) &&
        (*(ushort *)(puVar4 + 4) != 0 && *(ushort *)(puVar4 + 4) < uVar3)) {
       cVar1 = *puVar4;
       while (cVar1 != '\0') {
-        FUN_800177c4();
+        tp_i2c_read_status();
         cVar1 = *puVar4;
       }
       FUN_8002b0f4();
@@ -33292,12 +33276,12 @@ undefined4 FUN_800230a0(void)
     }
   }
   else {
-    FUN_800177c4();
+    tp_i2c_read_status();
     uVar5 = (uint)*(ushort *)(puVar4 + 2);
     if ((uVar5 - 1 < uVar6) && (*(ushort *)(puVar4 + 4) != 0 && *(ushort *)(puVar4 + 4) < 0x1a4)) {
       cVar1 = *puVar4;
       while (cVar1 != '\0') {
-        FUN_800177c4();
+        tp_i2c_read_status();
         cVar1 = *puVar4;
       }
       FUN_8002b0f4();
@@ -33315,7 +33299,7 @@ undefined4 FUN_800230a0(void)
       if (bVar8 && !bVar7) {
         cVar1 = *puVar4;
         while (cVar1 != '\0') {
-          FUN_800177c4();
+          tp_i2c_read_status();
           cVar1 = *puVar4;
         }
         FUN_8002b0f4();
@@ -33333,7 +33317,7 @@ undefined4 FUN_800230a0(void)
       if (bVar8 && !bVar7) {
         cVar1 = *puVar4;
         while (cVar1 != '\0') {
-          FUN_800177c4();
+          tp_i2c_read_status();
           cVar1 = *puVar4;
         }
         FUN_8002b0f4();
@@ -33351,7 +33335,7 @@ undefined4 FUN_800230a0(void)
       if (bVar8 && !bVar7) {
         cVar1 = *puVar4;
         while (cVar1 != '\0') {
-          FUN_800177c4();
+          tp_i2c_read_status();
           cVar1 = *puVar4;
         }
         FUN_8002b0f4();
@@ -33369,7 +33353,7 @@ undefined4 FUN_800230a0(void)
       if (bVar8 && !bVar7) {
         cVar1 = *puVar4;
         while (cVar1 != '\0') {
-          FUN_800177c4();
+          tp_i2c_read_status();
           cVar1 = *puVar4;
         }
         FUN_8002b0f4();
@@ -33908,15 +33892,16 @@ undefined4 FUN_80023ee0(int param_1)
 
 {
   uint uVar1;
-  undefined4 uVar2;
-  int *piVar3;
+  undefined4 *port;
+  int *piVar2;
+  undefined4 uVar3;
   uint *puVar4;
   char *pcVar5;
   int iVar6;
   uint *puVar7;
   uint *puVar8;
   uint *puVar9;
-  undefined4 unaff_r9;
+  undefined4 *unaff_r9;
   undefined2 local_40 [2];
   undefined4 local_3c;
   undefined4 local_38;
@@ -33925,7 +33910,7 @@ undefined4 FUN_80023ee0(int param_1)
   uint local_2c;
   uint local_28;
   
-  uVar2 = DAT_80024464;
+  port = DAT_80024464;
   puVar7 = DAT_8002445c;
   puVar8 = DAT_8002445c + 0x400;
   puVar9 = DAT_8002445c;
@@ -33938,14 +33923,14 @@ undefined4 FUN_80023ee0(int param_1)
   iVar6 = 0;
   if (param_1 == 0) {
     do {
-      FUN_8001764c(unaff_r9,iVar6,2,0);
+      gpio_config_pin(unaff_r9,iVar6,2);
       iVar6 = iVar6 + 1;
     } while (iVar6 < 6);
   }
   else {
     if (param_1 == 1) {
       do {
-        FUN_8001764c(uVar2,iVar6,3,0);
+        gpio_config_pin(port,iVar6,3);
         iVar6 = iVar6 + 1;
       } while (iVar6 < 3);
     }
@@ -33962,16 +33947,16 @@ undefined4 FUN_80023ee0(int param_1)
   }
   puVar4[0x1e] = puVar4[0x1e] | 2;
   puVar4[0x1e] = puVar4[0x1e] & 0xfffffffd;
-  uVar2 = DAT_80024470;
-  FUN_8000bc34(DAT_80024470);
+  uVar1 = DAT_80024470;
+  delay(DAT_80024470);
   puVar4[0x1e] = puVar4[0x1e] | 2;
-  FUN_8000bc34(uVar2);
+  delay(uVar1);
   puVar4 = puVar7;
   if ((param_1 != 0) && (puVar4 = puVar8, param_1 != 1)) {
     puVar4 = (uint *)0x0;
   }
   *puVar4 = *puVar4 | 7;
-  FUN_8000bc34(uVar2);
+  delay(uVar1);
   puVar4 = puVar7;
   if ((param_1 != 0) && (puVar4 = puVar8, param_1 != 1)) {
     puVar4 = (uint *)0x0;
@@ -34003,14 +33988,14 @@ undefined4 FUN_80023ee0(int param_1)
   local_40[0] = 8;
   local_38 = DAT_80024474;
   iVar6 = FUN_80036d3c(param_1,local_40,0);
-  piVar3 = DAT_80024478;
+  piVar2 = DAT_80024478;
   if (iVar6 == 0) {
     FUN_800376f8(s_SD2_0____80024498);
     local_40[0] = 0x37;
     local_38 = 0;
     local_3c = 5;
     FUN_80036d3c(param_1,local_40);
-    uVar2 = _DAT_800244a4;
+    uVar3 = _DAT_800244a4;
     local_40[0] = 0x29;
     local_3c = 7;
     local_38 = _DAT_800244a4;
@@ -34022,12 +34007,12 @@ undefined4 FUN_80023ee0(int param_1)
       FUN_80036d3c(param_1,local_40);
       local_40[0] = 0x29;
       local_3c = 7;
-      local_38 = uVar2;
+      local_38 = uVar3;
       FUN_80036d3c(param_1,local_40,0);
     }
     if ((local_28 & 0x40000000) != 0) {
       pcVar5 = s__TYPE_SD_HIGH____800244a7 + 1;
-      *piVar3 = 1;
+      *piVar2 = 1;
       goto LAB_80024268;
     }
   }
@@ -34042,35 +34027,35 @@ undefined4 FUN_80023ee0(int param_1)
     local_38 = 0;
     local_3c = 5;
     iVar6 = FUN_80036d3c(param_1,local_40);
-    uVar2 = DAT_800244e4;
+    uVar3 = DAT_800244e4;
     if (iVar6 == 0x98) {
       local_40[0] = 0;
       local_38 = 0;
       local_3c = 0;
       FUN_80036d3c(param_1,local_40);
       FUN_800324d0(1);
-      uVar2 = DAT_800244c0;
+      uVar3 = DAT_800244c0;
       local_40[0] = 1;
       local_3c = 5;
       local_38 = DAT_800244c0;
       iVar6 = FUN_80036d3c(param_1,local_40,0);
       if (iVar6 == 0x98) {
-        *piVar3 = 0;
+        *piVar2 = 0;
         FUN_800376f8(s_ERR_DEVICE____800244d4);
         return 0xffffffff;
       }
       while ((local_28 & 0x80000000) == 0) {
         local_3c = 5;
         local_40[0] = 1;
-        local_38 = uVar2;
+        local_38 = uVar3;
         FUN_80036d3c(param_1,local_40,0);
       }
-      *piVar3 = 3;
+      *piVar2 = 3;
       pcVar5 = s_TYPE_MMC____800244c4;
       goto LAB_80024268;
     }
     if (iVar6 != 0) {
-      *piVar3 = 0;
+      *piVar2 = 0;
       FUN_800376f8(s_Init_Error____80024488);
       return 0xffffffff;
     }
@@ -34085,15 +34070,15 @@ undefined4 FUN_80023ee0(int param_1)
       FUN_80036d3c(param_1,local_40);
       local_40[0] = 0x29;
       local_3c = 7;
-      local_38 = uVar2;
+      local_38 = uVar3;
       FUN_80036d3c(param_1,local_40,0);
     }
   }
   pcVar5 = s_TYPE_SD_LOW____800244e8;
-  *piVar3 = 2;
+  *piVar2 = 2;
 LAB_80024268:
   FUN_800376f8(pcVar5);
-  if (*piVar3 != 0) {
+  if (*piVar2 != 0) {
     local_40[0] = 2;
     local_3c = 7;
     local_38 = 0;
@@ -34103,7 +34088,7 @@ LAB_80024268:
     puVar7[1] = local_2c;
     puVar7[2] = local_30;
     puVar7[3] = local_34;
-    if (*piVar3 == 3) {
+    if (*piVar2 == 3) {
       local_40[0] = 3;
       local_3c = 7;
       local_38 = 0x10000;
@@ -34122,7 +34107,7 @@ LAB_80024268:
         return 0xffffffff;
       }
     }
-    piVar3[1] = local_28;
+    piVar2[1] = local_28;
   }
   FUN_8001bf1c(param_1,local_40,DAT_80024554);
   FUN_800262e0(param_1,local_40,1);
@@ -34268,90 +34253,91 @@ uint FUN_800248f8(undefined4 param_1,undefined4 param_2)
 {
   bool bVar1;
   undefined *puVar2;
-  char *pcVar3;
-  char *pcVar4;
-  char cVar5;
-  byte bVar6;
+  uchar *puVar3;
+  uchar *puVar4;
+  byte bVar5;
+  uchar uVar6;
   byte bVar7;
-  uint uVar8;
+  byte bVar8;
+  uint uVar9;
   
-  pcVar3 = DAT_80024b10;
+  puVar3 = DAT_80024b10;
   puVar2 = PTR_DAT_80024b0c;
-  bVar7 = 0;
+  bVar8 = 0;
   do {
     FUN_80024ee0(param_1,param_2);
-    FUN_8000bc34(500);
-    bVar6 = 0;
+    delay(500);
+    bVar7 = 0;
     do {
-      FUN_8000bc34(100);
-      pcVar4 = DAT_80024b10;
-      FUN_800169f8(100);
-      FUN_800169f8(100);
-      FUN_8000bc34(0x14);
-      FUN_800169f8(0x66);
+      delay(100);
+      puVar4 = DAT_80024b10;
+      fpga_write_cmd('d');
+      fpga_write_cmd('d');
+      delay(0x14);
+      fpga_write_cmd('f');
       do {
-        FUN_800169f8(0x67);
-        uVar8 = FUN_80016850();
-      } while ((uVar8 & 1) == 0);
-      FUN_800169f8(0x68);
-      cVar5 = FUN_80016850();
-      *pcVar4 = cVar5;
-      FUN_800169f8(0x69);
-      cVar5 = FUN_80016850();
-      pcVar4[1] = cVar5;
-      FUN_800169f8(0x6a);
-      cVar5 = FUN_80016850();
-      pcVar4[2] = cVar5;
-      FUN_800169f8(0x6b);
-      cVar5 = FUN_80016850();
-      pcVar4[3] = cVar5;
-      FUN_800169f8(0x6c);
-      cVar5 = FUN_80016850();
-      pcVar4[4] = cVar5;
-      FUN_800169f8(0x6d);
-      cVar5 = FUN_80016850();
-      pcVar4[5] = cVar5;
-      FUN_800169f8(0x6e);
-      cVar5 = FUN_80016850();
-      pcVar4[6] = cVar5;
+        fpga_write_cmd('g');
+        bVar5 = fpga_read_data();
+      } while ((bVar5 & 1) == 0);
+      fpga_write_cmd('h');
+      uVar6 = fpga_read_data();
+      *puVar4 = uVar6;
+      fpga_write_cmd('i');
+      uVar6 = fpga_read_data();
+      puVar4[1] = uVar6;
+      fpga_write_cmd('j');
+      uVar6 = fpga_read_data();
+      puVar4[2] = uVar6;
+      fpga_write_cmd('k');
+      uVar6 = fpga_read_data();
+      puVar4[3] = uVar6;
+      fpga_write_cmd('l');
+      uVar6 = fpga_read_data();
+      puVar4[4] = uVar6;
+      fpga_write_cmd('m');
+      uVar6 = fpga_read_data();
+      puVar4[5] = uVar6;
+      fpga_write_cmd('n');
+      uVar6 = fpga_read_data();
+      puVar4[6] = uVar6;
       FUN_80024b14();
-      *puVar2 = *pcVar3;
-      if (pcVar3[1] == 'U') {
-        uVar8 = (uint)(byte)pcVar3[6];
+      *puVar2 = *puVar3;
+      if (puVar3[1] == 'U') {
+        uVar9 = (uint)puVar3[6];
       }
       else {
-        if (pcVar3[1] == 'Z') {
-          uVar8 = (uint)CONCAT11(pcVar3[5],pcVar3[6]);
+        if (puVar3[1] == 'Z') {
+          uVar9 = (uint)CONCAT11(puVar3[5],puVar3[6]);
         }
         else {
-          if (pcVar3[1] == -0x5b) {
-            uVar8 = (uint)CONCAT21(CONCAT11(pcVar3[4],pcVar3[5]),pcVar3[6]);
+          if (puVar3[1] == -0x5b) {
+            uVar9 = (uint)CONCAT21(CONCAT11(puVar3[4],puVar3[5]),puVar3[6]);
           }
           else {
-            if (pcVar3[1] == -0x56) {
-              uVar8 = CONCAT31(CONCAT21(CONCAT11(pcVar3[3],pcVar3[4]),pcVar3[5]),pcVar3[6]);
+            if (puVar3[1] == -0x56) {
+              uVar9 = CONCAT31(CONCAT21(CONCAT11(puVar3[3],puVar3[4]),puVar3[5]),puVar3[6]);
             }
             else {
-              uVar8 = 0;
+              uVar9 = 0;
             }
           }
         }
       }
-      cVar5 = pcVar3[1];
+      uVar6 = puVar3[1];
       bVar1 = true;
-      if ((cVar5 != 'U' && cVar5 != 'Z') && (cVar5 != -0x5b && cVar5 != -0x56)) {
+      if ((uVar6 != 'U' && uVar6 != 'Z') && (uVar6 != -0x5b && uVar6 != -0x56)) {
         bVar1 = false;
       }
-      if (((char)(*pcVar3 + pcVar3[1] + pcVar3[3] + pcVar3[4] + pcVar3[5] + pcVar3[6]) == pcVar3[2])
-         && (bVar1)) {
-        return uVar8;
+      if (((uchar)(*puVar3 + puVar3[1] + puVar3[3] + puVar3[4] + puVar3[5] + puVar3[6]) == puVar3[2]
+          ) && (bVar1)) {
+        return uVar9;
       }
-      bVar6 = bVar6 + 1;
-    } while (bVar6 < 0x32);
-    FUN_8000bc34(10);
-    bVar7 = bVar7 + 1;
-    if (5 < bVar7) {
-      return uVar8;
+      bVar7 = bVar7 + 1;
+    } while (bVar7 < 0x32);
+    delay(10);
+    bVar8 = bVar8 + 1;
+    if (5 < bVar8) {
+      return uVar9;
     }
   } while( true );
 }
@@ -34473,40 +34459,40 @@ void FUN_80024c7c(void)
 void FUN_80024e18(void)
 
 {
-  undefined *puVar1;
-  undefined uVar2;
-  uint uVar3;
+  uchar *puVar1;
+  byte bVar2;
+  uchar uVar3;
   
   puVar1 = DAT_80024ed8;
-  FUN_800169f8(100);
-  FUN_800169f8(100);
-  FUN_8000bc34(0x14);
-  FUN_800169f8(0x66);
+  fpga_write_cmd('d');
+  fpga_write_cmd('d');
+  delay(0x14);
+  fpga_write_cmd('f');
   do {
-    FUN_800169f8(0x67);
-    uVar3 = FUN_80016850();
-  } while ((uVar3 & 1) == 0);
-  FUN_800169f8(0x68);
-  uVar2 = FUN_80016850();
-  *puVar1 = uVar2;
-  FUN_800169f8(0x69);
-  uVar2 = FUN_80016850();
-  puVar1[1] = uVar2;
-  FUN_800169f8(0x6a);
-  uVar2 = FUN_80016850();
-  puVar1[2] = uVar2;
-  FUN_800169f8(0x6b);
-  uVar2 = FUN_80016850();
-  puVar1[3] = uVar2;
-  FUN_800169f8(0x6c);
-  uVar2 = FUN_80016850();
-  puVar1[4] = uVar2;
-  FUN_800169f8(0x6d);
-  uVar2 = FUN_80016850();
-  puVar1[5] = uVar2;
-  FUN_800169f8(0x6e);
-  uVar2 = FUN_80016850();
-  puVar1[6] = uVar2;
+    fpga_write_cmd('g');
+    bVar2 = fpga_read_data();
+  } while ((bVar2 & 1) == 0);
+  fpga_write_cmd('h');
+  uVar3 = fpga_read_data();
+  *puVar1 = uVar3;
+  fpga_write_cmd('i');
+  uVar3 = fpga_read_data();
+  puVar1[1] = uVar3;
+  fpga_write_cmd('j');
+  uVar3 = fpga_read_data();
+  puVar1[2] = uVar3;
+  fpga_write_cmd('k');
+  uVar3 = fpga_read_data();
+  puVar1[3] = uVar3;
+  fpga_write_cmd('l');
+  uVar3 = fpga_read_data();
+  puVar1[4] = uVar3;
+  fpga_write_cmd('m');
+  uVar3 = fpga_read_data();
+  puVar1[5] = uVar3;
+  fpga_write_cmd('n');
+  uVar3 = fpga_read_data();
+  puVar1[6] = uVar3;
   *PTR_DAT_80024edc = DAT_80024ed8[3];
   return;
 }
@@ -34516,82 +34502,81 @@ void FUN_80024e18(void)
 void FUN_80024ee0(int param_1,uint param_2)
 
 {
-  char cVar1;
-  char cVar2;
-  char cVar3;
-  char *pcVar4;
+  uchar uVar1;
+  uchar uVar2;
+  uchar uVar3;
+  uchar *puVar4;
   byte bVar5;
-  uint uVar6;
   
-  pcVar4 = DAT_80025094;
+  puVar4 = DAT_80025094;
   *DAT_80025094 = *PTR_DAT_80025098;
-  pcVar4[1] = (char)(param_1 << 2);
-  cVar3 = (char)param_2;
+  puVar4[1] = (uchar)(param_1 << 2);
+  uVar3 = (uchar)param_2;
   bVar5 = 0;
-  cVar1 = (char)((param_2 << 8) >> 0x18);
-  cVar2 = (char)((param_2 << 0x10) >> 0x18);
+  uVar1 = (uchar)((param_2 << 8) >> 0x18);
+  uVar2 = (uchar)((param_2 << 0x10) >> 0x18);
   if (param_2 < 0x1000000) {
     if (param_2 < 0x10000) {
       if (param_2 < 0x100) {
-        pcVar4[3] = 'i';
-        pcVar4[4] = -0x6a;
-        pcVar4[5] = -0x67;
-        pcVar4[6] = cVar3;
+        puVar4[3] = 'i';
+        puVar4[4] = -0x6a;
+        puVar4[5] = -0x67;
+        puVar4[6] = uVar3;
       }
       else {
-        pcVar4[3] = 'i';
+        puVar4[3] = 'i';
         bVar5 = 1;
-        pcVar4[4] = -0x6a;
-        pcVar4[5] = cVar2;
-        pcVar4[6] = cVar3;
+        puVar4[4] = -0x6a;
+        puVar4[5] = uVar2;
+        puVar4[6] = uVar3;
       }
     }
     else {
       bVar5 = 2;
-      pcVar4[3] = 'i';
-      pcVar4[4] = cVar1;
-      pcVar4[5] = cVar2;
-      pcVar4[6] = cVar3;
+      puVar4[3] = 'i';
+      puVar4[4] = uVar1;
+      puVar4[5] = uVar2;
+      puVar4[6] = uVar3;
     }
   }
   else {
     bVar5 = 3;
-    pcVar4[3] = (char)(param_2 >> 0x18);
-    pcVar4[4] = cVar1;
-    pcVar4[5] = cVar2;
-    pcVar4[6] = cVar3;
+    puVar4[3] = (uchar)(param_2 >> 0x18);
+    puVar4[4] = uVar1;
+    puVar4[5] = uVar2;
+    puVar4[6] = uVar3;
   }
-  pcVar4[1] = bVar5 | pcVar4[1];
+  puVar4[1] = bVar5 | puVar4[1];
   FUN_80024c7c();
-  pcVar4[2] = pcVar4[6] + pcVar4[3] + pcVar4[4] + pcVar4[1] + *pcVar4 + pcVar4[5];
-  FUN_800169f8(0x65);
-  FUN_800169f8(0x65);
-  cVar1 = *pcVar4;
-  FUN_800169f8(0x68);
-  FUN_800168fc(cVar1);
-  cVar1 = pcVar4[1];
-  FUN_800169f8(0x69);
-  FUN_800168fc(cVar1);
-  cVar1 = pcVar4[2];
-  FUN_800169f8(0x6a);
-  FUN_800168fc(cVar1);
-  cVar1 = pcVar4[3];
-  FUN_800169f8(0x6b);
-  FUN_800168fc(cVar1);
-  cVar1 = pcVar4[4];
-  FUN_800169f8(0x6c);
-  FUN_800168fc(cVar1);
-  cVar1 = pcVar4[5];
-  FUN_800169f8(0x6d);
-  FUN_800168fc(cVar1);
-  cVar1 = pcVar4[6];
-  FUN_800169f8(0x6e);
-  FUN_800168fc(cVar1);
-  FUN_800169f8(0x66);
+  puVar4[2] = puVar4[6] + puVar4[3] + puVar4[4] + puVar4[1] + *puVar4 + puVar4[5];
+  fpga_write_cmd('e');
+  fpga_write_cmd('e');
+  uVar1 = *puVar4;
+  fpga_write_cmd('h');
+  fpga_write_data(uVar1);
+  uVar1 = puVar4[1];
+  fpga_write_cmd('i');
+  fpga_write_data(uVar1);
+  uVar1 = puVar4[2];
+  fpga_write_cmd('j');
+  fpga_write_data(uVar1);
+  uVar1 = puVar4[3];
+  fpga_write_cmd('k');
+  fpga_write_data(uVar1);
+  uVar1 = puVar4[4];
+  fpga_write_cmd('l');
+  fpga_write_data(uVar1);
+  uVar1 = puVar4[5];
+  fpga_write_cmd('m');
+  fpga_write_data(uVar1);
+  uVar1 = puVar4[6];
+  fpga_write_cmd('n');
+  fpga_write_data(uVar1);
+  fpga_write_cmd('f');
   do {
-    FUN_800169f8(0x67);
-    uVar6 = FUN_80016850();
-  } while ((uVar6 & 1) == 0);
+    fpga_write_cmd('g');
+    bVar5 = fpga_read_data();
+  } while ((bVar5 & 1) == 0);
   return;
 }
 
@@ -34652,31 +34637,31 @@ undefined4 FUN_800250f8(undefined4 param_1,undefined4 param_2,int param_3)
 void FUN_8002510c(void)
 
 {
-  undefined4 uVar1;
-  int iVar2;
-  uint uVar3;
-  uint *puVar4;
-  uint uVar5;
+  undefined4 *port;
+  int iVar1;
+  uint uVar2;
+  uint *puVar3;
+  uint uVar4;
   
-  uVar1 = DAT_80036238;
-  FUN_8001764c(DAT_80036238,0,2);
-  FUN_8001764c(uVar1,1,2,0);
-  FUN_8001764c(uVar1,2,2,0);
-  FUN_8001764c(uVar1,3,2,0);
-  puVar4 = DAT_80036240;
-  uVar5 = *DAT_80036240;
-  uVar3 = FUN_8000056c(1,0,0x14);
-  *puVar4 = uVar5 | uVar3;
-  puVar4 = puVar4 + -0x98;
-  *puVar4 = uVar3 | *puVar4;
-  iVar2 = DAT_80036244;
+  port = DAT_80036238;
+  gpio_config_pin(DAT_80036238,0,2);
+  gpio_config_pin(port,1,2);
+  gpio_config_pin(port,2,2);
+  gpio_config_pin(port,3,2);
+  puVar3 = DAT_80036240;
+  uVar4 = *DAT_80036240;
+  uVar2 = FUN_8000056c(1,0,0x14);
+  *puVar3 = uVar4 | uVar2;
+  puVar3 = puVar3 + -0x98;
+  *puVar3 = uVar2 | *puVar3;
+  iVar1 = DAT_80036244;
   *(undefined4 *)(DAT_80036244 + 0x24) = DAT_80036248;
-  puVar4 = (uint *)(iVar2 + 4);
-  *puVar4 = *puVar4 | 0x80000083;
+  puVar3 = (uint *)(iVar1 + 4);
+  *puVar3 = *puVar3 | 0x80000083;
   do {
-  } while ((*puVar4 & 0x80000000) != 0);
-  *(uint *)(iVar2 + 8) = *(uint *)(iVar2 + 8) & 0xfffffffc | 0x44;
-  *(uint *)(iVar2 + 0x18) = *(uint *)(iVar2 + 0x18) | 0x80008000;
+  } while ((*puVar3 & 0x80000000) != 0);
+  *(uint *)(iVar1 + 8) = *(uint *)(iVar1 + 8) & 0xfffffffc | 0x44;
+  *(uint *)(iVar1 + 0x18) = *(uint *)(iVar1 + 0x18) | 0x80008000;
   return;
 }
 
@@ -34978,6 +34963,7 @@ void FUN_800253e8(void)
   undefined *puVar6;
   char *pcVar7;
   undefined *puVar8;
+  uint *ptr;
   ushort *puVar9;
   undefined2 uVar10;
   ushort uVar11;
@@ -35008,11 +34994,12 @@ void FUN_800253e8(void)
   undefined8 uVar34;
   
   if (*(byte *)(DAT_80025460 + 10) < 9) {
-    FUN_800169f8(0xd);
-    FUN_800168fc(0);
-    FUN_800168fc(0);
-    FUN_800168fc(7);
-    iVar13 = FUN_800168fc(2000);
+    fpga_write_cmd('\r');
+    fpga_write_data('\0');
+    fpga_write_data('\0');
+    fpga_write_data('\a');
+    iVar13 = 2000;
+    fpga_write_data(-0x30);
     puVar8 = PTR_DAT_80025adc;
     puVar6 = PTR_DAT_80025ad8;
     iVar18 = DAT_80025ad4;
@@ -35051,38 +35038,38 @@ void FUN_800253e8(void)
         *(uint *)(puVar6 + 8) = uVar14;
         goto LAB_8002582c;
       }
-    } while ((5 < *(byte *)(iVar18 + 10)) || (FUN_800177c4(), *puVar8 == '\0'));
+    } while ((5 < *(byte *)(iVar18 + 10)) || (tp_i2c_read_status(), *puVar8 == '\0'));
     FUN_8000bc00(0x28);
 LAB_8002582c:
-    FUN_800169f8(0x28);
-    FUN_800168fc(1);
+    fpga_write_cmd('(');
+    fpga_write_data('\x01');
     uVar27 = 0;
-    FUN_800169f8(0x24);
-    FUN_800167a0();
-    iVar13 = DAT_80025ae0;
-    FUN_80017738(DAT_80025ae0,9);
-    FUN_80017738(iVar13,10);
+    fpga_write_cmd('$');
+    fpga_bus_dir_in();
+    ptr = DAT_80025ae0;
+    set_gpio_pin_low(DAT_80025ae0,9);
+    set_gpio_pin_low(ptr,10);
     uVar14 = 0;
     do {
-      FUN_80017738(iVar13,8);
-      FUN_8001774c(iVar13,8);
+      set_gpio_pin_low(ptr,8);
+      set_gpio_pin_high(ptr,8);
       uVar14 = uVar14 + 1 & 0xfffeffff;
-      uVar27 = (*(uint *)(iVar13 + 0x10) & 0xff) + uVar27 & 0xfffeffff;
+      uVar27 = (ptr[4] & 0xff) + uVar27 & 0xfffeffff;
     } while (uVar14 < 10);
     uVar11 = FUN_80000dc4(uVar27,10);
     puVar16 = DAT_80025ae4;
     *DAT_80025ae4 = uVar11 & 0xff;
     uVar27 = 0;
-    FUN_800169f8(0x26);
-    FUN_800167a0();
-    FUN_80017738(iVar13,9);
-    FUN_80017738(iVar13,10);
+    fpga_write_cmd('&');
+    fpga_bus_dir_in();
+    set_gpio_pin_low(ptr,9);
+    set_gpio_pin_low(ptr,10);
     uVar14 = 0;
     do {
-      FUN_80017738(iVar13,8);
-      FUN_8001774c(iVar13,8);
+      set_gpio_pin_low(ptr,8);
+      set_gpio_pin_high(ptr,8);
       uVar14 = uVar14 + 1 & 0xfffeffff;
-      uVar27 = (*(uint *)(iVar13 + 0x10) & 0xff) + uVar27 & 0xfffeffff;
+      uVar27 = (ptr[4] & 0xff) + uVar27 & 0xfffeffff;
     } while (uVar14 < 10);
     uVar34 = FUN_80000dc4(uVar27,10);
     uVar27 = (uint)((ulonglong)uVar34 >> 0x20);
@@ -35780,99 +35767,103 @@ void FUN_80025468(void)
   char *pcVar3;
   ushort *puVar4;
   ushort *puVar5;
-  undefined4 *puVar6;
+  uint *puVar6;
   undefined *puVar7;
-  undefined uVar8;
-  ushort uVar9;
-  undefined4 *puVar10;
-  undefined *puVar11;
-  uint uVar12;
-  undefined4 *puVar13;
-  ushort *puVar14;
-  uint uVar15;
+  undefined *puVar8;
+  uchar data;
+  uchar uVar9;
+  byte bVar10;
+  short sVar11;
+  ushort uVar12;
+  uint *puVar13;
+  uint uVar14;
+  uint *puVar15;
   ushort *puVar16;
-  undefined4 *puVar17;
-  uint uVar18;
-  int iVar19;
-  uint uVar20;
-  undefined4 *puVar21;
-  undefined4 *puVar22;
-  undefined4 *unaff_r4;
-  undefined4 *puVar23;
-  uint uVar24;
-  bool bVar25;
-  bool bVar26;
+  ushort *puVar17;
+  uint *puVar18;
+  uint uVar19;
+  int iVar20;
+  uint uVar21;
+  uint *puVar22;
+  uint *puVar23;
+  uint *unaff_r4;
+  undefined4 uVar24;
+  uint *puVar25;
+  uint uVar26;
+  bool bVar27;
+  bool bVar28;
   int local_30;
+  uchar data_00;
   
-  iVar19 = DAT_80025710;
-  bVar25 = false;
-  uVar15 = DAT_80025714;
+  iVar20 = DAT_80025710;
+  bVar27 = false;
+  uVar24 = DAT_80025714;
   switch(*(undefined *)(DAT_80025710 + 10)) {
   case 9:
   case 10:
-    uVar15 = 800;
+    uVar24 = 800;
     break;
   case 0xb:
-    uVar15 = DAT_80025734;
+    uVar24 = DAT_80025734;
     break;
   case 0xc:
   case 0xd:
   case 0xe:
   case 0xf:
   case 0x10:
-    uVar15 = DAT_80025730;
+    uVar24 = DAT_80025730;
     break;
   case 0x11:
-    uVar15 = DAT_8002572c;
+    uVar24 = DAT_8002572c;
     break;
   case 0x12:
-    uVar15 = DAT_80025728;
+    uVar24 = DAT_80025728;
     break;
   case 0x13:
-    uVar15 = DAT_80025724;
+    uVar24 = DAT_80025724;
     break;
   case 0x14:
   case 0x15:
-    uVar15 = DAT_80025720;
+    uVar24 = DAT_80025720;
     break;
   case 0x16:
-    uVar15 = DAT_8002571c;
+    uVar24 = DAT_8002571c;
     break;
   case 0x17:
-    uVar15 = DAT_80025718;
+    uVar24 = DAT_80025718;
   }
   if ((*(byte *)(DAT_80025710 + 10) < 0x1c) || (*(char *)(DAT_80025710 + 0x21) != '\0')) {
     FUN_800267c4();
   }
-  FUN_800169f8(0xe);
-  FUN_800168fc(uVar15 >> 0x18);
-  FUN_800168fc(uVar15 >> 0x10);
-  FUN_800168fc(uVar15 >> 8);
-  FUN_800168fc(uVar15);
-  FUN_800169f8(0xf);
-  FUN_800168fc(0);
-  FUN_800169f8(0x28);
-  FUN_800168fc(0);
-  FUN_800169f8(1);
-  FUN_800168fc(1);
-  FUN_800169f8(5);
+  fpga_write_cmd('\x0e');
+  fpga_write_data((uchar)((uint)uVar24 >> 0x18));
+  fpga_write_data((uchar)((uint)uVar24 >> 0x10));
+  fpga_write_data((uchar)((uint)uVar24 >> 8));
+  fpga_write_data((uchar)uVar24);
+  fpga_write_cmd('\x0f');
+  fpga_write_data('\0');
+  fpga_write_cmd('(');
+  fpga_write_data('\0');
+  fpga_write_cmd('\x01');
+  fpga_write_data('\x01');
+  fpga_write_cmd('\x05');
   do {
-    uVar15 = FUN_80016850();
-  } while ((uVar15 & 1) == 0);
+    bVar10 = fpga_read_data();
+  } while ((bVar10 & 1) == 0);
   do {
-    uVar15 = FUN_80016850();
-  } while ((uVar15 & 1) == 0);
-  FUN_800169f8(1);
-  FUN_800168fc(0);
-  puVar7 = PTR_DAT_8002573c;
-  puVar11 = PTR_DAT_80025738;
-  *(undefined *)(iVar19 + 0xb) = *(undefined *)(iVar19 + 10);
-  *(ushort *)puVar11 = (ushort)*(byte *)(iVar19 + 3);
-  *(ushort *)puVar7 = (ushort)*(byte *)(iVar19 + 0xf);
+    bVar10 = fpga_read_data();
+  } while ((bVar10 & 1) == 0);
+  fpga_write_cmd('\x01');
+  fpga_write_data('\0');
+  puVar8 = PTR_DAT_8002573c;
+  puVar7 = PTR_DAT_80025738;
+  *(undefined *)(iVar20 + 0xb) = *(undefined *)(iVar20 + 10);
+  *(ushort *)puVar7 = (ushort)*(byte *)(iVar20 + 3);
+  *(ushort *)puVar8 = (ushort)*(byte *)(iVar20 + 0xf);
   pcVar2 = PTR_DAT_8002574c;
   pcVar3 = PTR_DAT_80025748;
-  if (*(char *)(iVar19 + 0x37) != '\0') {
-    *(undefined *)(iVar19 + 0x37) = 0;
+  if (*(char *)(iVar20 + 0x37) != '\0') {
+    *(undefined *)(iVar20 + 0x37) = 0;
     FUN_80017760();
     FUN_80019704(0);
     FUN_80018f6c(2,0x2f,DAT_80025740 + 0xfb);
@@ -35883,54 +35874,57 @@ void FUN_80025468(void)
     pcVar3 = PTR_DAT_80025748;
   }
   do {
-    FUN_800169f8(10);
-    uVar15 = FUN_80016850();
-    if ((uVar15 & 1) != 0) break;
-    FUN_800177c4();
+    fpga_write_cmd('\n');
+    bVar10 = fpga_read_data();
+    if ((bVar10 & 1) != 0) break;
+    tp_i2c_read_status();
     if (*pcVar3 != '\0') {
-      bVar25 = true;
+      bVar27 = true;
       break;
     }
   } while (*pcVar2 != '\x02');
-  FUN_800169f8(0xf);
-  FUN_800168fc(1);
-  if (*(char *)(iVar19 + 0x21) != '\0') {
-    if (bVar25) {
-      *(undefined *)(iVar19 + 0x18) = 1;
-      bVar25 = *(char *)(iVar19 + 0x21) != '\x01';
-      if (bVar25) {
-        if (*(char *)(iVar19 + 0x36) == '\0') {
-          bVar25 = false;
+  fpga_write_cmd('\x0f');
+  fpga_write_data('\x01');
+  if (*(char *)(iVar20 + 0x21) != '\0') {
+    if (bVar27) {
+      *(undefined *)(iVar20 + 0x18) = 1;
+      bVar27 = *(char *)(iVar20 + 0x21) != '\x01';
+      if (bVar27) {
+        if (*(char *)(iVar20 + 0x36) == '\0') {
+          bVar27 = false;
         }
       }
       else {
-        *(bool *)(iVar19 + 0x36) = bVar25;
+        *(bool *)(iVar20 + 0x36) = bVar27;
       }
-      *(bool *)(iVar19 + 0x17) = bVar25;
+      *(bool *)(iVar20 + 0x17) = bVar27;
       return;
     }
-    if (*(char *)(iVar19 + 0x21) == '\x01') {
-      *(undefined *)(iVar19 + 0x3a) = 1;
+    if (*(char *)(iVar20 + 0x21) == '\x01') {
+      *(undefined *)(iVar20 + 0x3a) = 1;
       FUN_80010944();
-      *(ushort *)puVar11 = (ushort)*(byte *)(iVar19 + 3);
-      *(ushort *)puVar7 = (ushort)*(byte *)(iVar19 + 0xf);
+      *(ushort *)puVar7 = (ushort)*(byte *)(iVar20 + 3);
+      *(ushort *)puVar8 = (ushort)*(byte *)(iVar20 + 0xf);
     }
-    *(undefined *)(iVar19 + 0x36) = 1;
+    *(undefined *)(iVar20 + 0x36) = 1;
   }
   local_30 = 0;
-  puVar10 = (undefined4 *)FUN_8001bec4();
+  puVar13 = (uint *)FUN_8001bec4();
   puVar6 = DAT_8000b270;
-  puVar13 = DAT_8000b268;
+  puVar15 = DAT_8000b268;
+  sVar11 = (short)puVar13;
   if ((byte)DAT_8000b264[10] < 0x19) {
     if ((byte)DAT_8000b264[10] < 0xb) {
-      uVar15 = 10;
-      goto LAB_8000a894;
+      sVar11 = 10;
     }
-    if (puVar10 < DAT_8000b268) {
-      uVar15 = (uint)((int)puVar10 + 0xd11) & 0xfffeffff;
-      goto LAB_8000a894;
+    else {
+      if (puVar13 < DAT_8000b268) {
+        sVar11 = sVar11 + 0xd11;
+      }
+      else {
+        sVar11 = sVar11 + -0x2ee;
+      }
     }
-    puVar11 = (undefined *)((int)puVar10 + -0x2ee);
   }
   else {
     switch(DAT_8000b264[10]) {
@@ -35938,49 +35932,50 @@ void FUN_80025468(void)
       unaff_r4 = DAT_8000b26c;
       break;
     case '\x1a':
-      unaff_r4 = (undefined4 *)0xaa;
+      unaff_r4 = (uint *)0xaa;
       break;
     case '\x1b':
-      unaff_r4 = (undefined4 *)0x55;
+      unaff_r4 = (uint *)0x55;
       break;
     case '\x1c':
-      unaff_r4 = (undefined4 *)0x2f;
+      unaff_r4 = (uint *)0x2f;
       break;
     case '\x1d':
-      unaff_r4 = (undefined4 *)&NotUsed;
+      unaff_r4 = (uint *)&NotUsed;
     }
-    if (unaff_r4 <= puVar10) {
-      uVar15 = (uint)((int)puVar10 - (int)unaff_r4) & 0xffff;
-      goto LAB_8000a894;
+    if (puVar13 < unaff_r4) {
+      sVar11 = 0xfff - ((short)unaff_r4 - sVar11);
     }
-    puVar11 = (undefined *)(-0xf001 - (int)((int)unaff_r4 - (int)puVar10));
+    else {
+      sVar11 = sVar11 - (short)unaff_r4;
+    }
   }
-  uVar15 = (uint)puVar11 & 0xffff;
-LAB_8000a894:
-  puVar10 = DAT_8000b270 + 0xfa;
+  puVar13 = DAT_8000b270 + 0xfa;
+  data = (uchar)((ushort)sVar11 >> 8);
+  data_00 = (uchar)sVar11;
   if (*DAT_8000b264 != '\0') {
-    FUN_800169f8(0x1f);
-    FUN_800168fc();
-    FUN_800168fc(uVar15);
-    puVar22 = puVar6;
+    fpga_write_cmd('\x1f');
+    fpga_write_data(data);
+    fpga_write_data(data_00);
+    puVar23 = puVar6;
     if ((byte)DAT_8000b264[10] < 0xb) {
-      puVar22 = puVar13;
+      puVar23 = puVar15;
     }
-    uVar8 = FUN_800248f8(0xc,DAT_8000b264[0x23]);
-    FUN_800169f8(uVar8);
-    FUN_800167a0();
-    puVar17 = DAT_8000b274;
-    FUN_80017738(DAT_8000b274,9);
-    FUN_80017738(puVar17,10);
-    puVar23 = (undefined4 *)0x0;
-    if (puVar22 != (undefined4 *)0x0) {
+    uVar9 = FUN_800248f8(0xc,DAT_8000b264[0x23]);
+    fpga_write_cmd(uVar9);
+    fpga_bus_dir_in();
+    puVar18 = DAT_8000b274;
+    set_gpio_pin_low(DAT_8000b274,9);
+    set_gpio_pin_low(puVar18,10);
+    puVar25 = (uint *)0x0;
+    if (puVar23 != (uint *)0x0) {
       do {
-        FUN_80017738(puVar17,8);
-        FUN_8001774c(puVar17,8);
-        puVar14 = DAT_8000b278 + (int)puVar23;
-        puVar23 = (undefined4 *)((uint)((int)puVar23 + 1) & 0xfffeffff);
-        *puVar14 = (ushort)puVar17[4] & 0xff;
-      } while (puVar23 < puVar22);
+        set_gpio_pin_low(puVar18,8);
+        set_gpio_pin_high(puVar18,8);
+        puVar16 = DAT_8000b278 + (int)puVar25;
+        puVar25 = (uint *)((uint)((int)puVar25 + 1) & 0xfffeffff);
+        *puVar16 = (ushort)puVar18[4] & 0xff;
+      } while (puVar25 < puVar23);
     }
     pcVar2 = DAT_8000b264;
     *DAT_8000b278 = DAT_8000b278[1];
@@ -35997,159 +35992,159 @@ LAB_8000a894:
       FUN_800130c4(DAT_8000b278,0);
     }
     if ((DAT_8000b264[10] == '\x1c') || (DAT_8000b264[10] == '\x1d')) {
-      FUN_800169f8(0x1f);
-      FUN_800168fc(uVar15 >> 8);
-      FUN_800168fc(uVar15);
-      puVar22 = puVar6;
+      fpga_write_cmd('\x1f');
+      fpga_write_data(data);
+      fpga_write_data(data_00);
+      puVar23 = puVar6;
       if ((byte)DAT_8000b264[10] < 0xb) {
-        puVar22 = puVar13;
+        puVar23 = puVar15;
       }
-      FUN_800169f8(0x21);
-      FUN_800167a0();
-      FUN_80017738(puVar17,9);
-      FUN_80017738(puVar17,10);
-      puVar23 = puVar17;
-      if (puVar22 != (undefined4 *)0x0) {
-        puVar23 = DAT_8000b27c;
+      fpga_write_cmd('!');
+      fpga_bus_dir_in();
+      set_gpio_pin_low(puVar18,9);
+      set_gpio_pin_low(puVar18,10);
+      puVar25 = puVar18;
+      if (puVar23 != (uint *)0x0) {
+        puVar25 = DAT_8000b27c;
       }
-      puVar21 = (undefined4 *)0x0;
-      if (puVar22 != (undefined4 *)0x0) {
+      puVar22 = (uint *)0x0;
+      if (puVar23 != (uint *)0x0) {
         do {
-          FUN_80017738(puVar17,8);
-          FUN_8001774c(puVar17,8);
-          iVar19 = (int)puVar21 * 2;
-          puVar21 = (undefined4 *)((uint)((int)puVar21 + 1) & 0xfffeffff);
-          *(ushort *)(DAT_8000b280 + iVar19) = (ushort)*puVar23 & 0xff;
-        } while (puVar21 < puVar22);
+          set_gpio_pin_low(puVar18,8);
+          set_gpio_pin_high(puVar18,8);
+          iVar20 = (int)puVar22 * 2;
+          puVar22 = (uint *)((uint)((int)puVar22 + 1) & 0xfffeffff);
+          *(ushort *)(DAT_8000b280 + iVar20) = (ushort)*puVar25 & 0xff;
+        } while (puVar22 < puVar23);
       }
       FUN_8000460c();
       FUN_800062bc();
     }
-    puVar22 = puVar10;
-    if (((byte)DAT_8000b264[10] < 0x19) && (puVar22 = puVar6, (byte)DAT_8000b264[10] < 9)) {
-      puVar22 = puVar13;
+    puVar23 = puVar13;
+    if (((byte)DAT_8000b264[10] < 0x19) && (puVar23 = puVar6, (byte)DAT_8000b264[10] < 9)) {
+      puVar23 = puVar15;
     }
-    uVar12 = FUN_800248f8(0xb,DAT_8000b264[3]);
-    uVar18 = DAT_8000b288;
+    uVar14 = FUN_800248f8(0xb,DAT_8000b264[3]);
+    uVar19 = DAT_8000b288;
     pcVar2 = DAT_8000b264;
-    puVar14 = DAT_8000b278;
-    puVar16 = DAT_8000b284;
+    puVar16 = DAT_8000b278;
+    puVar17 = DAT_8000b284;
     puVar4 = DAT_8000b284;
     puVar5 = DAT_8000b290;
     while (DAT_8000b264 = pcVar2, DAT_8000b284 = puVar4, DAT_8000b290 = puVar5,
-          puVar22 != (undefined4 *)0x0) {
-      uVar20 = (uVar12 & 0xffff) * (uint)*puVar14 & 0xffff;
-      uVar1 = (ushort)(DAT_8000b28c * uVar20 + DAT_8000b28c >> 0x10);
-      uVar9 = uVar1 >> 6;
-      if (0x32 < (int)(uVar20 + (uint)((ulonglong)uVar20 * (ulonglong)uVar18 >> 0x25) * -100)) {
-        uVar9 = (uVar1 >> 6) + 1;
+          puVar23 != (uint *)0x0) {
+      uVar21 = (uVar14 & 0xffff) * (uint)*puVar16 & 0xffff;
+      uVar1 = (ushort)(DAT_8000b28c * uVar21 + DAT_8000b28c >> 0x10);
+      uVar12 = uVar1 >> 6;
+      if (0x32 < (int)(uVar21 + (uint)((ulonglong)uVar21 * (ulonglong)uVar19 >> 0x25) * -100)) {
+        uVar12 = (uVar1 >> 6) + 1;
       }
-      puVar22 = (undefined4 *)((int)puVar22 + -1);
-      *puVar16 = uVar9;
+      puVar23 = (uint *)((int)puVar23 + -1);
+      *puVar17 = uVar12;
       pcVar2 = DAT_8000b264;
-      puVar14 = puVar14 + 1;
       puVar16 = puVar16 + 1;
+      puVar17 = puVar17 + 1;
       puVar4 = DAT_8000b284;
       puVar5 = DAT_8000b290;
     }
-    puVar22 = puVar10;
-    if (((byte)pcVar2[10] < 0x19) && (puVar22 = puVar6, (byte)pcVar2[10] < 9)) {
-      puVar22 = puVar13;
+    puVar23 = puVar13;
+    if (((byte)pcVar2[10] < 0x19) && (puVar23 = puVar6, (byte)pcVar2[10] < 9)) {
+      puVar23 = puVar15;
     }
-    puVar14 = puVar4 + -1;
-    puVar16 = puVar5 + -1;
-    if (((uint)puVar22 & 1) == 0) {
+    puVar16 = puVar4 + -1;
+    puVar17 = puVar5 + -1;
+    if (((uint)puVar23 & 1) == 0) {
       *puVar5 = *puVar4;
-      puVar14 = puVar4;
-      puVar16 = puVar5;
+      puVar16 = puVar4;
+      puVar17 = puVar5;
     }
-    uVar9 = puVar14[1];
-    iVar19 = (int)puVar22 + -1 >> 1;
-    while (iVar19 != 0) {
-      uVar1 = puVar14[2];
-      puVar16[1] = uVar9;
-      uVar9 = puVar14[3];
-      iVar19 = iVar19 + -1;
+    uVar12 = puVar16[1];
+    iVar20 = (int)puVar23 + -1 >> 1;
+    while (iVar20 != 0) {
+      uVar1 = puVar16[2];
+      puVar17[1] = uVar12;
+      uVar12 = puVar16[3];
+      iVar20 = iVar20 + -1;
+      puVar17 = puVar17 + 2;
+      *puVar17 = uVar1;
       puVar16 = puVar16 + 2;
-      *puVar16 = uVar1;
-      puVar14 = puVar14 + 2;
     }
-    iVar19 = (int)puVar22 + -1;
-    if (-1 < iVar19) {
-      puVar5[iVar19] = puVar4[iVar19];
+    iVar20 = (int)puVar23 + -1;
+    if (-1 < iVar20) {
+      puVar5[iVar20] = puVar4[iVar20];
     }
-    puVar22 = puVar10;
-    if (((byte)pcVar2[10] < 0x19) && (puVar22 = puVar6, (byte)pcVar2[10] < 9)) {
-      puVar22 = puVar13;
+    puVar23 = puVar13;
+    if (((byte)pcVar2[10] < 0x19) && (puVar23 = puVar6, (byte)pcVar2[10] < 9)) {
+      puVar23 = puVar15;
     }
-    puVar14 = DAT_8000b290;
-    puVar17 = puVar10;
-    uVar18 = DAT_8000b294;
-    if ((pcVar2[3] == '\x06') && (puVar22 != (undefined4 *)0x0)) {
-      puVar14 = puVar5 + -1;
-      if (((uint)puVar22 & 1) != 0) {
+    puVar16 = DAT_8000b290;
+    puVar18 = puVar13;
+    uVar19 = DAT_8000b294;
+    if ((pcVar2[3] == '\x06') && (puVar23 != (uint *)0x0)) {
+      puVar16 = puVar5 + -1;
+      if (((uint)puVar23 & 1) != 0) {
         *puVar5 = *puVar5 << 1;
-        puVar14 = puVar5;
+        puVar16 = puVar5;
       }
-      uVar18 = (uint)puVar22 >> 1;
-      while (uVar18 != 0) {
-        puVar16 = puVar14 + 2;
-        uVar18 = uVar18 - 1;
-        puVar14[1] = puVar14[1] << 1;
-        *puVar16 = *puVar16 << 1;
-        puVar14 = puVar16;
+      uVar19 = (uint)puVar23 >> 1;
+      while (uVar19 != 0) {
+        puVar17 = puVar16 + 2;
+        uVar19 = uVar19 - 1;
+        puVar16[1] = puVar16[1] << 1;
+        *puVar17 = *puVar17 << 1;
+        puVar16 = puVar17;
       }
-      puVar23 = (undefined4 *)0x0;
-      puVar14 = DAT_8000b290;
-      uVar18 = DAT_8000b294;
-      if (puVar22 != (undefined4 *)0x0) {
+      puVar25 = (uint *)0x0;
+      puVar16 = DAT_8000b290;
+      uVar19 = DAT_8000b294;
+      if (puVar23 != (uint *)0x0) {
         do {
-          puVar14 = puVar5 + (int)puVar23;
-          if (*puVar14 < *(ushort *)(pcVar2 + 6)) {
-            *puVar14 = 0;
+          puVar16 = puVar5 + (int)puVar25;
+          if (*puVar16 < *(ushort *)(pcVar2 + 6)) {
+            *puVar16 = 0;
           }
           else {
-            *puVar14 = *puVar14 - *(short *)(pcVar2 + 6);
+            *puVar16 = *puVar16 - *(short *)(pcVar2 + 6);
           }
-          puVar23 = (undefined4 *)((uint)((int)puVar23 + 1) & 0xfffeffff);
-          puVar14 = DAT_8000b290;
-          uVar18 = DAT_8000b294;
-        } while (puVar23 < puVar22);
+          puVar25 = (uint *)((uint)((int)puVar25 + 1) & 0xfffeffff);
+          puVar16 = DAT_8000b290;
+          uVar19 = DAT_8000b294;
+        } while (puVar25 < puVar23);
       }
     }
     do {
-      if (uVar18 < *puVar14) {
-        *puVar14 = (ushort)uVar18;
+      if (uVar19 < *puVar16) {
+        *puVar16 = (ushort)uVar19;
       }
-      puVar17 = (undefined4 *)((int)puVar17 + -1);
-      puVar14 = puVar14 + 1;
-    } while (puVar17 != (undefined4 *)0x0);
-    puVar14 = DAT_8000b290;
-    iVar19 = DAT_8000b298;
+      puVar18 = (uint *)((int)puVar18 + -1);
+      puVar16 = puVar16 + 1;
+    } while (puVar18 != (uint *)0x0);
+    puVar16 = DAT_8000b290;
+    iVar20 = DAT_8000b298;
     if ((byte)pcVar2[10] < 0x19) {
       do {
-        uVar18 = (uint)*puVar14;
-        uVar20 = (uint)puVar14[1];
-        uVar12 = (uint)puVar14[2];
-        uVar24 = uVar18 + 6;
-        bVar26 = uVar24 <= uVar20;
-        bVar25 = uVar20 == uVar24;
-        if (bVar26 && !bVar25) {
-          uVar24 = uVar12 + 6;
+        uVar19 = (uint)*puVar16;
+        uVar21 = (uint)puVar16[1];
+        uVar14 = (uint)puVar16[2];
+        uVar26 = uVar19 + 6;
+        bVar28 = uVar26 <= uVar21;
+        bVar27 = uVar21 == uVar26;
+        if (bVar28 && !bVar27) {
+          uVar26 = uVar14 + 6;
         }
-        if (bVar26 && !bVar25) {
-          bVar26 = uVar24 <= uVar20;
-          bVar25 = uVar20 == uVar24;
+        if (bVar28 && !bVar27) {
+          bVar28 = uVar26 <= uVar21;
+          bVar27 = uVar21 == uVar26;
         }
-        if (bVar26 && !bVar25) {
-          puVar14[1] = (ushort)(uVar18 + uVar12 >> 1);
+        if (bVar28 && !bVar27) {
+          puVar16[1] = (ushort)(uVar19 + uVar14 >> 1);
         }
-        if (uVar20 + 6 < uVar18 && uVar20 + 6 < uVar12) {
-          puVar14[1] = (ushort)(uVar18 + uVar12 >> 1);
+        if (uVar21 + 6 < uVar19 && uVar21 + 6 < uVar14) {
+          puVar16[1] = (ushort)(uVar19 + uVar14 >> 1);
         }
-        iVar19 = iVar19 + -1;
-        puVar14 = puVar14 + 1;
-      } while (iVar19 != 0);
+        iVar20 = iVar20 + -1;
+        puVar16 = puVar16 + 1;
+      } while (iVar20 != 0);
     }
     FUN_800049a0();
     FUN_80006654();
@@ -36158,195 +36153,195 @@ LAB_8000a894:
     }
   }
   if (DAT_8000b264[0xc] != '\0') {
-    FUN_800169f8(0x1f);
-    FUN_800168fc();
-    FUN_800168fc(uVar15);
-    puVar22 = puVar6;
+    fpga_write_cmd('\x1f');
+    fpga_write_data(data);
+    fpga_write_data(data_00);
+    puVar23 = puVar6;
     if ((byte)DAT_8000b264[10] < 0xb) {
-      puVar22 = puVar13;
+      puVar23 = puVar15;
     }
-    uVar8 = FUN_800248f8(0xd,DAT_8000b264[0x23]);
-    FUN_800169f8(uVar8);
-    FUN_800167a0();
-    puVar23 = DAT_8000b274;
-    FUN_80017738(DAT_8000b274,9);
-    FUN_80017738(puVar23,10);
-    puVar14 = DAT_8000b29c;
-    puVar17 = (undefined4 *)0x0;
-    if (puVar22 != (undefined4 *)0x0) {
+    uVar9 = FUN_800248f8(0xd,DAT_8000b264[0x23]);
+    fpga_write_cmd(uVar9);
+    fpga_bus_dir_in();
+    puVar25 = DAT_8000b274;
+    set_gpio_pin_low(DAT_8000b274,9);
+    set_gpio_pin_low(puVar25,10);
+    puVar16 = DAT_8000b29c;
+    puVar18 = (uint *)0x0;
+    if (puVar23 != (uint *)0x0) {
       do {
-        FUN_80017738(puVar23,8);
-        FUN_8001774c(puVar23,8);
-        puVar16 = puVar14 + (int)puVar17;
-        puVar17 = (undefined4 *)((uint)((int)puVar17 + 1) & 0xfffeffff);
-        *puVar16 = (ushort)*DAT_8000b27c & 0xff;
-      } while (puVar17 < puVar22);
+        set_gpio_pin_low(puVar25,8);
+        set_gpio_pin_high(puVar25,8);
+        puVar17 = puVar16 + (int)puVar18;
+        puVar18 = (uint *)((uint)((int)puVar18 + 1) & 0xfffeffff);
+        *puVar17 = (ushort)*DAT_8000b27c & 0xff;
+      } while (puVar18 < puVar23);
     }
     pcVar2 = DAT_8000b264;
-    *puVar14 = puVar14[1];
+    *puVar16 = puVar16[1];
     if (pcVar2[0x23] == '\x01') {
       local_30 = FUN_800291e0();
     }
     if (pcVar2[10] == '\x19') {
-      FUN_8001363c(DAT_8000b29c,0,puVar10);
+      FUN_8001363c(DAT_8000b29c,0,puVar13);
     }
     if (pcVar2[10] == '\x1a') {
-      FUN_800141c8(DAT_8000b29c,0,puVar10);
+      FUN_800141c8(DAT_8000b29c,0,puVar13);
     }
     if (pcVar2[10] == '\x1b') {
-      FUN_800130c4(DAT_8000b29c,0,puVar10);
+      FUN_800130c4(DAT_8000b29c,0,puVar13);
     }
     if ((DAT_8000b264[10] == '\x1c') || (DAT_8000b264[10] == '\x1d')) {
-      FUN_800169f8(0x1f);
-      FUN_800168fc(uVar15 >> 8);
-      FUN_800168fc(uVar15);
-      puVar22 = puVar6;
+      fpga_write_cmd('\x1f');
+      fpga_write_data(data);
+      fpga_write_data(data_00);
+      puVar23 = puVar6;
       if ((byte)DAT_8000b264[10] < 0xb) {
-        puVar22 = puVar13;
+        puVar23 = puVar15;
       }
-      FUN_800169f8(0x23);
-      FUN_800167a0();
-      FUN_80017738(puVar23,9);
-      FUN_80017738(puVar23,10);
-      if (puVar22 != (undefined4 *)0x0) {
-        puVar14 = DAT_8000b2a0;
-        puVar17 = DAT_8000b27c;
+      fpga_write_cmd('#');
+      fpga_bus_dir_in();
+      set_gpio_pin_low(puVar25,9);
+      set_gpio_pin_low(puVar25,10);
+      if (puVar23 != (uint *)0x0) {
+        puVar16 = DAT_8000b2a0;
+        puVar18 = DAT_8000b27c;
       }
-      puVar21 = (undefined4 *)0x0;
-      if (puVar22 != (undefined4 *)0x0) {
+      puVar22 = (uint *)0x0;
+      if (puVar23 != (uint *)0x0) {
         do {
-          FUN_80017738(puVar23,8);
-          FUN_8001774c(puVar23,8);
-          puVar16 = puVar14 + (int)puVar21;
-          puVar21 = (undefined4 *)((uint)((int)puVar21 + 1) & 0xfffeffff);
-          *puVar16 = (ushort)*puVar17 & 0xff;
-        } while (puVar21 < puVar22);
+          set_gpio_pin_low(puVar25,8);
+          set_gpio_pin_high(puVar25,8);
+          puVar17 = puVar16 + (int)puVar22;
+          puVar22 = (uint *)((uint)((int)puVar22 + 1) & 0xfffeffff);
+          *puVar17 = (ushort)*puVar18 & 0xff;
+        } while (puVar22 < puVar23);
       }
       FUN_80007380();
       FUN_80009018();
     }
     pcVar2 = DAT_8000b264;
-    puVar22 = puVar10;
-    if (((byte)DAT_8000b264[10] < 0x19) && (puVar22 = puVar6, (byte)DAT_8000b264[10] < 9)) {
-      puVar22 = puVar13;
+    puVar23 = puVar13;
+    if (((byte)DAT_8000b264[10] < 0x19) && (puVar23 = puVar6, (byte)DAT_8000b264[10] < 9)) {
+      puVar23 = puVar15;
     }
-    uVar18 = FUN_800248f8(0xb,DAT_8000b264[0xf]);
-    uVar15 = DAT_8000b288;
-    puVar14 = DAT_8000b29c;
-    puVar16 = DAT_8000b2a4;
+    uVar14 = FUN_800248f8(0xb,DAT_8000b264[0xf]);
+    uVar19 = DAT_8000b288;
+    puVar16 = DAT_8000b29c;
+    puVar17 = DAT_8000b2a4;
     puVar4 = DAT_8000b2a4;
     puVar5 = DAT_8000b2a8;
-    while (DAT_8000b2a4 = puVar4, DAT_8000b2a8 = puVar5, puVar22 != (undefined4 *)0x0) {
-      uVar12 = (uVar18 & 0xffff) * (uint)*puVar14 & 0xffff;
-      uVar1 = (ushort)(DAT_8000b28c * uVar12 + DAT_8000b28c >> 0x10);
-      uVar9 = uVar1 >> 6;
-      if (0x32 < (int)(uVar12 + (uint)((ulonglong)uVar12 * (ulonglong)uVar15 >> 0x25) * -100)) {
-        uVar9 = (uVar1 >> 6) + 1;
+    while (DAT_8000b2a4 = puVar4, DAT_8000b2a8 = puVar5, puVar23 != (uint *)0x0) {
+      uVar21 = (uVar14 & 0xffff) * (uint)*puVar16 & 0xffff;
+      uVar1 = (ushort)(DAT_8000b28c * uVar21 + DAT_8000b28c >> 0x10);
+      uVar12 = uVar1 >> 6;
+      if (0x32 < (int)(uVar21 + (uint)((ulonglong)uVar21 * (ulonglong)uVar19 >> 0x25) * -100)) {
+        uVar12 = (uVar1 >> 6) + 1;
       }
-      puVar22 = (undefined4 *)((int)puVar22 + -1);
-      *puVar16 = uVar9;
-      puVar14 = puVar14 + 1;
+      puVar23 = (uint *)((int)puVar23 + -1);
+      *puVar17 = uVar12;
       puVar16 = puVar16 + 1;
+      puVar17 = puVar17 + 1;
       puVar4 = DAT_8000b2a4;
       puVar5 = DAT_8000b2a8;
     }
-    puVar22 = puVar10;
-    if (((byte)pcVar2[10] < 0x19) && (puVar22 = puVar6, (byte)pcVar2[10] < 9)) {
-      puVar22 = puVar13;
+    puVar23 = puVar13;
+    if (((byte)pcVar2[10] < 0x19) && (puVar23 = puVar6, (byte)pcVar2[10] < 9)) {
+      puVar23 = puVar15;
     }
-    puVar14 = puVar4 + -1;
-    puVar16 = puVar5 + -1;
-    if (((uint)puVar22 & 1) == 0) {
+    puVar16 = puVar4 + -1;
+    puVar17 = puVar5 + -1;
+    if (((uint)puVar23 & 1) == 0) {
       *puVar5 = *puVar4;
-      puVar14 = puVar4;
-      puVar16 = puVar5;
+      puVar16 = puVar4;
+      puVar17 = puVar5;
     }
-    uVar9 = puVar14[1];
-    iVar19 = (int)puVar22 + -1 >> 1;
-    while (iVar19 != 0) {
-      uVar1 = puVar14[2];
-      puVar16[1] = uVar9;
-      uVar9 = puVar14[3];
-      iVar19 = iVar19 + -1;
+    uVar12 = puVar16[1];
+    iVar20 = (int)puVar23 + -1 >> 1;
+    while (iVar20 != 0) {
+      uVar1 = puVar16[2];
+      puVar17[1] = uVar12;
+      uVar12 = puVar16[3];
+      iVar20 = iVar20 + -1;
+      puVar17 = puVar17 + 2;
+      *puVar17 = uVar1;
       puVar16 = puVar16 + 2;
-      *puVar16 = uVar1;
-      puVar14 = puVar14 + 2;
     }
-    iVar19 = (int)puVar22 + -1;
-    if (-1 < iVar19) {
-      puVar5[iVar19] = puVar4[iVar19];
+    iVar20 = (int)puVar23 + -1;
+    if (-1 < iVar20) {
+      puVar5[iVar20] = puVar4[iVar20];
     }
-    puVar22 = puVar10;
-    if (((byte)pcVar2[10] < 0x19) && (puVar22 = puVar13, 8 < (byte)pcVar2[10])) {
-      puVar22 = puVar6;
+    puVar23 = puVar13;
+    if (((byte)pcVar2[10] < 0x19) && (puVar23 = puVar15, 8 < (byte)pcVar2[10])) {
+      puVar23 = puVar6;
     }
-    puVar14 = DAT_8000b2a8;
-    uVar15 = DAT_8000b294;
-    if ((pcVar2[0xf] == '\x06') && (puVar22 != (undefined4 *)0x0)) {
-      puVar14 = puVar5 + -1;
-      if (((uint)puVar22 & 1) != 0) {
+    puVar16 = DAT_8000b2a8;
+    uVar19 = DAT_8000b294;
+    if ((pcVar2[0xf] == '\x06') && (puVar23 != (uint *)0x0)) {
+      puVar16 = puVar5 + -1;
+      if (((uint)puVar23 & 1) != 0) {
         *puVar5 = *puVar5 << 1;
-        puVar14 = puVar5;
+        puVar16 = puVar5;
       }
-      uVar15 = (uint)puVar22 >> 1;
-      while (uVar15 != 0) {
-        puVar16 = puVar14 + 2;
-        uVar15 = uVar15 - 1;
-        puVar14[1] = puVar14[1] << 1;
-        *puVar16 = *puVar16 << 1;
-        puVar14 = puVar16;
+      uVar19 = (uint)puVar23 >> 1;
+      while (uVar19 != 0) {
+        puVar17 = puVar16 + 2;
+        uVar19 = uVar19 - 1;
+        puVar16[1] = puVar16[1] << 1;
+        *puVar17 = *puVar17 << 1;
+        puVar16 = puVar17;
       }
-      puVar13 = (undefined4 *)0x0;
-      puVar14 = DAT_8000b2a8;
-      uVar15 = DAT_8000b294;
-      if (puVar22 != (undefined4 *)0x0) {
+      puVar15 = (uint *)0x0;
+      puVar16 = DAT_8000b2a8;
+      uVar19 = DAT_8000b294;
+      if (puVar23 != (uint *)0x0) {
         do {
-          puVar14 = puVar5 + (int)puVar13;
-          if (*puVar14 < *(ushort *)(pcVar2 + 0x12)) {
-            *puVar14 = 0;
+          puVar16 = puVar5 + (int)puVar15;
+          if (*puVar16 < *(ushort *)(pcVar2 + 0x12)) {
+            *puVar16 = 0;
           }
           else {
-            *puVar14 = *puVar14 - *(short *)(pcVar2 + 0x12);
+            *puVar16 = *puVar16 - *(short *)(pcVar2 + 0x12);
           }
-          puVar13 = (undefined4 *)((uint)((int)puVar13 + 1) & 0xfffeffff);
-          puVar14 = DAT_8000b2a8;
-          uVar15 = DAT_8000b294;
-        } while (puVar13 < puVar22);
+          puVar15 = (uint *)((uint)((int)puVar15 + 1) & 0xfffeffff);
+          puVar16 = DAT_8000b2a8;
+          uVar19 = DAT_8000b294;
+        } while (puVar15 < puVar23);
       }
     }
     do {
-      if (uVar15 < *puVar14) {
-        *puVar14 = (ushort)uVar15;
+      if (uVar19 < *puVar16) {
+        *puVar16 = (ushort)uVar19;
       }
-      puVar10 = (undefined4 *)((int)puVar10 + -1);
-      puVar14 = puVar14 + 1;
-    } while (puVar10 != (undefined4 *)0x0);
-    puVar14 = DAT_8000b2a8;
-    iVar19 = DAT_8000b298;
+      puVar13 = (uint *)((int)puVar13 + -1);
+      puVar16 = puVar16 + 1;
+    } while (puVar13 != (uint *)0x0);
+    puVar16 = DAT_8000b2a8;
+    iVar20 = DAT_8000b298;
     if ((byte)pcVar2[10] < 0x19) {
       do {
-        uVar18 = (uint)*puVar14;
-        uVar15 = (uint)puVar14[1];
-        uVar12 = (uint)puVar14[2];
-        uVar20 = uVar18 + 6;
-        bVar26 = uVar20 <= uVar15;
-        bVar25 = uVar15 == uVar20;
-        if (bVar26 && !bVar25) {
-          uVar20 = uVar12 + 6;
+        uVar14 = (uint)*puVar16;
+        uVar19 = (uint)puVar16[1];
+        uVar21 = (uint)puVar16[2];
+        uVar26 = uVar14 + 6;
+        bVar28 = uVar26 <= uVar19;
+        bVar27 = uVar19 == uVar26;
+        if (bVar28 && !bVar27) {
+          uVar26 = uVar21 + 6;
         }
-        if (bVar26 && !bVar25) {
-          bVar26 = uVar20 <= uVar15;
-          bVar25 = uVar15 == uVar20;
+        if (bVar28 && !bVar27) {
+          bVar28 = uVar26 <= uVar19;
+          bVar27 = uVar19 == uVar26;
         }
-        if (bVar26 && !bVar25) {
-          puVar14[1] = (ushort)(uVar18 + uVar12 >> 1);
+        if (bVar28 && !bVar27) {
+          puVar16[1] = (ushort)(uVar14 + uVar21 >> 1);
         }
-        if (uVar15 + 6 < uVar18 && uVar15 + 6 < uVar12) {
-          puVar14[1] = (ushort)(uVar18 + uVar12 >> 1);
+        if (uVar19 + 6 < uVar14 && uVar19 + 6 < uVar21) {
+          puVar16[1] = (ushort)(uVar14 + uVar21 >> 1);
         }
-        iVar19 = iVar19 + -1;
-        puVar14 = puVar14 + 1;
-      } while (iVar19 != 0);
+        iVar20 = iVar20 + -1;
+        puVar16 = puVar16 + 1;
+      } while (iVar20 != 0);
     }
     FUN_80007714();
     FUN_800093ac();
@@ -36392,14 +36387,14 @@ LAB_8000a894:
 
 
 
-uint FUN_80025b0c(void)
+byte FUN_80025b0c(void)
 
 {
-  uint uVar1;
+  byte bVar1;
   
-  FUN_800169f8(10);
-  uVar1 = FUN_80016850();
-  return uVar1 & 1;
+  fpga_write_cmd('\n');
+  bVar1 = fpga_read_data();
+  return bVar1 & 1;
 }
 
 
@@ -36407,36 +36402,35 @@ uint FUN_80025b0c(void)
 void FUN_80025b24(void)
 
 {
-  int iVar1;
-  uint uVar2;
-  undefined4 unaff_r4;
+  uint *ptr;
+  byte bVar1;
   
-  FUN_800169f8(0x28);
-  FUN_800168fc(0);
-  FUN_800169f8(1);
-  FUN_800168fc(1);
-  FUN_800169f8(5);
+  fpga_write_cmd('(');
+  fpga_write_data('\0');
+  fpga_write_cmd('\x01');
+  fpga_write_data('\x01');
+  fpga_write_cmd('\x05');
   do {
-    uVar2 = FUN_80016850();
-  } while ((uVar2 & 1) == 0);
+    bVar1 = fpga_read_data();
+  } while ((bVar1 & 1) == 0);
   do {
-    uVar2 = FUN_80016850();
-  } while ((uVar2 & 1) == 0);
-  FUN_800169f8(1);
-  iVar1 = DAT_800169f4;
-  FUN_8001764c(DAT_800169f4,0,1,0,unaff_r4);
-  FUN_8001764c(iVar1,1,1,0);
-  FUN_8001764c(iVar1,2,1,0);
-  FUN_8001764c(iVar1,3,1,0);
-  FUN_8001764c(iVar1,4,1,0);
-  FUN_8001764c(iVar1,5,1,0);
-  FUN_8001764c(iVar1,6,1,0);
-  FUN_8001764c(iVar1,7,1,0);
-  FUN_8001774c(iVar1,9);
-  FUN_80017738(iVar1,10);
-  *(uint *)(iVar1 + 0x10) = *(uint *)(iVar1 + 0x10) & 0xffffff00;
-  FUN_80017738(iVar1,8);
-  *(uint *)(iVar1 + 0x10) = *(uint *)(iVar1 + 0x10) | 0x100;
+    bVar1 = fpga_read_data();
+  } while ((bVar1 & 1) == 0);
+  fpga_write_cmd('\x01');
+  ptr = PE_CFG0;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = ptr[4] & 0xffffff00;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
@@ -36445,27 +36439,26 @@ void FUN_80025b24(void)
 void FUN_80025b7c(uint param_1)
 
 {
-  int iVar1;
-  undefined4 unaff_r4;
+  uint *ptr;
   
-  FUN_800169f8(0xe);
-  FUN_800168fc(param_1 >> 0x18);
-  FUN_800168fc(param_1 >> 0x10);
-  FUN_800168fc(param_1 >> 8);
-  iVar1 = DAT_800169f4;
-  FUN_8001764c(DAT_800169f4,0,1,0,unaff_r4);
-  FUN_8001764c(iVar1,1,1,0);
-  FUN_8001764c(iVar1,2,1,0);
-  FUN_8001764c(iVar1,3,1,0);
-  FUN_8001764c(iVar1,4,1,0);
-  FUN_8001764c(iVar1,5,1,0);
-  FUN_8001764c(iVar1,6,1,0);
-  FUN_8001764c(iVar1,7,1,0);
-  FUN_8001774c(iVar1,9);
-  FUN_80017738(iVar1,10);
-  *(uint *)(iVar1 + 0x10) = param_1 & 0xff | *(uint *)(iVar1 + 0x10) & 0xffffff00;
-  FUN_80017738(iVar1,8);
-  *(uint *)(iVar1 + 0x10) = *(uint *)(iVar1 + 0x10) | 0x100;
+  fpga_write_cmd('\x0e');
+  fpga_write_data((uchar)(param_1 >> 0x18));
+  fpga_write_data((uchar)(param_1 >> 0x10));
+  fpga_write_data((uchar)(param_1 >> 8));
+  ptr = PE_CFG0;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = param_1 & 0xff | ptr[4] & 0xffffff00;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
@@ -37104,25 +37097,24 @@ LAB_800265a8:
 void FUN_80026698(uint param_1)
 
 {
-  int iVar1;
-  undefined4 unaff_r4;
+  uint *ptr;
   
-  FUN_800169f8(0x1f);
-  FUN_800168fc(param_1 >> 8);
-  iVar1 = DAT_800169f4;
-  FUN_8001764c(DAT_800169f4,0,1,0,unaff_r4);
-  FUN_8001764c(iVar1,1,1,0);
-  FUN_8001764c(iVar1,2,1,0);
-  FUN_8001764c(iVar1,3,1,0);
-  FUN_8001764c(iVar1,4,1,0);
-  FUN_8001764c(iVar1,5,1,0);
-  FUN_8001764c(iVar1,6,1,0);
-  FUN_8001764c(iVar1,7,1,0);
-  FUN_8001774c(iVar1,9);
-  FUN_80017738(iVar1,10);
-  *(uint *)(iVar1 + 0x10) = param_1 & 0xff | *(uint *)(iVar1 + 0x10) & 0xffffff00;
-  FUN_80017738(iVar1,8);
-  *(uint *)(iVar1 + 0x10) = *(uint *)(iVar1 + 0x10) | 0x100;
+  fpga_write_cmd('\x1f');
+  fpga_write_data((uchar)(param_1 >> 8));
+  ptr = PE_CFG0;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = param_1 & 0xff | ptr[4] & 0xffffff00;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
@@ -37147,16 +37139,16 @@ void FUN_800266c0(void)
 void FUN_800266c4(void)
 
 {
-  undefined uVar1;
-  uint uVar2;
+  uchar cmd;
+  undefined4 uVar1;
   
-  uVar2 = FUN_800248f8(10,*(undefined *)(DAT_80026720 + 10));
-  uVar1 = FUN_800248f8(0x14,0xed);
-  FUN_800169f8(uVar1);
-  FUN_800168fc(uVar2 >> 0x18);
-  FUN_800168fc(uVar2 >> 0x10);
-  FUN_800168fc(uVar2 >> 8);
-  FUN_800168fc(uVar2);
+  uVar1 = FUN_800248f8(10,*(undefined *)(DAT_80026720 + 10));
+  cmd = FUN_800248f8(0x14,0xed);
+  fpga_write_cmd(cmd);
+  fpga_write_data((uchar)((uint)uVar1 >> 0x18));
+  fpga_write_data((uchar)((uint)uVar1 >> 0x10));
+  fpga_write_data((uchar)((uint)uVar1 >> 8));
+  fpga_write_data((uchar)uVar1);
   *(undefined2 *)PTR_DAT_80026724 = 0;
   return;
 }
@@ -37166,9 +37158,9 @@ void FUN_800266c4(void)
 void FUN_80026728(void)
 
 {
+  uint *ptr;
   int iVar1;
-  undefined uVar2;
-  undefined4 unaff_r4;
+  uchar uVar2;
   
   iVar1 = DAT_800267bc;
   *(undefined *)(DAT_800267bc + 3) = 0;
@@ -37176,44 +37168,44 @@ void FUN_80026728(void)
   *(undefined *)(iVar1 + 0xf) = 0;
   *(undefined2 *)(iVar1 + 0x12) = 200;
   *(undefined *)(iVar1 + 10) = 0x13;
-  FUN_800169f8(0x33);
+  fpga_write_cmd('3');
   if (*(char *)(iVar1 + 3) == '\x06') {
-    uVar2 = 5;
+    uVar2 = '\x05';
   }
   else {
-    uVar2 = *(undefined *)(iVar1 + 3);
+    uVar2 = *(uchar *)(iVar1 + 3);
   }
-  FUN_800168fc(uVar2);
-  FUN_800169f8(0x36);
+  fpga_write_data(uVar2);
+  fpga_write_cmd('6');
   if (*(char *)(iVar1 + 0xf) == '\x06') {
-    uVar2 = 5;
+    uVar2 = '\x05';
   }
   else {
-    uVar2 = *(undefined *)(iVar1 + 0xf);
+    uVar2 = *(uchar *)(iVar1 + 0xf);
   }
-  FUN_800168fc(uVar2);
+  fpga_write_data(uVar2);
   FUN_8000696c();
   FUN_800096b8();
   FUN_800266c4();
-  FUN_800169f8(0x17);
-  FUN_800168fc(0);
+  fpga_write_cmd('\x17');
+  fpga_write_data('\0');
   FUN_8000bc00(100);
   FUN_80025b7c(DAT_800267c0);
-  FUN_800169f8(0xf);
-  iVar1 = DAT_800169f4;
-  FUN_8001764c(DAT_800169f4,0,1,0,unaff_r4);
-  FUN_8001764c(iVar1,1,1,0);
-  FUN_8001764c(iVar1,2,1,0);
-  FUN_8001764c(iVar1,3,1,0);
-  FUN_8001764c(iVar1,4,1,0);
-  FUN_8001764c(iVar1,5,1,0);
-  FUN_8001764c(iVar1,6,1,0);
-  FUN_8001764c(iVar1,7,1,0);
-  FUN_8001774c(iVar1,9);
-  FUN_80017738(iVar1,10);
-  *(uint *)(iVar1 + 0x10) = *(uint *)(iVar1 + 0x10) & 0xffffff00 | 1;
-  FUN_80017738(iVar1,8);
-  *(uint *)(iVar1 + 0x10) = *(uint *)(iVar1 + 0x10) | 0x100;
+  fpga_write_cmd('\x0f');
+  ptr = PE_CFG0;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = ptr[4] & 0xffffff00 | 1;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
@@ -37223,26 +37215,25 @@ void FUN_800267c4(void)
 
 {
   byte bVar1;
-  int iVar2;
-  undefined4 unaff_r4;
+  uint *ptr;
   
   FUN_8000b4d4();
-  FUN_800169f8(0x17);
-  iVar2 = DAT_800169f4;
+  fpga_write_cmd('\x17');
+  ptr = PE_CFG0;
   bVar1 = *(byte *)(DAT_800267e4 + 0x28);
-  FUN_8001764c(DAT_800169f4,0,1,0,unaff_r4);
-  FUN_8001764c(iVar2,1,1,0);
-  FUN_8001764c(iVar2,2,1,0);
-  FUN_8001764c(iVar2,3,1,0);
-  FUN_8001764c(iVar2,4,1,0);
-  FUN_8001764c(iVar2,5,1,0);
-  FUN_8001764c(iVar2,6,1,0);
-  FUN_8001764c(iVar2,7,1,0);
-  FUN_8001774c(iVar2,9);
-  FUN_80017738(iVar2,10);
-  *(uint *)(iVar2 + 0x10) = (uint)bVar1 | *(uint *)(iVar2 + 0x10) & 0xffffff00;
-  FUN_80017738(iVar2,8);
-  *(uint *)(iVar2 + 0x10) = *(uint *)(iVar2 + 0x10) | 0x100;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = (uint)bVar1 | ptr[4] & 0xffffff00;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
@@ -37252,25 +37243,24 @@ void FUN_800267e8(void)
 
 {
   byte bVar1;
-  int iVar2;
-  undefined4 unaff_r4;
+  uint *ptr;
   
-  FUN_800169f8(0x15);
-  iVar2 = DAT_800169f4;
+  fpga_write_cmd('\x15');
+  ptr = PE_CFG0;
   bVar1 = *(byte *)(DAT_80026804 + 0x23);
-  FUN_8001764c(DAT_800169f4,0,1,0,unaff_r4);
-  FUN_8001764c(iVar2,1,1,0);
-  FUN_8001764c(iVar2,2,1,0);
-  FUN_8001764c(iVar2,3,1,0);
-  FUN_8001764c(iVar2,4,1,0);
-  FUN_8001764c(iVar2,5,1,0);
-  FUN_8001764c(iVar2,6,1,0);
-  FUN_8001764c(iVar2,7,1,0);
-  FUN_8001774c(iVar2,9);
-  FUN_80017738(iVar2,10);
-  *(uint *)(iVar2 + 0x10) = (uint)bVar1 | *(uint *)(iVar2 + 0x10) & 0xffffff00;
-  FUN_80017738(iVar2,8);
-  *(uint *)(iVar2 + 0x10) = *(uint *)(iVar2 + 0x10) | 0x100;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = (uint)bVar1 | ptr[4] & 0xffffff00;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
@@ -37280,25 +37270,24 @@ void FUN_80026808(void)
 
 {
   byte bVar1;
-  int iVar2;
-  undefined4 unaff_r4;
+  uint *ptr;
   
-  FUN_800169f8(0x16);
-  iVar2 = DAT_800169f4;
+  fpga_write_cmd('\x16');
+  ptr = PE_CFG0;
   bVar1 = *(byte *)(DAT_80026824 + 0x22);
-  FUN_8001764c(DAT_800169f4,0,1,0,unaff_r4);
-  FUN_8001764c(iVar2,1,1,0);
-  FUN_8001764c(iVar2,2,1,0);
-  FUN_8001764c(iVar2,3,1,0);
-  FUN_8001764c(iVar2,4,1,0);
-  FUN_8001764c(iVar2,5,1,0);
-  FUN_8001764c(iVar2,6,1,0);
-  FUN_8001764c(iVar2,7,1,0);
-  FUN_8001774c(iVar2,9);
-  FUN_80017738(iVar2,10);
-  *(uint *)(iVar2 + 0x10) = (uint)bVar1 | *(uint *)(iVar2 + 0x10) & 0xffffff00;
-  FUN_80017738(iVar2,8);
-  *(uint *)(iVar2 + 0x10) = *(uint *)(iVar2 + 0x10) | 0x100;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = (uint)bVar1 | ptr[4] & 0xffffff00;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
@@ -37308,25 +37297,24 @@ void FUN_80026828(void)
 
 {
   char cVar1;
-  int iVar2;
-  undefined4 unaff_r4;
+  uint *ptr;
   
   cVar1 = *(char *)(DAT_80026854 + 0x21);
-  FUN_800169f8(0x1a);
-  iVar2 = DAT_800169f4;
-  FUN_8001764c(DAT_800169f4,0,1,0,unaff_r4);
-  FUN_8001764c(iVar2,1,1,0);
-  FUN_8001764c(iVar2,2,1,0);
-  FUN_8001764c(iVar2,3,1,0);
-  FUN_8001764c(iVar2,4,1,0);
-  FUN_8001764c(iVar2,5,1,0);
-  FUN_8001764c(iVar2,6,1,0);
-  FUN_8001764c(iVar2,7,1,0);
-  FUN_8001774c(iVar2,9);
-  FUN_80017738(iVar2,10);
-  *(uint *)(iVar2 + 0x10) = (uint)(cVar1 != '\0') | *(uint *)(iVar2 + 0x10) & 0xffffff00;
-  FUN_80017738(iVar2,8);
-  *(uint *)(iVar2 + 0x10) = *(uint *)(iVar2 + 0x10) | 0x100;
+  fpga_write_cmd('\x1a');
+  ptr = PE_CFG0;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = (uint)(cVar1 != '\0') | ptr[4] & 0xffffff00;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
@@ -37543,12 +37531,12 @@ void FUN_80026918(void)
   puVar6 = PTR_DAT_80026ce4;
   do {
     do {
-      FUN_800177c4();
+      tp_i2c_read_status();
     } while (0x4e < *(ushort *)(puVar6 + 2) - 0x169);
   } while (((*(ushort *)(puVar6 + 4) < 0x141) || (399 < *(ushort *)(puVar6 + 4))) ||
           (*puVar6 == '\0'));
   do {
-    FUN_800177c4();
+    tp_i2c_read_status();
     FUN_80019704(0xdd00);
     FUN_80018f6c(0x168,0x140,0x1b8,400);
   } while (*puVar6 != '\0');
@@ -38263,7 +38251,7 @@ bool FUN_80027ef8(void)
 {
   int iVar1;
   undefined *puVar2;
-  undefined uVar3;
+  uchar uVar3;
   int iVar4;
   int iVar5;
   
@@ -38284,22 +38272,22 @@ bool FUN_80027ef8(void)
   *(undefined2 *)(iVar1 + 6) = *(undefined2 *)(puVar2 + 8);
   *(undefined2 *)(iVar1 + 0x12) = *(undefined2 *)(puVar2 + 10);
   *(undefined2 *)(iVar1 + 0x26) = *(undefined2 *)(puVar2 + 0xc);
-  FUN_800169f8(0x33);
+  fpga_write_cmd('3');
   if (*(char *)(iVar1 + 3) == '\x06') {
-    uVar3 = 5;
+    uVar3 = '\x05';
   }
   else {
-    uVar3 = *(undefined *)(iVar1 + 3);
+    uVar3 = *(uchar *)(iVar1 + 3);
   }
-  FUN_800168fc(uVar3);
-  FUN_800169f8(0x36);
+  fpga_write_data(uVar3);
+  fpga_write_cmd('6');
   if (*(char *)(iVar1 + 0xf) == '\x06') {
-    uVar3 = 5;
+    uVar3 = '\x05';
   }
   else {
-    uVar3 = *(undefined *)(iVar1 + 0xf);
+    uVar3 = *(uchar *)(iVar1 + 0xf);
   }
-  FUN_800168fc(uVar3);
+  fpga_write_data(uVar3);
   FUN_8000696c();
   FUN_800096b8();
   FUN_800266c4();
@@ -38309,19 +38297,21 @@ bool FUN_80027ef8(void)
 
 
 
-void FUN_80027fe8(void)
+// WARNING: Unknown calling convention yet parameter storage is locked
+
+void setup_timer_int(void)
 
 {
-  FUN_80028338(0,1000,1);
-  FUN_8001c5c0(2,0xd,PTR_LAB_80028024,0);
-  FUN_8002850c(0);
+  sys_init_timer();
+  setup_some_interrupt(2,0xd);
+  more_timer_setup(0);
   FUN_80037424(0x7f);
   return;
 }
 
 
 
-void FUN_80028028(void)
+void sys_clock_init(void)
 
 {
   undefined4 uVar1;
@@ -38330,9 +38320,9 @@ void FUN_80028028(void)
   int *piVar4;
   uint uVar5;
   
-  puVar3 = DAT_80028090;
+  puVar3 = PLL_STABLE_TIME_REG0;
   uVar1 = DAT_8002808c;
-  *DAT_80028090 = DAT_8002808c;
+  *PLL_STABLE_TIME_REG0 = DAT_8002808c;
   puVar3[1] = uVar1;
   puVar3 = puVar3 + -0x6c;
   *puVar3 = 0x20000;
@@ -38353,45 +38343,45 @@ void FUN_80028028(void)
 
 
 
-void FUN_8002809c(undefined4 param_1)
+void sys_init_uart0(void)
 
 {
-  undefined4 uVar1;
-  uint *puVar2;
-  uint uVar3;
+  undefined4 *port;
+  uint *puVar1;
+  uint uVar2;
+  uint *puVar3;
   uint *puVar4;
-  uint *puVar5;
   
-  uVar3 = FUN_80000dc4(DAT_80028164,param_1);
-  uVar1 = DAT_80028168;
-  FUN_8001764c(DAT_80028168,0,5);
-  FUN_8001764c(uVar1,1,5,0);
-  puVar2 = DAT_8002816c;
-  *DAT_8002816c = *DAT_8002816c | 0x100000;
-  puVar2[0x9a] = puVar2[0x9a] | 0x100000;
-  puVar2 = DAT_80028170;
-  puVar5 = DAT_80028170 + 1;
-  *puVar5 = 0;
-  puVar2[2] = 0xf7;
-  puVar2[4] = 0;
-  puVar4 = puVar2 + 3;
-  *puVar4 = *puVar4 | 0x80;
-  *puVar2 = uVar3 >> 4 & 0xff;
-  *puVar5 = ((uVar3 >> 4) << 0x10) >> 0x18;
-  *puVar4 = *puVar4 & 0xffffff7f;
-  *puVar4 = *puVar4 & 0xffffffe0 | 3;
+  uVar2 = FUN_80000dc4(DAT_80028164);
+  port = PE_CFG0;
+  gpio_config_pin(PE_CFG0,0,5);
+  gpio_config_pin(port,1,5);
+  puVar1 = BUS_CLK_GATING_REG2;
+  *BUS_CLK_GATING_REG2 = *BUS_CLK_GATING_REG2 | 0x100000;
+  puVar1[0x9a] = puVar1[0x9a] | 0x100000;
+  puVar1 = UART0_BASE;
+  puVar4 = UART0_BASE + 1;
+  *puVar4 = 0;
+  puVar1[2] = 0xf7;
+  puVar1[4] = 0;
+  puVar3 = puVar1 + 3;
+  *puVar3 = *puVar3 | 0x80;
+  *puVar1 = uVar2 >> 4 & 0xff;
+  *puVar4 = ((uVar2 >> 4) << 0x10) >> 0x18;
+  *puVar3 = *puVar3 & 0xffffff7f;
+  *puVar3 = *puVar3 & 0xffffffe0 | 3;
   return;
 }
 
 
 
-void FUN_80028174(void)
+void sys_init_watchdog(void)
 
 {
   uint *puVar1;
   
-  *DAT_800281a0 = *DAT_800281a0 | 1;
-  puVar1 = DAT_800281a0 + 1;
+  *WDOG_CFG_REG = *WDOG_CFG_REG | 1;
+  puVar1 = WDOG_CFG_REG + 1;
   *puVar1 = *puVar1;
   *puVar1 = *puVar1 | 1;
   do {
@@ -38452,52 +38442,40 @@ void FUN_80028200(int param_1)
 
 
 
-void FUN_80028338(uint param_1,int param_2,int param_3)
+void sys_init_timer(void)
 
 {
-  int iVar1;
-  undefined4 uVar2;
-  uint uVar3;
+  uint in_r0;
+  uint uVar1;
+  int in_r1;
+  int in_r2;
   
-  iVar1 = (param_1 + 1) * 0x10 + 0x1c20c00;
-  FUN_800391f8(iVar1,iVar1 >> 0x1f,0);
-  iVar1 = (param_1 + 1) * 0x10 + 0x1c20c00;
-  uVar2 = FUN_80035f0c(iVar1,iVar1 >> 0x1f,iVar1);
-  iVar1 = (param_1 + 1) * 0x10 + 0x1c20c00;
-  FUN_800391f8(iVar1,iVar1 >> 0x1f,uVar2);
-  iVar1 = (param_1 + 1) * 0x10 + 0x1c20c00;
-  uVar2 = FUN_80035f0c(iVar1,iVar1 >> 0x1f,iVar1);
-  iVar1 = (param_1 + 1) * 0x10 + 0x1c20c00;
-  FUN_800391f8(iVar1,iVar1 >> 0x1f,uVar2);
-  iVar1 = (param_1 + 1) * 0x10 + 0x1c20c00;
-  uVar3 = FUN_80035f0c(iVar1,iVar1 >> 0x1f,iVar1);
-  iVar1 = (param_1 + 1) * 0x10 + 0x1c20c00;
-  FUN_800391f8(iVar1,iVar1 >> 0x1f,uVar3 | 4);
-  iVar1 = (param_1 + 1) * 0x10 + 0x1c20c00;
-  uVar3 = FUN_80035f0c(iVar1,iVar1 >> 0x1f,iVar1);
-  iVar1 = (param_1 + 1) * 0x10 + 0x1c20c00;
-  FUN_800391f8(iVar1,iVar1 >> 0x1f,uVar3 | 2);
-  iVar1 = (param_1 + 1) * 0x10 + 0x1c20c04;
-  FUN_800391f8(iVar1,iVar1 >> 0x1f,param_2 * 0x18);
-  if (param_3 == 1) {
-    uVar3 = FUN_80035f0c(DAT_80028508,0);
-    FUN_800391f8(DAT_80028508,0,uVar3 | 1 << (param_1 & 0xff));
+  write32((uint *)((in_r0 + 1) * 0x10 + 0x1c20c00),0);
+  uVar1 = read32((uint *)((in_r0 + 1) * 0x10 + 0x1c20c00));
+  write32((uint *)((in_r0 + 1) * 0x10 + 0x1c20c00),uVar1);
+  uVar1 = read32((uint *)((in_r0 + 1) * 0x10 + 0x1c20c00));
+  write32((uint *)((in_r0 + 1) * 0x10 + 0x1c20c00),uVar1);
+  uVar1 = read32((uint *)((in_r0 + 1) * 0x10 + 0x1c20c00));
+  write32((uint *)((in_r0 + 1) * 0x10 + 0x1c20c00),uVar1 | 4);
+  uVar1 = read32((uint *)((in_r0 + 1) * 0x10 + 0x1c20c00));
+  write32((uint *)((in_r0 + 1) * 0x10 + 0x1c20c00),uVar1 | 2);
+  write32((uint *)((in_r0 + 1) * 0x10 + 0x1c20c04),in_r1 * 0x18);
+  if (in_r2 == 1) {
+    uVar1 = read32(TIMER_BASE);
+    write32(TIMER_BASE,uVar1 | 1 << (in_r0 & 0xff));
   }
   return;
 }
 
 
 
-void FUN_8002850c(int param_1)
+void more_timer_setup(uint p1)
 
 {
-  int iVar1;
-  uint uVar2;
+  uint uVar1;
   
-  iVar1 = (param_1 + 1) * 0x10 + 0x1c20c00;
-  uVar2 = FUN_80035f0c(iVar1,iVar1 >> 0x1f,iVar1);
-  iVar1 = (param_1 + 1) * 0x10 + 0x1c20c00;
-  FUN_800391f8(iVar1,iVar1 >> 0x1f,uVar2 | 1);
+  uVar1 = read32((uint *)((p1 + 1) * 0x10 + 0x1c20c00));
+  write32((uint *)((p1 + 1) * 0x10 + 0x1c20c00),uVar1 | 1);
   return;
 }
 
@@ -38544,7 +38522,7 @@ undefined4 FUN_80028568(void)
   local_50 = 0x32;
   uVar10 = uVar3 - 0x10e;
   do {
-    FUN_800177c4();
+    tp_i2c_read_status();
     uVar5 = (uint)*(ushort *)(puVar4 + 2);
     bVar12 = uVar5 == 0;
     if (uVar5 != 0) {
@@ -38686,7 +38664,7 @@ LAB_80028804:
 
 
 // WARNING (jumptable): Heritage AFTER dead removal. Example location: s0xffffffd8 : 0x800290b0
-// WARNING: Heritage AFTER dead removal. Example location: s0xffffffd8 : 0x800290b0
+// WARNING: Heritage AFTER dead removal. Example location: s0xffffffd8 : 0x80028860
 // WARNING: Restarted to delay deadcode elimination for space: stack
 
 void FUN_80028828(undefined4 param_1,undefined4 param_2,undefined *param_3)
@@ -38741,7 +38719,7 @@ void FUN_80028828(undefined4 param_1,undefined4 param_2,undefined *param_3)
     (*UNRECOVERED_JUMPTABLE)();
     return;
   }
-  FUN_800177c4();
+  tp_i2c_read_status();
   puVar10 = (undefined *)(uint)*(ushort *)(pcVar17 + 2);
   puVar8 = (undefined *)(uint)*(ushort *)PTR_DAT_80029144;
   if ((puVar8 < puVar10) && (param_3 = PTR_DAT_80029144, puVar10 < puVar8 + 0x95)) {
@@ -38761,7 +38739,7 @@ void FUN_80028828(undefined4 param_1,undefined4 param_2,undefined *param_3)
     while (cVar1 != '\0') {
       *puVar18 = 1;
       FUN_8000e1e4();
-      FUN_800177c4();
+      tp_i2c_read_status();
       cVar1 = *pcVar17;
     }
     if (pcVar17[7] == '\0') {
@@ -38801,7 +38779,7 @@ LAB_800288e8:
         while (cVar1 != '\0') {
           *puVar18 = 2;
           FUN_8000e1e4();
-          FUN_800177c4();
+          tp_i2c_read_status();
           cVar1 = *pcVar17;
         }
         *PTR_DAT_80029148 = 0;
@@ -38838,7 +38816,7 @@ LAB_800288e8:
         while (cVar1 != '\0') {
           *puVar18 = 3;
           FUN_8000e1e4();
-          FUN_800177c4();
+          tp_i2c_read_status();
           cVar1 = *pcVar17;
         }
         *PTR_DAT_80029148 = 1;
@@ -38875,7 +38853,7 @@ LAB_800288e8:
         while (cVar1 != '\0') {
           *puVar18 = 4;
           FUN_8000e1e4();
-          FUN_800177c4();
+          tp_i2c_read_status();
           cVar1 = *pcVar17;
         }
         FUN_8000a750();
@@ -38923,7 +38901,7 @@ LAB_80028a48:
     while (uVar29 = (undefined)in_stack_ffffffe0, cVar1 != '\0') {
       puVar18[1] = 1;
       FUN_80010bd0();
-      FUN_800177c4();
+      tp_i2c_read_status();
       cVar1 = *pcVar17;
     }
     if (pcVar17[9] == '\x01') {
@@ -38972,7 +38950,7 @@ LAB_80028b08:
         while (cVar1 != '\0') {
           puVar18[1] = 2;
           FUN_80010bd0();
-          FUN_800177c4();
+          tp_i2c_read_status();
           uVar29 = (undefined)in_stack_ffffffe0;
           cVar1 = *pcVar17;
         }
@@ -39033,7 +39011,7 @@ LAB_80028c60:
           while (cVar1 != '\0') {
             puVar18[1] = 4;
             FUN_80010bd0();
-            FUN_800177c4();
+            tp_i2c_read_status();
             uVar29 = (undefined)in_stack_ffffffe0;
             cVar1 = *pcVar17;
           }
@@ -39071,7 +39049,7 @@ LAB_80028c60:
            ((uint)*(ushort *)(pcVar17 + 4) < *(ushort *)(PTR_DAT_80029144 + 6) + 0x127)) {
           cVar1 = *pcVar17;
           while (uVar29 = (undefined)in_stack_ffffffe0, cVar1 != '\0') {
-            FUN_800177c4();
+            tp_i2c_read_status();
             cVar1 = *pcVar17;
           }
           if (puVar18[7] == '\0') {
@@ -39115,7 +39093,7 @@ LAB_80028c60:
       if (!bVar26 || bVar24) goto LAB_80028c60;
       cVar1 = *pcVar17;
       while (uVar29 = (undefined)in_stack_ffffffe0, cVar1 != '\0') {
-        FUN_800177c4();
+        tp_i2c_read_status();
         cVar1 = *pcVar17;
       }
       if (puVar18[4] == '\0') {
@@ -39190,7 +39168,7 @@ LAB_80028dcc:
           FUN_8001d380();
           FUN_800117a8(1);
           FUN_80011764();
-          FUN_800177c4();
+          tp_i2c_read_status();
           cVar1 = *pcVar17;
         }
         goto LAB_80028f04;
@@ -39254,7 +39232,7 @@ joined_r0x80028f00:
             while (cVar1 != '\0') {
               puVar18[9] = 1;
               FUN_80010f08();
-              FUN_800177c4();
+              tp_i2c_read_status();
               cVar1 = *pcVar17;
             }
             puVar18[9] = 0;
@@ -39421,7 +39399,7 @@ joined_r0x80028f00:
           puVar18[3] = uVar5;
           FUN_800114f4(1);
           FUN_800114a0();
-          FUN_800177c4();
+          tp_i2c_read_status();
           cVar1 = *pcVar17;
         }
         goto LAB_80028f04;
@@ -39605,6 +39583,7 @@ void FUN_80029314(void)
 
 {
   byte bVar1;
+  uint *ptr;
   char *pcVar2;
   int iVar3;
   undefined2 uVar4;
@@ -39612,12 +39591,8 @@ void FUN_80029314(void)
   uint uVar6;
   ushort *puVar7;
   int iVar8;
-  undefined4 unaff_r4;
   uint uVar9;
   uint uVar10;
-  undefined4 unaff_r5;
-  undefined4 unaff_r6;
-  undefined4 in_lr;
   bool bVar11;
   bool bVar12;
   bool bVar13;
@@ -39627,15 +39602,15 @@ void FUN_80029314(void)
     if ((DAT_800294ac[0xc] != '\0') && (*DAT_800294ac == '\0')) {
       DAT_800294ac[0x23] = '\x01';
       FUN_8001267c(0);
-      FUN_800169f8(0x15);
-      FUN_800168fc(pcVar2[0x23]);
+      fpga_write_cmd('\x15');
+      fpga_write_data(pcVar2[0x23]);
     }
   }
   else {
     DAT_800294ac[0x23] = '\0';
     FUN_8001267c();
-    FUN_800169f8(0x15);
-    FUN_800168fc(pcVar2[0x23]);
+    fpga_write_cmd('\x15');
+    fpga_write_data(pcVar2[0x23]);
   }
   iVar3 = DAT_800294b4;
   iVar8 = DAT_800294b0;
@@ -39701,22 +39676,22 @@ void FUN_80029314(void)
     *(short *)(pcVar2 + 0x26) = (short)(uVar9 + uVar10 >> 1);
   }
   FUN_8000b4d4();
-  FUN_800169f8(0x17);
-  iVar8 = DAT_800169f4;
+  fpga_write_cmd('\x17');
+  ptr = PE_CFG0;
   bVar1 = pcVar2[0x28];
-  FUN_8001764c(DAT_800169f4,0,1,0,unaff_r4,unaff_r5,unaff_r6,in_lr);
-  FUN_8001764c(iVar8,1,1,0);
-  FUN_8001764c(iVar8,2,1,0);
-  FUN_8001764c(iVar8,3,1,0);
-  FUN_8001764c(iVar8,4,1,0);
-  FUN_8001764c(iVar8,5,1,0);
-  FUN_8001764c(iVar8,6,1,0);
-  FUN_8001764c(iVar8,7,1,0);
-  FUN_8001774c(iVar8,9);
-  FUN_80017738(iVar8,10);
-  *(uint *)(iVar8 + 0x10) = (uint)bVar1 | *(uint *)(iVar8 + 0x10) & 0xffffff00;
-  FUN_80017738(iVar8,8);
-  *(uint *)(iVar8 + 0x10) = *(uint *)(iVar8 + 0x10) | 0x100;
+  gpio_config_pin(PE_CFG0,0,1);
+  gpio_config_pin(ptr,1,1);
+  gpio_config_pin(ptr,2,1);
+  gpio_config_pin(ptr,3,1);
+  gpio_config_pin(ptr,4,1);
+  gpio_config_pin(ptr,5,1);
+  gpio_config_pin(ptr,6,1);
+  gpio_config_pin(ptr,7,1);
+  set_gpio_pin_high(ptr,9);
+  set_gpio_pin_low(ptr,10);
+  ptr[4] = (uint)bVar1 | ptr[4] & 0xffffff00;
+  set_gpio_pin_low(ptr,8);
+  ptr[4] = ptr[4] | 0x100;
   return;
 }
 
@@ -40534,7 +40509,7 @@ void FUN_80029f48(void)
 {
   undefined *puVar1;
   
-  FUN_800177c4();
+  tp_i2c_read_status();
   if (0xa0 < *(ushort *)(PTR_DAT_80029fe4 + 2) - 0x59) {
     return;
   }
@@ -40556,13 +40531,13 @@ void FUN_80029f48(void)
   FUN_80018bf8(s_ON___OFF_80029ff4,0x7d,0xfe);
   FUN_8001cd34();
   *PTR_DAT_8002a000 = 0;
-  FUN_800177c4();
+  tp_i2c_read_status();
   puVar1 = PTR_DAT_8002b120;
   if (*PTR_DAT_8002b120 == '\0') {
     return;
   }
   do {
-    FUN_800177c4();
+    tp_i2c_read_status();
   } while (*puVar1 != '\0');
   return;
 }
@@ -40625,7 +40600,7 @@ void FUN_8002a08c(void)
   FUN_80029b6c();
   FUN_80035d58(PTR_s_usbd_stop_work_8002a160);
   FUN_8002963c(0);
-  FUN_8001c5c0(1,0x1a,PTR_FUN_8002a164);
+  setup_some_interrupt(1,0x1a);
   FUN_80037424(0x7f);
   FUN_80035d58(PTR_s_sunxi_udc_enable_called_8002a168);
   *(undefined *)(DAT_8002a16c + 1) = 0;
@@ -41757,13 +41732,13 @@ void FUN_8002b0f4(void)
 {
   undefined *puVar1;
   
-  FUN_800177c4();
+  tp_i2c_read_status();
   puVar1 = PTR_DAT_8002b120;
   if (*PTR_DAT_8002b120 == '\0') {
     return;
   }
   do {
-    FUN_800177c4();
+    tp_i2c_read_status();
   } while (*puVar1 != '\0');
   return;
 }
@@ -47745,19 +47720,19 @@ void FUN_80031da8(void)
 void FUN_80031dac(void)
 
 {
-  uint uVar1;
-  
-  uVar1 = FUN_80031dfc();
-  FUN_80031e20(uVar1 | 4);
+  mmu_ctrl_3();
+  mmu_ctrl_2();
   return;
 }
 
 
 
-void FUN_80031dc4(undefined4 param_1)
+void mmu_ctrl_5(void)
 
 {
-  coproc_moveto_Domain_Access_Control(param_1);
+  undefined4 in_r0;
+  
+  coproc_moveto_Domain_Access_Control(in_r0);
   return;
 }
 
@@ -47766,10 +47741,8 @@ void FUN_80031dc4(undefined4 param_1)
 void FUN_80031dcc(void)
 
 {
-  uint uVar1;
-  
-  uVar1 = FUN_80031dfc();
-  FUN_80031e20(uVar1 | 0x1000);
+  mmu_ctrl_3();
+  mmu_ctrl_2();
   return;
 }
 
@@ -47778,27 +47751,25 @@ void FUN_80031dcc(void)
 void FUN_80031de4(void)
 
 {
-  uint uVar1;
-  
-  uVar1 = FUN_80031dfc();
-  FUN_80031e20(uVar1 | 1);
+  mmu_ctrl_3();
+  mmu_ctrl_2();
   return;
 }
 
 
 
-undefined4 FUN_80031dfc(void)
+void mmu_ctrl_3(void)
 
 {
-  undefined4 uVar1;
-  
-  uVar1 = coproc_movefrom_Control();
-  return uVar1;
+  coproc_movefrom_Control();
+  return;
 }
 
 
 
-undefined4 FUN_80031e04(void)
+// WARNING: Unknown calling convention yet parameter storage is locked
+
+void mmu_ctrl_4(void)
 
 {
   undefined4 in_cr5;
@@ -47808,24 +47779,28 @@ undefined4 FUN_80031e04(void)
   coproc_moveto_Data_Synchronization(0);
   coprocessor_moveto(0xf,0,0,0,in_cr8,in_cr6);
   coprocessor_moveto(0xf,0,0,0,in_cr8,in_cr5);
-  return 0;
-}
-
-
-
-void FUN_80031e18(undefined4 param_1)
-
-{
-  coproc_moveto_Translation_table_base_0(param_1);
   return;
 }
 
 
 
-void FUN_80031e20(undefined4 param_1)
+void mmu_ctrl_1(void)
 
 {
-  coproc_moveto_Control(param_1);
+  undefined4 in_r0;
+  
+  coproc_moveto_Translation_table_base_0(in_r0);
+  return;
+}
+
+
+
+void mmu_ctrl_2(void)
+
+{
+  undefined4 in_r0;
+  
+  coproc_moveto_Control(in_r0);
   return;
 }
 
@@ -50571,28 +50546,28 @@ undefined4 FUN_80035314(void)
 
 
 
-void FUN_80035320(void)
+void main(void)
 
 {
   int iVar1;
   undefined auStack568 [568];
   
-  FUN_80028028(0);
-  FUN_80037484();
-  FUN_8002809c(DAT_80035458);
-  FUN_80027fe8();
+  sys_clock_init();
+  some_memory_stuff();
+  sys_init_uart0();
+  setup_timer_int();
   FUN_8002510c();
-  FUN_800168a0();
-  FUN_8001c79c();
+  fpga_init();
+  turn_off_brightness();
   FUN_8001d5d4();
   FUN_8001931c();
-  FUN_8001794c();
+  tp_i2c_setup();
   iVar1 = FUN_80033714(auStack568,&DAT_8003545c,1);
   if (iVar1 != 0) {
     *(undefined *)(DAT_80035460 + 2) = 100;
-    FUN_800169f8(0x38);
-    FUN_800168fc(0xea);
-    FUN_800168fc(DAT_80035464);
+    fpga_write_cmd('8');
+    fpga_write_data(-0x16);
+    fpga_write_data((uchar)DAT_80035464);
     FUN_80019704(0);
     FUN_80018f6c(0,0,800,0x1e0);
     FUN_80019704(0xff0000);
@@ -50914,7 +50889,7 @@ undefined4 FUN_8003593c(int param_1,int *param_2)
           FUN_800376f8(s_Data__d__timeout_BIT_0x_08x____80035a3c,uVar3,puVar2[0xf]);
           return 0xffffffff;
         }
-        FUN_8000bc34(5);
+        delay(5);
       }
       if ((bVar1 & 1) == 0) {
         puVar2[0x80] = *(uint *)(iVar6 + uVar3 * 4);
@@ -51038,7 +51013,7 @@ undefined4 FUN_80035c1c(int param_1)
   *puVar2 = DAT_80035c90;
   iVar1 = DAT_80035c94;
   if ((*puVar2 & 0x80000000) != 0) {
-    while (FUN_8000bc34(5), (*puVar2 & 0x80000000) != 0) {
+    while (delay(5), (*puVar2 & 0x80000000) != 0) {
       bVar3 = iVar1 == 0;
       iVar1 = iVar1 + -1;
       if (bVar3) {
@@ -51228,10 +51203,10 @@ undefined4 FUN_80035f04(undefined4 *param_1)
 
 
 
-undefined4 FUN_80035f0c(undefined4 *param_1)
+uint read32(uint *ptr)
 
 {
-  return *param_1;
+  return *ptr;
 }
 
 
@@ -51729,7 +51704,7 @@ LAB_8003747c:
 
 
 
-void FUN_80037484(void)
+void some_memory_stuff(void)
 
 {
   undefined4 uVar1;
@@ -51738,9 +51713,9 @@ void FUN_80037484(void)
   FUN_80035478(DAT_80037548,0x80000000,0,0,0,0,0x80000000,0,0);
   FUN_80035478(uVar1,0,0x80000000,0,0x80000000,0,0x80000000,0,0);
   FUN_80035478(uVar1,0x80000000,0x80000000,0,0x80000000,0,0x2000000,0,3);
-  FUN_80031e18(uVar1);
-  FUN_80031e04();
-  FUN_80031dc4(1);
+  mmu_ctrl_1();
+  mmu_ctrl_4();
+  mmu_ctrl_5();
   FUN_80031de4();
   FUN_80031dcc();
   FUN_80031dac();
@@ -53794,33 +53769,35 @@ undefined4 FUN_800390e8(byte **param_1,byte **param_2)
 
 
 
-void FUN_80039144(uint param_1)
+void tp_i2c_send_byte(uchar data)
 
 {
   bool bVar1;
+  uint *ptr;
   undefined4 uVar2;
   uint uVar3;
   byte bVar4;
   uint uStack24;
   
-  uVar2 = DAT_800391ec;
-  FUN_8001764c(DAT_800391ec,2,1,0);
-  FUN_8001764c(uVar2,3);
+  ptr = DAT_800391ec;
+  uVar3 = (uint)data;
+  gpio_config_pin(DAT_800391ec,2,1);
+  gpio_config_pin(ptr,3,1);
   bVar4 = 0;
   do {
-    if ((param_1 & 0x80) == 0) {
-      FUN_80017738(uVar2,2);
+    if ((uVar3 & 0x80) == 0) {
+      set_gpio_pin_low(ptr,2);
     }
     else {
-      FUN_8001774c();
+      set_gpio_pin_high(ptr,2);
     }
-    FUN_8000bc34(10);
-    FUN_8001774c(uVar2,3);
-    FUN_8000bc34(10);
-    FUN_80017738(uVar2,3);
-    FUN_8000bc34(10);
+    delay(10);
+    set_gpio_pin_high(ptr,3);
+    delay(10);
+    set_gpio_pin_low(ptr,3);
+    delay(10);
     bVar4 = bVar4 + 1;
-    param_1 = (param_1 << 0x19) >> 0x18;
+    uVar3 = (uVar3 << 0x19) >> 0x18;
   } while (bVar4 < 8);
   uVar2 = FUN_8003a370(10);
   FUN_8003a44c(uVar2,DAT_8000bcb4);
@@ -53847,10 +53824,10 @@ void FUN_800391f0(undefined4 *param_1,undefined4 param_2)
 
 
 
-void FUN_800391f8(undefined4 *param_1,undefined4 param_2,undefined4 param_3)
+void write32(uint *ptr,uint data)
 
 {
-  *param_1 = param_3;
+  *ptr = data;
   return;
 }
 
