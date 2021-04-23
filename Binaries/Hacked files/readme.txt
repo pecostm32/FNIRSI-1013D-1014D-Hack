@@ -1,4 +1,4 @@
-The easiest way to upload these files to the scope is with the sunxi-fel tool. One can build it ore use the one added here.
+The easiest way to upload these files to the scope is with the sunxi-fel tool. One can build it or use the one added here.
 Make sure to get the sources that have the SPI flash in them.
 
 See: https://github.com/pecostm32/FNIRSI-1013D-Hack/tree/main/Linux/images/fel_boot
