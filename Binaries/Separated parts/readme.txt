@@ -1,7 +1,8 @@
 The old and the new binary image of the flash are different. The structure is the same, but the block sizes differ.
 
-The 1st 32 bytes of each block are its header.
-In the header, at offset 0x10, there is the size of the block (including header).
+The 1st 32 bytes of each block are its header. For the bitmap there are an additional 8 bytes of header that are stripped of in the SPL.
+In the header, at offset 0x10, there is the size (32bits LSB first)) of the block (including header).
+For the bitmap at offset 0x1A is the (16bits LSB first) number of x pixels and at offset 0x1C is the number of y pixels.
 
 Load Address in the MCU
 SPL (second program loader):  0x00000000  (32KB internal SRAM)
