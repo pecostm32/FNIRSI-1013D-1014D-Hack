@@ -1,0 +1,34 @@
+at address 0x001B9E94 in the flash 0x18 needs to be changed into 0x1B to make the copy of the initial data block longer. Added 3 bytes to the data
+
+starting at address 0x001BA651 the rx sensor data needs to be reversed.
+
+0x14  ==>  0x02
+0x12  ==>  0x04
+0x10  ==>  0x06
+0x0E  ==>  0x08
+0x0C  ==>  0x0A
+0x0A  ==>  0x0C
+0x08  ==>  0x0E
+0x06  ==>  0x10
+0x04  ==>  0x12
+0x02  ==>  0x14
+
+at address 0x001BA65E the byte 0x10 needs to be changed in 0x11. This puts an extra zero in the data
+
+starting at address 0x001BA65F the data needs to be changed and extended. 3 bytes need to be inserted.
+
+the following data needs to be set from address 0x001BA65F on
+
+0x28, 0x10, 0x02, 0x04, 0x06, 0x08, 0x0A, 0x0C, 0x1D, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x24, 0x26, 0x28, 0x24
+
+This is the tx sensor data in the reversed order with a instruction to copy 4x 0xFF from previous data.
+
+At address 0x001BA671 the data should be 0x49, 0x01 This is the next unpack instruction.
+
+In the old setup the tx config was made up of the first 9 bytes of the sensor data and then the last 6 bytes of the rx sensor data was copied to fill in the remainder.
+
+On startup of the main code it reads in some bytes from flash to determine if hardware check needs to be done.
+There for it is important to remove three bytes just after the config data.
+
+This can be done at address 0x001BA912. Remove three zero's
+
