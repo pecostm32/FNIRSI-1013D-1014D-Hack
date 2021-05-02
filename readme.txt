@@ -16,7 +16,7 @@ On the 1st of May 2021 a new hack has been made where the configuration for the 
 This eliminates the use of the above mentioned tools for changing the touch panel config back to how it should be. The scope does this directly. 
 The new file can be found here: https://github.com/pecostm32/FNIRSI-1013D-Hack/blob/main/Binaries/Hacked%20files/W25Q32_scope_tp_conf_changed.bin
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !! BE AWARE.
 !! The scope has some special data stored in the flash at address 0x001FD000. 
 !! There are 0x1F4 bytes there that are loaded after the scope has started. It could be
