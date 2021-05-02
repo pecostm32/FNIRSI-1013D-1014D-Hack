@@ -11,8 +11,17 @@ There are two other repositories with code for the STM32F103 based bluepill boar
 
 On the 1st of May 2021 a new hack has been made where the configuration for the touch panel has been modified. This eliminates the use of the above mentioned tools for changing the touch panel config back to how it should be. The scope does this directly. The new file can be found here: https://github.com/pecostm32/FNIRSI-1013D-Hack/blob/main/Binaries/Hacked%20files/W25Q32_scope_tp_conf_changed.bin
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! BE AWARE.
+!! The scope has some special data stored in the flash at address 0x001FD000. There are 0x1F4 bytes there that are loaded after the scope has started. It could be
+!! some calibration data.
+!!
+!! SO ALWAYS make a copy of your own flash first and compare the data with what is in the new firmware file. When different copy your own data in
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
 The hack continues with the quest on revealing the secrets of the FPGA that is used in the scope. For now it is solely based on figuring out what the software does with it. If this does not yield what is needed a reverse engineering of the FPGA might be needed, but is far more difficult.
 
-There is progress in getting to an open source version. The bootloader is reversed to a C project and is working.
+There is progress in getting to an open source version. The bootloader is reversed to a C project and it is working.
 
 The main program is slowly revealing its secrets.
