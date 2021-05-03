@@ -137,7 +137,8 @@ FUN_80031238
 Support functions
 
 FUN_80019704                          void set_display_color(uint color)
-
+FUN_80018f6c                          void display_clear_rect(ushort xpos,ushort ypos,ushort xsize,ushort ysize)
+FUN_80018bf8                          void display_text(char *text,ushort xpos,ushort ypos)
 
 
 
