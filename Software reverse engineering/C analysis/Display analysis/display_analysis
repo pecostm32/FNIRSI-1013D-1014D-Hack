@@ -1,0 +1,160 @@
+
+Address used as global pointer
+0x8019CF60 ==> 0x803849A0 == video memory. Write here to display stuff. Two bytes per pixel, 800 pixels per row. 5 bits red, 6 bits green, 5 bits blue.
+0x8019CF64 ==> 0x805B71B8 == display info structure. Holds settings for the display.
+
+
+This address (0x8019CF60) is used to set a target screen pointer. In FUN_80017760 the screen frame buffer 0x804FB9B4 is set in to it.
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+The actual screen memory set in DEBE (Used either directly or via the global pointer)
+
+0x803849A0
+
+This is used in 7 functions:
+v  FUN_80017778             void set_screen_to_global_pointer(void);
+v  FUN_8001c6f0
+v  FUN_8001cccc
+v  FUN_8001cd34             void copy_frame_to_screen(void);    (0x804FB9B4 ==> 0x803849A0)
+v  FUN_8001d230
+v  FUN_8001d5d4             void sys_init_display(void);        (used twice. A. Load 0x8019CF60 with 0x803849A0.  B. input for init_debe)
+v  FUN_80022bc8                                                 (used twice. A. copy 0x803849A0 to 0x805B7228.    B. input for FUN_8001d4ec)
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+A screen buffer (frame_buffer_2)
+
+0x804401B4 
+
+This is used in 7 functions:
+v  FUN_8001c6f0                                                 (actual screen memory is used here to)
+v  FUN_8001d230                                                 (actual screen memory is used here to)
+v  FUN_80029eb0                                                 (actual screen memory is most likely used here too. Via 0x8019CF60)
+v  FUN_80029f00                                                 (actual screen memory is most likely used here too. Via 0x8019CF60)
+v  FUN_8002b9bc                                                 (actual screen memory is most likely used here too. Via 0x8019CF60)
+v  FUN_8002be60                                                 (used 4 times)
+v  FUN_8002c5b8                                                 (actual screen memory is most likely used here too. Via 0x8019CF60)
+
+The other screen buffer used in 4 of these functions depens on which screen buffer is set in the global screen pointer.
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+A screen buffer (frame_buffer) (Used either directly or via the global pointer)
+
+0x804FB9B4
+
+This is used in 5 functions:
+v  FUN_800114d0
+v  FUN_8001178c
+v  FUN_80017760             void set_frame_to_global_pointer(void);        (Set as target in global screen pointer)
+v  FUN_8001cccc                                                            (actual screen memory is used here to)
+v  FUN_8001cd34             void copy_frame_to_screen(void);               (0x804FB9B4 ==> 0x803849A0)
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+A screen buffer
+
+0x805B7228
+
+This is used in 2 functions
+
+v  FUN_80022DD4                                                 (it is cleared based on an input setting
+v  FUN_80022BC8                                                 (used twice. A. used as input to function FUN_8001D4EC. B. get the screen memory copied in it.)
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Pointer to the screen or a frame buffer
+
+0x8019CF60
+
+This is used in 61 functions:
+
+v  FUN_80002810
+v  FUN_80009af4
+v  FUN_8000bf24
+v  FUN_8000c0d4
+v  FUN_8000c2c4
+v  FUN_8000c4b8
+FUN_8000c690
+FUN_8000c850
+FUN_8000ca00
+FUN_8000cbc0
+FUN_8000cd6c
+FUN_8000cf2c
+FUN_8000d0ec
+FUN_8000d2a8
+FUN_8000d478
+FUN_8000d630
+FUN_8000d7ec
+FUN_8000d9bc
+FUN_8000ddb8
+FUN_8000e1e4
+FUN_8000e6f8
+FUN_8000e7f8
+FUN_8000ea18
+FUN_800104b4
+FUN_800105e0
+FUN_800106a4
+FUN_800107f4
+FUN_80010944
+FUN_80010a30
+FUN_80010bd0
+FUN_80010f08
+FUN_80011154
+FUN_80011254
+FUN_80028828
+FUN_80011640
+FUN_800118f4
+v  FUN_800114d0
+FUN_8001267c
+FUN_80012920
+FUN_80012a64
+FUN_80014384
+FUN_800148e4
+FUN_80014e7c
+FUN_80015f0c
+v  FUN_800163cc                      void init_debe (ushort xsize, ushort ysize, uint address);
+v  FUN_80017760                      void set_frame_to_global_pointer(void);
+v  FUN_80017778                      void set_screen_to_global_pointer(void);
+FUN_8001cddc
+v  FUN_8001d5d4                      void sys_init_display(void)
+FUN_80021810
+FUN_80021c3c
+FUN_80021d14
+FUN_80021e1c
+FUN_80022bc8
+v  FUN_80022dd4
+v  FUN_80029eb0
+v  FUN_80029f00
+FUN_8002b8e8
+v  FUN_8002b9bc
+v  FUN_8002be60
+v  FUN_8002c5b8
+FUN_80031238
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
