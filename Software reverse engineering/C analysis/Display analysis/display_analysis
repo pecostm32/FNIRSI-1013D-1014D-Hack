@@ -66,6 +66,7 @@ Pointer to the screen or a frame buffer
 
 This is used in 61 functions:
 
+These first set of functions could be a drawing library. They sit in memory almost consecutively.
 v  FUN_80002810
 v  FUN_80009af4
 v  FUN_8000bf24
@@ -81,55 +82,57 @@ v  FUN_8000cf2c
 v  FUN_8000d0ec
 v  FUN_8000d2a8
 v  FUN_8000d478
-FUN_8000d630
-FUN_8000d7ec
-FUN_8000d9bc
-FUN_8000ddb8
-FUN_8000e1e4
-FUN_8000e6f8
-FUN_8000e7f8
-FUN_8000ea18
-FUN_800104b4
-FUN_800105e0
-FUN_800106a4
-FUN_800107f4
-FUN_80010944
-FUN_80010a30
-FUN_80010bd0
-FUN_80010f08
-FUN_80011154
-FUN_80011254
-FUN_80028828
-FUN_80011640
-FUN_800118f4
+v  FUN_8000d630
+v  FUN_8000d7ec
+v  FUN_8000d9bc
+v  FUN_8000ddb8
+v  FUN_8000e1e4
+v  FUN_8000e6f8
+v  FUN_8000e7f8
+v  FUN_8000ea18
+v  FUN_800104b4
+v  FUN_800105e0
+v  FUN_800106a4
+v  FUN_800107f4
+v  FUN_80010944
+v  FUN_80010a30
+v  FUN_80010bd0
+v  FUN_80010f08
+v  FUN_80011154
+v  FUN_80011254
 v  FUN_800114d0
-FUN_8001267c
-FUN_80012920
-FUN_80012a64
-FUN_80014384
-FUN_800148e4
-FUN_80014e7c
-FUN_80015f0c
+v  FUN_80011640
+v  FUN_800118f4
+v  FUN_8001267c
+v  FUN_80012920
+
+From here on I suspect it being functions implemented on top of a drwaing library
+v  FUN_80012a64
+v  FUN_80014384
+v  FUN_800148e4
+v  FUN_80014e7c
+v  FUN_80015f0c
 v  FUN_800163cc                      void init_debe (ushort xsize, ushort ysize, uint address);
 v  FUN_80017760                      void set_frame_to_global_pointer(void);
 v  FUN_80017778                      void set_screen_to_global_pointer(void);
-FUN_8001cddc
+v  FUN_8001cddc
 v  FUN_8001d5d4                      void sys_init_display(void)
-FUN_80021810
-FUN_80021c3c
-FUN_80021d14
-FUN_80021e1c
-FUN_80022bc8
+v  FUN_80021810
+v  FUN_80021c3c
+v  FUN_80021d14
+v  FUN_80021e1c
+v  FUN_80022bc8
 v  FUN_80022dd4
+v  FUN_80028828
 v  FUN_80029eb0
 v  FUN_80029f00
-FUN_8002b8e8
+v  FUN_8002b8e8
 v  FUN_8002b9bc
 v  FUN_8002be60
 v  FUN_8002c5b8
-FUN_80031238
+v  FUN_80031238
 
-
+Part of these functions could be a drawing lib.
 
 
 
