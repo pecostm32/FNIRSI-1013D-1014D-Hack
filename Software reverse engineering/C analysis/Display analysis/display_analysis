@@ -1,3 +1,19 @@
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+The total code holds some 754 functions.
+
+For the display system there are already 36 functions found for just the initilization of the graphics part. Function pointers are used to call other functions, so these need to 
+be found also.
+
+There are some empty functions that just return and there are functions that just return a zero.
+
+The display_text function uses 39 functions. None of these call one of the functions using the screen buffers, but it does use function pointers, so might be that these are
+used to do the actual displaying on the screen.
+
+Then there are 67 functions that use the global pointer 0x8019CF60 and the screen buffers. Not found where they are called from, par example for the display_text function.
+
+The memory setup needs to be figured out. Already found some, but they need comprehensible names to make sence.
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Address used as global pointer
 0x8019CF60 ==> 0x803849A0 == video memory. Write here to display stuff. Two bytes per pixel, 800 pixels per row. 5 bits red, 6 bits green, 5 bits blue.
@@ -6,6 +22,21 @@ Address used as global pointer
 
 This address (0x8019CF60) is used to set a target screen pointer. In FUN_80017760 the screen frame buffer 0x804FB9B4 is set in to it.
 
+There is another global pointer used to point to display data. Initialy it is set with the below address. There is some sort of context system that can update the pointer,
+but the counter part function does not restore it. Only decrements a counter.
+0x8019D470 ==> 0x80857D4C
+
+The drawing system uses function pointers and makes it hard to find what is being done.
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Memory used for the display system
+
+0x8019D46C               A function pointer set to 0x80189750 which points to 0x80017e20 (FUN_80017e20)
+
+0x8019D47C               is display system initialized flag
+0x8019D480               A function pointer set to point to FUN_8002fdd4
+
+0x8019D4E8               A function pointer set to point to FUN_8002fe14
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 The actual screen memory set in DEBE (Used either directly or via the global pointer)
@@ -56,7 +87,7 @@ A screen buffer
 
 This is used in 2 functions
 
-FUN_80022DD4                                                 (it is cleared based on an input setting
+FUN_80022DD4                                                 (it is cleared based on an input setting)
 FUN_80022BC8                                                 (used twice. A. used as input to function FUN_8001D4EC. B. get the screen memory copied in it.)
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -67,11 +98,11 @@ Pointer to the screen or a frame buffer
 This is used in 61 functions:
 
 These first set of functions could be a drawing library. They sit in memory almost consecutively.
-FUN_80002810
-FUN_80009af4
-FUN_8000bf24
-FUN_8000c0d4
-FUN_8000c2c4
+FUN_80002810               (Called 1x: FUN_80025f2c)
+FUN_80009af4               (Called 4x: FUN_80025468, FUN_8002b124 (2x), FUN_8002b68c)
+FUN_8000bf24               (Called 3x: FUN_8000bdf0, FUN_8001b674 (2x))
+FUN_8000c0d4               (Called 5x: FUN_8000bdf0, FUN_8001b674 (4x))
+FUN_8000c2c4               (Called 5x: FUN_8000bdf0, FUN_8001b674 (4x))
 FUN_8000c4b8
 FUN_8000c690
 FUN_8000c850
@@ -141,7 +172,11 @@ FUN_80018f6c                          void display_clear_rect(ushort xpos,ushort
 FUN_80018bf8                          void display_text(char *text,ushort xpos,ushort ypos)
 
 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+called from display text
 
+FUN_8001936c
+FUN_80018a74
 
 
 
