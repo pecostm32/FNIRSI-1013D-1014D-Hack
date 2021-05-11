@@ -7,6 +7,8 @@
 
 #include "armv5tl.h"
 
+#define MY_BREAK_POINT 0x0768
+
 //----------------------------------------------------------------------------------------------------------------------------------
 
 pthread_t arm_core_thread;
@@ -50,6 +52,8 @@ void *armcorethread(void *arg)
   //Exit the thread the way it is supposed to
   pthread_exit(NULL);
 }
+
+//----------------------------------------------------------------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -153,6 +157,9 @@ void ArmV5tlSetup(PARMV5TL_CORE core)
   //No exceptions either
   core->undefinedinstruction = 0;
   
+  //Test tracing
+  core->TraceFilePointer = fopen("test_trace.txt", "w");
+  
   //On startup processor is running
   core->run = 1;
 }
@@ -200,14 +207,22 @@ void ArmV5tlCore(PARMV5TL_CORE core)
     //Handle the interrupt
   }
   
+  //Breakpoint
+  if(*core->program_counter == MY_BREAK_POINT)
+  {
+    memoryword = NULL;
+  }
+  
   //Check on which execution state the core is in
   if(core->status->flags.T)
   {
     //Handle thumb instructions
+    ArmV5tlUndefinedInstruction(core);
   }
   else if(core->status->flags.J)
   {
     //Handle jazelle instructions
+    ArmV5tlUndefinedInstruction(core);
   }
   else
   {
@@ -224,8 +239,11 @@ void ArmV5tlCore(PARMV5TL_CORE core)
     {
       //Some exception needs to be generated here. Undefined Instruction most likely
       ArmV5tlUndefinedInstruction(core);
+      
+      //Skip rest of processing
+      return;
     }
-
+    
     //Check the condition bits against the status bits to decide if the instruction needs to be executed
     switch(core->current_instruction.base.cond)
     {
@@ -324,6 +342,13 @@ void ArmV5tlCore(PARMV5TL_CORE core)
         break;
     }
 
+    //Initial tracing just the pc sequence
+    if(core->TraceFilePointer)
+    {
+      fprintf(core->TraceFilePointer, "pc: 0x%08X  exec: %d\n", *core->program_counter, execute);
+      fflush(core->TraceFilePointer);
+    }
+    
     //Check if instruction needs to be executed
     if(execute)
     {
@@ -1468,7 +1493,7 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
   else
   {
     //Check the register list for which registers need to be loaded
-    for(i=0;i<16;i++)
+    for(i=15;i>=0;i--)
     {
       //Check if register included
       if(reglist & 0x00008000)
@@ -1700,7 +1725,14 @@ void ArmV5tlMRCMCR(PARMV5TL_CORE core)
 //Handle branch instructions
 void ArmV5tlBranch(PARMV5TL_CORE core)
 {
-  int32_t address = (int32_t)(core->current_instruction.type5.offset << 2);
+  int32_t address = core->current_instruction.type5.offset << 2;
+  
+  //Check if negative address given
+  if(address & 0x02000000)
+  {
+    //Extend the sing if so
+    address |= 0xFC000000;
+  }
   
   //Check if link register needs to be set
   if(core->current_instruction.type5.l)
@@ -1720,13 +1752,20 @@ void ArmV5tlBranch(PARMV5TL_CORE core)
 //Handle branch with link and exchange instructions
 void ArmV5tlBranchLinkExchange1(PARMV5TL_CORE core)
 {
-  int32_t address = (int32_t)(core->current_instruction.type5.offset << 2);
+  int32_t address = core->current_instruction.type5.offset << 2;
+  
+  //Check if negative address given
+  if(address & 0x02000000)
+  {
+    //Extend the sing if so
+    address |= 0xFC000000;
+  }
   
   //Load the address after this instruction to the link register r14
   *core->registers[core->current_bank][14] = *core->program_counter + 4;
 
   //Merge the H bit into the address (is l bit from type5 instruction)
-  address |= (core->current_instruction.type5.l < 1);
+  address |= (core->current_instruction.type5.l << 1);
   
   //Calculate the new address. The actual pc point to instruction address plus 8
   *core->program_counter += (8 + address);
@@ -1742,7 +1781,7 @@ void ArmV5tlBranchLinkExchange1(PARMV5TL_CORE core)
 //Handle branch with link and exchange instructions
 void ArmV5tlBranchLinkExchange2(PARMV5TL_CORE core)
 {
-  int32_t address = (int32_t)(*core->registers[core->current_bank][core->current_instruction.misc0.rm]);
+  u_int32_t address = *core->registers[core->current_bank][core->current_instruction.misc0.rm];
   
   //Load the address after this instruction to the link register r14
   *core->registers[core->current_bank][14] = *core->program_counter + 4;
@@ -1761,7 +1800,7 @@ void ArmV5tlBranchLinkExchange2(PARMV5TL_CORE core)
 //Handle branch with exchange instructions
 void ArmV5tlBranchExchangeT(PARMV5TL_CORE core)
 {
-  int32_t address = (int32_t)(*core->registers[core->current_bank][core->current_instruction.misc0.rm]);
+  u_int32_t address = *core->registers[core->current_bank][core->current_instruction.misc0.rm];
   
   //Set the new address. Needs to be on a thumb boundary
   *core->program_counter = address & 0xFFFFFFFE;
@@ -1778,7 +1817,7 @@ void ArmV5tlBranchExchangeT(PARMV5TL_CORE core)
 //Handle branch with exchange instructions
 void ArmV5tlBranchExchangeJ(PARMV5TL_CORE core)
 {
-  int32_t address = (int32_t)(*core->registers[core->current_bank][core->current_instruction.misc0.rm]);
+  u_int32_t address = *core->registers[core->current_bank][core->current_instruction.misc0.rm];
   
   //This is not correct and needs system info to do the correct things
   

@@ -7,7 +7,12 @@ v ldm and stm instructions
 v branch instructions
 
 
-Implement trace functionality
+thumb instructions
+
+
+partial) Implement trace functionality
+
+partial) Implement breakpoint functionality
 
 
 MMU implementation???

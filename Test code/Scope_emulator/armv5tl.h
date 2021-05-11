@@ -482,6 +482,8 @@ struct tagARMV5TL_CORE
   ARMV5TL_MEMORY       *dram;                     //Pointer to the memory in the system
 
   ARMV5TL_REGS          regs;                     //The actual register bank
+  
+   FILE                *TraceFilePointer;         //Null if tracing is disabled
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
