@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="100">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+      <itemPath>armthread.h</itemPath>
+      <itemPath>armv5tl.h</itemPath>
+      <itemPath>buttons.h</itemPath>
+      <itemPath>lcdisplay.h</itemPath>
+      <itemPath>mousehandling.h</itemPath>
+      <itemPath>resources.h</itemPath>
+      <itemPath>xlibfunctions.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <itemPath>ScopeEmulator.c</itemPath>
+      <itemPath>armthread.c</itemPath>
+      <itemPath>armv5tl.c</itemPath>
+      <itemPath>buttons.c</itemPath>
+      <itemPath>lcdisplay.c</itemPath>
+      <itemPath>mousehandling.c</itemPath>
+      <itemPath>xlibfunctions.c</itemPath>
+    </logicalFolder>
+    <logicalFolder name="TestFiles"
+                   displayName="Test Files"
+                   projectFiles="false"
+                   kind="TEST_LOGICAL_FOLDER">
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+      <itemPath>todo.txt</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Debug" type="1">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <standard>3</standard>
+          <commandlineTool>gcc</commandlineTool>
+          <incDir>
+            <pElem>/usr/include/freetype2</pElem>
+          </incDir>
+        </cTool>
+        <linkerTool>
+          <linkerAddLib>
+            <pElem>/usr/lib/x86_64-linux-gnu</pElem>
+          </linkerAddLib>
+          <linkerLibItems>
+            <linkerLibStdlibItem>Mathematics</linkerLibStdlibItem>
+          </linkerLibItems>
+          <commandLine>-lX11 -lXft -lXrandr -lpthread</commandLine>
+        </linkerTool>
+      </compileType>
+      <item path="ScopeEmulator.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="armthread.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="armthread.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="armv5tl.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="armv5tl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="buttons.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="buttons.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lcdisplay.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="lcdisplay.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="mousehandling.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="mousehandling.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="resources.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="xlibfunctions.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="xlibfunctions.h" ex="false" tool="3" flavor2="0">
+      </item>
+    </conf>
+    <conf name="Release" type="1">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+        </cTool>
+        <ccTool>
+          <developmentMode>5</developmentMode>
+        </ccTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <asmTool>
+          <developmentMode>5</developmentMode>
+        </asmTool>
+      </compileType>
+      <item path="ScopeEmulator.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="armthread.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="armthread.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="armv5tl.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="armv5tl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="buttons.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="buttons.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lcdisplay.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="lcdisplay.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="mousehandling.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="mousehandling.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="resources.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="xlibfunctions.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="xlibfunctions.h" ex="false" tool="3" flavor2="0">
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>

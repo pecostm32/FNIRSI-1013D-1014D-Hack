@@ -1,0 +1,13 @@
+For the arm core the next steps are
+
+v coprocessor instructions with support for cp15 (mmu for now only the control register needs to be read and written)
+
+v ldm and stm instructions
+
+v branch instructions
+
+
+Implement trace functionality
+
+
+MMU implementation???
