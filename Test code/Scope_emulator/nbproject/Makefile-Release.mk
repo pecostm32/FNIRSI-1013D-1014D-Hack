@@ -38,6 +38,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/ScopeEmulator.o \
 	${OBJECTDIR}/armthread.o \
 	${OBJECTDIR}/armv5tl.o \
+	${OBJECTDIR}/armv5tl_thunb.o \
 	${OBJECTDIR}/buttons.o \
 	${OBJECTDIR}/lcdisplay.o \
 	${OBJECTDIR}/mousehandling.o \
@@ -82,6 +83,11 @@ ${OBJECTDIR}/armv5tl.o: armv5tl.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/armv5tl.o armv5tl.c
+
+${OBJECTDIR}/armv5tl_thunb.o: armv5tl_thunb.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/armv5tl_thunb.o armv5tl_thunb.c
 
 ${OBJECTDIR}/buttons.o: buttons.c
 	${MKDIR} -p ${OBJECTDIR}

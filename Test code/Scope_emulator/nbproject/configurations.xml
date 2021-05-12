@@ -6,6 +6,7 @@
                    projectFiles="true">
       <itemPath>armthread.h</itemPath>
       <itemPath>armv5tl.h</itemPath>
+      <itemPath>armv5tl_thumb.h</itemPath>
       <itemPath>buttons.h</itemPath>
       <itemPath>lcdisplay.h</itemPath>
       <itemPath>mousehandling.h</itemPath>
@@ -22,6 +23,7 @@
       <itemPath>ScopeEmulator.c</itemPath>
       <itemPath>armthread.c</itemPath>
       <itemPath>armv5tl.c</itemPath>
+      <itemPath>armv5tl_thunb.c</itemPath>
       <itemPath>buttons.c</itemPath>
       <itemPath>lcdisplay.c</itemPath>
       <itemPath>mousehandling.c</itemPath>
@@ -76,6 +78,10 @@
       </item>
       <item path="armv5tl.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="armv5tl_thumb.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="armv5tl_thunb.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="buttons.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="buttons.h" ex="false" tool="3" flavor2="0">
@@ -124,6 +130,10 @@
       <item path="armv5tl.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="armv5tl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="armv5tl_thumb.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="armv5tl_thunb.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="buttons.c" ex="false" tool="0" flavor2="0">
       </item>
