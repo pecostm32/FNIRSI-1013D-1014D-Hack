@@ -22,23 +22,26 @@ void ArmV5tlHandleThumb(PARMV5TL_CORE core)
     core->thumb_instruction.instr = (u_int16_t)*memorypointer;
     
     //Decode based on the type bits
-    switch(core->arm_instruction.base.type)
+    switch(core->thumb_instruction.base.type)
     {
       case 0:
-        //Shift by immediate              ASR(1) op: 2  LSL(1) op: 0  LSR (1) op: 1
-        //Add / subtract register         ADD (1)(3) op 3: SUB (1)(3) op 3:
-        //Add / subtract immediate        MOV (2) op 3:
-        
-        //i = immediate, n = rn, d = rd, m=rm
-        //LSL(1) 000 00 ii iii mmm ddd
-        //LSR(1) 000 01 ii iii mmm ddd
-        //ASR(1) 000 10 ii iii mmm ddd
+        //Check on instruction opcode
+        if(core->thumb_instruction.base.op1 == 3)
+        {
+          //Opcode 3 are data processing or mov
+          
         //ADD(3) 000 11 00 mmm nnn ddd
         //SUB(3) 000 11 01 mmm nnn ddd
         //ADD(1) 000 11 10 iii nnn ddd
         //MOV(2) 000 11 10 000 nnn ddd
         //SUB(1) 000 11 11 iii nnn ddd
-        
+          
+        }
+        else
+        {
+          //LSL(1) op1:0, LSR(1) op1:1, ASR(1) op1:2
+          ArmV5tlThumbShiftImmediate(core);
+        }
         break;
 
       case 1:
@@ -46,6 +49,65 @@ void ArmV5tlHandleThumb(PARMV5TL_CORE core)
         break;
 
       case 2:
+        //Check if data processing or load / store instructions
+        if(core->thumb_instruction.base.op1 == 0)
+        {
+          //Separate the shift instructions
+          if((core->thumb_instruction.base.op2 == 2) || (core->thumb_instruction.base.op2 == 3) || (core->thumb_instruction.base.op2 == 4) || (core->thumb_instruction.base.op2 == 7))
+          {
+            //LSL(2) op2:2, LSR(2) op2:3, ASR(2) op2:4, ROR op2:7
+            ArmV5tlThumbShiftRegister(core);
+          }
+          else
+          {
+            
+          }
+        
+        //ADC         010 00 001 01 mmm ddd
+        //SBC         010 00 001 10 mmm ddd
+        //AND         010 00 000 00 mmm ddd
+        //OR          010 00 011 00 mmm ddd
+        //EOR         010 00 000 01 mmm ddd
+        //BIC         010 00 011 10 mmm ddd
+        //MVN         010 00 011 11 mmm ddd
+        //NEG         010 00 010 01 mmm ddd
+
+        //MUL         010 00 011 01 mmm ddd
+        
+        //ADD(4)      010 00 100 hh mmm ddd
+        //CPY         010 00 110 hh mmm ddd
+        //MOV(3)      010 00 110 hh mmm ddd
+
+        //CMN         010 00 010 11 mmm nnn
+        //CMP(2)      010 00 010 10 mmm nnn
+        //CMP(3)      010 00 101 hh mmm nnn
+        //TST         010 00 010 00 mmm nnn
+        
+        
+        //BLX(2)      010 00 1111 h mmm zzz
+        //BX          010 00 1110 h mmm zzz
+          
+        }
+        else
+        {
+        //LDR(3)      010 01 ddd iiiiiiii
+        
+        //LDR(2)      010 11 00 mmm nnn ddd
+        //LDRB(2)     010 11 10 mmm nnn ddd
+        //LDRH(2)     010 11 01 mmm nnn ddd
+        //LDRSB       010 10 11 mmm nnn ddd
+        //LDRSH       010 11 11 mmm nnn ddd
+        //STR(2)      010 10 00 mmm nnn ddd
+        //STRB(2)     010 10 10 mmm nnn ddd
+        //STRH(2)     010 10 01 mmm nnn ddd
+          
+        }
+
+        
+        
+        
+        
+        
         //Data processing register
         //Special processing
         //Branch / exchange instruction set
@@ -91,11 +153,195 @@ void ArmV5tlHandleThumb(PARMV5TL_CORE core)
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
+//Immediate shift
+void ArmV5tlThumbShiftImmediate(PARMV5TL_CORE core)
+{
+  u_int32_t sa = core->thumb_instruction.shift0.sa;
+  u_int32_t vm = *core->registers[core->current_bank][core->thumb_instruction.shift0.rm];
+  u_int32_t type;
+  
+  
+  switch(core->thumb_instruction.shift0.op1)
+  {
+    case 0:
+      type = ARM_SHIFT_MODE_LSL;
+      break;
+      
+    case 1:
+      type = ARM_SHIFT_MODE_LSR;
+      
+      //Check if intended shift is 32. Shift amount in instruction is 0
+      if(sa == 0)
+        sa = 32;
+      break;
+      
+    case 2:
+      type = ARM_SHIFT_MODE_ASR;
+      
+      //Check if intended shift is 32. Shift amount in instruction is 0
+      if(sa == 0)
+        sa = 32;
+      break;
+  }
+  
+  //Do the actual shifting
+  ArmV5tlThumbShift(core, type, sa , vm);
+}
 
+//----------------------------------------------------------------------------------------------------------------------------------
+//Register shift
+void ArmV5tlThumbShiftRegister(PARMV5TL_CORE core)
+{
+  u_int32_t sa = *core->registers[core->current_bank][core->thumb_instruction.shift2.rs];
+  u_int32_t vm = *core->registers[core->current_bank][core->thumb_instruction.shift2.rd];
+  u_int32_t type;
+  
+  //LSL(2) op2:2, LSR(2) op2:3, ASR(2) op2:4, ROR op2:7
+  //Other values are filtered out in the decode stage
+  switch(core->thumb_instruction.shift2.op2)
+  {
+    case 2:
+      type = ARM_SHIFT_MODE_LSL;
+      break;
+      
+    case 3:
+      type = ARM_SHIFT_MODE_LSR;
+      break;
+      
+    case 4:
+      type = ARM_SHIFT_MODE_ASR;
+      break;
+      
+    case 7:
+      type = ARM_SHIFT_MODE_ROR;
+      break;
+  }
+  
+  //Do the actual shifting
+  ArmV5tlThumbShift(core, type, sa , vm);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Shift
+void ArmV5tlThumbShift(PARMV5TL_CORE core, u_int32_t type, u_int32_t sa, u_int32_t vm)
+{
+  u_int32_t c = core->status->flags.C;
+  
+  //Take action based on the shift type
+  switch(type)
+  {
+    case ARM_SHIFT_MODE_LSL:
+      if((sa > 0) && (sa < 32))
+      {
+        //When the shift is less then 32 the carry is the last bit shifted out and vm is shifted sa times
+        c = (vm >> (32 - sa)) & 1;
+        vm <<= sa;
+      }
+      else if(sa == 32)
+      {
+        //When the shift is 32 the carry is bit0 of vm and vm is set to zero
+        c = vm & 1;
+        vm = 0;
+      }
+      else if(sa > 32)
+      {
+        //when shifting is more then 32 both carry and vm are set to zero
+        c = 0;
+        vm = 0;
+      }
+      break;
+      
+    case ARM_SHIFT_MODE_LSR:
+      if((sa > 0) && (sa < 32))
+      {
+        //When the shift is less then 32 the carry is the last bit shifted out and vm is shifted sa times
+        c = (vm >> (sa - 1)) & 1;
+        vm >>= sa;
+      }
+      else if(sa == 32)
+      {
+        //When the shift is 32 the carry is bit0 of vm and vm is set to zero
+        c = vm >> 31;
+        vm = 0;
+      }
+      else
+      {
+        //when shifting is more then 32 both carry and vm are set to zero
+        c = 0;
+        vm = 0;
+      }
+      break;
+      
+    case ARM_SHIFT_MODE_ASR:
+      if((sa > 0) && (sa < 32))
+      {
+        //When the shift is less then 32 the carry is the last bit shifted out and vm is shifted sa times
+        c = (vm >> (sa - 1)) & 1;
+        
+        //When positive normal shifting is ok
+        if((vm & 0x80000000) == 0)
+        {
+          vm >>= sa;
+        }
+        else
+        {
+          //For negative numbers invert, shift and invert back
+          vm = ~(~vm >> sa);
+        }
+      }
+      else if(sa >= 32)
+      {
+        //When the shift is 32 or more the carry is bit31
+        c = vm >> 31;
+        
+        //Based on the sign bit of the data the result is either 0 or 0xFFFFFFFF
+        if(c == 0)
+        {
+          vm = 0;
+        }
+        else
+        {
+          vm = 0xFFFFFFFF;
+        }
+      }
+      break;
+      
+    case ARM_SHIFT_MODE_ROR:
+      if((sa > 0) && ((sa & 0x1F) == 0))
+      {
+        //When only the lowest 5 bits are zero the carry is bit31
+        c = vm >> 31;
+      }
+      else
+      {
+        //Make sure upper bits of the number of rotates are cleared
+        sa &= 0x1F;
+        
+        //Get the carry
+        c = (vm >> (sa - 1)) & 1;
+        
+        //rotate the bits
+        vm = (vm >> sa) | (vm << (32 - sa));
+      }
+      break;
+  }
+  
+  //Store back to rd (For rd shift0 and shift2 types are the same)
+  *core->registers[core->current_bank][core->thumb_instruction.shift0.rd] = vm;
+  
+  //Update the negative bit
+  core->status->flags.N = vm >> 31;
+
+  //Update the zero bit
+  core->status->flags.Z = (vm == 0);
+  
+  //Update the carry
+  core->status->flags.C = c;
+}
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Data processing immediate and register shift
-void ArmV5tlThumbDataProcessing(PARMV5TL_CORE core)
+void ArmV5tlThumbDPR(PARMV5TL_CORE core)
 {
   //Get the input data
   u_int32_t vm = *core->registers[core->current_bank][core->arm_instruction.dpsi.rm];
@@ -129,146 +375,6 @@ void ArmV5tlThumbDataProcessing(PARMV5TL_CORE core)
     sa = *core->registers[core->current_bank][core->arm_instruction.dpsr.rs] & 0x000000FF;
   }
   
-  //Take action based on the shift mode
-  switch(core->arm_instruction.dpsi.sm)
-  {
-    case ARM_SHIFT_MODE_LSL:
-      if((sa > 0) && (sa < 32))
-      {
-        //When the shift is less then 32 the carry is the last bit shifted out and vm is shifted sa times
-        c = (vm >> (32 - sa)) & 1;
-        vm <<= sa;
-      }
-      else if(sa == 32)
-      {
-        //When the shift is 32 the carry is bit0 of vm and vm is set to zero
-        c = vm & 1;
-        vm = 0;
-      }
-      else if(sa > 32)
-      {
-        //when shifting is more then 32 both carry and vm are set to zero
-        c = 0;
-        vm = 0;
-      }
-      break;
-      
-    case ARM_SHIFT_MODE_LSR:
-      if(sa == 0)
-      {
-        //Check on immediate or register shift
-        if(core->arm_instruction.type0.it1 == 0)
-        {
-          //In immediate mode shifter 0 equals to 32
-          c = vm >> 31;
-          vm = 0;
-        }
-      }
-      else if(sa < 32)
-      {
-        //When the shift is less then 32 the carry is the last bit shifted out and vm is shifted sa times
-        c = (vm >> (sa - 1)) & 1;
-        vm >>= sa;
-      }
-      else if(sa == 32)
-      {
-        //When the shift is 32 the carry is bit0 of vm and vm is set to zero
-        c = vm >> 31;
-        vm = 0;
-      }
-      else
-      {
-        //when shifting is more then 32 both carry and vm are set to zero
-        c = 0;
-        vm = 0;
-      }
-      break;
-      
-    case ARM_SHIFT_MODE_ASR:
-      if(sa == 0)
-      {
-        //Check on immediate or register shiftPARMV5TL_STATUS
-        if(core->arm_instruction.type0.it1 == 0)
-        {
-          //In immediate mode shifter 0 equals to 32
-          c = vm >> 31;
-          
-          //Check if sign bit is cleared
-          if(c == 0)
-          {
-            vm = 0;
-          }
-          else
-          {
-            vm = 0xFFFFFFFF;
-          }
-        }
-      }
-      else if(sa < 32)
-      {
-        //When the shift is less then 32 the carry is the last bit shifted out and vm is shifted sa times
-        c = (vm >> (sa - 1)) & 1;
-        
-        if((vm & 0x80000000) == 0)
-        {
-          vm >>= sa;
-        }
-        else
-        {
-          vm = ~(~vm >> sa);
-        }
-      }
-      else if(sa == 32)
-      {
-        //When the shift is 32 the carry is bit0 of vm and vm is set to zero
-        c = vm >> 31;
-        
-        if(c == 0)
-        {
-          vm = 0;
-        }
-        else
-        {
-          vm = 0xFFFFFFFF;
-        }
-      }
-      else
-      {
-        //when shifting is more then 32 both carry and vm are set to zero
-        c = 0;
-        vm = 0;
-      }
-      break;
-      
-    case ARM_SHIFT_MODE_ROR:
-      if(sa == 0)
-      {
-        //Check on immediate or register shift
-        if(core->arm_instruction.type0.it1 == 0)
-        {
-          //Special case here where the shift amount is 0. Rotate right with extend. Carry is an extra bit
-          c = vm & 1;
-          vm = (core->status->flags.C << 31) | (vm >> 1);
-        }
-      }
-      else if((sa & 0x1F) == 0)
-      {
-        //When only the lowest 5 bits are zero the carry is bit31
-        c = vm >> 31;
-      }
-      else
-      {
-        //Make sure upper bits of the number of rotates are cleared
-        sa &= 0x1F;
-        
-        //Get the carry
-        c = (vm >> (sa - 1)) & 1;
-        
-        //rotate the bits
-        vm = (vm >> sa) | (vm << (32 - sa));
-      }
-      break;
-  }
   
   //Go and do the actual processing
   ArmV5tlDPR(core, vn, vm, c);
@@ -276,7 +382,7 @@ void ArmV5tlThumbDataProcessing(PARMV5TL_CORE core)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Data processing immediate
-void ArmV5tlDPRImmediate(PARMV5TL_CORE core)
+void ArmV5tlThumbDPI(PARMV5TL_CORE core)
 {
   //Get the input data
   u_int32_t vm = core->arm_instruction.dpi.im;
@@ -306,14 +412,14 @@ void ArmV5tlDPRImmediate(PARMV5TL_CORE core)
   
 //----------------------------------------------------------------------------------------------------------------------------------
 //Actual data processing handling
-void ArmV5tlDPR(PARMV5TL_CORE core, u_int32_t vn, u_int32_t vm, u_int32_t c)
+void ArmV5tlThumbDP(PARMV5TL_CORE core, u_int32_t opcode, u_int32_t vn, u_int32_t vm, u_int32_t c)
 {
   u_int64_t vd;
   u_int32_t update = 1;
   u_int32_t docandv = ARM_FLAGS_UPDATE_CV_NO;
   
   //Perform the correct action based on the opcode
-  switch(core->arm_instruction.type0.opcode)
+  switch(opcode)
   {
     case ARM_OPCODE_AND:
       vd = vn & vm;

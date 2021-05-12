@@ -15,5 +15,9 @@
 void ArmV5tlHandleThumb(PARMV5TL_CORE core);
 
 
+void ArmV5tlThumbShiftImmediate(PARMV5TL_CORE core);
+void ArmV5tlThumbShiftRegister(PARMV5TL_CORE core);
+void ArmV5tlThumbShift(PARMV5TL_CORE core, u_int32_t type, u_int32_t sa, u_int32_t vm);
+
 #endif /* ARMV5TL_THUMB_H */
 
