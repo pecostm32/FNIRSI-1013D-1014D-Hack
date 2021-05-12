@@ -12,6 +12,7 @@
 
 typedef union  tagARMV5TL_THUMB_INSTRUCTION  ARMV5TL_THUMB_INSTRUCTION;
 typedef struct tagARMV5TL_INSTR_THUMB_BASE   ARMV5TL_INSTR_THUMB_BASE;
+typedef struct tagARMV5TL_INSTR_THUMB_SHIFT0 ARMV5TL_INSTR_THUMB_SHIFT0;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -23,11 +24,21 @@ struct tagARMV5TL_INSTR_THUMB_BASE
   u_int32_t type:3;       //Type of instructions
 };
 
+struct tagARMV5TL_INSTR_THUMB_SHIFT0
+{
+  u_int32_t rd:3;         //Destination register
+  u_int32_t rm:3;         //Source register
+  u_int32_t sa:5;         //5 bits shift amount
+  u_int32_t opcode:2;     //Actual opcode for some type of instructions
+  u_int32_t type:3;       //Type of instructions
+};
+
 
 union tagARMV5TL_THUMB_INSTRUCTION
 {
-  u_int16_t                instr;       //Instruction register
-  ARMV5TL_INSTR_THUMB_BASE base;        //Base type for decoding
+  u_int16_t                  instr;       //Instruction register
+  ARMV5TL_INSTR_THUMB_BASE   base;        //Base type for decoding
+  ARMV5TL_INSTR_THUMB_SHIFT0 shift0;      //Instruction data for type 0 shift instructions
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
