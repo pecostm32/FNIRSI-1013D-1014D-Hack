@@ -464,7 +464,7 @@ struct tagARMV5TL_CORE
   
   ARMV5TL_INSTRUCTION   current_instruction;      //The instruction loaded for the current cycle
   
-  u_int32_t             needpcincr;               //Flag to signal program counter needs to be incremented
+  u_int32_t             pcincrvalue;               //Value the program counter needs to be incremented with
   
   int                  *program_counter;          //For more direct control a pointer to the program counter here
   ARMV5TL_STATUS       *status;                   //Same for the status word

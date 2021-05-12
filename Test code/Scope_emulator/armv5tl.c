@@ -6,6 +6,7 @@
 #include <pthread.h>
 
 #include "armv5tl.h"
+#include "armv5tl_thumb.h"
 
 #define MY_BREAK_POINT 0x0768
 
@@ -158,7 +159,7 @@ void ArmV5tlSetup(PARMV5TL_CORE core)
   core->undefinedinstruction = 0;
   
   //Test tracing
-  core->TraceFilePointer = fopen("test_trace.txt", "w");
+//  core->TraceFilePointer = fopen("test_trace.txt", "w");
   
   //On startup processor is running
   core->run = 1;
@@ -176,8 +177,6 @@ void ArmV5tlCore(PARMV5TL_CORE core)
     return;
   
   //Handle one instruction per call
-  //Assume program counter needs to be incremented
-  core->needpcincr = 1;
 
   //Check reset
   if(core->reset == 1)
@@ -216,8 +215,11 @@ void ArmV5tlCore(PARMV5TL_CORE core)
   //Check on which execution state the core is in
   if(core->status->flags.T)
   {
+    //Assume program counter needs to be incremented for thumb instructions
+    core->pcincrvalue = 2;
+    
     //Handle thumb instructions
-    ArmV5tlUndefinedInstruction(core);
+    ArmV5tlDecodeThumb(core);
   }
   else if(core->status->flags.J)
   {
@@ -226,6 +228,9 @@ void ArmV5tlCore(PARMV5TL_CORE core)
   }
   else
   {
+    //Assume program counter needs to be incremented for arm instructions
+    core->pcincrvalue = 4;
+    
     //Instruction fetch for arm state
     memoryword = (u_int32_t *)ArmV5tlGetMemoryPointer(core, *core->program_counter, ARM_MEMORY_WORD);
 
@@ -575,11 +580,10 @@ void ArmV5tlCore(PARMV5TL_CORE core)
         }
       }
     }
-    
-    //Point to next arm instruction when needed. When the previous instruction had the program counter as target this is not needed.
-    if(core->needpcincr)
-      *core->program_counter += 4;
   }
+  
+  //Point to next instruction when needed. When the previous instruction had the program counter as target the value is set to zero.
+  *core->program_counter += core->pcincrvalue;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -693,7 +697,7 @@ void ArmV5tlUndefinedInstruction(PARMV5TL_CORE core)
   core->undefinedinstruction = 1;
   
   //Do not increment the pc to be able to track the wrong instruction
-  core->needpcincr = 0;
+  core->pcincrvalue = 0;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -1107,7 +1111,7 @@ void ArmV5tlDPR(PARMV5TL_CORE core, u_int32_t vn, u_int32_t vm, u_int32_t c)
     if(core->current_instruction.lsr.rd == 15)
     {
       //Signal no increment if so
-      core->needpcincr = 0;
+      core->pcincrvalue = 0;
     }
   }
 }
@@ -1356,7 +1360,7 @@ void ArmV5tlLS(PARMV5TL_CORE core, u_int32_t address)
   if(((core->current_instruction.lsr.l) == 0) && (core->current_instruction.lsr.rd == 15))
   {
     //Signal no increment if so
-    core->needpcincr = 0;
+    core->pcincrvalue = 0;
   }
 }
 
@@ -1553,7 +1557,7 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
   if((core->current_instruction.type4.r15) && (core->current_instruction.type4.l))
   {
     //Signal no increment of pc if so
-    core->needpcincr = 0;
+    core->pcincrvalue = 0;
   }  
 }
 
@@ -1701,7 +1705,7 @@ void ArmV5tlMRS(PARMV5TL_CORE core)
   if(core->current_instruction.mrs.rd == 15)
   {
     //Signal no increment if so
-    core->needpcincr = 0;
+    core->pcincrvalue = 0;
   }
 }
 
@@ -1745,7 +1749,7 @@ void ArmV5tlBranch(PARMV5TL_CORE core)
   *core->program_counter += (8 + address);
 
   //Signal no increment of the pc
-  core->needpcincr = 0;
+  core->pcincrvalue = 0;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -1774,7 +1778,7 @@ void ArmV5tlBranchLinkExchange1(PARMV5TL_CORE core)
   core->status->flags.T = 1;
   
   //Signal no increment of the pc
-  core->needpcincr = 0;
+  core->pcincrvalue = 0;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -1793,7 +1797,7 @@ void ArmV5tlBranchLinkExchange2(PARMV5TL_CORE core)
   core->status->flags.T = address & 1;
   
   //Signal no increment of the pc
-  core->needpcincr = 0;
+  core->pcincrvalue = 0;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -1809,7 +1813,7 @@ void ArmV5tlBranchExchangeT(PARMV5TL_CORE core)
   core->status->flags.T = address & 1;
   
   //Signal no increment of the pc
-  core->needpcincr = 0;
+  core->pcincrvalue = 0;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -1828,7 +1832,7 @@ void ArmV5tlBranchExchangeJ(PARMV5TL_CORE core)
   core->status->flags.J = address & 1;
   
   //Signal no increment of the pc
-  core->needpcincr = 0;
+  core->pcincrvalue = 0;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
