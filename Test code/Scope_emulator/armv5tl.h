@@ -8,6 +8,30 @@
 #include <sys/types.h>
 
 //----------------------------------------------------------------------------------------------------------------------------------
+//Thumb section
+
+typedef union  tagARMV5TL_THUMB_INSTRUCTION  ARMV5TL_THUMB_INSTRUCTION;
+typedef struct tagARMV5TL_INSTR_THUMB_BASE   ARMV5TL_INSTR_THUMB_BASE;
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+
+struct tagARMV5TL_INSTR_THUMB_BASE
+{
+  u_int32_t data:11;      //Instruction data
+  u_int32_t opcode:2;     //Actual opcode for some type of instructions
+  u_int32_t type:3;       //Type of instructions
+};
+
+
+union tagARMV5TL_THUMB_INSTRUCTION
+{
+  u_int16_t                instr;       //Instruction register
+  ARMV5TL_INSTR_THUMB_BASE base;        //Base type for decoding
+};
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Arm section
 
 typedef struct tagARMV5TL_ADDRESS_MAP       ARMV5TL_ADDRESS_MAP;
 typedef struct tagARMV5TL_INSTR_BASE        ARMV5TL_INSTR_BASE;
@@ -38,7 +62,7 @@ typedef struct tagARMV5TL_REGS              ARMV5TL_REGS;
 typedef struct tagARMV5TL_CORE              ARMV5TL_CORE, *PARMV5TL_CORE;
 
 typedef union tagARMV5TL_STATUS             ARMV5TL_STATUS, *PARMV5TL_STATUS;
-typedef union tagARMV5TL_INSTRUCTION        ARMV5TL_INSTRUCTION;
+typedef union tagARMV5TL_ARM_INSTRUCTION    ARMV5TL_ARM_INSTRUCTION;
 typedef union tagARMV5TL_MEMORY             ARMV5TL_MEMORY;
 
 
@@ -397,9 +421,9 @@ union tagARMV5TL_STATUS
   ARMV5TL_FLAGS flags;           //Bit flags
 };                                        
 
-union tagARMV5TL_INSTRUCTION
+union tagARMV5TL_ARM_INSTRUCTION
 {
-  u_int32_t                word;       //Word register
+  u_int32_t                instr;      //Instruction register
   ARMV5TL_INSTR_BASE       base;       //Base for instruction decoding
   ARMV5TL_INSTR_MISC0      misc0;      //Miscellaneous instructions
   ARMV5TL_INSTR_TYPE0      type0;      //For type 0 instruction decoding
@@ -457,33 +481,34 @@ struct tagARMV5TL_REGS
 //The core main struct
 struct tagARMV5TL_CORE
 {
-  u_int32_t            *registers[6][18];         //The ARM core has banked register sets. In different modes some of the registers are not available or are the un_banked user mode ones. Pointers are used to emulate this.
+  u_int32_t                *registers[6][18];         //The ARM core has banked register sets. In different modes some of the registers are not available or are the un_banked user mode ones. Pointers are used to emulate this.
   
-  u_int32_t             current_mode;             //The mode the core is running in.
-  u_int32_t             current_bank;             //The register bank currently in use.
+  u_int32_t                 current_mode;             //The mode the core is running in.
+  u_int32_t                 current_bank;             //The register bank currently in use.
   
-  ARMV5TL_INSTRUCTION   current_instruction;      //The instruction loaded for the current cycle
+  ARMV5TL_ARM_INSTRUCTION   arm_instruction;          //The arm instruction loaded for the current cycle. Only when in arm state
+  ARMV5TL_THUMB_INSTRUCTION thumb_instruction;        //The thumb instruction loaded for the current cycle. Only when in thumb state
   
-  u_int32_t             pcincrvalue;               //Value the program counter needs to be incremented with
+  u_int32_t                 pcincrvalue;              //Value the program counter needs to be incremented with
   
-  int                  *program_counter;          //For more direct control a pointer to the program counter here
-  ARMV5TL_STATUS       *status;                   //Same for the status word
+  int                      *program_counter;          //For more direct control a pointer to the program counter here
+  ARMV5TL_STATUS           *status;                   //Same for the status word
   
-  u_int32_t             reset;                    //Processor reset flag
-  u_int32_t             irq;                      //Processor irg flag
-  u_int32_t             fiq;                      //Processor fast interrupt flag
-  u_int32_t             undefinedinstruction;     //Flag to signal undefined instruction encountered
+  u_int32_t                 reset;                    //Processor reset flag
+  u_int32_t                 irq;                      //Processor irg flag
+  u_int32_t                 fiq;                      //Processor fast interrupt flag
+  u_int32_t                 undefinedinstruction;     //Flag to signal undefined instruction encountered
   
-  u_int32_t             run;                      //Processor run flag
+  u_int32_t                 run;                      //Processor run flag
   
-  ARMV5TL_MEMORY        sram1[8192];              //32K core startup memory located at address 0x00000000
-  ARMV5TL_MEMORY        sram2[10240];             //40K core static memory located at address 0x00010000
+  ARMV5TL_MEMORY            sram1[8192];              //32K core startup memory located at address 0x00000000
+  ARMV5TL_MEMORY            sram2[10240];             //40K core static memory located at address 0x00010000
   
-  ARMV5TL_MEMORY       *dram;                     //Pointer to the memory in the system
+  ARMV5TL_MEMORY           *dram;                     //Pointer to the memory in the system
 
-  ARMV5TL_REGS          regs;                     //The actual register bank
+  ARMV5TL_REGS              regs;                     //The actual register bank
   
-   FILE                *TraceFilePointer;         //Null if tracing is disabled
+   FILE                    *TraceFilePointer;         //Null if tracing is disabled
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------

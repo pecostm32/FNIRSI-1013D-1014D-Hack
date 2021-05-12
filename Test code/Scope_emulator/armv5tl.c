@@ -169,7 +169,7 @@ void ArmV5tlSetup(PARMV5TL_CORE core)
 
 void ArmV5tlCore(PARMV5TL_CORE core)
 {
-  u_int32_t *memoryword;
+  u_int32_t *memorypointer;
   u_int32_t  execute = 0;
   
   //Check if running. Do nothing when stopped
@@ -209,7 +209,7 @@ void ArmV5tlCore(PARMV5TL_CORE core)
   //Breakpoint
   if(*core->program_counter == MY_BREAK_POINT)
   {
-    memoryword = NULL;
+    memorypointer = NULL;
   }
   
   //Check on which execution state the core is in
@@ -219,7 +219,7 @@ void ArmV5tlCore(PARMV5TL_CORE core)
     core->pcincrvalue = 2;
     
     //Handle thumb instructions
-    ArmV5tlDecodeThumb(core);
+    ArmV5tlHandleThumb(core);
   }
   else if(core->status->flags.J)
   {
@@ -232,353 +232,351 @@ void ArmV5tlCore(PARMV5TL_CORE core)
     core->pcincrvalue = 4;
     
     //Instruction fetch for arm state
-    memoryword = (u_int32_t *)ArmV5tlGetMemoryPointer(core, *core->program_counter, ARM_MEMORY_WORD);
+    memorypointer = (u_int32_t *)ArmV5tlGetMemoryPointer(core, *core->program_counter, ARM_MEMORY_WORD);
 
     //Check if a valid address is found
-    if(memoryword)
+    if(memorypointer)
     {
       //get the current instruction
-      core->current_instruction.word = (u_int32_t)*memoryword;
-    }
-    else
-    {
-      //Some exception needs to be generated here. Undefined Instruction most likely
-      ArmV5tlUndefinedInstruction(core);
-      
-      //Skip rest of processing
-      return;
-    }
+      core->arm_instruction.instr = (u_int32_t)*memorypointer;
     
-    //Check the condition bits against the status bits to decide if the instruction needs to be executed
-    switch(core->current_instruction.base.cond)
-    {
-      case ARM_COND_EQUAL:
-        //For execute on equal Z needs to be set
-        if(core->status->flags.Z)
-          execute = 1;
-        break;
-        
-      case ARM_COND_NOT_EQUAL:
-        //For execute on not equal Z needs to be cleared
-        if(core->status->flags.Z == 0)
-          execute = 1;
-        break;
-        
-      case ARM_COND_CARRY_SET:
-        //For execute on carry set C needs to be set
-        if(core->status->flags.C)
-          execute = 1;
-        break;
-        
-      case ARM_COND_CARRY_CLEAR:
-        //For execute on carry set C needs to be cleared
-        if(core->status->flags.C == 0)
-          execute = 1;
-        break;
-        
-      case ARM_COND_MINUS:
-        //For execute on minus N needs to be set
-        if(core->status->flags.N)
-          execute = 1;
-        break;
-        
-      case ARM_COND_PLUS:
-        //For execute on plus N needs to be cleared
-        if(core->status->flags.N == 0)
-          execute = 1;
-        break;
-        
-      case ARM_COND_OVERFLOW:
-        //For execute on overflow V needs to be set
-        if(core->status->flags.V)
-          execute = 1;
-        break;
-        
-      case ARM_COND_NO_OVERFLOW:
-        //For execute on no overflow V needs to be cleared
-        if(core->status->flags.V == 0)
-          execute = 1;
-        break;
-        
-      case ARM_COND_HIGHER:
-        //For execute on higher C needs to be set and Z needs to be cleared
-        if((core->status->flags.C) && (core->status->flags.Z == 0))
-          execute = 1;
-        break;
-        
-      case ARM_COND_LOWER_SAME:
-        //For execute on lower or the same C needs to be cleared and Z needs to be set
-        if((core->status->flags.C == 0) && (core->status->flags.Z ))
-          execute = 1;
-        break;
-        
-      case ARM_COND_GREATER_EQUAL:
-        //For execute on greater or equal N needs to be equal to V
-        if(core->status->flags.N == core->status->flags.V)
-          execute = 1;
-        break;
-        
-      case ARM_COND_LESS_THAN:
-        //For execute on less than N needs to be not equal to V
-        if(core->status->flags.N != core->status->flags.V)
-          execute = 1;
-        break;
-        
-      case ARM_COND_GREATER_THAN:
-        //For execute on greater than N needs to be equal to V and Z needs to be cleared
-        if((core->status->flags.N == core->status->flags.V) && (core->status->flags.Z == 0))
-          execute = 1;
-        break;
-        
-      case ARM_COND_LESS_THAN_EQUAL:
-        //For execute on less than or equal than N needs to be not equal to V and Z needs to be set
-        if((core->status->flags.N != core->status->flags.V) && (core->status->flags.Z))
-          execute = 1;
-        break;
-        
-      case ARM_COND_ALWAYS:
-        //Always means always
-        execute = 1;
-        break;
-        
-      case ARM_COND_SPECIAL:
-        //Unconditional instructions
-        execute = 1;
-        break;
-    }
-
-    //Initial tracing just the pc sequence
-    if(core->TraceFilePointer)
-    {
-      fprintf(core->TraceFilePointer, "pc: 0x%08X  exec: %d\n", *core->program_counter, execute);
-      fflush(core->TraceFilePointer);
-    }
-    
-    //Check if instruction needs to be executed
-    if(execute)
-    {
-      //Check on unconditional instructions
-      if(core->current_instruction.base.cond == 15)
+      //Check the condition bits against the status bits to decide if the instruction needs to be executed
+      switch(core->arm_instruction.base.cond)
       {
-        //Decode the unconditional instructions
-        switch(core->current_instruction.base.type)
-        {
-          case 0:
-            //Change processor state and set endianness
-            ArmV5tlUndefinedInstruction(core);
-            break;
+        case ARM_COND_EQUAL:
+          //For execute on equal Z needs to be set
+          if(core->status->flags.Z)
+            execute = 1;
+          break;
 
-          case 1:
-            //Not used
-            //Undefined instruction exception
-            ArmV5tlUndefinedInstruction(core);
-            break;
-            
-          case 2:
-          case 3:
-            //Cache preload
-            ArmV5tlUndefinedInstruction(core);
-            break;
-            
-          case 4:
-            //Save return state and return from exception
-            ArmV5tlUndefinedInstruction(core);
-            break;
-            
-          case 5:
-            //Branch with link and change to thumb
-            ArmV5tlBranchLinkExchange1(core);
-            break;
-            
-          case 6:
-            //Additional coprocessor register transfer
-            ArmV5tlUndefinedInstruction(core);
-            break;
-            
-          case 7:
-            //Additional coprocessor register transfer and undefined instruction
-            ArmV5tlUndefinedInstruction(core);
-            break;
-        }        
+        case ARM_COND_NOT_EQUAL:
+          //For execute on not equal Z needs to be cleared
+          if(core->status->flags.Z == 0)
+            execute = 1;
+          break;
+
+        case ARM_COND_CARRY_SET:
+          //For execute on carry set C needs to be set
+          if(core->status->flags.C)
+            execute = 1;
+          break;
+
+        case ARM_COND_CARRY_CLEAR:
+          //For execute on carry set C needs to be cleared
+          if(core->status->flags.C == 0)
+            execute = 1;
+          break;
+
+        case ARM_COND_MINUS:
+          //For execute on minus N needs to be set
+          if(core->status->flags.N)
+            execute = 1;
+          break;
+
+        case ARM_COND_PLUS:
+          //For execute on plus N needs to be cleared
+          if(core->status->flags.N == 0)
+            execute = 1;
+          break;
+
+        case ARM_COND_OVERFLOW:
+          //For execute on overflow V needs to be set
+          if(core->status->flags.V)
+            execute = 1;
+          break;
+
+        case ARM_COND_NO_OVERFLOW:
+          //For execute on no overflow V needs to be cleared
+          if(core->status->flags.V == 0)
+            execute = 1;
+          break;
+
+        case ARM_COND_HIGHER:
+          //For execute on higher C needs to be set and Z needs to be cleared
+          if((core->status->flags.C) && (core->status->flags.Z == 0))
+            execute = 1;
+          break;
+
+        case ARM_COND_LOWER_SAME:
+          //For execute on lower or the same C needs to be cleared and Z needs to be set
+          if((core->status->flags.C == 0) && (core->status->flags.Z ))
+            execute = 1;
+          break;
+
+        case ARM_COND_GREATER_EQUAL:
+          //For execute on greater or equal N needs to be equal to V
+          if(core->status->flags.N == core->status->flags.V)
+            execute = 1;
+          break;
+
+        case ARM_COND_LESS_THAN:
+          //For execute on less than N needs to be not equal to V
+          if(core->status->flags.N != core->status->flags.V)
+            execute = 1;
+          break;
+
+        case ARM_COND_GREATER_THAN:
+          //For execute on greater than N needs to be equal to V and Z needs to be cleared
+          if((core->status->flags.N == core->status->flags.V) && (core->status->flags.Z == 0))
+            execute = 1;
+          break;
+
+        case ARM_COND_LESS_THAN_EQUAL:
+          //For execute on less than or equal than N needs to be not equal to V and Z needs to be set
+          if((core->status->flags.N != core->status->flags.V) && (core->status->flags.Z))
+            execute = 1;
+          break;
+
+        case ARM_COND_ALWAYS:
+          //Always means always
+          execute = 1;
+          break;
+
+        case ARM_COND_SPECIAL:
+          //Unconditional instructions
+          execute = 1;
+          break;
       }
-      else
-      {
-        //Decode the type bits
-        switch(core->current_instruction.base.type)
-        {
-          case 0:
-            //Check for multiply and extra load and store instructions. Both bit7 and bit4 are set
-            if((core->current_instruction.type0.it1) && (core->current_instruction.type0.it2))
-            {
-              //Check if Multiplies
-              if((core->current_instruction.mul.type == 0) && (core->current_instruction.mul.nu == 0x09))
-              {
-                //Handle multiplies
-                ArmV5tlUndefinedInstruction(core);
-              }
-              else
-              {
-                //Handle extra load and store instructions
-                ArmV5tlUndefinedInstruction(core);
 
-                //Half word, signed half word, signed byte and double word instructions 
-              }
-            }
-            //Check for miscellaneous instructions. Bit20 (s) needs to be cleared and opcode bit3 is set and bit2 is cleared (So opcodes 8,9,10 and 11)
-            else if((core->current_instruction.type0.s == 0) && ((core->current_instruction.type0.opcode & 0x0C) == 0x08))
-            {
-              //Check if move status register instructions
-              if(core->current_instruction.msrr.sbz == 0)
+      //Initial tracing just the pc sequence
+      if(core->TraceFilePointer)
+      {
+        fprintf(core->TraceFilePointer, "pc: 0x%08X  exec: %d\n", *core->program_counter, execute);
+        fflush(core->TraceFilePointer);
+      }
+
+      //Check if instruction needs to be executed
+      if(execute)
+      {
+        //Check on unconditional instructions
+        if(core->arm_instruction.base.cond == 15)
+        {
+          //Decode the unconditional instructions
+          switch(core->arm_instruction.base.type)
+          {
+            case 0:
+              //Change processor state and set endianness
+              ArmV5tlUndefinedInstruction(core);
+              break;
+
+            case 1:
+              //Not used
+              //Undefined instruction exception
+              ArmV5tlUndefinedInstruction(core);
+              break;
+
+            case 2:
+            case 3:
+              //Cache preload
+              ArmV5tlUndefinedInstruction(core);
+              break;
+
+            case 4:
+              //Save return state and return from exception
+              ArmV5tlUndefinedInstruction(core);
+              break;
+
+            case 5:
+              //Branch with link and change to thumb
+              ArmV5tlBranchLinkExchange1(core);
+              break;
+
+            case 6:
+              //Additional coprocessor register transfer
+              ArmV5tlUndefinedInstruction(core);
+              break;
+
+            case 7:
+              //Additional coprocessor register transfer and undefined instruction
+              ArmV5tlUndefinedInstruction(core);
+              break;
+          }        
+        }
+        else
+        {
+          //Decode the type bits
+          switch(core->arm_instruction.base.type)
+          {
+            case 0:
+              //Check for multiply and extra load and store instructions. Both bit7 and bit4 are set
+              if((core->arm_instruction.type0.it1) && (core->arm_instruction.type0.it2))
               {
-                //Check if MSR or MRS instruction
-                if(core->current_instruction.msrr.d)
+                //Check if Multiplies
+                if((core->arm_instruction.mul.type == 0) && (core->arm_instruction.mul.nu == 0x09))
                 {
-                  //Move register to status register
-                  ArmV5tlMSRRegister(core);
+                  //Handle multiplies
+                  ArmV5tlUndefinedInstruction(core);
                 }
                 else
                 {
-                  //Move status register to register
-                  ArmV5tlMRS(core);
+                  //Handle extra load and store instructions
+                  ArmV5tlUndefinedInstruction(core);
+
+                  //Half word, signed half word, signed byte and double word instructions 
                 }
               }
-              else
+              //Check for miscellaneous instructions. Bit20 (s) needs to be cleared and opcode bit3 is set and bit2 is cleared (So opcodes 8,9,10 and 11)
+              else if((core->arm_instruction.type0.s == 0) && ((core->arm_instruction.type0.opcode & 0x0C) == 0x08))
               {
-                //Decode the miscellaneous instructions
-                //First check on branch instructions
-                if((core->current_instruction.misc0.op1 == 1) && ((core->current_instruction.misc0.op2 & 0x0C) == 0x00))
+                //Check if move status register instructions
+                if(core->arm_instruction.msrr.sbz == 0)
                 {
-                  switch(core->current_instruction.misc0.op2 & 3)
+                  //Check if MSR or MRS instruction
+                  if(core->arm_instruction.msrr.d)
                   {
-                    case 0:
-                      //Undefined instruction
-                      ArmV5tlUndefinedInstruction(core);
-                      break;
-                      
-                    case 1:
-                      //Branch and exchange instruction set thumb
-                      ArmV5tlBranchExchangeT(core);
-                      break;
-                      
-                    case 2:
-                      //Branch and exchange instruction set java (jazelle)
-                      //ArmV5tlBranchExchangeJ(core);
-                      ArmV5tlUndefinedInstruction(core);
-                      break;
-                      
-                    case 3:
-                      //Branch and link / exchange instruction set thumb
-                      ArmV5tlBranchLinkExchange2(core);
-                      break;
+                    //Move register to status register
+                    ArmV5tlMSRRegister(core);
+                  }
+                  else
+                  {
+                    //Move status register to register
+                    ArmV5tlMRS(core);
                   }
                 }
                 else
                 {
-                  //Count leading zeros
-                  //Saturating add / subtract
-                  //Software breakpoint
-                  //Signed multiplies (type 2)
-                  ArmV5tlUndefinedInstruction(core);
+                  //Decode the miscellaneous instructions
+                  //First check on branch instructions
+                  if((core->arm_instruction.misc0.op1 == 1) && ((core->arm_instruction.misc0.op2 & 0x0C) == 0x00))
+                  {
+                    switch(core->arm_instruction.misc0.op2 & 3)
+                    {
+                      case 0:
+                        //Undefined instruction
+                        ArmV5tlUndefinedInstruction(core);
+                        break;
+
+                      case 1:
+                        //Branch and exchange instruction set thumb
+                        ArmV5tlBranchExchangeT(core);
+                        break;
+
+                      case 2:
+                        //Branch and exchange instruction set java (jazelle)
+                        //ArmV5tlBranchExchangeJ(core);
+                        ArmV5tlUndefinedInstruction(core);
+                        break;
+
+                      case 3:
+                        //Branch and link / exchange instruction set thumb
+                        ArmV5tlBranchLinkExchange2(core);
+                        break;
+                    }
+                  }
+                  else
+                  {
+                    //Count leading zeros
+                    //Saturating add / subtract
+                    //Software breakpoint
+                    //Signed multiplies (type 2)
+                    ArmV5tlUndefinedInstruction(core);
+                  }
                 }
-              }
-            }
-            else
-            {
-              //Data processing with shift instructions
-              ArmV5tlDPRShift(core);
-            }
-            break;
-
-          case 1:
-            //Check for undefined instruction. Bit20 (s) needs to be cleared and opcode bit3 is set and bit2 and bit0 are cleared (So opcodes 8 and 10)
-            if((core->current_instruction.type1.s == 0) && ((core->current_instruction.type1.opcode & 0x0D) == 0x08))
-            {
-              //Undefined instruction
-              ArmV5tlUndefinedInstruction(core);
-            }
-            //Check for move immediate to status register. Bit20 (s) needs to be cleared and opcode bit3 and bit0 are set and bit2 is cleared (So opcodes 9 and 11)
-            else if((core->current_instruction.type1.s == 0) && ((core->current_instruction.type1.opcode & 0x0D) == 0x09))
-            {
-              //Move immediate to status register
-              ArmV5tlMSRImmediate(core);
-            }
-            else
-            {
-              //Data processing immediate
-              ArmV5tlDPRImmediate(core);
-            }
-            break;
-
-          case 2:
-            //Load / store immediate offset instructions
-            ArmV5tlLSImmediate(core);
-            break;
-
-          case 3:
-            //Check for architecturally undefined instruction
-            if((core->current_instruction.word & 0x01F000F0) == 0x01F000F0)
-            {
-              //Architecturally undefined
-              ArmV5tlUndefinedInstruction(core);
-            }
-            //Check on media instructions. Bit4 needs to be set
-            else if(core->current_instruction.type3.it1)
-            {
-              //Media instructions
-              //ARMV6 and above
-              ArmV5tlUndefinedInstruction(core);
-            }
-            else
-            {
-              //Load / store register offset instructions
-              ArmV5tlLSRegister(core);
-            }
-            break;
-
-          case 4:
-            //Load / store multiple instructions
-            ArmV5tlLSM(core);
-            break;
-
-          case 5:
-            //Branch instructions
-            ArmV5tlBranch(core);
-            break;
-
-          case 6:
-            //Coprocessor load / store instruction
-            ArmV5tlUndefinedInstruction(core);
-
-            //LDC, MCRR and MRRC instructions
-            break;
-
-          case 7:
-            //Check if software interrupt
-            if(core->current_instruction.type7.it2)
-            {
-              //Software interrupt
-              ArmV5tlUndefinedInstruction(core);
-            }
-            else
-            {
-              //Check on coprocessor register transfer or data processing instructions
-              if(core->current_instruction.type7.it1)
-              {
-                //Coprocessor register transfer instructions
-                ArmV5tlMRCMCR(core);
               }
               else
               {
-                //Coprocessor data processing instructions
-                ArmV5tlUndefinedInstruction(core);
-
-                //CDP
-
+                //Data processing with shift instructions
+                ArmV5tlDPRShift(core);
               }
-            }
-            break;
+              break;
+
+            case 1:
+              //Check for undefined instruction. Bit20 (s) needs to be cleared and opcode bit3 is set and bit2 and bit0 are cleared (So opcodes 8 and 10)
+              if((core->arm_instruction.type1.s == 0) && ((core->arm_instruction.type1.opcode & 0x0D) == 0x08))
+              {
+                //Undefined instruction
+                ArmV5tlUndefinedInstruction(core);
+              }
+              //Check for move immediate to status register. Bit20 (s) needs to be cleared and opcode bit3 and bit0 are set and bit2 is cleared (So opcodes 9 and 11)
+              else if((core->arm_instruction.type1.s == 0) && ((core->arm_instruction.type1.opcode & 0x0D) == 0x09))
+              {
+                //Move immediate to status register
+                ArmV5tlMSRImmediate(core);
+              }
+              else
+              {
+                //Data processing immediate
+                ArmV5tlDPRImmediate(core);
+              }
+              break;
+
+            case 2:
+              //Load / store immediate offset instructions
+              ArmV5tlLSImmediate(core);
+              break;
+
+            case 3:
+              //Check for architecturally undefined instruction
+              if((core->arm_instruction.instr & 0x01F000F0) == 0x01F000F0)
+              {
+                //Architecturally undefined
+                ArmV5tlUndefinedInstruction(core);
+              }
+              //Check on media instructions. Bit4 needs to be set
+              else if(core->arm_instruction.type3.it1)
+              {
+                //Media instructions
+                //ARMV6 and above
+                ArmV5tlUndefinedInstruction(core);
+              }
+              else
+              {
+                //Load / store register offset instructions
+                ArmV5tlLSRegister(core);
+              }
+              break;
+
+            case 4:
+              //Load / store multiple instructions
+              ArmV5tlLSM(core);
+              break;
+
+            case 5:
+              //Branch instructions
+              ArmV5tlBranch(core);
+              break;
+
+            case 6:
+              //Coprocessor load / store instruction
+              ArmV5tlUndefinedInstruction(core);
+
+              //LDC, MCRR and MRRC instructions
+              break;
+
+            case 7:
+              //Check if software interrupt
+              if(core->arm_instruction.type7.it2)
+              {
+                //Software interrupt
+                ArmV5tlUndefinedInstruction(core);
+              }
+              else
+              {
+                //Check on coprocessor register transfer or data processing instructions
+                if(core->arm_instruction.type7.it1)
+                {
+                  //Coprocessor register transfer instructions
+                  ArmV5tlMRCMCR(core);
+                }
+                else
+                {
+                  //Coprocessor data processing instructions
+                  ArmV5tlUndefinedInstruction(core);
+
+                  //CDP
+
+                }
+              }
+              break;
+          }
         }
       }
+    }
+    //Invalid memory pointer handling
+    else
+    {
+      //Some exception needs to be generated here. Undefined Instruction most likely
+      ArmV5tlUndefinedInstruction(core);
     }
   }
   
@@ -648,8 +646,9 @@ void *ArmV5tlGetMemoryPointer(PARMV5TL_CORE core, u_int32_t address, u_int32_t m
     if((address >= address_map[i].start) && (address <= address_map[i].end))
     {
       //If so check if it has a function coupled and call it if so
+      //Also adjust the address to start from 0 based on the start address in the memory map
       if(address_map[i].function)
-        return(address_map[i].function(core, address, mode));
+        return(address_map[i].function(core, address - address_map[i].start, mode));
       else
         return(NULL);
     }
@@ -668,6 +667,10 @@ void *ArmV5tlSram1(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
     case ARM_MEMORY_WORD:
       //Return the word aligned data
       return(&core->sram1[address >> 2].m_32bit);
+
+    case ARM_MEMORY_SHORT:
+      //Return the short aligned data
+      return(&core->sram1[address >> 1].m_16bit[address & 1]);
       
     case ARM_MEMORY_BYTE:
       //Return the byte aligned data
@@ -681,7 +684,11 @@ void *ArmV5tlSram2(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
   {
     case ARM_MEMORY_WORD:
       //Return the word aligned data
-      return(&core->sram2[(address - 0x00010000) >> 2].m_32bit);
+      return(&core->sram2[address >> 2].m_32bit);
+      
+    case ARM_MEMORY_SHORT:
+      //Return the short aligned data
+      return(&core->sram1[address >> 1].m_16bit[address & 1]);
       
     case ARM_MEMORY_BYTE:
       //Return the byte aligned data
@@ -705,39 +712,39 @@ void ArmV5tlUndefinedInstruction(PARMV5TL_CORE core)
 void ArmV5tlDPRShift(PARMV5TL_CORE core)
 {
   //Get the input data
-  u_int32_t vm = *core->registers[core->current_bank][core->current_instruction.dpsi.rm];
-  u_int32_t vn = *core->registers[core->current_bank][core->current_instruction.dpsi.rn];
+  u_int32_t vm = *core->registers[core->current_bank][core->arm_instruction.dpsi.rm];
+  u_int32_t vn = *core->registers[core->current_bank][core->arm_instruction.dpsi.rn];
   u_int32_t sa;
   u_int32_t c = core->status->flags.C;
 
   //Amend the values when r15 (pc) is used
-  if(core->current_instruction.dpsi.rn == 15)
+  if(core->arm_instruction.dpsi.rn == 15)
   {
     vn += 8;
   }
 
   //Same for the to be shifted register
-  if(core->current_instruction.dpsi.rm == 15)
+  if(core->arm_instruction.dpsi.rm == 15)
   {
     vm += 8;
   }
   
   //Check if immediate shift or register shift. For immediate shift bit4 is cleared
-  if(core->current_instruction.type0.it1 == 0)
+  if(core->arm_instruction.type0.it1 == 0)
   {
     //Data processing immediate shift
     //Get the immediate shift amount
-    sa = core->current_instruction.dpsi.sa;
+    sa = core->arm_instruction.dpsi.sa;
   }
   else
   {
     //Data processing register shift
     //Get the register shift amount.
-    sa = *core->registers[core->current_bank][core->current_instruction.dpsr.rs] & 0x000000FF;
+    sa = *core->registers[core->current_bank][core->arm_instruction.dpsr.rs] & 0x000000FF;
   }
   
   //Take action based on the shift mode
-  switch(core->current_instruction.dpsi.sm)
+  switch(core->arm_instruction.dpsi.sm)
   {
     case ARM_SHIFT_MODE_LSL:
       if((sa > 0) && (sa < 32))
@@ -764,7 +771,7 @@ void ArmV5tlDPRShift(PARMV5TL_CORE core)
       if(sa == 0)
       {
         //Check on immediate or register shift
-        if(core->current_instruction.type0.it1 == 0)
+        if(core->arm_instruction.type0.it1 == 0)
         {
           //In immediate mode shifter 0 equals to 32
           c = vm >> 31;
@@ -795,7 +802,7 @@ void ArmV5tlDPRShift(PARMV5TL_CORE core)
       if(sa == 0)
       {
         //Check on immediate or register shiftPARMV5TL_STATUS
-        if(core->current_instruction.type0.it1 == 0)
+        if(core->arm_instruction.type0.it1 == 0)
         {
           //In immediate mode shifter 0 equals to 32
           c = vm >> 31;
@@ -851,7 +858,7 @@ void ArmV5tlDPRShift(PARMV5TL_CORE core)
       if(sa == 0)
       {
         //Check on immediate or register shift
-        if(core->current_instruction.type0.it1 == 0)
+        if(core->arm_instruction.type0.it1 == 0)
         {
           //Special case here where the shift amount is 0. Rotate right with extend. Carry is an extra bit
           c = vm & 1;
@@ -886,13 +893,13 @@ void ArmV5tlDPRShift(PARMV5TL_CORE core)
 void ArmV5tlDPRImmediate(PARMV5TL_CORE core)
 {
   //Get the input data
-  u_int32_t vm = core->current_instruction.dpi.im;
-  u_int32_t vn = *core->registers[core->current_bank][core->current_instruction.dpsi.rn];
-  u_int32_t ri = core->current_instruction.dpi.ri << 1;
+  u_int32_t vm = core->arm_instruction.dpi.im;
+  u_int32_t vn = *core->registers[core->current_bank][core->arm_instruction.dpsi.rn];
+  u_int32_t ri = core->arm_instruction.dpi.ri << 1;
   u_int32_t c = core->status->flags.C;
   
   //Amend the operand value when r15 (pc) is used
-  if(core->current_instruction.dpsi.rn == 15)
+  if(core->arm_instruction.dpsi.rn == 15)
   {
     vn += 8;
   }
@@ -920,7 +927,7 @@ void ArmV5tlDPR(PARMV5TL_CORE core, u_int32_t vn, u_int32_t vm, u_int32_t c)
   u_int32_t docandv = ARM_FLAGS_UPDATE_CV_NO;
   
   //Perform the correct action based on the opcode
-  switch(core->current_instruction.type0.opcode)
+  switch(core->arm_instruction.type0.opcode)
   {
     case ARM_OPCODE_AND:
       vd = vn & vm;
@@ -1024,10 +1031,10 @@ void ArmV5tlDPR(PARMV5TL_CORE core, u_int32_t vn, u_int32_t vm, u_int32_t c)
   }
   
   //Check if program status register needs to be updated
-  if(core->current_instruction.type0.s)
+  if(core->arm_instruction.type0.s)
   {
     //Check if destination register needs to be updated, is r15 (pc) and the current mode has a saved program status register
-    if((update) && (core->current_instruction.dpsi.rd == 15) && (core->registers[core->current_bank][ARM_REG_SPSR_IDX]))
+    if((update) && (core->arm_instruction.dpsi.rd == 15) && (core->registers[core->current_bank][ARM_REG_SPSR_IDX]))
     {
       //Load the current status with the saved one if it is available
       core->status->word =  ((PARMV5TL_STATUS)core->registers[core->current_bank][ARM_REG_SPSR_IDX])->word;
@@ -1105,10 +1112,10 @@ void ArmV5tlDPR(PARMV5TL_CORE core, u_int32_t vn, u_int32_t vm, u_int32_t c)
   if(update)
   {
     //Write the result back as a singed 32 bit integer
-    *core->registers[core->current_bank][core->current_instruction.dpsi.rd] = (int32_t)vd;
+    *core->registers[core->current_bank][core->arm_instruction.dpsi.rd] = (int32_t)vd;
     
     //Check if program counter used as target
-    if(core->current_instruction.lsr.rd == 15)
+    if(core->arm_instruction.lsr.rd == 15)
     {
       //Signal no increment if so
       core->pcincrvalue = 0;
@@ -1121,49 +1128,49 @@ void ArmV5tlDPR(PARMV5TL_CORE core, u_int32_t vn, u_int32_t vm, u_int32_t c)
 void ArmV5tlLSImmediate(PARMV5TL_CORE core)
 {
   u_int32_t addr;
-  u_int32_t vn = *core->registers[core->current_bank][core->current_instruction.lsi.rn];
+  u_int32_t vn = *core->registers[core->current_bank][core->arm_instruction.lsi.rn];
   
   //Amend the value when r15 (pc) is used
-  if(core->current_instruction.lsi.rn == 15)
+  if(core->arm_instruction.lsi.rn == 15)
   {
     vn += 8;
   }
   
   //Check on pre or post indexed
-  if(core->current_instruction.lsi.p == 0)
+  if(core->arm_instruction.lsi.p == 0)
   {
     //Do post indexed
     addr = vn;
     
     //Update rn
-    if(core->current_instruction.lsi.u)
+    if(core->arm_instruction.lsi.u)
     {
       //When u = 1 add the offset
-      *core->registers[core->current_bank][core->current_instruction.lsi.rn] += core->current_instruction.lsi.of;
+      *core->registers[core->current_bank][core->arm_instruction.lsi.rn] += core->arm_instruction.lsi.of;
     }
     else
     {
       //When u = 0 subtract the offset
-      *core->registers[core->current_bank][core->current_instruction.lsi.rn] -= core->current_instruction.lsi.of;
+      *core->registers[core->current_bank][core->arm_instruction.lsi.rn] -= core->arm_instruction.lsi.of;
     }
   }
   else
   {
     //Immediate offset or pre-indexed
-    if(core->current_instruction.lsi.u)
+    if(core->arm_instruction.lsi.u)
     {
       //When u = 1 add the offset
-      addr = vn + core->current_instruction.lsi.of;
+      addr = vn + core->arm_instruction.lsi.of;
     }
     else
     {
       //When u = 0 subtract the offset
-      addr = vn - core->current_instruction.lsi.of;
+      addr = vn - core->arm_instruction.lsi.of;
     }
     
     //Check if rn needs to be updated
-    if(core->current_instruction.lsi.w)
-      *core->registers[core->current_bank][core->current_instruction.lsi.rn] = addr;
+    if(core->arm_instruction.lsi.w)
+      *core->registers[core->current_bank][core->arm_instruction.lsi.rn] = addr;
   }
   
   //Do the actual processing
@@ -1176,30 +1183,30 @@ void ArmV5tlLSRegister(PARMV5TL_CORE core)
 {
   //Get the input data
   u_int32_t addr;
-  u_int32_t vm = *core->registers[core->current_bank][core->current_instruction.lsr.rm];
-  u_int32_t vn = *core->registers[core->current_bank][core->current_instruction.lsr.rn];
+  u_int32_t vm = *core->registers[core->current_bank][core->arm_instruction.lsr.rm];
+  u_int32_t vn = *core->registers[core->current_bank][core->arm_instruction.lsr.rn];
   u_int32_t sa;
 
   //Amend the values when r15 (pc) is used
-  if(core->current_instruction.lsr.rn == 15)
+  if(core->arm_instruction.lsr.rn == 15)
   {
     vn += 8;
   }
 
   //Same for the to be shifted register
-  if(core->current_instruction.lsr.rm == 15)
+  if(core->arm_instruction.lsr.rm == 15)
   {
     vm += 8;
   }
   
   //shifting is only done when scaled mode bits11:4 not zero
-  if(core->current_instruction.lsrn.ns != 0)
+  if(core->arm_instruction.lsrn.ns != 0)
   {
     //Get the immediate shift amount
-    sa = core->current_instruction.lsr.sa;
+    sa = core->arm_instruction.lsr.sa;
 
     //Take action based on the shift mode
-    switch(core->current_instruction.lsr.sm)
+    switch(core->arm_instruction.lsr.sm)
     {
       case ARM_SHIFT_MODE_LSL:
         //For lsl shifting is always done since sa can't be zero
@@ -1266,27 +1273,27 @@ void ArmV5tlLSRegister(PARMV5TL_CORE core)
   }
   
   //Check on pre or post indexed
-  if(core->current_instruction.lsr.p == 0)
+  if(core->arm_instruction.lsr.p == 0)
   {
     //Do post indexed
     addr = vn;
     
     //Update rn
-    if(core->current_instruction.lsr.u)
+    if(core->arm_instruction.lsr.u)
     {
       //When u = 1 add the offset
-      *core->registers[core->current_bank][core->current_instruction.lsr.rn] += vm;
+      *core->registers[core->current_bank][core->arm_instruction.lsr.rn] += vm;
     }
     else
     {
       //When u = 0 subtract the offset
-      *core->registers[core->current_bank][core->current_instruction.lsr.rn] -= vm;
+      *core->registers[core->current_bank][core->arm_instruction.lsr.rn] -= vm;
     }
   }
   else
   {
     //Immediate offset or pre-indexed
-    if(core->current_instruction.lsr.u)
+    if(core->arm_instruction.lsr.u)
     {
       //When u = 1 add the offset
       addr = vn + vm;
@@ -1298,8 +1305,8 @@ void ArmV5tlLSRegister(PARMV5TL_CORE core)
     }
     
     //Check if rn needs to be updated
-    if(core->current_instruction.lsr.w)
-      *core->registers[core->current_bank][core->current_instruction.lsr.rn] = addr;
+    if(core->arm_instruction.lsr.w)
+      *core->registers[core->current_bank][core->arm_instruction.lsr.rn] = addr;
   }
    
   //Do the actual processing
@@ -1313,7 +1320,7 @@ void ArmV5tlLS(PARMV5TL_CORE core, u_int32_t address)
   void *memory;
   
   //Check if action needs to be done on a word or a byte
-  if(core->current_instruction.lsr.b == 0)
+  if(core->arm_instruction.lsr.b == 0)
   {
     //Word access so get a pointer to the given address
     memory = ArmV5tlGetMemoryPointer(core, address, ARM_MEMORY_WORD);
@@ -1322,15 +1329,15 @@ void ArmV5tlLS(PARMV5TL_CORE core, u_int32_t address)
     if(memory)
     {
       //Check if a load or a store is requested
-      if(core->current_instruction.lsr.l)
+      if(core->arm_instruction.lsr.l)
       {
         //Load from found memory address
-        *core->registers[core->current_bank][core->current_instruction.lsr.rd] = *(u_int32_t *)memory;
+        *core->registers[core->current_bank][core->arm_instruction.lsr.rd] = *(u_int32_t *)memory;
       }
       else
       {
         //Store to found memory address
-        *(u_int32_t *)memory = *core->registers[core->current_bank][core->current_instruction.lsr.rd];
+        *(u_int32_t *)memory = *core->registers[core->current_bank][core->arm_instruction.lsr.rd];
       }
     }
   }
@@ -1343,21 +1350,21 @@ void ArmV5tlLS(PARMV5TL_CORE core, u_int32_t address)
     if(memory)
     {
       //Check if a load or a store is requested
-      if(core->current_instruction.lsr.l)
+      if(core->arm_instruction.lsr.l)
       {
         //Load from found memory address
-        *core->registers[core->current_bank][core->current_instruction.lsr.rd] = *(u_int8_t *)memory;
+        *core->registers[core->current_bank][core->arm_instruction.lsr.rd] = *(u_int8_t *)memory;
       }
       else
       {
         //Store to found memory address
-        *(u_int8_t *)memory = (u_int8_t)*core->registers[core->current_bank][core->current_instruction.lsr.rd];
+        *(u_int8_t *)memory = (u_int8_t)*core->registers[core->current_bank][core->arm_instruction.lsr.rd];
       }
     }
   }
   
   //Check if program counter used as target
-  if(((core->current_instruction.lsr.l) == 0) && (core->current_instruction.lsr.rd == 15))
+  if(((core->arm_instruction.lsr.l) == 0) && (core->arm_instruction.lsr.rd == 15))
   {
     //Signal no increment if so
     core->pcincrvalue = 0;
@@ -1368,25 +1375,25 @@ void ArmV5tlLS(PARMV5TL_CORE core, u_int32_t address)
 //Load and store multiple instruction handling
 void ArmV5tlLSM(PARMV5TL_CORE core)
 {
-  u_int32_t address = *core->registers[core->current_bank][core->current_instruction.type4.rn];
+  u_int32_t address = *core->registers[core->current_bank][core->arm_instruction.type4.rn];
   u_int32_t *memory;
-  u_int32_t reglist = core->current_instruction.word & 0x0000FFFF;
+  u_int32_t reglist = core->arm_instruction.instr & 0x0000FFFF;
   int       numregs = 0;
   int       bank = core->current_bank;
   int       i;
   
   //Check if S bit is set. Needed to determine which register bank is used.
-  if(core->current_instruction.type4.s)
+  if(core->arm_instruction.type4.s)
   {
     //Check if r15 is included in the list and it is a load instruction
-    if((core->current_instruction.type4.r15) && (core->current_instruction.type4.l))
+    if((core->arm_instruction.type4.r15) && (core->arm_instruction.type4.l))
     {
       //Need to restore cpsr from spsr
       //Check if there is a saved status register for the current register bank
       if(core->registers[core->current_bank][ARM_REG_SPSR_IDX])
       {
         //Copy the spsr if available
-        *core->registers[core->current_bank][core->current_instruction.mrs.rd] = *core->registers[core->current_bank][ARM_REG_SPSR_IDX];
+        *core->registers[core->current_bank][core->arm_instruction.mrs.rd] = *core->registers[core->current_bank][ARM_REG_SPSR_IDX];
       }
       
       //Handle the possible mode change
@@ -1435,10 +1442,10 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
   //For better memory validity check the pointer should be gotten for each transfer separately 
   
   //Check if base address not included in the range (Increment / decrement before)
-  if(core->current_instruction.type4.p)
+  if(core->arm_instruction.type4.p)
   {
     //Not includes so check if range is below or above the base address
-    if(core->current_instruction.type4.u)
+    if(core->arm_instruction.type4.u)
     {
       //Below so add to the base address
       address += 4;
@@ -1452,7 +1459,7 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
   
   //Lowest register needs to be in lowest address, so list is walked through different for increment or decrement
   //Check if increment or decrement
-  if(core->current_instruction.type4.u)
+  if(core->arm_instruction.type4.u)
   {
     //Check the register list for which registers need to be loaded
     for(i=0;i<16;i++)
@@ -1467,7 +1474,7 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
         if(memory)
         {
           //Check if load or store
-          if(core->current_instruction.type4.l)
+          if(core->arm_instruction.type4.l)
           {
             //Load the register with the data from memory
             *core->registers[bank][i] = *memory;
@@ -1509,7 +1516,7 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
         if(memory)
         {
           //Check if load or store
-          if(core->current_instruction.type4.l)
+          if(core->arm_instruction.type4.l)
           {
             //Load the register with the data from memory
             *core->registers[bank][i] = *memory;
@@ -1538,23 +1545,23 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
   }
 
   //Check if base register needs to be updated
-  if(core->current_instruction.type4.w)
+  if(core->arm_instruction.type4.w)
   {
     //Check if increment or decrement
-    if(core->current_instruction.type4.u)
+    if(core->arm_instruction.type4.u)
     {
       //Increment the base address
-      *core->registers[core->current_bank][core->current_instruction.type4.rn] += (numregs * 4);
+      *core->registers[core->current_bank][core->arm_instruction.type4.rn] += (numregs * 4);
     }
     else
     {
       //Decrement the base address
-      *core->registers[core->current_bank][core->current_instruction.type4.rn] -= (numregs * 4);
+      *core->registers[core->current_bank][core->arm_instruction.type4.rn] -= (numregs * 4);
     }
   }
   
   //Check if r15 is included in the list and it is a load instruction
-  if((core->current_instruction.type4.r15) && (core->current_instruction.type4.l))
+  if((core->arm_instruction.type4.r15) && (core->arm_instruction.type4.l))
   {
     //Signal no increment of pc if so
     core->pcincrvalue = 0;
@@ -1566,8 +1573,8 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
 void ArmV5tlMSRImmediate(PARMV5TL_CORE core)
 {
   //Get the input data
-  u_int32_t vm = core->current_instruction.msri.im;
-  u_int32_t ri = core->current_instruction.msri.ri << 1;
+  u_int32_t vm = core->arm_instruction.msri.im;
+  u_int32_t ri = core->arm_instruction.msri.ri << 1;
   
   //Check if rotation is needed
   if(ri)
@@ -1584,7 +1591,7 @@ void ArmV5tlMSRImmediate(PARMV5TL_CORE core)
 //Move register to status register
 void ArmV5tlMSRRegister(PARMV5TL_CORE core)
 {
-  u_int32_t vm = *core->registers[core->current_bank][core->current_instruction.msrr.rm];
+  u_int32_t vm = *core->registers[core->current_bank][core->arm_instruction.msrr.rm];
   
   //Go and do the actual processing
   ArmV5tlMSR(core, vm);
@@ -1598,19 +1605,19 @@ void ArmV5tlMSR(PARMV5TL_CORE core, u_int32_t data)
   
   //Setup the byte mask based on the field mask bits
   //Control field
-  if(core->current_instruction.msri.c)
+  if(core->arm_instruction.msri.c)
     bytemask |= 0x000000FF;
   
   //Extension field
-  if(core->current_instruction.msri.x)
+  if(core->arm_instruction.msri.x)
     bytemask |= 0x0000FF00;
   
   //Status field
-  if(core->current_instruction.msri.s)
+  if(core->arm_instruction.msri.s)
     bytemask |= 0x00FF0000;
   
   //Flags field
-  if(core->current_instruction.msri.f)
+  if(core->arm_instruction.msri.f)
     bytemask |= 0xFF000000;
   
   //Check if current mode is privileged or user mode
@@ -1626,7 +1633,7 @@ void ArmV5tlMSR(PARMV5TL_CORE core, u_int32_t data)
   }
   
   //Check which register is the destination
-  if(core->current_instruction.msri.r == 0)
+  if(core->arm_instruction.msri.r == 0)
   {
     //Save to cpsr
     core->status->word = (core->status->word & ~bytemask) | (data & bytemask);
@@ -1686,10 +1693,10 @@ void ArmV5tlMSR(PARMV5TL_CORE core, u_int32_t data)
 void ArmV5tlMRS(PARMV5TL_CORE core)
 {
   //Check if the cpsr or the spsr is the source
-  if(core->current_instruction.mrs.r == 0)
+  if(core->arm_instruction.mrs.r == 0)
   {
     //Copy the cpsr into the destination register
-    *core->registers[core->current_bank][core->current_instruction.mrs.rd] = core->status->word;
+    *core->registers[core->current_bank][core->arm_instruction.mrs.rd] = core->status->word;
   }
   else
   {
@@ -1697,12 +1704,12 @@ void ArmV5tlMRS(PARMV5TL_CORE core)
     if(core->registers[core->current_bank][ARM_REG_SPSR_IDX])
     {
       //Copy the spsr if available
-      *core->registers[core->current_bank][core->current_instruction.mrs.rd] = *core->registers[core->current_bank][ARM_REG_SPSR_IDX];
+      *core->registers[core->current_bank][core->arm_instruction.mrs.rd] = *core->registers[core->current_bank][ARM_REG_SPSR_IDX];
     }
   }
 
   //Check if program counter used as destination
-  if(core->current_instruction.mrs.rd == 15)
+  if(core->arm_instruction.mrs.rd == 15)
   {
     //Signal no increment if so
     core->pcincrvalue = 0;
@@ -1713,15 +1720,15 @@ void ArmV5tlMRS(PARMV5TL_CORE core)
 //Move register to coprocessor or coprocessor to register
 void ArmV5tlMRCMCR(PARMV5TL_CORE core)
 {
-//  u_int32_t cpn = core->current_instruction.mrcmcr.cpn;
-//  u_int32_t crm = core->current_instruction.mrcmcr.crm;
-//  u_int32_t crn = core->current_instruction.mrcmcr.crn;
+//  u_int32_t cpn = core->arm_instruction.mrcmcr.cpn;
+//  u_int32_t crm = core->arm_instruction.mrcmcr.crm;
+//  u_int32_t crn = core->arm_instruction.mrcmcr.crn;
   
   //For now only coprocessor 15 read is implemented
-  if((core->current_instruction.mrcmcr.cpn == 15) && (core->current_instruction.mrcmcr.d))
+  if((core->arm_instruction.mrcmcr.cpn == 15) && (core->arm_instruction.mrcmcr.d))
   {
     //Clear destination register to indicate MMU is disabled and vectors are in low memory
-    *core->registers[core->current_bank][core->current_instruction.mrcmcr.rd] = 0;
+    *core->registers[core->current_bank][core->arm_instruction.mrcmcr.rd] = 0;
   }
 }
 
@@ -1729,7 +1736,7 @@ void ArmV5tlMRCMCR(PARMV5TL_CORE core)
 //Handle branch instructions
 void ArmV5tlBranch(PARMV5TL_CORE core)
 {
-  int32_t address = core->current_instruction.type5.offset << 2;
+  int32_t address = core->arm_instruction.type5.offset << 2;
   
   //Check if negative address given
   if(address & 0x02000000)
@@ -1739,7 +1746,7 @@ void ArmV5tlBranch(PARMV5TL_CORE core)
   }
   
   //Check if link register needs to be set
-  if(core->current_instruction.type5.l)
+  if(core->arm_instruction.type5.l)
   {
     //Load the address after this instruction to the link register r14
     *core->registers[core->current_bank][14] = *core->program_counter + 4;
@@ -1756,7 +1763,7 @@ void ArmV5tlBranch(PARMV5TL_CORE core)
 //Handle branch with link and exchange instructions
 void ArmV5tlBranchLinkExchange1(PARMV5TL_CORE core)
 {
-  int32_t address = core->current_instruction.type5.offset << 2;
+  int32_t address = core->arm_instruction.type5.offset << 2;
   
   //Check if negative address given
   if(address & 0x02000000)
@@ -1769,7 +1776,7 @@ void ArmV5tlBranchLinkExchange1(PARMV5TL_CORE core)
   *core->registers[core->current_bank][14] = *core->program_counter + 4;
 
   //Merge the H bit into the address (is l bit from type5 instruction)
-  address |= (core->current_instruction.type5.l << 1);
+  address |= (core->arm_instruction.type5.l << 1);
   
   //Calculate the new address. The actual pc point to instruction address plus 8
   *core->program_counter += (8 + address);
@@ -1785,7 +1792,7 @@ void ArmV5tlBranchLinkExchange1(PARMV5TL_CORE core)
 //Handle branch with link and exchange instructions
 void ArmV5tlBranchLinkExchange2(PARMV5TL_CORE core)
 {
-  u_int32_t address = *core->registers[core->current_bank][core->current_instruction.misc0.rm];
+  u_int32_t address = *core->registers[core->current_bank][core->arm_instruction.misc0.rm];
   
   //Load the address after this instruction to the link register r14
   *core->registers[core->current_bank][14] = *core->program_counter + 4;
@@ -1804,7 +1811,7 @@ void ArmV5tlBranchLinkExchange2(PARMV5TL_CORE core)
 //Handle branch with exchange instructions
 void ArmV5tlBranchExchangeT(PARMV5TL_CORE core)
 {
-  u_int32_t address = *core->registers[core->current_bank][core->current_instruction.misc0.rm];
+  u_int32_t address = *core->registers[core->current_bank][core->arm_instruction.misc0.rm];
   
   //Set the new address. Needs to be on a thumb boundary
   *core->program_counter = address & 0xFFFFFFFE;
@@ -1821,7 +1828,7 @@ void ArmV5tlBranchExchangeT(PARMV5TL_CORE core)
 //Handle branch with exchange instructions
 void ArmV5tlBranchExchangeJ(PARMV5TL_CORE core)
 {
-  u_int32_t address = *core->registers[core->current_bank][core->current_instruction.misc0.rm];
+  u_int32_t address = *core->registers[core->current_bank][core->arm_instruction.misc0.rm];
   
   //This is not correct and needs system info to do the correct things
   
