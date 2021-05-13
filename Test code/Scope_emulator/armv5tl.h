@@ -16,6 +16,7 @@ typedef struct tagARMV5TL_INSTR_THUMB_SHIFT0 ARMV5TL_INSTR_THUMB_SHIFT0;
 typedef struct tagARMV5TL_INSTR_THUMB_SHIFT2 ARMV5TL_INSTR_THUMB_SHIFT2;
 typedef struct tagARMV5TL_INSTR_THUMB_DPI0   ARMV5TL_INSTR_THUMB_DPI0;
 typedef struct tagARMV5TL_INSTR_THUMB_DPR0   ARMV5TL_INSTR_THUMB_DPR0;
+typedef struct tagARMV5TL_INSTR_THUMB_DP1    ARMV5TL_INSTR_THUMB_DP1;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -66,6 +67,15 @@ struct tagARMV5TL_INSTR_THUMB_DPR0
   u_int32_t type:3;       //Type of instructions
 };
 
+struct tagARMV5TL_INSTR_THUMB_DP1
+{
+  u_int32_t im:8;         //Immediate data
+  u_int32_t rd:3;         //Destination register
+  u_int32_t op1:2;        //Actual opcode for some type of instructions
+  u_int32_t type:3;       //Type of instructions
+};
+
+
 union tagARMV5TL_THUMB_INSTRUCTION
 {
   u_int16_t                  instr;       //Instruction register
@@ -74,6 +84,7 @@ union tagARMV5TL_THUMB_INSTRUCTION
   ARMV5TL_INSTR_THUMB_SHIFT2 shift2;      //Instruction data for type 2 shift instructions
   ARMV5TL_INSTR_THUMB_DPI0   dpi0;        //Instruction data for type 0 immediate data processing instructions
   ARMV5TL_INSTR_THUMB_DPR0   dpr0;        //Instruction data for type 0 register data processing instructions
+  ARMV5TL_INSTR_THUMB_DP1    dp1;         //Instruction data for type 1 data processing instructions
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -630,6 +641,7 @@ struct tagARMV5TL_CORE
 #define ARM_FLAGS_UPDATE_CV_NO    0    //Do not update the carry and overflow
 #define ARM_FLAGS_UPDATE_CV       1    //For add the carry is the carry
 #define ARM_FLAGS_UPDATE_NBV      2    //For subtract the carry is the not borrow
+#define ARM_FLAGS_UPDATE_CV_CLR   3    //Clear both flags
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

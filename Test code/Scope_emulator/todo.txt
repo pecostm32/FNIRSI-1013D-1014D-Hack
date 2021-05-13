@@ -9,6 +9,9 @@ v branch instructions
 
 thumb instructions
 
+  aparte bestanden hiervoor opzetten. Ook voor het decoden een fucntie aanroep doen naar een functie in dit aparte bestand
+
+
 
 partial) Implement trace functionality
 
@@ -16,3 +19,39 @@ partial) Implement breakpoint functionality
 
 
 MMU implementation???
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Thumb decode
+
+//TYPE 0
+  //Shift by immediate              ASR(1) op: 2  LSL(1) op: 0  LSR (1) op: 1
+  //Add / subtract register         ADD (1)(3) op 3: SUB (1)(3) op 3:
+  //Add / subtract immediate        MOV (2) op 3:
+
+  //i = immediate, n = rn, d = rd, m = rm, s = rs
+  //LSL(1) 000 00 ii iii mmm ddd
+  //LSR(1) 000 01 ii iii mmm ddd
+  //ASR(1) 000 10 ii iii mmm ddd
+
+
+  //ADD(3) 000 11 00 mmm nnn ddd
+  //SUB(3) 000 11 01 mmm nnn ddd
+  //ADD(1) 000 11 10 iii nnn ddd
+  //MOV(2) 000 11 10 000 nnn ddd
+  //SUB(1) 000 11 11 iii nnn ddd
+         
+//TYPE 1
+  //MOV(1)  001 00 ddd iiiiiiii
+  //CMP(1)  001 01 ddd iiiiiiii
+  //ADD(2)  001 10 ddd iiiiiiii
+  //SUB(2)  001 11 ddd iiiiiiii
+
+//TYPE 2
+            
+  //ASR(2)      010 00 00100 sss ddd
+  //LSL(2)      010 00 00010 sss ddd
+  //LSR(2)      010 00 00011 sss ddd
+  //ROR         010 00 00111 sss ddd

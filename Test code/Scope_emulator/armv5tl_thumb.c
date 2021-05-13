@@ -28,14 +28,8 @@ void ArmV5tlHandleThumb(PARMV5TL_CORE core)
         //Check on instruction opcode
         if(core->thumb_instruction.base.op1 == 3)
         {
-          //Opcode 3 are data processing or mov
-          
-        //ADD(3) 000 11 00 mmm nnn ddd
-        //SUB(3) 000 11 01 mmm nnn ddd
-        //ADD(1) 000 11 10 iii nnn ddd
-        //MOV(2) 000 11 10 000 nnn ddd
-        //SUB(1) 000 11 11 iii nnn ddd
-          
+          //op1:3 ADD(3), SUB(3), ADD(1), MOV(2), SUB(1)
+          ArmV5tlThumbDP0(core);
         }
         else
         {
@@ -45,9 +39,22 @@ void ArmV5tlHandleThumb(PARMV5TL_CORE core)
         break;
 
       case 1:
-        //Add / subtract / compare / move immediate
+        //MOV(1), CMP(1), ADD(2), SUB(2)
+        ArmV5tlThumbDP1(core);
         break;
 
+//ADD(4,5,6,7) do not change the flags so handle via different function
+//CPY idem
+//MOV(3) idem
+
+//Option is to modify the default function to handle extra bits for the type
+
+//Instead of adding types use the upper 16 bits as flags to signal these modes
+//Might need separate switch statements for handling the update and status flags mode
+//from the actual processing switch.
+//Only extra thing it the multiply. Need to see how to fit it in
+        
+        
       case 2:
         //Check if data processing or load / store instructions
         if(core->thumb_instruction.base.op1 == 0)
@@ -58,31 +65,35 @@ void ArmV5tlHandleThumb(PARMV5TL_CORE core)
             //LSL(2) op2:2, LSR(2) op2:3, ASR(2) op2:4, ROR op2:7
             ArmV5tlThumbShiftRegister(core);
           }
+          //Get the other data processing functions except CMP(3)
+          else if(core->thumb_instruction.base.op2 < 16)
+          {
+            //AND         010 00 00000 mmm ddd
+            //EOR         010 00 00001 mmm ddd
+            //ADC         010 00 00101 mmm ddd
+            //SBC         010 00 00110 mmm ddd
+            //TST         010 00 01000 mmm nnn
+            //NEG         010 00 01001 mmm ddd
+            //CMP(2)      010 00 01010 mmm nnn
+            //CMN         010 00 01011 mmm nnn
+            //OR          010 00 01100 mmm ddd
+            //BIC         010 00 01110 mmm ddd
+            //MVN         010 00 01111 mmm ddd
+
+            //MUL         010 00 01101 mmm ddd
+            
+          }
           else
           {
             
           }
         
-        //ADC         010 00 001 01 mmm ddd
-        //SBC         010 00 001 10 mmm ddd
-        //AND         010 00 000 00 mmm ddd
-        //OR          010 00 011 00 mmm ddd
-        //EOR         010 00 000 01 mmm ddd
-        //BIC         010 00 011 10 mmm ddd
-        //MVN         010 00 011 11 mmm ddd
-        //NEG         010 00 010 01 mmm ddd
 
-        //MUL         010 00 011 01 mmm ddd
+        //CMP(3)      010 00 101hh mmm nnn
         
         //ADD(4)      010 00 100 hh mmm ddd
         //CPY         010 00 110 hh mmm ddd
         //MOV(3)      010 00 110 hh mmm ddd
-
-        //CMN         010 00 010 11 mmm nnn
-        //CMP(2)      010 00 010 10 mmm nnn
-        //CMP(3)      010 00 101 hh mmm nnn
-        //TST         010 00 010 00 mmm nnn
-        
         
         //BLX(2)      010 00 1111 h mmm zzz
         //BX          010 00 1110 h mmm zzz
@@ -91,21 +102,19 @@ void ArmV5tlHandleThumb(PARMV5TL_CORE core)
         else
         {
         //LDR(3)      010 01 ddd iiiiiiii
-        
+
+        //STR(2)      010 10 00 mmm nnn ddd
+        //STRH(2)     010 10 01 mmm nnn ddd
+        //STRB(2)     010 10 10 mmm nnn ddd
+          
         //LDR(2)      010 11 00 mmm nnn ddd
-        //LDRB(2)     010 11 10 mmm nnn ddd
         //LDRH(2)     010 11 01 mmm nnn ddd
+        //LDRB(2)     010 11 10 mmm nnn ddd
+          
         //LDRSB       010 10 11 mmm nnn ddd
         //LDRSH       010 11 11 mmm nnn ddd
-        //STR(2)      010 10 00 mmm nnn ddd
-        //STRB(2)     010 10 10 mmm nnn ddd
-        //STRH(2)     010 10 01 mmm nnn ddd
           
         }
-
-        
-        
-        
         
         
         //Data processing register
@@ -117,16 +126,55 @@ void ArmV5tlHandleThumb(PARMV5TL_CORE core)
 
       case 3:
         //Load / store word / byte  immediate offset
+        
+        //             b l
+        //STR(1)   011 0 0 iiiii nnn ddd
+        //LDR(1)   011 0 1 iiiii nnn ddd
+        //STRB(1)  011 1 0 iiiii nnn ddd
+        //LDRB(1)  011 1 1 iiiii nnn ddd
         break;
 
       case 4:
         //Load / store short immediate offset
         //Load / store to / from stack
+        
+        //STR(3)   100 10 ddd iiiiiiii     (sp is used)
+        //LDR(4)   100 11 ddd iiiiiiii     (sp is used)
+        
+        //STRH(1)  100 00 iiiii nnn ddd
+        //LDRH(1)  100 01 iiiii nnn ddd
+        
         break;
 
       case 5:
         //Add to sp or pc
         //Miscellaneous
+        
+        //ADD(5)   101 00 ddd iiiiiiii
+        //ADD(6)   101 01 ddd iiiiiiii
+        
+        //ADD(7)   101 10 0000 iiiiiii
+        
+        //BKPT     101 11 110 iiiiiiii
+        
+        //CPS      101 10 1100 11 m 0 a i f
+        
+        //POP      101 11 10 r llllllll
+        //PUSH     101 10 10 r llllllll
+        
+        //REV      101 11 01000 nnn ddd
+        //REV16    101 11 01001 nnn ddd
+        //REVSH    101 11 01011 nnn ddd
+        
+        //SETEND   101 10 11001 01 e zzz
+        
+        //SUB(4)   101 10 0001 iiiiiii
+        
+        //SXTB     101 10 01001 mmm ddd
+        //SXTH     101 10 01000 mmm ddd
+        //UXTB     101 10 01011 mmm ddd
+        //UXTH     101 10 01010 mmm ddd
+        
         break;
 
       case 6:
@@ -134,6 +182,17 @@ void ArmV5tlHandleThumb(PARMV5TL_CORE core)
         //Conditional branch
         //Undefined instruction
         //Software interrupt
+        
+        
+        //STMIA 110 0 0 nnn llllllll
+        //LDMIA 110 0 1 nnn llllllll
+
+        //B(1)  110 1 cccc iiiiiiii
+        
+        //SWI   110 1 1111 iiiiiiii
+        
+        //UI    110 1 1110 xxxxxxxx
+        
         break;
 
       case 7:
@@ -142,6 +201,13 @@ void ArmV5tlHandleThumb(PARMV5TL_CORE core)
         //Undefined instruction
         //BL / BLX prefix
         //BL suffix
+        
+        //B(2)    111 00 iiiiiiiiiii
+        
+        //BLX(1)  111 01 iiiiiiiiiii
+        //BL      111 10 iiiiiiiiiii
+        //BL      111 11 iiiiiiiiiii
+        
         break;
     }
   }
@@ -218,7 +284,7 @@ void ArmV5tlThumbShiftRegister(PARMV5TL_CORE core)
   }
   
   //Do the actual shifting
-  ArmV5tlThumbShift(core, type, sa , vm);
+  ArmV5tlThumbShift(core, type, sa, vm);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -326,7 +392,7 @@ void ArmV5tlThumbShift(PARMV5TL_CORE core, u_int32_t type, u_int32_t sa, u_int32
       break;
   }
   
-  //Store back to rd (For rd shift0 and shift2 types are the same)
+  //Store back to rd (For rd both shift0 and shift2 types are the same)
   *core->registers[core->current_bank][core->thumb_instruction.shift0.rd] = vm;
   
   //Update the negative bit
@@ -340,86 +406,111 @@ void ArmV5tlThumbShift(PARMV5TL_CORE core, u_int32_t type, u_int32_t sa, u_int32
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
-//Data processing immediate and register shift
-void ArmV5tlThumbDPR(PARMV5TL_CORE core)
+//Data processing type 0
+void ArmV5tlThumbDP0(PARMV5TL_CORE core)
 {
-  //Get the input data
-  u_int32_t vm = *core->registers[core->current_bank][core->arm_instruction.dpsi.rm];
-  u_int32_t vn = *core->registers[core->current_bank][core->arm_instruction.dpsi.rn];
-  u_int32_t sa;
-  u_int32_t c = core->status->flags.C;
-
-  //Amend the values when r15 (pc) is used
-  if(core->arm_instruction.dpsi.rn == 15)
-  {
-    vn += 8;
-  }
-
-  //Same for the to be shifted register
-  if(core->arm_instruction.dpsi.rm == 15)
-  {
-    vm += 8;
-  }
+  //Get the input data. For rd and vn there is no difference between dpi0 and dpr0
+  u_int32_t rd = core->thumb_instruction.dpi0.rd;
+  u_int32_t vm;
+  u_int32_t vn = *core->registers[core->current_bank][core->thumb_instruction.dpr0.rn];
+  u_int32_t type;
   
-  //Check if immediate shift or register shift. For immediate shift bit4 is cleared
-  if(core->arm_instruction.type0.it1 == 0)
+  //For op2 both dpr0 and dpi0 are the same
+  switch(core->thumb_instruction.dpr0.op2)
   {
-    //Data processing immediate shift
-    //Get the immediate shift amount
-    sa = core->arm_instruction.dpsi.sa;
+    //ADD(3)
+    case 0:
+      //Use the indicated register for the second operand
+      vm = *core->registers[core->current_bank][core->thumb_instruction.dpr0.rm];
+      type = ARM_OPCODE_ADD;
+      break;
+
+    //SUB(3)
+    case 1:
+      //Use the indicated register for the second operand
+      vm = *core->registers[core->current_bank][core->thumb_instruction.dpr0.rm];
+      type = ARM_OPCODE_SUB;
+      break;
+    
+    //ADD(1), MOV(2)
+    case 2:
+      //Check if add or mov instruction
+      if(core->thumb_instruction.dpi0.im)
+      {
+        //For a non zero immediate value it is an add
+        //Use the immediate value for the second operand
+        vm = core->thumb_instruction.dpi0.im;
+        type = ARM_OPCODE_ADD;
+      }
+      else
+      {
+        //For a zero immediate value it is move
+        //Use the data from the n register as operand
+        vm = vn;
+        type = ARM_OPCODE_THUMB_MOV2;
+      }
+      break;
+
+    //SUB(1)
+    case 3:
+      //Use the immediate value for the second operand
+      vm = core->thumb_instruction.dpi0.im;
+      type = ARM_OPCODE_SUB;
+      break;
   }
-  else
-  {
-    //Data processing register shift
-    //Get the register shift amount.
-    sa = *core->registers[core->current_bank][core->arm_instruction.dpsr.rs] & 0x000000FF;
-  }
-  
   
   //Go and do the actual processing
-  ArmV5tlDPR(core, vn, vm, c);
+  ArmV5tlThumbDP(core, type, rd, vn, vm);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
-//Data processing immediate
-void ArmV5tlThumbDPI(PARMV5TL_CORE core)
+//Data processing type 1
+void ArmV5tlThumbDP1(PARMV5TL_CORE core)
 {
-  //Get the input data
-  u_int32_t vm = core->arm_instruction.dpi.im;
-  u_int32_t vn = *core->registers[core->current_bank][core->arm_instruction.dpsi.rn];
-  u_int32_t ri = core->arm_instruction.dpi.ri << 1;
-  u_int32_t c = core->status->flags.C;
+  //Get the input data.
+  u_int32_t rd = core->thumb_instruction.dp1.rd;
+  u_int32_t vm = core->thumb_instruction.dp1.im;
+  u_int32_t vn = 0;
+  u_int32_t type;
   
-  //Amend the operand value when r15 (pc) is used
-  if(core->arm_instruction.dpsi.rn == 15)
+  //For op2 both dpr0 and dpi0 are the same
+  switch(core->thumb_instruction.dp1.op1)
   {
-    vn += 8;
-  }
-  
-  //Check if rotation is needed
-  if(ri)
-  {
-    //rotate the bits
-    vm = (vm >> ri) | (vm << (32 - ri));
+    //MOV(1)
+    case 0:
+      type = ARM_OPCODE_MOV;
+      break;
 
-    //Get the carry if so
-    c = vm >> 31;
+    //CMP(1)
+    case 1:
+      type = ARM_OPCODE_CMP;
+      break;
+    
+    //ADD(2)
+    case 2:
+      type = ARM_OPCODE_ADD;
+      break;
+
+    //SUB(2)
+    case 3:
+      type = ARM_OPCODE_SUB;
+      break;
   }
   
   //Go and do the actual processing
-  ArmV5tlDPR(core, vn, vm, c);
-}  
+  ArmV5tlThumbDP(core, type, rd, vn, vm);
+}
   
 //----------------------------------------------------------------------------------------------------------------------------------
 //Actual data processing handling
-void ArmV5tlThumbDP(PARMV5TL_CORE core, u_int32_t opcode, u_int32_t vn, u_int32_t vm, u_int32_t c)
+void ArmV5tlThumbDP(PARMV5TL_CORE core, u_int32_t type, u_int32_t  rd, u_int32_t vn, u_int32_t vm)
 {
   u_int64_t vd;
   u_int32_t update = 1;
   u_int32_t docandv = ARM_FLAGS_UPDATE_CV_NO;
   
   //Perform the correct action based on the opcode
-  switch(opcode)
+  switch(type)
   {
     case ARM_OPCODE_AND:
       vd = vn & vm;
@@ -520,83 +611,42 @@ void ArmV5tlThumbDP(PARMV5TL_CORE core, u_int32_t opcode, u_int32_t vn, u_int32_
     case ARM_OPCODE_MVN:
       vd = ~vm;
       break;
+      
+    case ARM_OPCODE_THUMB_MOV2:
+      vd = vm;
+      
+      //Special carry and overflow handling
+      docandv = ARM_FLAGS_UPDATE_CV_CLR;
+      break;
   }
   
-  //Check if program status register needs to be updated
-  if(core->arm_instruction.type0.s)
-  {
-    //Check if destination register needs to be updated, is r15 (pc) and the current mode has a saved program status register
-    if((update) && (core->arm_instruction.dpsi.rd == 15) && (core->registers[core->current_bank][ARM_REG_SPSR_IDX]))
-    {
-      //Load the current status with the saved one if it is available
-      core->status->word =  ((PARMV5TL_STATUS)core->registers[core->current_bank][ARM_REG_SPSR_IDX])->word;
-      
-      //Adjust the current processor state accordingly
-      core->current_mode = core->status->flags.M;
+  //Update the negative bit
+  core->status->flags.N = vd >> 31;
 
-      //Select the corresponding register bank
-      switch(core->status->flags.M)
-      {
-        case ARM_MODE_USER:
-          core->current_bank = ARM_REG_BANK_USER;
-          break;
-          
-        case ARM_MODE_FIQ:
-          core->current_bank = ARM_REG_BANK_FIQ;
-          break;
-          
-        case ARM_MODE_IRQ:
-          core->current_bank = ARM_REG_BANK_IRQ;
-          break;
-          
-        case ARM_MODE_SUPERVISOR:
-          core->current_bank = ARM_REG_BANK_SUPERVISOR;
-          break;
-          
-        case ARM_MODE_ABORT:
-          core->current_bank = ARM_REG_BANK_ABORT;
-          break;
-          
-        case ARM_MODE_UNDEFINED:
-          core->current_bank = ARM_REG_BANK_UNDEFINED;
-          break;
-          
-        case ARM_MODE_SYSTEM:
-          core->current_bank = ARM_REG_BANK_SYSTEM;
-          break;
-      }
+  //Update the zero bit
+  core->status->flags.Z = (vd == 0);
+
+  //Check if carry and overflow need to be updated with arithmetic result
+  if(docandv == ARM_FLAGS_UPDATE_CV_CLR)
+  {
+    core->status->flags.V = 0;
+    core->status->flags.C = 0;
+  }
+  else if(docandv != ARM_FLAGS_UPDATE_CV_NO)
+  {
+    //Update the overflow bit
+    core->status->flags.V = (((vn & 0x80000000) == (vm & 0x80000000)) && (vn & 0x80000000) != (vd & 0x80000000));
+
+    //Handle the carry according to type of arithmetic
+    if(docandv == ARM_FLAGS_UPDATE_CV)
+    {
+      //Carry from addition
+      core->status->flags.C = vd >> 32;
     }
     else
     {
-      //Update the negative bit
-      core->status->flags.N = vd >> 31;
-
-      //Update the zero bit
-      core->status->flags.Z = (vd == 0);
-
-      //Check if carry and overflow need to be updated with arithmetic result
-      if(docandv != ARM_FLAGS_UPDATE_CV_NO)
-      {
-        //Update the overflow bit
-        core->status->flags.V = (((vn & 0x80000000) == (vm & 0x80000000)) && (vn & 0x80000000) != (vd & 0x80000000));
-
-        //Handle the carry according to type of arithmetic
-        if(docandv == ARM_FLAGS_UPDATE_CV)
-        {
-          //Carry from addition.
-          core->status->flags.C = vd >> 32;
-        }
-        else
-        {
-          //Not borrow from subtraction
-          core->status->flags.C = (vd <= 0xFFFFFFFF);
-        }
-      }
-      else
-      {
-        //When not the carry is the shifter output
-        core->status->flags.C = c;
-      }
+      //Not borrow from subtraction
+      core->status->flags.C = (vd <= 0xFFFFFFFF);
     }
   }
   
@@ -604,10 +654,10 @@ void ArmV5tlThumbDP(PARMV5TL_CORE core, u_int32_t opcode, u_int32_t vn, u_int32_
   if(update)
   {
     //Write the result back as a singed 32 bit integer
-    *core->registers[core->current_bank][core->arm_instruction.dpsi.rd] = (int32_t)vd;
+    *core->registers[core->current_bank][rd] = (int32_t)vd;
     
     //Check if program counter used as target
-    if(core->arm_instruction.lsr.rd == 15)
+    if(rd == 15)
     {
       //Signal no increment if so
       core->pcincrvalue = 0;
