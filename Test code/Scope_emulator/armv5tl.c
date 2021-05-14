@@ -1364,7 +1364,7 @@ void ArmV5tlLS(PARMV5TL_CORE core, u_int32_t address)
   }
   
   //Check if program counter used as target
-  if(((core->arm_instruction.lsr.l) == 0) && (core->arm_instruction.lsr.rd == 15))
+  if((core->arm_instruction.lsr.l) && (core->arm_instruction.lsr.rd == 15))
   {
     //Signal no increment if so
     core->pcincrvalue = 0;

@@ -20,7 +20,21 @@ partial) Implement breakpoint functionality
 
 MMU implementation???
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+//ADD(4,5,6,7) do not change the flags so handle via different function
+//CPY idem
+//MOV(3) idem
+
+//Option is to modify the default function to handle extra bits for the type
+
+//Instead of adding types use the upper 16 bits as flags to signal these modes
+//Might need separate switch statements for handling the update and status flags mode
+//from the actual processing switch.
+//Only extra thing it the multiply. Need to see how to fit it in
+        
+        
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -50,8 +64,42 @@ Thumb decode
   //SUB(2)  001 11 ddd iiiiiiii
 
 //TYPE 2
-            
   //ASR(2)      010 00 00100 sss ddd
   //LSL(2)      010 00 00010 sss ddd
   //LSR(2)      010 00 00011 sss ddd
   //ROR         010 00 00111 sss ddd
+
+  //AND         010 00 00000 mmm ddd
+  //EOR         010 00 00001 mmm ddd
+  //ADC         010 00 00101 mmm ddd
+  //SBC         010 00 00110 mmm ddd
+  //TST         010 00 01000 mmm nnn
+  //NEG         010 00 01001 mmm ddd
+  //CMP(2)      010 00 01010 mmm nnn
+  //CMN         010 00 01011 mmm nnn
+  //OR          010 00 01100 mmm ddd
+  //BIC         010 00 01110 mmm ddd
+  //MVN         010 00 01111 mmm ddd
+  //MUL         010 00 01101 mmm ddd
+
+  //CMP(3)      010 00 101hh mmm nnn
+
+  //ADD(4)      010 00 100 hh mmm ddd
+  //CPY         010 00 110 hh mmm ddd
+  //MOV(3)      010 00 110 hh mmm ddd
+
+  //BLX(2)      010 00 1111 h mmm zzz
+  //BX          010 00 1110 h mmm zzz
+          
+  //STR(2)      010 10 00 mmm nnn ddd
+  //STRH(2)     010 10 01 mmm nnn ddd
+  //STRB(2)     010 10 10 mmm nnn ddd
+
+  //LDR(2)      010 11 00 mmm nnn ddd
+  //LDRH(2)     010 11 01 mmm nnn ddd
+  //LDRB(2)     010 11 10 mmm nnn ddd
+
+  //LDRSB       010 10 11 mmm nnn ddd
+  //LDRSH       010 11 11 mmm nnn ddd
+
+  //LDR(3)      010 01 ddd iiiiiiii
