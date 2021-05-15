@@ -21,6 +21,8 @@ typedef struct tagARMV5TL_INSTR_THUMB_DP2    ARMV5TL_INSTR_THUMB_DP2;
 typedef struct tagARMV5TL_INSTR_THUMB_DP2S   ARMV5TL_INSTR_THUMB_DP2S;
 typedef struct tagARMV5TL_INSTR_THUMB_LS2I   ARMV5TL_INSTR_THUMB_LS2I;
 typedef struct tagARMV5TL_INSTR_THUMB_LS2R   ARMV5TL_INSTR_THUMB_LS2R;
+typedef struct tagARMV5TL_INSTR_THUMB_LS3    ARMV5TL_INSTR_THUMB_LS3;
+typedef struct tagARMV5TL_INSTR_THUMB_LSM    ARMV5TL_INSTR_THUMB_LSM;
 typedef struct tagARMV5TL_INSTR_THUMB_B2     ARMV5TL_INSTR_THUMB_B2;
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -117,6 +119,25 @@ struct tagARMV5TL_INSTR_THUMB_LS2R
   u_int32_t type:3;       //Type of instructions
 };
 
+struct tagARMV5TL_INSTR_THUMB_LS3
+{
+  u_int32_t rd:3;         //Destination register
+  u_int32_t rn:3;         //Source register
+  u_int32_t im:5;         //5 bit immediate index
+  u_int32_t l:1;          //Load / store bit
+  u_int32_t b:1;          //byte / word bit
+  u_int32_t type:3;       //Type of instructions
+};
+
+struct tagARMV5TL_INSTR_THUMB_LSM
+{
+  u_int32_t rl:8;         //Register list
+  u_int32_t rn:3;         //Base register
+  u_int32_t l:1;          //Load / store bit
+  u_int32_t nu:1;         //Not used
+  u_int32_t type:3;       //Type of instructions
+};
+
 struct tagARMV5TL_INSTR_THUMB_B2
 {
   u_int32_t sbz:3;        //Should be zero
@@ -139,6 +160,8 @@ union tagARMV5TL_THUMB_INSTRUCTION
   ARMV5TL_INSTR_THUMB_DP2S   dp2s;        //Instruction data for type 2 special data processing instructions
   ARMV5TL_INSTR_THUMB_LS2I   ls2i;        //Instruction data for type 2 load store immediate indexed based instructions
   ARMV5TL_INSTR_THUMB_LS2R   ls2r;        //Instruction data for type 2 load store register based instructions
+  ARMV5TL_INSTR_THUMB_LS3    ls3;         //Instruction data for type 3 load store instructions
+  ARMV5TL_INSTR_THUMB_LSM    lsm;         //Instruction data for load store multiple instructions
   ARMV5TL_INSTR_THUMB_B2     b2;          //Instruction data for type 2 branch instructions
 };
 

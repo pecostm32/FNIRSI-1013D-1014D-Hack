@@ -103,3 +103,30 @@ Thumb decode
   //LDRSH       010 11 11 mmm nnn ddd
 
   //LDR(3)      010 01 ddd iiiiiiii
+
+//Type 3
+  //             b l
+  //STR(1)   011 0 0 iiiii nnn ddd
+  //LDR(1)   011 0 1 iiiii nnn ddd
+  //STRB(1)  011 1 0 iiiii nnn ddd
+  //LDRB(1)  011 1 1 iiiii nnn ddd
+
+//Type 4
+  //STRH(1)  100 0 0 iiiii nnn ddd
+  //LDRH(1)  100 0 1 iiiii nnn ddd
+        
+  //STR(3)   100 10 ddd iiiiiiii     (sp is used)
+  //LDR(4)   100 11 ddd iiiiiiii     (sp is used)
+
+//Type 5
+  //POP      101 1 1 10 r llllllll
+  //PUSH     101 1 0 10 r llllllll
+
+
+
+
+
+//Type 6
+  //STMIA 110 0 0 nnn llllllll
+  //LDMIA 110 0 1 nnn llllllll
+

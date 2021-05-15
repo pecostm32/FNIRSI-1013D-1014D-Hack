@@ -86,74 +86,108 @@ void ArmV5tlHandleThumb(PARMV5TL_CORE core)
         break;
 
       case 3:
-        //Load / store word / byte  immediate offset
-        
-        //             b l
-        //STR(1)   011 0 0 iiiii nnn ddd
-        //LDR(1)   011 0 1 iiiii nnn ddd
-        //STRB(1)  011 1 0 iiiii nnn ddd
-        //LDRB(1)  011 1 1 iiiii nnn ddd
+        //STR(1), LDR(1), STRB(1), LDRB(1)
+        ArmV5tlThumbLS3(core);
         break;
 
       case 4:
-        //Load / store short immediate offset
+        //Check if load / store short immediate offset
+        if(core->thumb_instruction.base.op1 <= 1)
+        {
+          //STRH(1), LDRH(1) (instruction decoding basically the same as type 3 so using same function here. Type 4 indicates short)
+          ArmV5tlThumbLS3(core);
+        }
         //Load / store to / from stack
-        
-        //STR(3)   100 10 ddd iiiiiiii     (sp is used)
-        //LDR(4)   100 11 ddd iiiiiiii     (sp is used)
-        
-        //STRH(1)  100 00 iiiii nnn ddd
-        //LDRH(1)  100 01 iiiii nnn ddd
-        
+        else
+        {
+          //STR(3), LDR(4)
+          ArmV5tlThumbLS4(core);
+        }
         break;
 
       case 5:
-        //Add to sp or pc
-        //Miscellaneous
-        
+        //Filter out the add pc, sp plus immediate instructions
+        if(core->thumb_instruction.base.op1 <= 1)
+        {
         //ADD(5)   101 00 ddd iiiiiiii
         //ADD(6)   101 01 ddd iiiiiiii
-        
+          ArmV5tlUndefinedInstruction(core);
+
+        }
+        //Filter out the ADD(7) and SUB(4) instructions
+        else if((core->thumb_instruction.base.op2 & 0x1C) == 0)
+        {
         //ADD(7)   101 10 0000 iiiiiii
-        
-        //BKPT     101 11 110 iiiiiiii
-        
-        //CPS      101 10 1100 11 m 0 a i f
-        
-        //POP      101 11 10 r llllllll
-        //PUSH     101 10 10 r llllllll
-        
+        //SUB(4)   101 10 0001 iiiiiii
+          ArmV5tlUndefinedInstruction(core);
+          
+        }
+        //Filter out POP and PUSH
+        else if((core->thumb_instruction.base.op2 & 0x18) == 0x10)
+        {
+          //POP, PUSH. base register is sp (13) and bit 2 of op2 signals that the program counter or link register is included in the list
+          if(core->thumb_instruction.base.op1 == 2)
+          {
+            //op1:2 is PUSH
+            ArmV5tlThumbPUSH(core);
+          }
+          else
+          {
+            //op1:3 is POP
+            ArmV5tlThumbPOP(core);
+          }
+        }
+        //Filter out the REV and XT instructions
+        else if((core->thumb_instruction.base.op2 & 0x18) == 0x08)
+        {
         //REV      101 11 01000 nnn ddd
         //REV16    101 11 01001 nnn ddd
         //REVSH    101 11 01011 nnn ddd
-        
-        //SETEND   101 10 11001 01 e zzz
-        
-        //SUB(4)   101 10 0001 iiiiiii
-        
+
         //SXTB     101 10 01001 mmm ddd
         //SXTH     101 10 01000 mmm ddd
         //UXTB     101 10 01011 mmm ddd
         //UXTH     101 10 01010 mmm ddd
+          ArmV5tlUndefinedInstruction(core);
+          
+        }
+        //Leaves the BKPT, CPS and SETEND
+        else
+        {
+        //BKPT     101 11 110 iiiiiiii
         
+        //CPS      101 10 1100 11 m 0 a i f
+        
+        //SETEND   101 10 11001 01 e zzz
+        
+          ArmV5tlUndefinedInstruction(core);
+          
+        }
         break;
 
       case 6:
+        //Filter out the add pc, sp plus immediate instructions
+        if(core->thumb_instruction.base.op1 <= 1)
+        {
+          //STMIA, LDMIA
+          ArmV5tlThumbLSMIA(core);
+        }
+        else
+        {
         //Load / store multiple
         //Conditional branch
         //Undefined instruction
         //Software interrupt
         
         
-        //STMIA 110 0 0 nnn llllllll
-        //LDMIA 110 0 1 nnn llllllll
 
         //B(1)  110 1 cccc iiiiiiii
         
         //SWI   110 1 1111 iiiiiiii
         
         //UI    110 1 1110 xxxxxxxx
-        
+          ArmV5tlUndefinedInstruction(core);
+        }
         break;
 
       case 7:
@@ -168,6 +202,8 @@ void ArmV5tlHandleThumb(PARMV5TL_CORE core)
         //BLX(1)  111 01 iiiiiiiiiii
         //BL      111 10 iiiiiiiiiii
         //BL      111 11 iiiiiiiiiii
+        
+        ArmV5tlUndefinedInstruction(core);
         
         break;
     }
@@ -834,6 +870,67 @@ void ArmV5tlThumbLS2R(PARMV5TL_CORE core)
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
+//Thumb load and store handling for type 3 immediate indexed based instructions
+void ArmV5tlThumbLS3(PARMV5TL_CORE core)
+{
+ //Get the input data
+  u_int32_t rd = core->thumb_instruction.ls3.rd;
+  u_int32_t vm = core->thumb_instruction.ls3.im * 4;
+  u_int32_t vn = *core->registers[core->current_bank][core->thumb_instruction.ls3.rn];
+  u_int32_t type;
+  u_int32_t address = vn + vm;
+
+  //Set the correct size for the given instruction
+  if(core->thumb_instruction.ls3.type == 4)
+  {
+    //For type 4 instructions it is short
+    type = ARM_THUMB_SIZE_SHORT;
+  }
+  else if(core->thumb_instruction.ls3.b)
+  {
+    //For b == 1 it is byte
+    type = ARM_THUMB_SIZE_BYTE;
+  }
+  else
+  {
+    //For b == 0 it is word
+    type = ARM_THUMB_SIZE_WORD;
+  }
+  
+  //Check if load or store
+  if(core->thumb_instruction.ls3.l)
+  {
+    //Signal load is requested
+    type |= ARM_THUMB_LOAD_FLAG;
+  }
+  
+  //Go and do the actual load or store
+  ArmV5tlThumbLS(core, type, rd, address);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Thumb load and store handling for type 4 immediate indexed based instructions
+void ArmV5tlThumbLS4(PARMV5TL_CORE core)
+{
+ //Get the input data. Instruction format is the same as for type 2 immediate indexed so reusing it here
+  u_int32_t rd = core->thumb_instruction.ls2i.rd;
+  u_int32_t vm = core->thumb_instruction.ls2i.im * 4;
+  u_int32_t vn = (*core->registers[core->current_bank][13]) & 0xFFFFFFFC;
+  u_int32_t type = ARM_THUMB_SIZE_WORD;
+  u_int32_t address = vn + vm;
+
+  //Check if load or store
+  if(core->thumb_instruction.ls2i.op1 == 3)
+  {
+    //Signal loading
+    type |= ARM_THUMB_LOAD_FLAG;
+  }
+  
+  //Go and do the actual load or store
+  ArmV5tlThumbLS(core, type, rd, address);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
 //Thumb load and store instruction handling
 void ArmV5tlThumbLS(PARMV5TL_CORE core, u_int32_t type, u_int32_t rd, u_int32_t address)
 {
@@ -924,6 +1021,217 @@ void ArmV5tlThumbLS(PARMV5TL_CORE core, u_int32_t type, u_int32_t rd, u_int32_t 
     //Signal no increment if so
     core->pcincrvalue = 0;
   }
+}
+
+
+
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Load and store multiple instruction handling
+void ArmV5tlThumbLSMIA(PARMV5TL_CORE core)
+{
+  u_int32_t address = *core->registers[core->current_bank][core->thumb_instruction.lsm.rn];
+  u_int32_t *memory;
+  u_int32_t reglist = core->thumb_instruction.lsm.rl;
+  int       numregs = 0;
+  int       update = 1;
+  int       i;
+  
+  //Check the register list for which registers need to be loaded or stored
+  for(i=0;i<8;i++)
+  {
+    //Check if register included
+    if(reglist & 1)
+    {
+      //Get the pointer for this address        
+      memory = ArmV5tlGetMemoryPointer(core, address, ARM_MEMORY_WORD);
+
+      //Check if valid memory found
+      if(memory)
+      {
+        //Check if load or store
+        if(core->thumb_instruction.lsm.l)
+        {
+          //Load the register with the data from memory
+          *core->registers[core->current_bank][i] = *memory;
+        }
+        else
+        {
+          //Store the register to memory
+          *memory = *core->registers[core->current_bank][i];
+        }
+      }
+      else
+      {
+        //Signal a data abort exception  
+      }
+
+      //Select the next address
+      address += 4;
+
+      //Add one to the number of registers loaded
+      numregs++;
+
+      //Check if base register included in the list. Never the case for a PUSH instruction so only done here
+      if(core->thumb_instruction.lsm.rn == i)
+      {
+        //If so then no update of it
+        update = 0;
+      }
+    }
+
+    //Select next register
+    reglist >>= 1;
+  }
+
+  //Check if base register needs to be updated
+  if(update)
+  {
+    //Increment the base address
+    *core->registers[core->current_bank][core->thumb_instruction.lsm.rn] += (numregs * 4);
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Pop instruction handling
+void ArmV5tlThumbPOP(PARMV5TL_CORE core)
+{
+  u_int32_t address = *core->registers[core->current_bank][13];
+  u_int32_t *memory;
+  u_int32_t reglist = core->thumb_instruction.lsm.rl;
+  int       numregs = 0;
+  int       i;
+  
+  //Check the register list for which registers need to be loaded
+  for(i=0;i<8;i++)
+  {
+    //Check if register included
+    if(reglist & 1)
+    {
+      //Get the pointer for this address        
+      memory = ArmV5tlGetMemoryPointer(core, address, ARM_MEMORY_WORD);
+
+      //Check if valid memory found
+      if(memory)
+      {
+        //Load the register with the data from memory
+        *core->registers[core->current_bank][i] = *memory;
+      }
+      else
+      {
+        //Signal a data abort exception  
+      }
+
+      //Select the next address
+      address += 4;
+
+      //Add one to the number of registers loaded
+      numregs++;
+    }
+
+    //Select next register
+    reglist >>= 1;
+  }
+
+  //Check if r15 is included in the list
+  if(core->thumb_instruction.base.op2 & 4)
+  {
+    //Get the pointer for current address
+    memory = ArmV5tlGetMemoryPointer(core, address, ARM_MEMORY_WORD);
+        
+    //Check if valid memory found
+    if(memory)
+    {
+      //Load the program counter
+      *core->program_counter = *memory & 0xFFFFFFFE;
+
+      //Update the thumb bit
+      core->status->flags.T = *memory & 1;
+
+      //Signal no increment of pc
+      core->pcincrvalue = 0;
+    }
+    else
+    {
+      //Signal a data abort exception  
+    }
+    
+    //Signal one more register done
+    numregs++;
+  }  
+  
+  //Increment the stack pointer address
+  *core->registers[core->current_bank][13] += (numregs * 4);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Push instruction handling
+void ArmV5tlThumbPUSH(PARMV5TL_CORE core)
+{
+  //For a push an extra 4 needs to be subtracted from the start address (decrement before)
+  u_int32_t address = *core->registers[core->current_bank][13] - 4;
+  u_int32_t *memory;
+  u_int32_t reglist = core->thumb_instruction.lsm.rl;
+  int       numregs = 0;
+  int       i;
+  
+  //Check if r14 is included in the list
+  if(core->thumb_instruction.base.op2 & 4)
+  {
+    //Get the pointer for current address
+    memory = ArmV5tlGetMemoryPointer(core, address, ARM_MEMORY_WORD);
+        
+    //Check if valid memory found
+    if(memory)
+    {
+      //PUSH so store the Link register to memory
+      *memory = *core->registers[core->current_bank][14];
+    }
+    else
+    {
+      //Signal a data abort exception  
+    }
+    
+    //Point next address
+    address -= 4;
+    
+    //Signal one more register done
+    numregs++;
+  }  
+  
+  //Check the register list for which registers need to be stored
+  for(i=7;i>=0;i--)
+  {
+    //Check if register included
+    if(reglist & 0x00000080)
+    {
+      //Get the pointer for this address        
+      memory = ArmV5tlGetMemoryPointer(core, address, ARM_MEMORY_WORD);
+
+      //Check if valid memory found
+      if(memory)
+      {
+        //Store the register to memory
+        *memory = *core->registers[core->current_bank][i];
+      }
+      else
+      {
+        //Signal a data abort exception  
+      }
+
+      //Select the next address
+      address -= 4;
+
+      //Add one to the number of registers loaded
+      numregs++;
+    }
+
+    //Select next register
+    reglist <<= 1;
+  }
+
+  //Decrement the stack pointer address
+  *core->registers[core->current_bank][13] -= (numregs * 4);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

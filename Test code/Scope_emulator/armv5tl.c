@@ -8,7 +8,7 @@
 #include "armv5tl.h"
 #include "armv5tl_thumb.h"
 
-#define MY_BREAK_POINT 0x0768
+#define MY_BREAK_POINT 0x04E4
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -159,7 +159,7 @@ void ArmV5tlSetup(PARMV5TL_CORE core)
   core->undefinedinstruction = 0;
   
   //Test tracing
-//  core->TraceFilePointer = fopen("test_trace.txt", "w");
+  core->TraceFilePointer = fopen("test_trace.txt", "w");
   
   //On startup processor is running
   core->run = 1;
@@ -217,6 +217,13 @@ void ArmV5tlCore(PARMV5TL_CORE core)
   {
     //Assume program counter needs to be incremented for thumb instructions
     core->pcincrvalue = 2;
+    
+    //Initial tracing just the pc sequence
+    if(core->TraceFilePointer)
+    {
+      fprintf(core->TraceFilePointer, "pc: 0x%08X  T\n", *core->program_counter);
+      fflush(core->TraceFilePointer);
+    }
     
     //Handle thumb instructions
     ArmV5tlHandleThumb(core);
@@ -580,7 +587,7 @@ void ArmV5tlCore(PARMV5TL_CORE core)
     }
   }
   
-  //Point to next instruction when needed. When the previous instruction had the program counter as target the value is set to zero.
+  //Point to next instruction when needed. When the previous instruction had the program counter as target the increment value is set to zero.
   *core->program_counter += core->pcincrvalue;
 }
 
@@ -662,37 +669,41 @@ void *ArmV5tlGetMemoryPointer(PARMV5TL_CORE core, u_int32_t address, u_int32_t m
 //Memory and peripheral handlers
 void *ArmV5tlSram1(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
 {
+  u_int32_t idx = address >> 2;
+  
   switch(mode)
   {
     case ARM_MEMORY_WORD:
       //Return the word aligned data
-      return(&core->sram1[address >> 2].m_32bit);
+      return(&core->sram1[idx].m_32bit);
 
     case ARM_MEMORY_SHORT:
       //Return the short aligned data
-      return(&core->sram1[address >> 1].m_16bit[address & 1]);
+      return(&core->sram1[idx].m_16bit[(address & 2) >> 1]);
       
     case ARM_MEMORY_BYTE:
       //Return the byte aligned data
-      return(&core->sram1[address >> 2].m_8bit[address & 3]);
+      return(&core->sram1[idx].m_8bit[address & 3]);
   }
 }
 
 void *ArmV5tlSram2(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
 {
+  u_int32_t idx = address >> 2;
+  
   switch(mode)
   {
     case ARM_MEMORY_WORD:
       //Return the word aligned data
-      return(&core->sram2[address >> 2].m_32bit);
+      return(&core->sram2[idx].m_32bit);
       
     case ARM_MEMORY_SHORT:
       //Return the short aligned data
-      return(&core->sram1[address >> 1].m_16bit[address & 1]);
+      return(&core->sram1[idx].m_16bit[(address & 2) >> 1]);
       
     case ARM_MEMORY_BYTE:
       //Return the byte aligned data
-      return(&core->sram1[address >> 2].m_8bit[address & 3]);
+      return(&core->sram1[idx].m_8bit[address & 3]);
   }
 }
 
@@ -1439,8 +1450,6 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
     }
   }
   
-  //For better memory validity check the pointer should be gotten for each transfer separately 
-  
   //Check if base address not included in the range (Increment / decrement before)
   if(core->arm_instruction.type4.p)
   {
@@ -1563,6 +1572,16 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
   //Check if r15 is included in the list and it is a load instruction
   if((core->arm_instruction.type4.r15) && (core->arm_instruction.type4.l))
   {
+    //Check if thumb state bit needs to be updated
+    if(core->arm_instruction.type4.s == 0)
+    {
+      //When s == 1 this is already done by restoring cpsr from spsr. For s == 0 it needs to be taken from the pc
+      core->status->flags.T = *core->program_counter & 1;
+    }
+    
+    //Make sure the program counter is not on an invalid byte boundary
+    *core->program_counter &= 0xFFFFFFFE;
+    
     //Signal no increment of pc if so
     core->pcincrvalue = 0;
   }  
