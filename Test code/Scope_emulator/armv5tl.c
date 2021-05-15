@@ -8,7 +8,7 @@
 #include "armv5tl.h"
 #include "armv5tl_thumb.h"
 
-#define MY_BREAK_POINT 0x04E4
+#define MY_BREAK_POINT 0x0B3C
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -412,18 +412,34 @@ void ArmV5tlCore(PARMV5TL_CORE core)
               //Check for multiply and extra load and store instructions. Both bit7 and bit4 are set
               if((core->arm_instruction.type0.it1) && (core->arm_instruction.type0.it2))
               {
-                //Check if Multiplies
+                //Check if Multiplies (type is extended to 4 bits)
                 if((core->arm_instruction.mul.type == 0) && (core->arm_instruction.mul.nu == 0x09))
                 {
                   //Handle multiplies
                   ArmV5tlUndefinedInstruction(core);
                 }
-                else
+                //Check on swap instructions
+                else if((core->arm_instruction.instr & 0x0FB00FF0) == 0x01000090)
+                {
+                  //Handle swaps
+                  ArmV5tlUndefinedInstruction(core);
+                }
+                //Check on load store exclusive (not implemented in V5)
+                else if((core->arm_instruction.instr & 0x0FE00FFF) == 0x01800F9F)
+                {
+                  //Handle load store exclusive
+                  ArmV5tlUndefinedInstruction(core);
+                }
+                //Check if extra load store immediate instructions
+                else if(core->arm_instruction.lsx.i)
                 {
                   //Handle extra load and store instructions
-                  ArmV5tlUndefinedInstruction(core);
-
-                  //Half word, signed half word, signed byte and double word instructions 
+                  ArmV5tlLSExtraImmediate(core);
+                }
+                //Leaves the extra load store register instructions
+                else
+                {
+                  ArmV5tlLSExtraRegister(core);
                 }
               }
               //Check for miscellaneous instructions. Bit20 (s) needs to be cleared and opcode bit3 is set and bit2 is cleared (So opcodes 8,9,10 and 11)
@@ -1142,8 +1158,10 @@ void ArmV5tlDPR(PARMV5TL_CORE core, u_int32_t vn, u_int32_t vm, u_int32_t c)
 //Load and store immediate instruction handling
 void ArmV5tlLSImmediate(PARMV5TL_CORE core)
 {
-  u_int32_t addr;
+  //Get the input data. Assume target is a word
+  u_int32_t mode = ARM_MEMORY_WORD;
   u_int32_t vn = *core->registers[core->current_bank][core->arm_instruction.lsi.rn];
+  u_int32_t addr;
   
   //Amend the value when r15 (pc) is used
   if(core->arm_instruction.lsi.rn == 15)
@@ -1188,18 +1206,26 @@ void ArmV5tlLSImmediate(PARMV5TL_CORE core)
       *core->registers[core->current_bank][core->arm_instruction.lsi.rn] = addr;
   }
   
+  //Check if action needs to be done on a byte
+  if(core->arm_instruction.lsi.b)
+  {
+    //Switch target to byte
+    mode = ARM_MEMORY_BYTE;
+  }
+  
   //Do the actual processing
-  ArmV5tlLS(core, addr);
+  ArmV5tlLS(core, addr, mode);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Load and store register instruction handling
 void ArmV5tlLSRegister(PARMV5TL_CORE core)
 {
-  //Get the input data
-  u_int32_t addr;
+  //Get the input data. Assume target is a word
+  u_int32_t mode = ARM_MEMORY_WORD;
   u_int32_t vm = *core->registers[core->current_bank][core->arm_instruction.lsr.rm];
   u_int32_t vn = *core->registers[core->current_bank][core->arm_instruction.lsr.rn];
+  u_int32_t addr;
   u_int32_t sa;
 
   //Amend the values when r15 (pc) is used
@@ -1324,65 +1350,298 @@ void ArmV5tlLSRegister(PARMV5TL_CORE core)
       *core->registers[core->current_bank][core->arm_instruction.lsr.rn] = addr;
   }
    
+  //Check if action needs to be done on a byte
+  if(core->arm_instruction.lsr.b)
+  {
+    //Switch target to byte
+    mode = ARM_MEMORY_BYTE;
+  }
+  
   //Do the actual processing
-  ArmV5tlLS(core, addr);
+  ArmV5tlLS(core, addr, mode);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
-//Load and store instruction handling
-void ArmV5tlLS(PARMV5TL_CORE core, u_int32_t address)
+//Load and store extra immediate instruction handling
+void ArmV5tlLSExtraImmediate(PARMV5TL_CORE core)
 {
-  void *memory;
+  //The offset is constructed by shifting the high part 4 positions and oring the low part. (rs = immedH, rm = immedL)
+  u_int32_t of = (core->arm_instruction.lsx.rs << 4) | core->arm_instruction.lsx.rm;
+  u_int32_t vn = *core->registers[core->current_bank][core->arm_instruction.lsx.rn];
+  u_int32_t mode = ARM_MEMORY_WORD;
+  u_int32_t addr;
   
-  //Check if action needs to be done on a word or a byte
-  if(core->arm_instruction.lsr.b == 0)
+  //Amend the value when r15 (pc) is used
+  if(core->arm_instruction.lsx.rn == 15)
   {
-    //Word access so get a pointer to the given address
-    memory = ArmV5tlGetMemoryPointer(core, address, ARM_MEMORY_WORD);
+    vn += 8;
+  }
+  
+  //Check on pre or post indexed
+  if(core->arm_instruction.lsx.p == 0)
+  {
+    //Do post indexed
+    addr = vn;
     
-    //Check if the address was valid
-    if(memory)
+    //Update rn
+    if(core->arm_instruction.lsx.u)
     {
-      //Check if a load or a store is requested
-      if(core->arm_instruction.lsr.l)
-      {
-        //Load from found memory address
-        *core->registers[core->current_bank][core->arm_instruction.lsr.rd] = *(u_int32_t *)memory;
-      }
-      else
-      {
-        //Store to found memory address
-        *(u_int32_t *)memory = *core->registers[core->current_bank][core->arm_instruction.lsr.rd];
-      }
+      //When u = 1 add the offset
+      *core->registers[core->current_bank][core->arm_instruction.lsx.rn] += of;
+    }
+    else
+    {
+      //When u = 0 subtract the offset
+      *core->registers[core->current_bank][core->arm_instruction.lsx.rn] -= of;
     }
   }
   else
   {
-    //Byte access so get a pointer to the given address
-    memory = ArmV5tlGetMemoryPointer(core, address, ARM_MEMORY_BYTE);
-    
-    //Check if the address was valid
-    if(memory)
+    //Immediate offset or pre-indexed
+    if(core->arm_instruction.lsx.u)
     {
-      //Check if a load or a store is requested
-      if(core->arm_instruction.lsr.l)
-      {
-        //Load from found memory address
-        *core->registers[core->current_bank][core->arm_instruction.lsr.rd] = *(u_int8_t *)memory;
-      }
-      else
-      {
-        //Store to found memory address
-        *(u_int8_t *)memory = (u_int8_t)*core->registers[core->current_bank][core->arm_instruction.lsr.rd];
-      }
+      //When u = 1 add the offset
+      addr = vn + of;
     }
+    else
+    {
+      //When u = 0 subtract the offset
+      addr = vn - of;
+    }
+    
+    //Check if rn needs to be updated
+    if(core->arm_instruction.lsx.w)
+      *core->registers[core->current_bank][core->arm_instruction.lsx.rn] = addr;
   }
   
-  //Check if program counter used as target
-  if((core->arm_instruction.lsr.l) && (core->arm_instruction.lsr.rd == 15))
+  //Check if normal half word instructions
+  if(core->arm_instruction.lsx.op1 == 1)
   {
-    //Signal no increment if so
-    core->pcincrvalue = 0;
+    //Set mode to short for half word
+    mode = ARM_MEMORY_SHORT;
+  }
+  //Check if sign extend instructions
+  else if(core->arm_instruction.lsx.l)
+  {
+    //Check if short or byte
+    if(core->arm_instruction.lsx.op1 & 1)
+    {
+      //Set mode to short for half word
+      mode = ARM_MEMORY_SHORT | ARM_SIGN_EXTEND;
+    }
+    else
+    {
+      //Set mode to byte
+      mode = ARM_MEMORY_BYTE | ARM_SIGN_EXTEND;
+    }
+  }
+  //Leaves the double word instructions
+  else
+  {
+    //Set the load store bit for the handling function to work
+    core->arm_instruction.lsx.l = ~(core->arm_instruction.lsx.op1 & 1);
+
+    //Make sure rd is even
+    core->arm_instruction.lsx.rd &= 0x0E;
+    
+    //Process the first word
+    ArmV5tlLS(core, addr, mode);
+    
+    //Add 4 to the address for the next word
+    addr += 4;
+    
+    //Select the next register
+    core->arm_instruction.lsx.rd++;
+  }
+  
+  //Do the actual processing
+  ArmV5tlLS(core, addr, mode);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Load and store extra immediate instruction handling
+void ArmV5tlLSExtraRegister(PARMV5TL_CORE core)
+{
+  //Get the input data. Assume target is a word
+  u_int32_t mode = ARM_MEMORY_WORD;
+  u_int32_t vm = *core->registers[core->current_bank][core->arm_instruction.lsx.rm];
+  u_int32_t vn = *core->registers[core->current_bank][core->arm_instruction.lsx.rn];
+  u_int32_t addr;
+
+  //Amend the values when r15 (pc) is used
+  if(core->arm_instruction.lsx.rn == 15)
+  {
+    vn += 8;
+  }
+
+  //Same for the to be shifted register
+  if(core->arm_instruction.lsx.rm == 15)
+  {
+    vm += 8;
+  }
+  
+  //Check on pre or post indexed
+  if(core->arm_instruction.lsx.p == 0)
+  {
+    //Do post indexed
+    addr = vn;
+    
+    //Update rn
+    if(core->arm_instruction.lsx.u)
+    {
+      //When u = 1 add the offset
+      *core->registers[core->current_bank][core->arm_instruction.lsx.rn] += vm;
+    }
+    else
+    {
+      //When u = 0 subtract the offset
+      *core->registers[core->current_bank][core->arm_instruction.lsx.rn] -= vm;
+    }
+  }
+  else
+  {
+    //Immediate offset or pre-indexed
+    if(core->arm_instruction.lsx.u)
+    {
+      //When u = 1 add the offset
+      addr = vn + vm;
+    }
+    else
+    {
+      //When u = 0 subtract the offset
+      addr = vn - vm;
+    }
+    
+    //Check if rn needs to be updated
+    if(core->arm_instruction.lsx.w)
+      *core->registers[core->current_bank][core->arm_instruction.lsx.rn] = addr;
+  }
+
+  //Check if normal half word instructions
+  if(core->arm_instruction.lsx.op1 == 1)
+  {
+    //Set mode to short for half word
+    mode = ARM_MEMORY_SHORT;
+  }
+  //Check if sign extend instructions
+  else if(core->arm_instruction.lsx.l)
+  {
+    //Check if short or byte
+    if(core->arm_instruction.lsx.op1 & 1)
+    {
+      //Set mode to short for half word
+      mode = ARM_MEMORY_SHORT | ARM_SIGN_EXTEND;
+    }
+    else
+    {
+      //Set mode to byte
+      mode = ARM_MEMORY_BYTE | ARM_SIGN_EXTEND;
+    }
+  }
+  //Leaves the double word instructions
+  else
+  {
+    //Set the load store bit for the handling function to work
+    core->arm_instruction.lsx.l = ~(core->arm_instruction.lsx.op1 & 1);
+
+    //Make sure rd is even
+    core->arm_instruction.lsx.rd &= 0x0E;
+    
+    //Process the first word
+    ArmV5tlLS(core, addr, mode);
+    
+    //Add 4 to the address for the next word
+    addr += 4;
+    
+    //Select the next register
+    core->arm_instruction.lsx.rd++;
+  }
+  
+  //Do the actual processing
+  ArmV5tlLS(core, addr, mode);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Load and store instruction handling
+void ArmV5tlLS(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
+{
+  void *memory;
+  u_int32_t memtype = mode & ARM_MEMORY_MASK;
+    
+  //Get a pointer to the given address based on the mode
+  memory = ArmV5tlGetMemoryPointer(core, address, memtype);
+
+  //Check if address is valid
+  if(memory)
+  {
+    //Perform the requested action on the requested size mode
+    switch(memtype)  
+    {
+      case ARM_MEMORY_WORD:
+        //Check if a load or a store is requested
+        if(core->arm_instruction.lsr.l)
+        {
+          //Load from found memory address
+          *core->registers[core->current_bank][core->arm_instruction.lsr.rd] = *(u_int32_t *)memory;
+        }
+        else
+        {
+          //Store to found memory address
+          *(u_int32_t *)memory = *core->registers[core->current_bank][core->arm_instruction.lsr.rd];
+        }
+        break;
+        
+      case ARM_MEMORY_SHORT:
+        //Check if a load or a store is requested
+        if(core->arm_instruction.lsr.l)
+        {
+          //Load from found memory address
+          *core->registers[core->current_bank][core->arm_instruction.lsr.rd] = *(u_int16_t *)memory;
+          
+          //Sign extend here when needed
+          if((mode & ARM_SIGN_EXTEND) && (*(u_int16_t *)memory & 0x8000))
+          {
+            *core->registers[core->current_bank][core->arm_instruction.lsr.rd] |= 0xFFFF0000;
+          }
+        }
+        else
+        {
+          //Store to found memory address
+          *(u_int16_t *)memory = *core->registers[core->current_bank][core->arm_instruction.lsr.rd];
+        }
+        break;
+        
+      case ARM_MEMORY_BYTE:
+        //Check if a load or a store is requested
+        if(core->arm_instruction.lsr.l)
+        {
+          //Load from found memory address
+          *core->registers[core->current_bank][core->arm_instruction.lsr.rd] = *(u_int8_t *)memory;
+          
+          //Sign extend here when needed
+          if((mode & ARM_SIGN_EXTEND) && (*(u_int8_t *)memory & 0x80))
+          {
+            *core->registers[core->current_bank][core->arm_instruction.lsr.rd] |= 0xFFFFFF00;
+          }
+        }
+        else
+        {
+          //Store to found memory address
+          *(u_int8_t *)memory = (u_int8_t)*core->registers[core->current_bank][core->arm_instruction.lsr.rd];
+        }
+        break;
+    }
+
+    //Check if program counter used as target
+    if((core->arm_instruction.lsr.l) && (core->arm_instruction.lsr.rd == 15))
+    {
+      //Signal no increment if so
+      core->pcincrvalue = 0;
+    }
+  }
+  else
+  {
+    //Need exception here
   }
 }
 

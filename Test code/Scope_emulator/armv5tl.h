@@ -206,6 +206,7 @@ typedef struct tagARMV5TL_INSTR_DPI         ARMV5TL_INSTR_DPI;        //Data pro
 typedef struct tagARMV5TL_INSTR_LSI         ARMV5TL_INSTR_LSI;        //Load and store immediate instructions
 typedef struct tagARMV5TL_INSTR_LSR         ARMV5TL_INSTR_LSR;        //Load and store register instructions
 typedef struct tagARMV5TL_INSTR_LSRN        ARMV5TL_INSTR_LSRN;       //Load and store register no scaling instructions
+typedef struct tagARMV5TL_INSTR_LSX         ARMV5TL_INSTR_LSX;        //Load and store register extra instructions
 typedef struct tagARMV5TL_INSTR_MSRI        ARMV5TL_INSTR_MSRI;       //Move immediate to status register instructions
 typedef struct tagARMV5TL_INSTR_MSRR        ARMV5TL_INSTR_MSRR;       //Move register to status register instructions
 typedef struct tagARMV5TL_INSTR_MRS         ARMV5TL_INSTR_MRS;        //Move status register to register instructions
@@ -230,6 +231,8 @@ struct tagARMV5TL_ADDRESS_MAP
   u_int32_t    end;
   PERIPHERALCHECK function;
 };
+
+//----------------------------------------------------------------------------------------------------------------------------------
 
 struct tagARMV5TL_INSTR_BASE
 {
@@ -305,13 +308,31 @@ struct tagARMV5TL_INSTR_LSR
 
 struct tagARMV5TL_INSTR_LSRN
 {
-  u_int32_t rm:4;        //Offset
+  u_int32_t rm:4;         //Register m
   u_int32_t ns:8;         //No scaling when zero
   u_int32_t rd:4;         //Destination register
   u_int32_t rn:4;         //Second operand register
   u_int32_t l:1;          //Load or store. 1: Load. 0: Store.
   u_int32_t w:1;          //For offset addressing this is the write back to base indicator.
   u_int32_t b:1;          //Unsigned byte mode
+  u_int32_t u:1;          //Offset use mode 1: Add to base. 0: Subtract from base
+  u_int32_t p:1;          //Pre indexed addressing. Combined with W bit
+  u_int32_t type:3;       //Type of instructions
+  u_int32_t cond:4;       //Condition bits
+};
+
+struct tagARMV5TL_INSTR_LSX
+{
+  u_int32_t rm:4;         //Register m
+  u_int32_t sbo2:1;       //Should be one
+  u_int32_t op1:2;        //Extra opcode
+  u_int32_t sbo1:1;       //Should be one
+  u_int32_t rs:4;         //Register s
+  u_int32_t rd:4;         //Destination register
+  u_int32_t rn:4;         //Register n
+  u_int32_t l:1;          //Load or store. 1: Load. 0: Store.
+  u_int32_t w:1;          //For offset addressing this is the write back to base indicator.
+  u_int32_t i:1;          //Immediate offset / index or register offset / index
   u_int32_t u:1;          //Offset use mode 1: Add to base. 0: Subtract from base
   u_int32_t p:1;          //Pre indexed addressing. Combined with W bit
   u_int32_t type:3;       //Type of instructions
@@ -596,6 +617,7 @@ union tagARMV5TL_ARM_INSTRUCTION
   ARMV5TL_INSTR_LSI        lsi;        //For load and store immediate instructions
   ARMV5TL_INSTR_LSR        lsr;        //For load and store register instructions
   ARMV5TL_INSTR_LSRN       lsrn;       //For load and store register no scaling instructions
+  ARMV5TL_INSTR_LSX        lsx;        //For load and store register extra instructions
   ARMV5TL_INSTR_MSRI       msri;       //Move immediate to status register instructions
   ARMV5TL_INSTR_MSRR       msrr;       //Move register to status register instructions
   ARMV5TL_INSTR_MRS        mrs;        //Move status register to register instructions
@@ -742,9 +764,13 @@ struct tagARMV5TL_CORE
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-#define ARM_MEMORY_WORD           0
-#define ARM_MEMORY_SHORT          1
-#define ARM_MEMORY_BYTE           2
+#define ARM_MEMORY_MASK          0x0003
+
+#define ARM_MEMORY_WORD          0x0000
+#define ARM_MEMORY_SHORT         0x0001
+#define ARM_MEMORY_BYTE          0x0002
+
+#define ARM_SIGN_EXTEND          0x0010
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -789,8 +815,14 @@ void ArmV5tlLSImmediate(PARMV5TL_CORE core);
 //Load and store register instruction handling
 void ArmV5tlLSRegister(PARMV5TL_CORE core);
 
+//Load and store extra immediate instruction handling
+void ArmV5tlLSExtraImmediate(PARMV5TL_CORE core);
+
+//Load and store extra register instruction handling
+void ArmV5tlLSExtraRegister(PARMV5TL_CORE core);
+
 //Load and store instruction handling
-void ArmV5tlLS(PARMV5TL_CORE core, u_int32_t address);
+void ArmV5tlLS(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
 
 //Load and store multiple instruction handling
 void ArmV5tlLSM(PARMV5TL_CORE core);
