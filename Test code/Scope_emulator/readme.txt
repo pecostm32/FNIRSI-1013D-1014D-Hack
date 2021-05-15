@@ -8,8 +8,17 @@ There is no connection with the emulator or scope screen yet.
 
 Most of the thumb instructions are implemented. So far only push and pop are tested.
 
-Test case is the boot loader of the scope. For now it runs to address 0x4E4 where it encounters a not yet implemented strd instruction,
+----------------------------------------------------------------------------------------------
+15-May-2021 15:00
+Test case is the boot loader of the scope. For now it runs to address 0x04E4 where it encounters a not yet implemented strd instruction,
 so this one is next on the list.
+
+----------------------------------------------------------------------------------------------
+15-May-2021 19:30
+Implemented the missing instructions and tested again. It now runs to address 0x0B3C where it hits a 
+mul instruction. Did not implement that yet, so that is next on the list.
+
+----------------------------------------------------------------------------------------------
 
 Next step after that is to implement some of the F1C100s peripherals, and see how far the program will run.
 
