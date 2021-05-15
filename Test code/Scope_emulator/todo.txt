@@ -130,3 +130,21 @@ Thumb decode
   //STMIA 110 0 0 nnn llllllll
   //LDMIA 110 0 1 nnn llllllll
 
+  //UI    110 1 1110 xxxxxxxx
+  //SWI   110 1 1111 iiiiiiii
+  //B(1)  110 1 cccc iiiiiiii
+
+
+//Type 7
+  //Unconditional branch
+  //BLX suffix
+  //Undefined instruction
+  //BL / BLX prefix
+  //BL suffix
+
+  //B(2)    111 00 iiiiiiiiiii
+
+  //BLX(1)  111 01 iiiiiiiiiii
+  //BL      111 10 iiiiiiiiiii
+  //BL      111 11 iiiiiiiiiii
+

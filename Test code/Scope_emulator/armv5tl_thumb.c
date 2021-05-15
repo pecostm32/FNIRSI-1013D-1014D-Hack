@@ -92,7 +92,7 @@ void ArmV5tlHandleThumb(PARMV5TL_CORE core)
 
       case 4:
         //Check if load / store short immediate offset
-        if(core->thumb_instruction.base.op1 <= 1)
+        if((core->thumb_instruction.base.op1 & 2) == 0)
         {
           //STRH(1), LDRH(1) (instruction decoding basically the same as type 3 so using same function here. Type 4 indicates short)
           ArmV5tlThumbLS3(core);
@@ -107,7 +107,7 @@ void ArmV5tlHandleThumb(PARMV5TL_CORE core)
 
       case 5:
         //Filter out the add pc, sp plus immediate instructions
-        if(core->thumb_instruction.base.op1 <= 1)
+        if((core->thumb_instruction.base.op1 & 2) == 0)
         {
         //ADD(5)   101 00 ddd iiiiiiii
         //ADD(6)   101 01 ddd iiiiiiii
@@ -166,48 +166,42 @@ void ArmV5tlHandleThumb(PARMV5TL_CORE core)
         break;
 
       case 6:
-        //Filter out the add pc, sp plus immediate instructions
-        if(core->thumb_instruction.base.op1 <= 1)
+        //Filter out the load and store multiple instructions
+        if(core->thumb_instruction.b6.op1 == 0)
         {
           //STMIA, LDMIA
           ArmV5tlThumbLSMIA(core);
         }
         else
         {
-        //Load / store multiple
-        //Conditional branch
-        //Undefined instruction
-        //Software interrupt
-        
-        
-
-        //B(1)  110 1 cccc iiiiiiii
-        
-        //SWI   110 1 1111 iiiiiiii
-        
-        //UI    110 1 1110 xxxxxxxx
-          ArmV5tlUndefinedInstruction(core);
+          //Filter out undefined instruction
+          if(core->thumb_instruction.b6.cond == 14)
+          {
+            //UI
+            ArmV5tlUndefinedInstruction(core);
+          }
+          //Filter out software interrupt
+          else if(core->thumb_instruction.b6.cond == 15)
+          {
+            //SWI   110 1 1111 iiiiiiii
+            ArmV5tlUndefinedInstruction(core);
+          }
+          //Leaves conditional branches
+          else
+          {
+            //B(1)
+            ArmV5tlThumbBranch6(core);
+          }
         }
         break;
 
       case 7:
-        //Unconditional branch
-        //BLX suffix
-        //Undefined instruction
-        //BL / BLX prefix
-        //BL suffix
-        
-        //B(2)    111 00 iiiiiiiiiii
-        
-        //BLX(1)  111 01 iiiiiiiiiii
-        //BL      111 10 iiiiiiiiiii
-        //BL      111 11 iiiiiiiiiii
-        
-        ArmV5tlUndefinedInstruction(core);
-        
+        //B(2), BLX(1), BL
+        ArmV5tlThumbBranch7(core);
         break;
     }
   }
+  //No memory at current program address
   else
   {
     //Some exception needs to be generated here. Undefined Instruction most likely
@@ -1023,9 +1017,6 @@ void ArmV5tlThumbLS(PARMV5TL_CORE core, u_int32_t type, u_int32_t rd, u_int32_t 
   }
 }
 
-
-
-
 //----------------------------------------------------------------------------------------------------------------------------------
 //Load and store multiple instruction handling
 void ArmV5tlThumbLSMIA(PARMV5TL_CORE core)
@@ -1264,8 +1255,187 @@ void ArmV5tlThumbBranch2(PARMV5TL_CORE core)
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
-//Actual branch handling
-void ArmV5tlThumbBranch(PARMV5TL_CORE core, u_int32_t type, u_int32_t address)
+//Type 6 instructions branch handling
+void ArmV5tlThumbBranch6(PARMV5TL_CORE core)
 {
-  
+  u_int32_t vm;
+  u_int32_t execute = 0;
+
+  //Check the condition bits against the status bits to decide if the branch needs to be executed
+  switch(core->thumb_instruction.b6.cond)
+  {
+    case ARM_COND_EQUAL:
+      //For execute on equal Z needs to be set
+      if(core->status->flags.Z)
+        execute = 1;
+      break;
+
+    case ARM_COND_NOT_EQUAL:
+      //For execute on not equal Z needs to be cleared
+      if(core->status->flags.Z == 0)
+        execute = 1;
+      break;
+
+    case ARM_COND_CARRY_SET:
+      //For execute on carry set C needs to be set
+      if(core->status->flags.C)
+        execute = 1;
+      break;
+
+    case ARM_COND_CARRY_CLEAR:
+      //For execute on carry set C needs to be cleared
+      if(core->status->flags.C == 0)
+        execute = 1;
+      break;
+
+    case ARM_COND_MINUS:
+      //For execute on minus N needs to be set
+      if(core->status->flags.N)
+        execute = 1;
+      break;
+
+    case ARM_COND_PLUS:
+      //For execute on plus N needs to be cleared
+      if(core->status->flags.N == 0)
+        execute = 1;
+      break;
+
+    case ARM_COND_OVERFLOW:
+      //For execute on overflow V needs to be set
+      if(core->status->flags.V)
+        execute = 1;
+      break;
+
+    case ARM_COND_NO_OVERFLOW:
+      //For execute on no overflow V needs to be cleared
+      if(core->status->flags.V == 0)
+        execute = 1;
+      break;
+
+    case ARM_COND_HIGHER:
+      //For execute on higher C needs to be set and Z needs to be cleared
+      if((core->status->flags.C) && (core->status->flags.Z == 0))
+        execute = 1;
+      break;
+
+    case ARM_COND_LOWER_SAME:
+      //For execute on lower or the same C needs to be cleared and Z needs to be set
+      if((core->status->flags.C == 0) && (core->status->flags.Z ))
+        execute = 1;
+      break;
+
+    case ARM_COND_GREATER_EQUAL:
+      //For execute on greater or equal N needs to be equal to V
+      if(core->status->flags.N == core->status->flags.V)
+        execute = 1;
+      break;
+
+    case ARM_COND_LESS_THAN:
+      //For execute on less than N needs to be not equal to V
+      if(core->status->flags.N != core->status->flags.V)
+        execute = 1;
+      break;
+
+    case ARM_COND_GREATER_THAN:
+      //For execute on greater than N needs to be equal to V and Z needs to be cleared
+      if((core->status->flags.N == core->status->flags.V) && (core->status->flags.Z == 0))
+        execute = 1;
+      break;
+
+    case ARM_COND_LESS_THAN_EQUAL:
+      //For execute on less than or equal than N needs to be not equal to V and Z needs to be set
+      if((core->status->flags.N != core->status->flags.V) && (core->status->flags.Z))
+        execute = 1;
+      break;
+  }
+
+  //Take the branch when needed
+  if(execute)
+  {
+    //Get the value to index the program counter
+    vm = core->thumb_instruction.b6.im << 1;
+    
+    //Check if negative address given
+    if(vm & 0x100)
+    {
+      //Extend the sign if so
+      vm |= 0xFFFFFFE00;
+    }
+
+    //Calculate the new address. The actual pc point to instruction address plus 4
+    *core->program_counter += (4 + vm);
+    
+    //Signal no increment of the pc
+    core->pcincrvalue = 0;
+  }
 }
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Type 7 instructions branch handling
+void ArmV5tlThumbBranch7(PARMV5TL_CORE core)
+{
+  u_int32_t vm;
+
+  //Check on unconditional branch
+  if(core->thumb_instruction.b7.op1 == 0)
+  {
+    //Get the value to index the program counter
+    vm = core->thumb_instruction.b7.im << 1;
+    
+    //Check if negative address given
+    if(vm & 0x800)
+    {
+      //Extend the sign if so
+      vm |= 0xFFFFFF000;
+    }
+
+    //Calculate the new address. The actual pc point to instruction address plus 4
+    *core->program_counter += (4 + vm);
+    
+    //Signal no increment of the pc
+    core->pcincrvalue = 0;
+  }
+  //Check if this is a branch link prefix instruction
+  else if(core->thumb_instruction.b7.op1 == 2)
+  {
+    //Setup the prefix address
+    vm = core->thumb_instruction.b7.im << 12;
+    
+    //Check if negative address given
+    if(vm & 0x00400000)
+    {
+      //Extend the sign if so
+      vm |= 0xFF800000;
+    }
+    
+    //Use the link register as temporary storage
+    *core->registers[core->current_bank][14] = *core->program_counter + 4 + vm;
+  }
+  //Either second BL or BLX instruction
+  else
+  {
+    //Get the result from the previous BL instruction
+    vm = *core->registers[core->current_bank][14];
+    
+    //Set the link register for the BL or BLX(1) instruction to point to the next thumb instruction
+    *core->registers[core->current_bank][14] = (*core->program_counter + 2) | 1;
+
+    //Set the program counter to the new address
+    *core->program_counter = vm + (core->thumb_instruction.b7.im << 1);
+    
+    //Check if it is a BLX(1) instruction
+    if(core->thumb_instruction.b7.op1 == 1)
+    {
+      //Switch back to arm state if so
+      core->status->flags.T = 0;
+      
+      //Make sure the target address is word aligned
+      *core->program_counter &= 0xFFFFFFFC;
+    }
+
+    //Signal no increment of the pc
+    core->pcincrvalue = 0;
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------

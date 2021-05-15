@@ -24,6 +24,8 @@ typedef struct tagARMV5TL_INSTR_THUMB_LS2R   ARMV5TL_INSTR_THUMB_LS2R;
 typedef struct tagARMV5TL_INSTR_THUMB_LS3    ARMV5TL_INSTR_THUMB_LS3;
 typedef struct tagARMV5TL_INSTR_THUMB_LSM    ARMV5TL_INSTR_THUMB_LSM;
 typedef struct tagARMV5TL_INSTR_THUMB_B2     ARMV5TL_INSTR_THUMB_B2;
+typedef struct tagARMV5TL_INSTR_THUMB_B6     ARMV5TL_INSTR_THUMB_B6;
+typedef struct tagARMV5TL_INSTR_THUMB_B7     ARMV5TL_INSTR_THUMB_B7;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -147,6 +149,21 @@ struct tagARMV5TL_INSTR_THUMB_B2
   u_int32_t type:3;       //Type of instructions
 };
 
+struct tagARMV5TL_INSTR_THUMB_B6
+{
+  u_int32_t im:8;         //signed immediate
+  u_int32_t cond:4;       //Condition for execute
+  u_int32_t op1:1;        //Actual opcode for some type of instructions
+  u_int32_t type:3;       //Type of instructions
+};
+
+struct tagARMV5TL_INSTR_THUMB_B7
+{
+  u_int32_t im:11;        //signed immediate
+  u_int32_t op1:2;        //Actual opcode for some type of instructions
+  u_int32_t type:3;       //Type of instructions
+};
+
 union tagARMV5TL_THUMB_INSTRUCTION
 {
   u_int16_t                  instr;       //Instruction register
@@ -163,6 +180,8 @@ union tagARMV5TL_THUMB_INSTRUCTION
   ARMV5TL_INSTR_THUMB_LS3    ls3;         //Instruction data for type 3 load store instructions
   ARMV5TL_INSTR_THUMB_LSM    lsm;         //Instruction data for load store multiple instructions
   ARMV5TL_INSTR_THUMB_B2     b2;          //Instruction data for type 2 branch instructions
+  ARMV5TL_INSTR_THUMB_B6     b6;          //Instruction data for type 6 branch instructions
+  ARMV5TL_INSTR_THUMB_B6     b7;          //Instruction data for type 7 branch instructions
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------

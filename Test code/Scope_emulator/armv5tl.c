@@ -158,6 +158,10 @@ void ArmV5tlSetup(PARMV5TL_CORE core)
   //No exceptions either
   core->undefinedinstruction = 0;
   
+  //No instructions yet
+  core->arm_instruction.instr = 0;
+  core->thumb_instruction.instr = 0;
+  
   //Test tracing
   core->TraceFilePointer = fopen("test_trace.txt", "w");
   
@@ -1760,7 +1764,7 @@ void ArmV5tlBranch(PARMV5TL_CORE core)
   //Check if negative address given
   if(address & 0x02000000)
   {
-    //Extend the sing if so
+    //Extend the sign if so
     address |= 0xFC000000;
   }
   

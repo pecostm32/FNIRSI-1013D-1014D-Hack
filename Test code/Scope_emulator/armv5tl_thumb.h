@@ -57,8 +57,9 @@ void ArmV5tlThumbPOP(PARMV5TL_CORE core);
 void ArmV5tlThumbPUSH(PARMV5TL_CORE core);
 
 void ArmV5tlThumbBranch2(PARMV5TL_CORE core);
+void ArmV5tlThumbBranch6(PARMV5TL_CORE core);
+void ArmV5tlThumbBranch7(PARMV5TL_CORE core);
 
-void ArmV5tlThumbBranch(PARMV5TL_CORE core, u_int32_t type, u_int32_t address);
 
 #endif /* ARMV5TL_THUMB_H */
 
