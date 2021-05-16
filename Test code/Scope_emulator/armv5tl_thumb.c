@@ -810,7 +810,7 @@ void ArmV5tlThumbLS2I(PARMV5TL_CORE core)
   u_int32_t address = vn + vm;
 
   //Signal loading of a word
-  type = ARM_THUMB_SIZE_WORD | ARM_THUMB_LOAD_FLAG;
+  type = ARM_MEMORY_WORD | ARM_THUMB_LOAD_FLAG;
   
   //Go and do the actual load or store
   ArmV5tlThumbLS(core, type, rd, address);
@@ -834,12 +834,12 @@ void ArmV5tlThumbLS2R(PARMV5TL_CORE core)
     if(core->thumb_instruction.ls2r.op1 == 2)
     {
       //LDRSB
-      type = ARM_THUMB_SIZE_BYTE;
+      type = ARM_MEMORY_BYTE;
     }
     else
     {
       //LDRSH
-      type = ARM_THUMB_SIZE_SHORT;
+      type = ARM_MEMORY_SHORT;
     }
     
     //Signal load and sign extend
@@ -878,17 +878,17 @@ void ArmV5tlThumbLS3(PARMV5TL_CORE core)
   if(core->thumb_instruction.ls3.type == 4)
   {
     //For type 4 instructions it is short
-    type = ARM_THUMB_SIZE_SHORT;
+    type = ARM_MEMORY_SHORT;
   }
   else if(core->thumb_instruction.ls3.b)
   {
     //For b == 1 it is byte
-    type = ARM_THUMB_SIZE_BYTE;
+    type = ARM_MEMORY_BYTE;
   }
   else
   {
     //For b == 0 it is word
-    type = ARM_THUMB_SIZE_WORD;
+    type = ARM_MEMORY_WORD;
   }
   
   //Check if load or store
@@ -910,7 +910,7 @@ void ArmV5tlThumbLS4(PARMV5TL_CORE core)
   u_int32_t rd = core->thumb_instruction.ls2i.rd;
   u_int32_t vm = core->thumb_instruction.ls2i.im * 4;
   u_int32_t vn = (*core->registers[core->current_bank][13]) & 0xFFFFFFFC;
-  u_int32_t type = ARM_THUMB_SIZE_WORD;
+  u_int32_t type = ARM_MEMORY_WORD;
   u_int32_t address = vn + vm;
 
   //Check if load or store
@@ -929,23 +929,31 @@ void ArmV5tlThumbLS4(PARMV5TL_CORE core)
 void ArmV5tlThumbLS(PARMV5TL_CORE core, u_int32_t type, u_int32_t rd, u_int32_t address)
 {
   void *memory;
-  
-  //Handle data based on the size of it
-  switch(type & ARM_THUMB_SIZE_MASK)
-  {
-    case ARM_THUMB_SIZE_BYTE:
-      //Byte access so get a pointer to the given address
-      memory = ArmV5tlGetMemoryPointer(core, address, ARM_MEMORY_BYTE);
+  u_int32_t mode = type & ARM_MEMORY_MASK;
 
-      //Check if the address was valid
-      if(memory)
-      {
+  //Get a pointer to the memory for the given address and type
+  memory = ArmV5tlGetMemoryPointer(core, address, mode);
+  
+  //Check if the address was valid
+  if(memory)
+  {
+    //Check if load and peripheral read function set for this address
+    if((type & ARM_THUMB_LOAD_FLAG) && (core->periph_read_func))
+    {
+      //Call it if so
+      core->periph_read_func(core, address);
+    }
+
+    //Handle data based on the size of it
+    switch(mode)
+    {
+      case ARM_MEMORY_BYTE:
         //Check if a load or a store is requested
         if(type & ARM_THUMB_LOAD_FLAG)
         {
           //Load from memory address
           *core->registers[core->current_bank][rd] = *(u_int8_t *)memory;
-          
+
           //Check if sign extend needed
           if((type & ARM_THUMB_SIGN_EXTEND) && (*core->registers[core->current_bank][rd] & 0x80))
           {
@@ -957,22 +965,15 @@ void ArmV5tlThumbLS(PARMV5TL_CORE core, u_int32_t type, u_int32_t rd, u_int32_t 
           //Store to memory address
           *(u_int8_t *)memory = (u_int8_t)*core->registers[core->current_bank][rd];
         }
-      }
-      break;
-      
-    case ARM_THUMB_SIZE_SHORT:
-      //Short access so get a pointer to the given address
-      memory = ArmV5tlGetMemoryPointer(core, address, ARM_MEMORY_SHORT);
+        break;
 
-      //Check if the address was valid
-      if(memory)
-      {
+      case ARM_MEMORY_SHORT:
         //Check if a load or a store is requested
         if(type & ARM_THUMB_LOAD_FLAG)
         {
           //Load from memory address
           *core->registers[core->current_bank][rd] = *(u_int16_t *)memory;
-          
+
           //Check if sign extend needed
           if((type & ARM_THUMB_SIGN_EXTEND) && (*core->registers[core->current_bank][rd] & 0x8000))
           {
@@ -984,16 +985,9 @@ void ArmV5tlThumbLS(PARMV5TL_CORE core, u_int32_t type, u_int32_t rd, u_int32_t 
           //Store to memory address
           *(u_int16_t *)memory = (u_int16_t)*core->registers[core->current_bank][rd];
         }
-      }
-      break;
-      
-    case ARM_THUMB_SIZE_WORD:
-      //Word access so get a pointer to the given address
-      memory = ArmV5tlGetMemoryPointer(core, address, ARM_MEMORY_WORD);
-    
-      //Check if the address is valid
-      if(memory)
-      {
+        break;
+
+      case ARM_MEMORY_WORD:
         //Check if a load or a store is requested
         if(type & ARM_THUMB_LOAD_FLAG)
         {
@@ -1005,8 +999,15 @@ void ArmV5tlThumbLS(PARMV5TL_CORE core, u_int32_t type, u_int32_t rd, u_int32_t 
           //Store to memory address
           *(u_int32_t *)memory = *core->registers[core->current_bank][rd];
         }
-      }
-      break;
+        break;
+    }
+  }
+  
+  //Check if store and peripheral write function set for this address
+  if(((type & ARM_THUMB_LOAD_FLAG) == 0) && (core->periph_write_func))
+  {
+    //Call it if so
+    core->periph_write_func(core, address);
   }
   
   //Check if program counter used as target
@@ -1043,6 +1044,13 @@ void ArmV5tlThumbLSMIA(PARMV5TL_CORE core)
         //Check if load or store
         if(core->thumb_instruction.lsm.l)
         {
+          //Check if peripheral read function set for this address
+          if(core->periph_read_func)
+          {
+            //Call it if so
+            core->periph_read_func(core, address);
+          }
+
           //Load the register with the data from memory
           *core->registers[core->current_bank][i] = *memory;
         }
@@ -1050,7 +1058,14 @@ void ArmV5tlThumbLSMIA(PARMV5TL_CORE core)
         {
           //Store the register to memory
           *memory = *core->registers[core->current_bank][i];
-        }
+            
+          //Check if peripheral write function set for this address
+          if(core->periph_write_func)
+          {
+            //Call it if so
+            core->periph_write_func(core, address);
+          }
+       }
       }
       else
       {

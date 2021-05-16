@@ -6,6 +6,7 @@
 //----------------------------------------------------------------------------------------------------------------------------------
 
 typedef struct tagF1C100S_CCU        F1C100S_CCU;
+typedef struct tagF1C100S_DRAMC      F1C100S_DRAMC;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -70,6 +71,43 @@ struct tagF1C100S_CCU
   F1C100S_MEMORY bus_soft_rst2;
 };
 
+//----------------------------------------------------------------------------------------------------------------------------------
+//The clock control register set
+struct tagF1C100S_DRAMC
+{
+  F1C100S_MEMORY sconr;
+  F1C100S_MEMORY stmg0r;
+  F1C100S_MEMORY stmg1r;
+  F1C100S_MEMORY sctlr;
+  F1C100S_MEMORY srefr;
+  F1C100S_MEMORY sextmr;
+  F1C100S_MEMORY ddlyr;
+  F1C100S_MEMORY dadrr;
+  F1C100S_MEMORY dvalr;
+  F1C100S_MEMORY drptr0;
+  F1C100S_MEMORY drptr1;
+  F1C100S_MEMORY drptr2;
+  F1C100S_MEMORY drptr3;
+  F1C100S_MEMORY sefr;
+  F1C100S_MEMORY mae;
+  F1C100S_MEMORY aspr;
+  F1C100S_MEMORY sdly0;
+  F1C100S_MEMORY sdly1;
+  F1C100S_MEMORY sdly2;
+  F1C100S_MEMORY mcr0;
+  F1C100S_MEMORY mcr1;
+  F1C100S_MEMORY mcr2;
+  F1C100S_MEMORY mcr3;
+  F1C100S_MEMORY mcr4;
+  F1C100S_MEMORY mcr5;
+  F1C100S_MEMORY mcr6;
+  F1C100S_MEMORY mcr7;
+  F1C100S_MEMORY mcr8;
+  F1C100S_MEMORY mcr9;
+  F1C100S_MEMORY mcr10;
+  F1C100S_MEMORY mcr11;
+  F1C100S_MEMORY bwcr;
+};
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

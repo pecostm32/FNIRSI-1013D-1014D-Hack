@@ -59,6 +59,41 @@
 #define CCU_BUS_SOFT_RST2        0x000002D0
 
 //----------------------------------------------------------------------------------------------------------------------------------
+//DRAM controller registers low addresses
+#define DRAM_SCONR               0x00000000
+#define DRAM_STMG0R              0x00000004
+#define DRAM_STMG1R              0x00000008
+#define DRAM_SCTLR               0x0000000C
+#define DRAM_SREFR               0x00000010
+#define DRAM_SEXTMR              0x00000014
+#define DRAM_DDLYR               0x00000024
+#define DRAM_DADRR               0x00000028
+#define DRAM_DVALR               0x0000002C
+#define DRAM_DRPTR0              0x00000030
+#define DRAM_DRPTR1              0x00000034
+#define DRAM_DRPTR2              0x00000038
+#define DRAM_DRPTR3              0x0000003C
+#define DRAM_SEFR                0x00000040
+#define DRAM_MAE                 0x00000044
+#define DRAM_ASPR                0x00000048
+#define DRAM_SDLY0               0x0000004C
+#define DRAM_SDLY1               0x00000050
+#define DRAM_SDLY2               0x00000054
+#define DRAM_MCR0                0x00000100
+#define DRAM_MCR1                0x00000104
+#define DRAM_MCR2                0x00000108
+#define DRAM_MCR3                0x0000010C
+#define DRAM_MCR4                0x00000110
+#define DRAM_MCR5                0x00000114
+#define DRAM_MCR6                0x00000118
+#define DRAM_MCR7                0x0000011C
+#define DRAM_MCR8                0x00000120
+#define DRAM_MCR9                0x00000124
+#define DRAM_MCR10               0x00000128
+#define DRAM_MCR11               0x0000012C
+#define DRAM_BWCR                0x00000140
+
+//----------------------------------------------------------------------------------------------------------------------------------
 //Main process peripheral handling function
 void F1C100sProcess(PARMV5TL_CORE core);
 
@@ -69,6 +104,9 @@ void *F1C100sSram2(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
 
 //Clock control registers
 void *F1C100sCCU(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+
+//DRAM control registers
+void *F1C100sDRAMC(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

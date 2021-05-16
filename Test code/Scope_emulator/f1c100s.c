@@ -13,15 +13,18 @@ void F1C100sProcess(PARMV5TL_CORE core)
   //Perform tasks that are parallel to the cpu
   
   //Check if the cpu accessed a peripheral
-  if(core->periph_targeted)
-  {
+  
+  
+  //Separate function pointers are setup for this
     //Handle the last targeted address
     
     //Needs a similar system as in the main cpu for getting to the right peripheral
+    //For most reads there is no need to do something, but for reads of receive registers it is certainly needed
     
-    //Clear it for next check
-    core->periph_targeted = 0;
-  }
+    //Timing is also an issue. For spi par example there is a relation between the spi_clk and the amount of instructions it takes
+    //for a byte to be send or received. This also relates to the cpu clock setting
+    
+    //Clear flags for next check
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -255,12 +258,169 @@ void *F1C100sCCU(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
   //Check if valid address has been given
   if(ptr)
   {
-    //Save the address for the peripheral handler
-    core->last_periph_address = address;
-    
-    //Signal peripheral has been targeted
-    core->periph_targeted = 1;
-    
+    //Return the pointer based on the requested mode
+    switch(mode)
+    {
+      case ARM_MEMORY_WORD:
+        //Return the word aligned data
+        return(&ptr->m_32bit);
+
+      case ARM_MEMORY_SHORT:
+        //Return the short aligned data
+        return(&ptr->m_16bit[(address & 2) >> 1]);
+
+      case ARM_MEMORY_BYTE:
+        //Return the byte aligned data
+        return(&ptr->m_8bit[address & 3]);
+    }
+  }
+  else
+  {
+    return(NULL); 
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//DRAM control registers
+void *F1C100sDRAMC(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
+{
+  F1C100S_MEMORY *ptr = NULL;
+  
+  //Select the target register based on word address
+  switch(address & 0xFFFFFFFC)
+  {
+    case DRAM_SCONR:
+      ptr = &core->f1c100s_dramc.sconr;
+      break;
+      
+    case DRAM_STMG0R:
+      ptr = &core->f1c100s_dramc.stmg0r;
+      break;
+      
+    case DRAM_STMG1R:
+      ptr = &core->f1c100s_dramc.stmg1r;
+      break;
+      
+    case DRAM_SCTLR:
+      ptr = &core->f1c100s_dramc.sctlr;
+      break;
+      
+    case DRAM_SREFR:
+      ptr = &core->f1c100s_dramc.srefr;
+      break;
+      
+    case DRAM_SEXTMR:
+      ptr = &core->f1c100s_dramc.sextmr;
+      break;
+      
+    case DRAM_DDLYR:
+      ptr = &core->f1c100s_dramc.ddlyr;
+      break;
+      
+    case DRAM_DADRR:
+      ptr = &core->f1c100s_dramc.dadrr;
+      break;
+      
+    case DRAM_DVALR:
+      ptr = &core->f1c100s_dramc.dvalr;
+      break;
+      
+    case DRAM_DRPTR0:
+      ptr = &core->f1c100s_dramc.drptr0;
+      break;
+      
+    case DRAM_DRPTR1:
+      ptr = &core->f1c100s_dramc.drptr1;
+      break;
+      
+    case DRAM_DRPTR2:
+      ptr = &core->f1c100s_dramc.drptr2;
+      break;
+      
+    case DRAM_DRPTR3:
+      ptr = &core->f1c100s_dramc.drptr3;
+      break;
+      
+    case DRAM_SEFR:
+      ptr = &core->f1c100s_dramc.sefr;
+      break;
+      
+    case DRAM_MAE:
+      ptr = &core->f1c100s_dramc.mae;
+      break;
+      
+    case DRAM_ASPR:
+      ptr = &core->f1c100s_dramc.aspr;
+      break;
+      
+    case DRAM_SDLY0:
+      ptr = &core->f1c100s_dramc.sdly0;
+      break;
+      
+    case DRAM_SDLY1:
+      ptr = &core->f1c100s_dramc.sdly1;
+      break;
+      
+    case DRAM_SDLY2:
+      ptr = &core->f1c100s_dramc.sdly2;
+      break;
+      
+    case DRAM_MCR0:
+      ptr = &core->f1c100s_dramc.mcr0;
+      break;
+      
+    case DRAM_MCR1:
+      ptr = &core->f1c100s_dramc.mcr1;
+      break;
+      
+    case DRAM_MCR2:
+      ptr = &core->f1c100s_dramc.mcr2;
+      break;
+      
+    case DRAM_MCR3:
+      ptr = &core->f1c100s_dramc.mcr3;
+      break;
+      
+    case DRAM_MCR4:
+      ptr = &core->f1c100s_dramc.mcr4;
+      break;
+      
+    case DRAM_MCR5:
+      ptr = &core->f1c100s_dramc.mcr5;
+      break;
+      
+    case DRAM_MCR6:
+      ptr = &core->f1c100s_dramc.mcr6;
+      break;
+      
+    case DRAM_MCR7:
+      ptr = &core->f1c100s_dramc.mcr7;
+      break;
+      
+    case DRAM_MCR8:
+      ptr = &core->f1c100s_dramc.mcr8;
+      break;
+      
+    case DRAM_MCR9:
+      ptr = &core->f1c100s_dramc.mcr9;
+      break;
+      
+    case DRAM_MCR10:
+      ptr = &core->f1c100s_dramc.mcr10;
+      break;
+      
+    case DRAM_MCR11:
+      ptr = &core->f1c100s_dramc.mcr11;
+      break;
+      
+    case DRAM_BWCR:
+      ptr = &core->f1c100s_dramc.bwcr;
+      break;
+  }  
+
+  //Check if valid address has been given
+  if(ptr)
+  {
     //Return the pointer based on the requested mode
     switch(mode)
     {

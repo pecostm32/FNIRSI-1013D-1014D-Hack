@@ -18,12 +18,6 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-#define ARM_THUMB_SIZE_MASK           0x00000003
-
-#define ARM_THUMB_SIZE_BYTE           0x00000002
-#define ARM_THUMB_SIZE_SHORT          0x00000001
-#define ARM_THUMB_SIZE_WORD           0x00000000
-
 #define ARM_THUMB_LOAD_FLAG           0x00010000
 
 #define ARM_THUMB_SIGN_EXTEND         0x00100000

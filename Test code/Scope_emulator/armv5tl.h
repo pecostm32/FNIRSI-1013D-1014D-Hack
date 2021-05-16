@@ -55,13 +55,18 @@ typedef void *(*PERIPHERALCHECK)(PARMV5TL_CORE core, u_int32_t address, u_int32_
 
 typedef void (*PERIPHERALFUNC)(PARMV5TL_CORE core);
 
+typedef void (*PERIPHERALREAD)(PARMV5TL_CORE core, u_int32_t address);
+typedef void (*PERIPHERALWRITE)(PARMV5TL_CORE core, u_int32_t address);
+
 //----------------------------------------------------------------------------------------------------------------------------------
 
 struct tagARMV5TL_ADDRESS_MAP
 {
-  u_int32_t    start;
-  u_int32_t    end;
+  u_int32_t       start;
+  u_int32_t       end;
   PERIPHERALCHECK function;
+  PERIPHERALREAD  read;
+  PERIPHERALWRITE write;
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -527,9 +532,11 @@ struct tagARMV5TL_CORE
   
   //F1C100S peripherals
   F1C100S_CCU               f1c100s_ccu;              //The clock control registers
+  F1C100S_DRAMC             f1c100s_dramc;            //The dram control registers
   
-  u_int32_t                 periph_targeted;          //Flag to signal peripheral has been targeted for either read or write
-  u_int32_t                 last_periph_address;      //Last peripheral address targeted by the cpu
+  //Function pointers for handling peripherals
+  PERIPHERALREAD            periph_read_func;         //Pointer to a function to call before a read
+  PERIPHERALWRITE           periph_write_func;        //Pointer to a function to call after a write
   
   PERIPHERALFUNC            peripheralfunction;       //Pointer to function for handling the peripherals. When not used set to NULL
   

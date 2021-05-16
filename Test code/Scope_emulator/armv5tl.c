@@ -165,11 +165,14 @@ void ArmV5tlSetup(PARMV5TL_CORE core)
   
   //Set peripheral handler for the F1C100s
   core->peripheralfunction = F1C100sProcess;
-  core->periph_targeted = 0;
-  core->last_periph_address = 0;
+  
+  //No read and write functions yet. Set by memory handling function.
+  core->periph_read_func = NULL;
+  core->periph_write_func = NULL;
   
   //Test tracing
-  core->TraceFilePointer = fopen("test_trace.txt", "w");
+  core->TraceFilePointer = NULL;
+//  core->TraceFilePointer = fopen("test_trace.txt", "w");
   
   //On startup processor is running
   core->run = 1;
@@ -628,43 +631,44 @@ void ArmV5tlCore(PARMV5TL_CORE core)
 //Here the specific memory map is programmed
 ARMV5TL_ADDRESS_MAP address_map[] = 
 {
-  { 0x00000000, 0x00007FFF, F1C100sSram1 },   //SRAM1
-  { 0x00010000, 0x00019FFF, F1C100sSram2 },   //SRAM2
-  { 0x01C00000, 0x01C00FFF, NULL         },   //System Controller
-  { 0x01C01000, 0x01C01FFF, NULL         },   //DRAMC
-  { 0x01C02000, 0x01C02FFF, NULL         },   //DMA
-  { 0x01C05000, 0x01C05FFF, NULL         },   //SPI0
-  { 0x01C06000, 0x01C06FFF, NULL         },   //SPI1
-  { 0x01C0A000, 0x01C0AFFF, NULL         },   //TVE
-  { 0x01C0B000, 0x01C0BFFF, NULL         },   //TVD
-  { 0x01C0C000, 0x01C0CFFF, NULL         },   //TCON
-  { 0x01C0E000, 0x01C0EFFF, NULL         },   //VE
-  { 0x01C0F000, 0x01C0FFFF, NULL         },   //SD/MMC0
-  { 0x01C10000, 0x01C10FFF, NULL         },   //SD/MMC1
-  { 0x01C13000, 0x01C13FFF, NULL         },   //USB-OTG
-  { 0x01C20000, 0x01C203FF, F1C100sCCU   },   //CCU
-  { 0x01C20400, 0x01C207FF, NULL         },   //INTC
-  { 0x01C20800, 0x01C20BFF, NULL         },   //PIO
-  { 0x01C20C00, 0x01C20FFF, NULL         },   //TIMER
-  { 0x01C21000, 0x01C213FF, NULL         },   //PWM
-  { 0x01C21400, 0x01C217FF, NULL         },   //OWA
-  { 0x01C21800, 0x01C21BFF, NULL         },   //RSB
-  { 0x01C22000, 0x01C223FF, NULL         },   //DAUDIO
-  { 0x01C22C00, 0x01C22FFF, NULL         },   //CIR
-  { 0x01C23400, 0x01C237FF, NULL         },   //KEYADC
-  { 0x01C23C00, 0x01C23FFF, NULL         },   //Audio Codec
-  { 0x01C24800, 0x01C24BFF, NULL         },   //TP
-  { 0x01C25000, 0x01C253FF, NULL         },   //UART0
-  { 0x01C25400, 0x01C257FF, NULL         },   //UART1
-  { 0x01C25800, 0x01C25BFF, NULL         },   //UART2
-  { 0x01C27000, 0x01C273FF, NULL         },   //TWI0
-  { 0x01C27400, 0x01C277FF, NULL         },   //TWI1
-  { 0x01C27800, 0x01C27BFF, NULL         },   //TWI2
-  { 0x01CB0000, 0x01CB0FFF, NULL         },   //CSI
-  { 0x01CE0000, 0x01CE1FFF, NULL         },   //DEFE
-  { 0x01CE6000, 0x01CE6FFF, NULL         },   //DEBE
-  { 0x01CE7000, 0x01CE7FFF, NULL         },   //DE Interlace
-  { 0x80000000, 0x81FFFFFF, NULL         },   //DRAM 32MB
+  //     Start,        End,  Memory func, Read, Write
+  { 0x00000000, 0x00007FFF, F1C100sSram1, NULL, NULL },   //SRAM1
+  { 0x00010000, 0x00019FFF, F1C100sSram2, NULL, NULL },   //SRAM2
+  { 0x01C00000, 0x01C00FFF, NULL,         NULL, NULL },   //System Controller
+  { 0x01C01000, 0x01C01FFF, F1C100sDRAMC, NULL, NULL },   //DRAMC
+  { 0x01C02000, 0x01C02FFF, NULL,         NULL, NULL },   //DMA
+  { 0x01C05000, 0x01C05FFF, NULL,         NULL, NULL },   //SPI0
+  { 0x01C06000, 0x01C06FFF, NULL,         NULL, NULL },   //SPI1
+  { 0x01C0A000, 0x01C0AFFF, NULL,         NULL, NULL },   //TVE
+  { 0x01C0B000, 0x01C0BFFF, NULL,         NULL, NULL },   //TVD
+  { 0x01C0C000, 0x01C0CFFF, NULL,         NULL, NULL },   //TCON
+  { 0x01C0E000, 0x01C0EFFF, NULL,         NULL, NULL },   //VE
+  { 0x01C0F000, 0x01C0FFFF, NULL,         NULL, NULL },   //SD/MMC0
+  { 0x01C10000, 0x01C10FFF, NULL,         NULL, NULL },   //SD/MMC1
+  { 0x01C13000, 0x01C13FFF, NULL,         NULL, NULL },   //USB-OTG
+  { 0x01C20000, 0x01C203FF, F1C100sCCU,   NULL, NULL },   //CCU
+  { 0x01C20400, 0x01C207FF, NULL,         NULL, NULL },   //INTC
+  { 0x01C20800, 0x01C20BFF, NULL,         NULL, NULL },   //PIO
+  { 0x01C20C00, 0x01C20FFF, NULL,         NULL, NULL },   //TIMER
+  { 0x01C21000, 0x01C213FF, NULL,         NULL, NULL },   //PWM
+  { 0x01C21400, 0x01C217FF, NULL,         NULL, NULL },   //OWA
+  { 0x01C21800, 0x01C21BFF, NULL,         NULL, NULL },   //RSB
+  { 0x01C22000, 0x01C223FF, NULL,         NULL, NULL },   //DAUDIO
+  { 0x01C22C00, 0x01C22FFF, NULL,         NULL, NULL },   //CIR
+  { 0x01C23400, 0x01C237FF, NULL,         NULL, NULL },   //KEYADC
+  { 0x01C23C00, 0x01C23FFF, NULL,         NULL, NULL },   //Audio Codec
+  { 0x01C24800, 0x01C24BFF, NULL,         NULL, NULL },   //TP
+  { 0x01C25000, 0x01C253FF, NULL,         NULL, NULL },   //UART0
+  { 0x01C25400, 0x01C257FF, NULL,         NULL, NULL },   //UART1
+  { 0x01C25800, 0x01C25BFF, NULL,         NULL, NULL },   //UART2
+  { 0x01C27000, 0x01C273FF, NULL,         NULL, NULL },   //TWI0
+  { 0x01C27400, 0x01C277FF, NULL,         NULL, NULL },   //TWI1
+  { 0x01C27800, 0x01C27BFF, NULL,         NULL, NULL },   //TWI2
+  { 0x01CB0000, 0x01CB0FFF, NULL,         NULL, NULL },   //CSI
+  { 0x01CE0000, 0x01CE1FFF, NULL,         NULL, NULL },   //DEFE
+  { 0x01CE6000, 0x01CE6FFF, NULL,         NULL, NULL },   //DEBE
+  { 0x01CE7000, 0x01CE7FFF, NULL,         NULL, NULL },   //DE Interlace
+  { 0x80000000, 0x81FFFFFF, NULL,         NULL, NULL },   //DRAM 32MB
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -684,6 +688,10 @@ void *ArmV5tlGetMemoryPointer(PARMV5TL_CORE core, u_int32_t address, u_int32_t m
     //Check if the given address is in range of this map item
     if((address >= address_map[i].start) && (address <= address_map[i].end))
     {
+      //Set the peripheral function pointers for this map entry
+      core->periph_read_func = address_map[i].read;
+      core->periph_write_func = address_map[i].write;
+      
       //If so check if it has a function coupled and call it if so
       //Also adjust the address to start from 0 based on the start address in the memory map
       if(address_map[i].function)
@@ -1544,6 +1552,13 @@ void ArmV5tlLS(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
   //Check if address is valid
   if(memory)
   {
+    //Check if load and peripheral read function set for this address
+    if((core->arm_instruction.lsr.l) && (core->periph_read_func))
+    {
+      //Call it if so
+      core->periph_read_func(core, address);
+    }
+    
     //Perform the requested action on the requested size mode
     switch(memtype)  
     {
@@ -1601,7 +1616,14 @@ void ArmV5tlLS(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
         }
         break;
     }
-
+            
+    //Check if store and peripheral write function set for this address
+    if((core->arm_instruction.lsr.l == 0) && (core->periph_write_func))
+    {
+      //Call it if so
+      core->periph_write_func(core, address);
+    }
+    
     //Check if program counter used as target
     if((core->arm_instruction.lsr.l) && (core->arm_instruction.lsr.rd == 15))
     {
@@ -1718,6 +1740,13 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
           //Check if load or store
           if(core->arm_instruction.type4.l)
           {
+            //Check if peripheral read function set for this address
+            if(core->periph_read_func)
+            {
+              //Call it if so
+              core->periph_read_func(core, address);
+            }
+
             //Load the register with the data from memory
             *core->registers[bank][i] = *memory;
           }
@@ -1725,6 +1754,13 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
           {
             //Store the register to memory
             *memory = *core->registers[bank][i];
+            
+            //Check if peripheral write function set for this address
+            if(core->periph_write_func)
+            {
+              //Call it if so
+              core->periph_write_func(core, address);
+            }
           }
         }
         else
@@ -1760,6 +1796,13 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
           //Check if load or store
           if(core->arm_instruction.type4.l)
           {
+            //Check if peripheral read function set for this address
+            if(core->periph_read_func)
+            {
+              //Call it if so
+              core->periph_read_func(core, address);
+            }
+
             //Load the register with the data from memory
             *core->registers[bank][i] = *memory;
           }
@@ -1767,6 +1810,13 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
           {
             //Store the register to memory
             *memory = *core->registers[bank][i];
+            
+            //Check if peripheral write function set for this address
+            if(core->periph_write_func)
+            {
+              //Call it if so
+              core->periph_write_func(core, address);
+            }
           }
         }
         else
