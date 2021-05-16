@@ -247,12 +247,13 @@ struct tagARMV5TL_INSTR_BASE
 
 struct tagARMV5TL_INSTR_MUL
 {
-  u_int32_t rm:4;         //Register
+  u_int32_t rm:4;         //Register m
   u_int32_t nu:4;         //Fixed value
-  u_int32_t rs:4;         //Register
+  u_int32_t rs:4;         //Register s
+  u_int32_t rn:4;         //Register n
   u_int32_t rd:4;         //Destination register
-  u_int32_t rn:4;         //Second operand register
-  u_int32_t opcode:4;     //Opcode for type of multiply
+  u_int32_t s:1;          //Status update flag
+  u_int32_t op1:3;        //Opcode for type of multiply
   u_int32_t type:4;       //Type of instructions
   u_int32_t cond:4;       //Condition bits
 };
@@ -826,6 +827,9 @@ void ArmV5tlLS(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
 
 //Load and store multiple instruction handling
 void ArmV5tlLSM(PARMV5TL_CORE core);
+
+//Multiply instruction handling
+void ArmV5tlMUL(PARMV5TL_CORE core);
 
 //Move immediate to status register
 void ArmV5tlMSRImmediate(PARMV5TL_CORE core);

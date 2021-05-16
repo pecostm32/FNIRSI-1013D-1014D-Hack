@@ -415,8 +415,8 @@ void ArmV5tlCore(PARMV5TL_CORE core)
                 //Check if Multiplies (type is extended to 4 bits)
                 if((core->arm_instruction.mul.type == 0) && (core->arm_instruction.mul.nu == 0x09))
                 {
-                  //Handle multiplies
-                  ArmV5tlUndefinedInstruction(core);
+                  //Handle multiplies (MUL, MULS, MLA, MLAS, UMULL, UMULLS, UMLAL, UMLALS, SMULL, SMULLS, SMLAL, SMLALS)
+                  ArmV5tlMUL(core);
                 }
                 //Check on swap instructions
                 else if((core->arm_instruction.instr & 0x0FB00FF0) == 0x01000090)
@@ -1108,10 +1108,10 @@ void ArmV5tlDPR(PARMV5TL_CORE core, u_int32_t vn, u_int32_t vm, u_int32_t c)
     else
     {
       //Update the negative bit
-      core->status->flags.N = vd >> 31;
+      core->status->flags.N = (vd >> 31) & 1;
 
-      //Update the zero bit
-      core->status->flags.Z = (vd == 0);
+      //Update the zero bit (only the lower 32 bits count)
+      core->status->flags.Z = ((vd & 0xFFFFFFFF) == 0);
 
       //Check if carry and overflow need to be updated with arithmetic result
       if(docandv != ARM_FLAGS_UPDATE_CV_NO)
@@ -1848,6 +1848,80 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
     //Signal no increment of pc if so
     core->pcincrvalue = 0;
   }  
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Multiply instruction handling
+//MUL, MULS, MLA, MLAS, UMULL, UMULLS, UMLAL, UMLALS, SMULL, SMULLS, SMLAL, SMLALS  
+void ArmV5tlMUL(PARMV5TL_CORE core)
+{
+  u_int32_t rm = *core->registers[core->current_bank][core->arm_instruction.mul.rm];
+  u_int32_t rs = *core->registers[core->current_bank][core->arm_instruction.mul.rs];
+  int64_t vd;
+  int64_t va;
+  
+  //Check if signed or unsigned multiply needed (SMULL op1:6, SMLAL op1:7)
+  if((core->arm_instruction.mul.op1 == 6) || (core->arm_instruction.mul.op1 == 7))
+  {
+    //Do multiply with signed inputs
+    vd = (int32_t)rs * (int32_t)rm;
+  }
+  else
+  {
+    //Do multiply with unsigned inputs
+    vd = rs * rm;
+  }
+  
+  //Check if 64 bit accumulate needed (UMLAL op1:5, SMLAL op1:7)
+  if((core->arm_instruction.mul.op1 == 5) || (core->arm_instruction.mul.op1 == 7))
+  {
+    //Get the value to add from the two destination registers. rd holds high part, rn holds low part.
+    va  = (u_int64_t)*core->registers[core->current_bank][core->arm_instruction.mul.rd] << 32;
+    va |= *core->registers[core->current_bank][core->arm_instruction.mul.rn];
+    
+    //Do the summation
+    vd += va;
+  }
+  //Check if 32 bit accumulation needed (MLA op1:1)
+  else if(core->arm_instruction.mul.op1 == 1)
+  {
+    //Add the value held in rn to the result
+    vd += *core->registers[core->current_bank][core->arm_instruction.mul.rn];
+  }
+  
+  //Check if 32 bit result instruction (MUL op1:0, MLA op1:1)
+  if((core->arm_instruction.mul.op1 == 0) || (core->arm_instruction.mul.op1 == 1))
+  {
+    //Store the 32 bit result back to rd
+    *core->registers[core->current_bank][core->arm_instruction.mul.rd] = (u_int32_t)vd;
+    
+    //Check if status flags need to be updated
+    if(core->arm_instruction.mul.s)
+    {
+        //Update the negative bit
+        core->status->flags.N = (vd >> 31) & 1;
+
+        //Update the zero bit (only the lower 32 bits count)
+        core->status->flags.Z = ((vd & 0xFFFFFFFF) == 0);
+    }
+  }
+  //Leaves 64 bit result instructions
+  else
+  {
+    //Store the 64 bit result back to register pair. rd holds high part, rn holds low part.
+    *core->registers[core->current_bank][core->arm_instruction.mul.rd] = (u_int32_t)(vd >> 32);
+    *core->registers[core->current_bank][core->arm_instruction.mul.rn] = (u_int32_t)vd;
+    
+    //Check if status flags need to be updated
+    if(core->arm_instruction.mul.s)
+    {
+        //Update the negative bit
+        core->status->flags.N = (vd >> 63) & 1;
+
+        //Update the zero bit (only the lower 32 bits count)
+        core->status->flags.Z = (vd == 0);
+    }
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
