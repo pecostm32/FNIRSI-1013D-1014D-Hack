@@ -7,6 +7,7 @@
 
 #include "armv5tl.h"
 #include "armv5tl_thumb.h"
+#include "f1c100s.h"
 
 #define MY_BREAK_POINT 0x0B3C
 
@@ -161,6 +162,11 @@ void ArmV5tlSetup(PARMV5TL_CORE core)
   //No instructions yet
   core->arm_instruction.instr = 0;
   core->thumb_instruction.instr = 0;
+  
+  //Set peripheral handler for the F1C100s
+  core->peripheralfunction = F1C100sProcess;
+  core->periph_targeted = 0;
+  core->last_periph_address = 0;
   
   //Test tracing
   core->TraceFilePointer = fopen("test_trace.txt", "w");
@@ -607,17 +613,23 @@ void ArmV5tlCore(PARMV5TL_CORE core)
     }
   }
   
+  //Check if there is a peripheral handler
+  if(core->peripheralfunction)
+  {
+    //Call it before incrementing to the next instruction
+    core->peripheralfunction(core);
+  }
+  
   //Point to next instruction when needed. When the previous instruction had the program counter as target the increment value is set to zero.
   *core->program_counter += core->pcincrvalue;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
-
 //Here the specific memory map is programmed
 ARMV5TL_ADDRESS_MAP address_map[] = 
 {
-  { 0x00000000, 0x00007FFF, ArmV5tlSram1 },   //SRAM1
-  { 0x00010000, 0x00019FFF, ArmV5tlSram2 },   //SRAM2
+  { 0x00000000, 0x00007FFF, F1C100sSram1 },   //SRAM1
+  { 0x00010000, 0x00019FFF, F1C100sSram2 },   //SRAM2
   { 0x01C00000, 0x01C00FFF, NULL         },   //System Controller
   { 0x01C01000, 0x01C01FFF, NULL         },   //DRAMC
   { 0x01C02000, 0x01C02FFF, NULL         },   //DMA
@@ -630,7 +642,7 @@ ARMV5TL_ADDRESS_MAP address_map[] =
   { 0x01C0F000, 0x01C0FFFF, NULL         },   //SD/MMC0
   { 0x01C10000, 0x01C10FFF, NULL         },   //SD/MMC1
   { 0x01C13000, 0x01C13FFF, NULL         },   //USB-OTG
-  { 0x01C20000, 0x01C203FF, NULL         },   //CCU
+  { 0x01C20000, 0x01C203FF, F1C100sCCU   },   //CCU
   { 0x01C20400, 0x01C207FF, NULL         },   //INTC
   { 0x01C20800, 0x01C20BFF, NULL         },   //PIO
   { 0x01C20C00, 0x01C20FFF, NULL         },   //TIMER
@@ -683,48 +695,6 @@ void *ArmV5tlGetMemoryPointer(PARMV5TL_CORE core, u_int32_t address, u_int32_t m
   
   //Nothing found then return a null address
   return(NULL);
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-//Memory and peripheral handlers
-void *ArmV5tlSram1(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
-{
-  u_int32_t idx = address >> 2;
-  
-  switch(mode)
-  {
-    case ARM_MEMORY_WORD:
-      //Return the word aligned data
-      return(&core->sram1[idx].m_32bit);
-
-    case ARM_MEMORY_SHORT:
-      //Return the short aligned data
-      return(&core->sram1[idx].m_16bit[(address & 2) >> 1]);
-      
-    case ARM_MEMORY_BYTE:
-      //Return the byte aligned data
-      return(&core->sram1[idx].m_8bit[address & 3]);
-  }
-}
-
-void *ArmV5tlSram2(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
-{
-  u_int32_t idx = address >> 2;
-  
-  switch(mode)
-  {
-    case ARM_MEMORY_WORD:
-      //Return the word aligned data
-      return(&core->sram2[idx].m_32bit);
-      
-    case ARM_MEMORY_SHORT:
-      //Return the short aligned data
-      return(&core->sram1[idx].m_16bit[(address & 2) >> 1]);
-      
-    case ARM_MEMORY_BYTE:
-      //Return the byte aligned data
-      return(&core->sram1[idx].m_8bit[address & 3]);
-  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

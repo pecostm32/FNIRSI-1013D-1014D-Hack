@@ -7,185 +7,10 @@
 
 #include <sys/types.h>
 
-//----------------------------------------------------------------------------------------------------------------------------------
-//Thumb section
-
-typedef union  tagARMV5TL_THUMB_INSTRUCTION  ARMV5TL_THUMB_INSTRUCTION;
-typedef struct tagARMV5TL_INSTR_THUMB_BASE   ARMV5TL_INSTR_THUMB_BASE;
-typedef struct tagARMV5TL_INSTR_THUMB_SHIFT0 ARMV5TL_INSTR_THUMB_SHIFT0;
-typedef struct tagARMV5TL_INSTR_THUMB_SHIFT2 ARMV5TL_INSTR_THUMB_SHIFT2;
-typedef struct tagARMV5TL_INSTR_THUMB_DPI0   ARMV5TL_INSTR_THUMB_DPI0;
-typedef struct tagARMV5TL_INSTR_THUMB_DPR0   ARMV5TL_INSTR_THUMB_DPR0;
-typedef struct tagARMV5TL_INSTR_THUMB_DP1    ARMV5TL_INSTR_THUMB_DP1;
-typedef struct tagARMV5TL_INSTR_THUMB_DP2    ARMV5TL_INSTR_THUMB_DP2;
-typedef struct tagARMV5TL_INSTR_THUMB_DP2S   ARMV5TL_INSTR_THUMB_DP2S;
-typedef struct tagARMV5TL_INSTR_THUMB_LS2I   ARMV5TL_INSTR_THUMB_LS2I;
-typedef struct tagARMV5TL_INSTR_THUMB_LS2R   ARMV5TL_INSTR_THUMB_LS2R;
-typedef struct tagARMV5TL_INSTR_THUMB_LS3    ARMV5TL_INSTR_THUMB_LS3;
-typedef struct tagARMV5TL_INSTR_THUMB_LSM    ARMV5TL_INSTR_THUMB_LSM;
-typedef struct tagARMV5TL_INSTR_THUMB_B2     ARMV5TL_INSTR_THUMB_B2;
-typedef struct tagARMV5TL_INSTR_THUMB_B6     ARMV5TL_INSTR_THUMB_B6;
-typedef struct tagARMV5TL_INSTR_THUMB_B7     ARMV5TL_INSTR_THUMB_B7;
+#include "armv5tl_thumb_structs.h"
+#include "f1c100s_structs.h"
 
 //----------------------------------------------------------------------------------------------------------------------------------
-
-
-struct tagARMV5TL_INSTR_THUMB_BASE
-{
-  u_int32_t data:6;       //Instruction data
-  u_int32_t op2:5;        //Extended opcode
-  u_int32_t op1:2;        //Actual opcode for some type of instructions
-  u_int32_t type:3;       //Type of instructions
-};
-
-struct tagARMV5TL_INSTR_THUMB_SHIFT0
-{
-  u_int32_t rd:3;         //Destination register
-  u_int32_t rm:3;         //Source register
-  u_int32_t sa:5;         //5 bits shift amount
-  u_int32_t op1:2;        //Actual opcode for some type of instructions
-  u_int32_t type:3;       //Type of instructions
-};
-
-struct tagARMV5TL_INSTR_THUMB_SHIFT2
-{
-  u_int32_t rd:3;         //Destination register
-  u_int32_t rs:3;         //Shift amount register
-  u_int32_t op2:5;        //Extra opcode
-  u_int32_t op1:2;        //Actual opcode for some type of instructions
-  u_int32_t type:3;       //Type of instructions
-};
-
-struct tagARMV5TL_INSTR_THUMB_DPI0
-{
-  u_int32_t rd:3;         //Destination register
-  u_int32_t rn:3;         //Source register
-  u_int32_t im:3;         //3 bits immediate data
-  u_int32_t op2:2;        //Extra opcode for some type of instructions
-  u_int32_t op1:2;        //Actual opcode for some type of instructions
-  u_int32_t type:3;       //Type of instructions
-};
-
-struct tagARMV5TL_INSTR_THUMB_DPR0
-{
-  u_int32_t rd:3;         //Destination register
-  u_int32_t rn:3;         //Source register
-  u_int32_t rm:3;         //Second source register
-  u_int32_t op2:2;        //Extra opcode for some type of instructions
-  u_int32_t op1:2;        //Actual opcode for some type of instructions
-  u_int32_t type:3;       //Type of instructions
-};
-
-struct tagARMV5TL_INSTR_THUMB_DP1
-{
-  u_int32_t im:8;         //Immediate data
-  u_int32_t rd:3;         //Destination register
-  u_int32_t op1:2;        //Actual opcode for some type of instructions
-  u_int32_t type:3;       //Type of instructions
-};
-
-struct tagARMV5TL_INSTR_THUMB_DP2
-{
-  u_int32_t rd:3;         //Destination register
-  u_int32_t rm:3;         //Source register
-  u_int32_t op2:5;        //Extra opcode for some type of instructions
-  u_int32_t op1:2;        //Actual opcode for some type of instructions
-  u_int32_t type:3;       //Type of instructions
-};
-
-struct tagARMV5TL_INSTR_THUMB_DP2S
-{
-  u_int32_t rd:3;         //Destination register
-  u_int32_t rm:4;         //Source register
-  u_int32_t h:1;          //High bit of rd
-  u_int32_t op2:3;        //Extra opcode for some type of instructions
-  u_int32_t op1:2;        //Actual opcode for some type of instructions
-  u_int32_t type:3;       //Type of instructions
-};
-
-struct tagARMV5TL_INSTR_THUMB_LS2I
-{
-  u_int32_t im:8;         //Immediate data
-  u_int32_t rd:3;         //Destination register
-  u_int32_t op1:2;        //Actual opcode for some type of instructions
-  u_int32_t type:3;       //Type of instructions
-};
-
-struct tagARMV5TL_INSTR_THUMB_LS2R
-{
-  u_int32_t rd:3;         //Destination register
-  u_int32_t rn:3;         //Source register
-  u_int32_t rm:3;         //Second source register
-  u_int32_t op2:2;        //Extra opcode for some type of instructions
-  u_int32_t op1:2;        //Actual opcode for some type of instructions
-  u_int32_t type:3;       //Type of instructions
-};
-
-struct tagARMV5TL_INSTR_THUMB_LS3
-{
-  u_int32_t rd:3;         //Destination register
-  u_int32_t rn:3;         //Source register
-  u_int32_t im:5;         //5 bit immediate index
-  u_int32_t l:1;          //Load / store bit
-  u_int32_t b:1;          //byte / word bit
-  u_int32_t type:3;       //Type of instructions
-};
-
-struct tagARMV5TL_INSTR_THUMB_LSM
-{
-  u_int32_t rl:8;         //Register list
-  u_int32_t rn:3;         //Base register
-  u_int32_t l:1;          //Load / store bit
-  u_int32_t nu:1;         //Not used
-  u_int32_t type:3;       //Type of instructions
-};
-
-struct tagARMV5TL_INSTR_THUMB_B2
-{
-  u_int32_t sbz:3;        //Should be zero
-  u_int32_t rm:4;         //Register holding target address
-  u_int32_t op2:4;        //Extra opcode for some type of instructions
-  u_int32_t op1:2;        //Actual opcode for some type of instructions
-  u_int32_t type:3;       //Type of instructions
-};
-
-struct tagARMV5TL_INSTR_THUMB_B6
-{
-  u_int32_t im:8;         //signed immediate
-  u_int32_t cond:4;       //Condition for execute
-  u_int32_t op1:1;        //Actual opcode for some type of instructions
-  u_int32_t type:3;       //Type of instructions
-};
-
-struct tagARMV5TL_INSTR_THUMB_B7
-{
-  u_int32_t im:11;        //signed immediate
-  u_int32_t op1:2;        //Actual opcode for some type of instructions
-  u_int32_t type:3;       //Type of instructions
-};
-
-union tagARMV5TL_THUMB_INSTRUCTION
-{
-  u_int16_t                  instr;       //Instruction register
-  ARMV5TL_INSTR_THUMB_BASE   base;        //Base type for decoding
-  ARMV5TL_INSTR_THUMB_SHIFT0 shift0;      //Instruction data for type 0 shift instructions
-  ARMV5TL_INSTR_THUMB_SHIFT2 shift2;      //Instruction data for type 2 shift instructions
-  ARMV5TL_INSTR_THUMB_DPI0   dpi0;        //Instruction data for type 0 immediate data processing instructions
-  ARMV5TL_INSTR_THUMB_DPR0   dpr0;        //Instruction data for type 0 register data processing instructions
-  ARMV5TL_INSTR_THUMB_DP1    dp1;         //Instruction data for type 1 data processing instructions
-  ARMV5TL_INSTR_THUMB_DP2    dp2;         //Instruction data for type 2 data processing instructions
-  ARMV5TL_INSTR_THUMB_DP2S   dp2s;        //Instruction data for type 2 special data processing instructions
-  ARMV5TL_INSTR_THUMB_LS2I   ls2i;        //Instruction data for type 2 load store immediate indexed based instructions
-  ARMV5TL_INSTR_THUMB_LS2R   ls2r;        //Instruction data for type 2 load store register based instructions
-  ARMV5TL_INSTR_THUMB_LS3    ls3;         //Instruction data for type 3 load store instructions
-  ARMV5TL_INSTR_THUMB_LSM    lsm;         //Instruction data for load store multiple instructions
-  ARMV5TL_INSTR_THUMB_B2     b2;          //Instruction data for type 2 branch instructions
-  ARMV5TL_INSTR_THUMB_B6     b6;          //Instruction data for type 6 branch instructions
-  ARMV5TL_INSTR_THUMB_B6     b7;          //Instruction data for type 7 branch instructions
-};
-
-//----------------------------------------------------------------------------------------------------------------------------------
-//Arm section
 
 typedef struct tagARMV5TL_ADDRESS_MAP       ARMV5TL_ADDRESS_MAP;
 typedef struct tagARMV5TL_INSTR_BASE        ARMV5TL_INSTR_BASE;
@@ -212,16 +37,23 @@ typedef struct tagARMV5TL_INSTR_MSRR        ARMV5TL_INSTR_MSRR;       //Move reg
 typedef struct tagARMV5TL_INSTR_MRS         ARMV5TL_INSTR_MRS;        //Move status register to register instructions
 typedef struct tagARMV5TL_INSTR_MRCMCR      ARMV5TL_INSTR_MRCMCR;     //Move register to coprocessor or coprocessor to register instructions
 
+//----------------------------------------------------------------------------------------------------------------------------------
+
 typedef struct tagARMV5TL_FLAGS             ARMV5TL_FLAGS;
 typedef struct tagARMV5TL_REGS              ARMV5TL_REGS;
 typedef struct tagARMV5TL_CORE              ARMV5TL_CORE, *PARMV5TL_CORE;
+
+//----------------------------------------------------------------------------------------------------------------------------------
 
 typedef union tagARMV5TL_STATUS             ARMV5TL_STATUS, *PARMV5TL_STATUS;
 typedef union tagARMV5TL_ARM_INSTRUCTION    ARMV5TL_ARM_INSTRUCTION;
 typedef union tagARMV5TL_MEMORY             ARMV5TL_MEMORY;
 
+//----------------------------------------------------------------------------------------------------------------------------------
 
 typedef void *(*PERIPHERALCHECK)(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+
+typedef void (*PERIPHERALFUNC)(PARMV5TL_CORE core);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -447,6 +279,8 @@ struct tagARMV5TL_INSTR_MISC0
   u_int32_t cond:4;       //Condition bits
 };
 
+//----------------------------------------------------------------------------------------------------------------------------------
+
 struct tagARMV5TL_INSTR_TYPE0
 {
   u_int32_t rm:4;         //Register
@@ -573,6 +407,8 @@ struct tagARMV5TL_INSTR_TYPE7
   u_int32_t cond:4;       //Condition bits
 };
 
+//----------------------------------------------------------------------------------------------------------------------------------
+
 struct tagARMV5TL_FLAGS
 {
   u_int32_t M:5;         //Mode bits
@@ -590,6 +426,8 @@ struct tagARMV5TL_FLAGS
   u_int32_t Z:1;         //Zero flag
   u_int32_t N:1;         //Negative flag
 };
+
+//----------------------------------------------------------------------------------------------------------------------------------
 
 union tagARMV5TL_STATUS
 {
@@ -631,6 +469,8 @@ union tagARMV5TL_MEMORY
   u_int16_t  m_16bit[2];
   u_int8_t   m_8bit[4];
 };
+
+//----------------------------------------------------------------------------------------------------------------------------------
 
 //The complete arm register set
 struct tagARMV5TL_REGS
@@ -685,7 +525,16 @@ struct tagARMV5TL_CORE
 
   ARMV5TL_REGS              regs;                     //The actual register bank
   
-   FILE                    *TraceFilePointer;         //Null if tracing is disabled
+  //F1C100S peripherals
+  F1C100S_CCU               f1c100s_ccu;              //The clock control registers
+  
+  u_int32_t                 periph_targeted;          //Flag to signal peripheral has been targeted for either read or write
+  u_int32_t                 last_periph_address;      //Last peripheral address targeted by the cpu
+  
+  PERIPHERALFUNC            peripheralfunction;       //Pointer to function for handling the peripherals. When not used set to NULL
+  
+  //Debug and tracing support
+  FILE                    *TraceFilePointer;          //Null if tracing is disabled
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -780,23 +629,23 @@ struct tagARMV5TL_CORE
 #define ARM_PRIVILEGED_MASK       0x000000DF
 
 //----------------------------------------------------------------------------------------------------------------------------------
-
+//Thread functions
 int startarmcore(void);
 void stoparmcore(void);
 
 void *armcorethread(void *arg);
 
 //----------------------------------------------------------------------------------------------------------------------------------
-
+//Main core functions
 void ArmV5tlSetup(PARMV5TL_CORE core);
 
 void ArmV5tlCore(PARMV5TL_CORE core);
 
+//----------------------------------------------------------------------------------------------------------------------------------
+//General memory handler
 void *ArmV5tlGetMemoryPointer(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
 
-//Memory map functions
-void *ArmV5tlSram1(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
-void *ArmV5tlSram2(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+//----------------------------------------------------------------------------------------------------------------------------------
 
 //Undefined instruction
 void ArmV5tlUndefinedInstruction(PARMV5TL_CORE core);
