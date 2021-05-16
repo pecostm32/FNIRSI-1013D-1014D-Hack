@@ -19,7 +19,12 @@ Implemented the missing instructions and tested again. It now runs to address 0x
 mul instruction. Did not implement that yet, so that is next on the list.
 
 ----------------------------------------------------------------------------------------------
+16-May-2021 11:00
+Most of the instructions for both arm and thumb are implemented. The code now runs to a loop at address 0x14B0 where it checks on
+PLL_DDR_CTRL_REG to see if the PLL is locked and stable. Since no peripheral part of the F1C100s is implemented yet the code is stuck on that check.
 
-Next step after that is to implement some of the F1C100s peripherals, and see how far the program will run.
+----------------------------------------------------------------------------------------------
+
+So next step is to implement some of the F1C100s peripherals, and see how far the program will run.
 
 The moment it hits the writing to the display of the scope I have to make the connection to that part of the emulator.
