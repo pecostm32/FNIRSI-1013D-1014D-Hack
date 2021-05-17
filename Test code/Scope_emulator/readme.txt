@@ -24,7 +24,13 @@ Most of the instructions for both arm and thumb are implemented. The code now ru
 PLL_DDR_CTRL_REG to see if the PLL is locked and stable. Since no peripheral part of the F1C100s is implemented yet the code is stuck on that check.
 
 ----------------------------------------------------------------------------------------------
+17-May-2021 11:40
+Implemented some basic response for the clock and dram control so the code now runs to 0x051c where it calls the spi0 for flash initialization routine.
+Added the outline for the spi and need to implement the functionality for it to be able to load the bitmap and the main program.
+Still a lot of work needs to be done. For the arm core interrupt and exception handling needs to be implemented. For the F1C100s a lot of the
+other peripherals need to be implemented.
 
-So next step is to implement some of the F1C100s peripherals, and see how far the program will run.
+----------------------------------------------------------------------------------------------
+
 
 The moment it hits the writing to the display of the scope I have to make the connection to that part of the emulator.
