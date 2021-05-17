@@ -7,6 +7,7 @@
 
 typedef struct tagF1C100S_CCU        F1C100S_CCU;
 typedef struct tagF1C100S_DRAMC      F1C100S_DRAMC;
+typedef struct tagF1C100S_SPI        F1C100S_SPI;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -72,7 +73,7 @@ struct tagF1C100S_CCU
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
-//The clock control register set
+//The dram controller register set
 struct tagF1C100S_DRAMC
 {
   F1C100S_MEMORY sconr;
@@ -107,6 +108,25 @@ struct tagF1C100S_DRAMC
   F1C100S_MEMORY mcr10;
   F1C100S_MEMORY mcr11;
   F1C100S_MEMORY bwcr;
+};
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//The SPI controller register set
+struct tagF1C100S_SPI
+{
+  F1C100S_MEMORY gcr;
+  F1C100S_MEMORY tcr;
+  F1C100S_MEMORY ier;
+  F1C100S_MEMORY isr;
+  F1C100S_MEMORY fcr;
+  F1C100S_MEMORY fsr;
+  F1C100S_MEMORY wcr;
+  F1C100S_MEMORY ccr;
+  F1C100S_MEMORY mbc;
+  F1C100S_MEMORY mtc;
+  F1C100S_MEMORY bcc;
+  F1C100S_MEMORY txd;
+  F1C100S_MEMORY rxd;
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------

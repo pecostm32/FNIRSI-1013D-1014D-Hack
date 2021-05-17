@@ -94,6 +94,22 @@
 #define DRAM_BWCR                0x00000140
 
 //----------------------------------------------------------------------------------------------------------------------------------
+//SPI controller register low addresses
+#define SPI_GCR                  0x01C05004
+#define SPI_TCR                  0x01C05008
+#define SPI_IER                  0x01C05010
+#define SPI_ISR                  0x01C05014
+#define SPI_FCR                  0x01C05018
+#define SPI_FSR                  0x01C0501C
+#define SPI_WCR                  0x01C05020
+#define SPI_CCR                  0x01C05024
+#define SPI_MBC                  0x01C05030
+#define SPI_MTC                  0x01C05034
+#define SPI_BCC                  0x01C05038
+#define SPI_TXD                  0x01C05200
+#define SPI_RXD                  0x01C05300
+
+//----------------------------------------------------------------------------------------------------------------------------------
 //Main process peripheral handling function
 void F1C100sProcess(PARMV5TL_CORE core);
 
@@ -101,12 +117,27 @@ void F1C100sProcess(PARMV5TL_CORE core);
 //Memory map functions
 void *F1C100sSram1(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
 void *F1C100sSram2(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+void *F1C100sDDR(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
 
 //Clock control registers
 void *F1C100sCCU(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+void F1C100sCCURead(PARMV5TL_CORE core, u_int32_t address);
+void F1C100sCCUWrite(PARMV5TL_CORE core, u_int32_t address);
+
 
 //DRAM control registers
 void *F1C100sDRAMC(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+void F1C100sDRAMCRead(PARMV5TL_CORE core, u_int32_t address);
+void F1C100sDRAMCWrite(PARMV5TL_CORE core, u_int32_t address);
+
+//SPI control registers
+void *F1C100sSPI0(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+void F1C100sSPI0Read(PARMV5TL_CORE core, u_int32_t address);
+void F1C100sSPI0Write(PARMV5TL_CORE core, u_int32_t address);
+
+void *F1C100sSPI(F1C100S_SPI *registers, u_int32_t address, u_int32_t mode);
+void F1C100sSPIRead(F1C100S_SPI *registers, u_int32_t address);
+void F1C100sSPIWrite(F1C100S_SPI *registers, u_int32_t address);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

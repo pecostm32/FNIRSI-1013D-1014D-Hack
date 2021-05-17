@@ -534,6 +534,9 @@ struct tagARMV5TL_CORE
   F1C100S_CCU               f1c100s_ccu;              //The clock control registers
   F1C100S_DRAMC             f1c100s_dramc;            //The dram control registers
   
+  F1C100S_SPI               f1c100s_spi0;             //SPI0 control registers
+  F1C100S_SPI               f1c100s_spi1;             //SPI1 control registers
+  
   //Function pointers for handling peripherals
   PERIPHERALREAD            periph_read_func;         //Pointer to a function to call before a read
   PERIPHERALWRITE           periph_write_func;        //Pointer to a function to call after a write
@@ -541,7 +544,7 @@ struct tagARMV5TL_CORE
   PERIPHERALFUNC            peripheralfunction;       //Pointer to function for handling the peripherals. When not used set to NULL
   
   //Debug and tracing support
-  FILE                    *TraceFilePointer;          //Null if tracing is disabled
+  FILE                     *TraceFilePointer;         //Null if tracing is disabled
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
