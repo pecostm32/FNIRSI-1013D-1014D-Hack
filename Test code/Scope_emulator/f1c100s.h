@@ -95,19 +95,43 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //SPI controller register low addresses
-#define SPI_GCR                  0x01C05004
-#define SPI_TCR                  0x01C05008
-#define SPI_IER                  0x01C05010
-#define SPI_ISR                  0x01C05014
-#define SPI_FCR                  0x01C05018
-#define SPI_FSR                  0x01C0501C
-#define SPI_WCR                  0x01C05020
-#define SPI_CCR                  0x01C05024
-#define SPI_MBC                  0x01C05030
-#define SPI_MTC                  0x01C05034
-#define SPI_BCC                  0x01C05038
-#define SPI_TXD                  0x01C05200
-#define SPI_RXD                  0x01C05300
+#define SPI_GCR                  0x00000004
+#define SPI_TCR                  0x00000008
+#define SPI_IER                  0x00000010
+#define SPI_ISR                  0x00000014
+#define SPI_FCR                  0x00000018
+#define SPI_FSR                  0x0000001C
+#define SPI_WCR                  0x00000020
+#define SPI_CCR                  0x00000024
+#define SPI_MBC                  0x00000030
+#define SPI_MTC                  0x00000034
+#define SPI_BCC                  0x00000038
+#define SPI_TXD                  0x00000200
+#define SPI_RXD                  0x00000300
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//PIO controller register low addresses
+
+#define PIO_CFG0                 0x00000000
+#define PIO_CFG1                 0x00000004
+#define PIO_CFG2                 0x00000008
+#define PIO_CFG3                 0x0000000C
+#define PIO_DATA                 0x00000010
+#define PIO_DRV0                 0x00000014
+#define PIO_DRV1                 0x00000018
+#define PIO_PUL0                 0x0000001C
+#define PIO_PUL1                 0x00000020
+
+#define PIO_INT_CFG0             0x00000000
+#define PIO_INT_CFG1             0x00000004
+#define PIO_INT_CFG2             0x00000008
+#define PIO_INT_CFG3             0x0000000C
+#define PIO_INT_CTRL             0x00000010
+#define PIO_INT_STA              0x00000014
+#define PIO_INT_DEB              0x00000018
+
+#define SDR_PAD_DRV              0x000002C0
+#define SDR_PAD_PUL              0x000002C4
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Main process peripheral handling function
@@ -138,6 +162,13 @@ void F1C100sSPI0Write(PARMV5TL_CORE core, u_int32_t address);
 void *F1C100sSPI(F1C100S_SPI *registers, u_int32_t address, u_int32_t mode);
 void F1C100sSPIRead(F1C100S_SPI *registers, u_int32_t address);
 void F1C100sSPIWrite(F1C100S_SPI *registers, u_int32_t address);
+
+//PIO control registers
+void *F1C100sPIO(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+
+
+void *F1C100sPIOPort(F1C100S_PIO_PORT *registers, u_int32_t address, u_int32_t mode);
+void *F1C100sPIOInt(F1C100S_PIO_INT *registers, u_int32_t address, u_int32_t mode);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

@@ -534,8 +534,11 @@ struct tagARMV5TL_CORE
   F1C100S_CCU               f1c100s_ccu;              //The clock control registers
   F1C100S_DRAMC             f1c100s_dramc;            //The dram control registers
   
-  F1C100S_SPI               f1c100s_spi0;             //SPI0 control registers
-  F1C100S_SPI               f1c100s_spi1;             //SPI1 control registers
+  F1C100S_SPI               f1c100s_spi[2];           //SPI 0-1 control registers
+  
+  F1C100S_PIO_PORT          f1c100s_port[6];          //Port A-F registers
+  F1C100S_PIO_INT           f1c100s_port_int[3];      //Port D-F interrupt registers
+  F1C100S_PIO_DDR           f1c100s_port_ddr;         //DDR port registers
   
   //Function pointers for handling peripherals
   PERIPHERALREAD            periph_read_func;         //Pointer to a function to call before a read

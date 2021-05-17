@@ -11,23 +11,23 @@
 void *F1C100sSPI0(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
 {
   //Call the SPI handler with the registers for SPI0
-  return(F1C100sSPI(&core->f1c100s_spi0, address, mode));
+  return(F1C100sSPI(&core->f1c100s_spi[0], address, mode));
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //SPI0 control registers read
 void F1C100sSPI0Read(PARMV5TL_CORE core, u_int32_t address)
 {
-  //Call the SPI handler with the registers for SPI0
-  F1C100sSPIRead(&core->f1c100s_spi0, address);
+  //Call the SPI read handler with the registers for SPI0
+  F1C100sSPIRead(&core->f1c100s_spi[0], address);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //SPI0 control registers write
 void F1C100sSPI0Write(PARMV5TL_CORE core, u_int32_t address)
 {
-  //Call the SPI handler with the registers for SPI0
-  F1C100sSPIWrite(&core->f1c100s_spi0, address);
+  //Call the SPI write handler with the registers for SPI0
+  F1C100sSPIWrite(&core->f1c100s_spi[0], address);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

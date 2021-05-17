@@ -8,6 +8,9 @@
 typedef struct tagF1C100S_CCU        F1C100S_CCU;
 typedef struct tagF1C100S_DRAMC      F1C100S_DRAMC;
 typedef struct tagF1C100S_SPI        F1C100S_SPI;
+typedef struct tagF1C100S_PIO_PORT   F1C100S_PIO_PORT;
+typedef struct tagF1C100S_PIO_INT    F1C100S_PIO_INT;
+typedef struct tagF1C100S_PIO_DDR    F1C100S_PIO_DDR;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -127,6 +130,38 @@ struct tagF1C100S_SPI
   F1C100S_MEMORY bcc;
   F1C100S_MEMORY txd;
   F1C100S_MEMORY rxd;
+};
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//The PIO registers
+struct tagF1C100S_PIO_PORT
+{
+  F1C100S_MEMORY cfg0;
+  F1C100S_MEMORY cfg1;
+  F1C100S_MEMORY cfg2;
+  F1C100S_MEMORY cfg3;
+  F1C100S_MEMORY data;
+  F1C100S_MEMORY drv0;
+  F1C100S_MEMORY drv1;
+  F1C100S_MEMORY pul0;
+  F1C100S_MEMORY pul1;
+};
+
+struct tagF1C100S_PIO_INT
+{
+  F1C100S_MEMORY cfg0;
+  F1C100S_MEMORY cfg1;
+  F1C100S_MEMORY cfg2;
+  F1C100S_MEMORY cfg3;
+  F1C100S_MEMORY ctrl;
+  F1C100S_MEMORY sta;
+  F1C100S_MEMORY deb;
+};
+
+struct tagF1C100S_PIO_DDR
+{
+  F1C100S_MEMORY paddrv;
+  F1C100S_MEMORY padpul;
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
