@@ -5,26 +5,22 @@
 #include <string.h>
 
 #include "f1c100s.h"
+#include "f1c100s_ccu.h"
+#include "f1c100s_spi.h"
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Main peripheral handling function. This function is called every cycle of the ARM core.
 void F1C100sProcess(PARMV5TL_CORE core)
 {
-  //Perform tasks that are parallel to the cpu
+  //Handle peripherals that are enabled
+  if(core->f1c100s_ccu.bus_clk_gate0.m_32bit & CCU_BCGR0_SPI0_EN)
+    F1C100sProcessSPI0(core);
   
-  //Check if the cpu accessed a peripheral
   
   
-  //Separate function pointers are setup for this
-    //Handle the last targeted address
-    
-    //Needs a similar system as in the main cpu for getting to the right peripheral
-    //For most reads there is no need to do something, but for reads of receive registers it is certainly needed
-    
-    //Timing is also an issue. For spi par example there is a relation between the spi_clk and the amount of instructions it takes
-    //for a byte to be send or received. This also relates to the cpu clock setting
-    
-    //Clear flags for next check
+  
+  
+  
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

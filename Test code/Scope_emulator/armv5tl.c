@@ -9,7 +9,7 @@
 #include "armv5tl_thumb.h"
 #include "f1c100s.h"
 
-#define MY_BREAK_POINT 0x051C
+#define MY_BREAK_POINT 0x241C
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -70,46 +70,15 @@ void ArmV5tlSetup(PARMV5TL_CORE core)
   if(core == NULL)
     return;
   
+  //Clear everything
+  memset(core, 0, sizeof(ARMV5TL_CORE));
+  
+  //Switch to the supervisor mode
   core->current_mode = ARM_MODE_SUPERVISOR;
   core->current_bank = ARM_REG_BANK_SUPERVISOR;
-  
+
+  //Set the status register to reflect this mode  
   core->regs.cpsr = 0x000000D3;
-  core->regs.r15 = 0x00000000;
-  
-  //Reset the un-banked registers. Not done in the actual core but cleaner.
-  core->regs.r0 = 0;
-  core->regs.r1 = 0;
-  core->regs.r2 = 0;
-  core->regs.r3 = 0;
-  core->regs.r4 = 0;
-  core->regs.r5 = 0;
-  core->regs.r6 = 0;
-  core->regs.r7 = 0;
-  
-  //Reset the basic banked registers. Not done in the actual core but cleaner.
-  core->regs.r8[0] = 0;
-  core->regs.r8[1] = 0;
-  core->regs.r9[0] = 0;
-  core->regs.r9[1] = 0;
-  core->regs.r10[0] = 0;
-  core->regs.r10[1] = 0;
-  core->regs.r11[0] = 0;
-  core->regs.r11[1] = 0;
-  core->regs.r12[0] = 0;
-  core->regs.r12[1] = 0;
-
-  //Reset the sp, lr banked registers. Not done in the actual core but cleaner.
-  for(i=0;i<6;i++)
-  {
-    core->regs.r13[i] = 0;
-    core->regs.r14[i] = 0;
-  }
-
-  //Reset the saved program status banked registers. Not done in the actual core but cleaner.
-  for(i=0;i<5;i++)
-  {
-    core->regs.spsr[i] = 0;
-  }
   
   //Setup the register pointers
   for(b=0;b<6;b++)
@@ -155,27 +124,11 @@ void ArmV5tlSetup(PARMV5TL_CORE core)
   core->status = (ARMV5TL_STATUS *)&core->regs.cpsr;
   core->program_counter = &core->regs.r15;
   
-  //On startup no interrupts set
-  core->reset = 0;
-  core->irq = 0;
-  core->fiq = 0;
-  
-  //No exceptions either
-  core->undefinedinstruction = 0;
-  
-  //No instructions yet
-  core->arm_instruction.instr = 0;
-  core->thumb_instruction.instr = 0;
-  
   //The F1C100s has 32MB of DDR memory. Malloced here
   core->dram = malloc(0x02000000);
   
   //Set peripheral handler for the F1C100s
   core->peripheralfunction = F1C100sProcess;
-  
-  //No read and write functions yet. Set by memory handling function.
-  core->periph_read_func = NULL;
-  core->periph_write_func = NULL;
   
   //Test tracing
   core->TraceFilePointer = NULL;
@@ -622,6 +575,9 @@ void ArmV5tlCore(PARMV5TL_CORE core)
       ArmV5tlUndefinedInstruction(core);
     }
   }
+  
+  //One more cycle done
+  core->cpu_cycles++;
   
   //Check if there is a peripheral handler
   if(core->peripheralfunction)
@@ -1101,17 +1057,20 @@ void ArmV5tlDPR(PARMV5TL_CORE core, u_int32_t vn, u_int32_t vm, u_int32_t c)
       //Check if carry and overflow need to be updated with arithmetic result
       if(docandv != ARM_FLAGS_UPDATE_CV_NO)
       {
-        //Update the overflow bit
-        core->status->flags.V = (((vn & 0x80000000) == (vm & 0x80000000)) && (vn & 0x80000000) != (vd & 0x80000000));
-
-        //Handle the carry according to type of arithmetic
+        //Handle the carry and overflow according to type of arithmetic
         if(docandv == ARM_FLAGS_UPDATE_CV)
         {
+          //Update the overflow bit for additions. When inputs have equal signs the sign of the output should remain the same as the inputs, otherwise there is an overflow
+          core->status->flags.V = (((vn & 0x80000000) == (vm & 0x80000000)) && (vn & 0x80000000) != (vd & 0x80000000));
+          
           //Carry from addition.
           core->status->flags.C = vd >> 32;
         }
         else
         {
+          //Update the overflow bit for subtractions. When inputs not have equal signs the sign of the output should be the same as that of the first operand, otherwise there is an overflow
+          core->status->flags.V = (((vn & 0x80000000) != (vm & 0x80000000)) && (vn & 0x80000000) != (vd & 0x80000000));
+          
           //Not borrow from subtraction
           core->status->flags.C = (vd <= 0xFFFFFFFF);
         }
@@ -1563,7 +1522,7 @@ void ArmV5tlLS(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
     if((core->arm_instruction.lsr.l) && (core->periph_read_func))
     {
       //Call it if so
-      core->periph_read_func(core, address);
+      core->periph_read_func(core, address, memtype);
     }
     
     //Perform the requested action on the requested size mode
@@ -1628,7 +1587,7 @@ void ArmV5tlLS(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
     if((core->arm_instruction.lsr.l == 0) && (core->periph_write_func))
     {
       //Call it if so
-      core->periph_write_func(core, address);
+      core->periph_write_func(core, address, memtype);
     }
     
     //Check if program counter used as target
@@ -1751,7 +1710,7 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
             if(core->periph_read_func)
             {
               //Call it if so
-              core->periph_read_func(core, address);
+              core->periph_read_func(core, address, ARM_MEMORY_WORD);
             }
 
             //Load the register with the data from memory
@@ -1766,7 +1725,7 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
             if(core->periph_write_func)
             {
               //Call it if so
-              core->periph_write_func(core, address);
+              core->periph_write_func(core, address, ARM_MEMORY_WORD);
             }
           }
         }
@@ -1807,7 +1766,7 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
             if(core->periph_read_func)
             {
               //Call it if so
-              core->periph_read_func(core, address);
+              core->periph_read_func(core, address, ARM_MEMORY_WORD);
             }
 
             //Load the register with the data from memory
@@ -1822,7 +1781,7 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
             if(core->periph_write_func)
             {
               //Call it if so
-              core->periph_write_func(core, address);
+              core->periph_write_func(core, address, ARM_MEMORY_WORD);
             }
           }
         }

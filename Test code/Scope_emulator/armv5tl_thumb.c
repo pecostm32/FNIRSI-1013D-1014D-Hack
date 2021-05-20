@@ -941,7 +941,7 @@ void ArmV5tlThumbLS(PARMV5TL_CORE core, u_int32_t type, u_int32_t rd, u_int32_t 
     if((type & ARM_THUMB_LOAD_FLAG) && (core->periph_read_func))
     {
       //Call it if so
-      core->periph_read_func(core, address);
+      core->periph_read_func(core, address, mode);
     }
 
     //Handle data based on the size of it
@@ -1007,7 +1007,7 @@ void ArmV5tlThumbLS(PARMV5TL_CORE core, u_int32_t type, u_int32_t rd, u_int32_t 
   if(((type & ARM_THUMB_LOAD_FLAG) == 0) && (core->periph_write_func))
   {
     //Call it if so
-    core->periph_write_func(core, address);
+    core->periph_write_func(core, address, mode);
   }
   
   //Check if program counter used as target
@@ -1048,7 +1048,7 @@ void ArmV5tlThumbLSMIA(PARMV5TL_CORE core)
           if(core->periph_read_func)
           {
             //Call it if so
-            core->periph_read_func(core, address);
+            core->periph_read_func(core, address, ARM_MEMORY_WORD);
           }
 
           //Load the register with the data from memory
@@ -1063,7 +1063,7 @@ void ArmV5tlThumbLSMIA(PARMV5TL_CORE core)
           if(core->periph_write_func)
           {
             //Call it if so
-            core->periph_write_func(core, address);
+            core->periph_write_func(core, address, ARM_MEMORY_WORD);
           }
        }
       }

@@ -5,12 +5,18 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-typedef struct tagF1C100S_CCU        F1C100S_CCU;
-typedef struct tagF1C100S_DRAMC      F1C100S_DRAMC;
-typedef struct tagF1C100S_SPI        F1C100S_SPI;
-typedef struct tagF1C100S_PIO_PORT   F1C100S_PIO_PORT;
-typedef struct tagF1C100S_PIO_INT    F1C100S_PIO_INT;
-typedef struct tagF1C100S_PIO_DDR    F1C100S_PIO_DDR;
+typedef struct tagF1C100S_PERIPH_STATUS    F1C100S_PERIPH_STATUS;
+
+typedef struct tagF1C100S_CCU              F1C100S_CCU;
+typedef struct tagF1C100S_DRAMC            F1C100S_DRAMC;
+typedef struct tagF1C100S_SPI              F1C100S_SPI;
+typedef struct tagF1C100S_PIO_PORT         F1C100S_PIO_PORT;
+typedef struct tagF1C100S_PIO_INT          F1C100S_PIO_INT;
+typedef struct tagF1C100S_PIO_DDR          F1C100S_PIO_DDR;
+
+//----------------------------------------------------------------------------------------------------------------------------------
+// Not a F1C100s peripheral but for simplicity implemented here for now
+typedef struct tagFLASH_MEMORY             FLASH_MEMORY;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -20,9 +26,26 @@ typedef union tagF1C100S_MEMORY      F1C100S_MEMORY;
 
 union tagF1C100S_MEMORY
 {
-  u_int32_t  m_32bit;
-  u_int16_t  m_16bit[2];
-  u_int8_t   m_8bit[4];
+  u_int32_t m_32bit;
+  u_int16_t m_16bit[2];
+  u_int8_t  m_8bit[4];
+};
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Data for flash memory handling
+struct tagFLASH_MEMORY
+{
+  u_int32_t commandstate;
+  u_int32_t mode;
+  u_int32_t readaddress;
+};
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Peripheral reset status info
+struct tagF1C100S_PERIPH_STATUS
+{
+  u_int32_t spi0_reset;
+  u_int32_t spi1_reset;
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -130,6 +153,10 @@ struct tagF1C100S_SPI
   F1C100S_MEMORY bcc;
   F1C100S_MEMORY txd;
   F1C100S_MEMORY rxd;
+  
+  //Not directly addressable are the two fifo's each spi interface has
+  u_int8_t txfifo[64];
+  u_int8_t rxfifo[64];
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------

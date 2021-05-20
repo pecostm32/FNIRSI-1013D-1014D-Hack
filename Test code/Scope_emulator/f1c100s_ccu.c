@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "f1c100s.h"
+#include "f1c100s_ccu.h"
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Clock control registers
@@ -219,7 +220,7 @@ void *F1C100sCCU(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Clock control register read
-void F1C100sCCURead(PARMV5TL_CORE core, u_int32_t address)
+void F1C100sCCURead(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
 {
   //Select the target register based on word address
   switch(address & 0x000003FC)
@@ -362,7 +363,7 @@ void F1C100sCCURead(PARMV5TL_CORE core, u_int32_t address)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Clock control register write
-void F1C100sCCUWrite(PARMV5TL_CORE core, u_int32_t address)
+void F1C100sCCUWrite(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
 {
   //Select the target register based on word address
   switch(address & 0x000003FC)
@@ -491,6 +492,9 @@ void F1C100sCCUWrite(PARMV5TL_CORE core, u_int32_t address)
       break;
       
     case CCU_BUS_SOFT_RST0:
+      //Handle peripheral resets
+      if(((core->f1c100s_ccu.bus_soft_rst0.m_32bit & CCU_BSRR0_SPI0_RST) == 0) && (core->f1c100s_periph_status.spi0_reset == 0))
+        F1C100sResetSPI0(core);
       break;
       
     case CCU_BUS_SOFT_RST1:

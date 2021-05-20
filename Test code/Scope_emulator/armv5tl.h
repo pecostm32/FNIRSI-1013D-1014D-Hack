@@ -55,8 +55,8 @@ typedef void *(*PERIPHERALCHECK)(PARMV5TL_CORE core, u_int32_t address, u_int32_
 
 typedef void (*PERIPHERALFUNC)(PARMV5TL_CORE core);
 
-typedef void (*PERIPHERALREAD)(PARMV5TL_CORE core, u_int32_t address);
-typedef void (*PERIPHERALWRITE)(PARMV5TL_CORE core, u_int32_t address);
+typedef void (*PERIPHERALREAD)(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+typedef void (*PERIPHERALWRITE)(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -476,7 +476,6 @@ union tagARMV5TL_MEMORY
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
-
 //The complete arm register set
 struct tagARMV5TL_REGS
 {
@@ -500,6 +499,7 @@ struct tagARMV5TL_REGS
   u_int32_t spsr[5];
 };
 
+//----------------------------------------------------------------------------------------------------------------------------------
 //The core main struct
 struct tagARMV5TL_CORE
 {
@@ -512,6 +512,8 @@ struct tagARMV5TL_CORE
   ARMV5TL_THUMB_INSTRUCTION thumb_instruction;        //The thumb instruction loaded for the current cycle. Only when in thumb state
   
   u_int32_t                 pcincrvalue;              //Value the program counter needs to be incremented with
+  
+  u_int64_t                 cpu_cycles;               //Counter for counting the cpu instruction cycles. Used for timing peripherals
   
   int                      *program_counter;          //For more direct control a pointer to the program counter here
   ARMV5TL_STATUS           *status;                   //Same for the status word
@@ -530,7 +532,10 @@ struct tagARMV5TL_CORE
 
   ARMV5TL_REGS              regs;                     //The actual register bank
   
-  //F1C100S peripherals
+  //F1C100s section
+  F1C100S_PERIPH_STATUS     f1c100s_periph_status;    //Status of the F1C100s peripheral reset states
+          
+  //F1C100s peripherals
   F1C100S_CCU               f1c100s_ccu;              //The clock control registers
   F1C100S_DRAMC             f1c100s_dramc;            //The dram control registers
   
@@ -546,6 +551,12 @@ struct tagARMV5TL_CORE
   
   PERIPHERALFUNC            peripheralfunction;       //Pointer to function for handling the peripherals. When not used set to NULL
   
+  //Storage for flash memory handling
+  FLASH_MEMORY              flashmemory;              //Flash memory handling data
+  
+  //Flash file pointer
+  FILE                     *FlashFilePointer;         //Null if no file selected
+ 
   //Debug and tracing support
   FILE                     *TraceFilePointer;         //Null if tracing is disabled
 };
