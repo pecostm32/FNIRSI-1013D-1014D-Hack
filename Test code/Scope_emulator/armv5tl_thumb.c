@@ -766,17 +766,20 @@ void ArmV5tlThumbDP(PARMV5TL_CORE core, u_int32_t type, u_int32_t  rd, u_int32_t
     }
     else if(docandv != ARM_FLAGS_UPDATE_CV_NO)
     {
-      //Update the overflow bit
-      core->status->flags.V = (((vn & 0x80000000) == (vm & 0x80000000)) && (vn & 0x80000000) != (vd & 0x80000000));
-
       //Handle the carry according to type of arithmetic
       if(docandv == ARM_FLAGS_UPDATE_CV)
       {
+        //Update the overflow bit for additions. When inputs have equal signs the sign of the output should remain the same as the inputs, otherwise there is an overflow
+        core->status->flags.V = (((vn & 0x80000000) == (vm & 0x80000000)) && (vn & 0x80000000) != (vd & 0x80000000));
+        
         //Carry from addition
         core->status->flags.C = vd >> 32;
       }
       else
       {
+        //Update the overflow bit for subtractions. When inputs not have equal signs the sign of the output should be the same as that of the first operand, otherwise there is an overflow
+        core->status->flags.V = (((vn & 0x80000000) != (vm & 0x80000000)) && (vn & 0x80000000) != (vd & 0x80000000));
+          
         //Not borrow from subtraction
         core->status->flags.C = (vd <= 0xFFFFFFFF);
       }
