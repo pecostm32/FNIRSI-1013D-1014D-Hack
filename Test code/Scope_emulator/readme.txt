@@ -31,6 +31,13 @@ Still a lot of work needs to be done. For the arm core interrupt and exception h
 other peripherals need to be implemented.
 
 ----------------------------------------------------------------------------------------------
+21-May-2021 21:10
+The code is getting shape. The main scope code loads but runs into an endless wait loop when calling sys_init_display. The startup image is loaded and
+the emulator needs to display this on the scope window. For this the project is being modified to use shared memory and the ability to put an XImage on
+the screen. The shared memory part seems to work since the project starts and runs the scope code. Hope to get the display working tomorrow.
+After that it is still a lot of work to implement the rest of the peripherals, the interrupt system and the emulator stuff like disassembly,
+breakpoints and tracing.
 
 
-The moment it hits the writing to the display of the scope I have to make the connection to that part of the emulator.
+
+
