@@ -7,10 +7,18 @@
       <itemPath>armthread.h</itemPath>
       <itemPath>armv5tl.h</itemPath>
       <itemPath>armv5tl_thumb.h</itemPath>
+      <itemPath>armv5tl_thumb_structs.h</itemPath>
       <itemPath>buttons.h</itemPath>
+      <itemPath>f1c100s.h</itemPath>
+      <itemPath>f1c100s_ccu.h</itemPath>
+      <itemPath>f1c100s_debe.h</itemPath>
+      <itemPath>f1c100s_spi.h</itemPath>
+      <itemPath>f1c100s_structs.h</itemPath>
+      <itemPath>f1c100s_tcon.h</itemPath>
       <itemPath>lcdisplay.h</itemPath>
       <itemPath>mousehandling.h</itemPath>
       <itemPath>resources.h</itemPath>
+      <itemPath>scopeemulator.h</itemPath>
       <itemPath>xlibfunctions.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
@@ -23,8 +31,15 @@
       <itemPath>ScopeEmulator.c</itemPath>
       <itemPath>armthread.c</itemPath>
       <itemPath>armv5tl.c</itemPath>
-      <itemPath>armv5tl_thunb.c</itemPath>
+      <itemPath>armv5tl_thumb.c</itemPath>
       <itemPath>buttons.c</itemPath>
+      <itemPath>f1c100s.c</itemPath>
+      <itemPath>f1c100s_ccu.c</itemPath>
+      <itemPath>f1c100s_debe.c</itemPath>
+      <itemPath>f1c100s_dramc.c</itemPath>
+      <itemPath>f1c100s_pio.c</itemPath>
+      <itemPath>f1c100s_spi.c</itemPath>
+      <itemPath>f1c100s_tcon.c</itemPath>
       <itemPath>lcdisplay.c</itemPath>
       <itemPath>mousehandling.c</itemPath>
       <itemPath>xlibfunctions.c</itemPath>
@@ -78,13 +93,41 @@
       </item>
       <item path="armv5tl.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="armv5tl_thumb.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="armv5tl_thumb.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="armv5tl_thunb.c" ex="false" tool="0" flavor2="0">
+      <item path="armv5tl_thumb_structs.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="buttons.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="buttons.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_ccu.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_ccu.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_debe.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_debe.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_dramc.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_pio.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_spi.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_spi.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_structs.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_tcon.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_tcon.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="lcdisplay.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -95,6 +138,8 @@
       <item path="mousehandling.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="resources.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="scopeemulator.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="xlibfunctions.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -131,13 +176,41 @@
       </item>
       <item path="armv5tl.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="armv5tl_thumb.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="armv5tl_thumb.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="armv5tl_thunb.c" ex="false" tool="0" flavor2="0">
+      <item path="armv5tl_thumb_structs.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="buttons.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="buttons.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_ccu.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_ccu.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_debe.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_debe.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_dramc.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_pio.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_spi.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_spi.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_structs.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_tcon.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_tcon.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="lcdisplay.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -148,6 +221,8 @@
       <item path="mousehandling.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="resources.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="scopeemulator.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="xlibfunctions.c" ex="false" tool="0" flavor2="0">
       </item>

@@ -38,8 +38,15 @@ OBJECTFILES= \
 	${OBJECTDIR}/ScopeEmulator.o \
 	${OBJECTDIR}/armthread.o \
 	${OBJECTDIR}/armv5tl.o \
-	${OBJECTDIR}/armv5tl_thunb.o \
+	${OBJECTDIR}/armv5tl_thumb.o \
 	${OBJECTDIR}/buttons.o \
+	${OBJECTDIR}/f1c100s.o \
+	${OBJECTDIR}/f1c100s_ccu.o \
+	${OBJECTDIR}/f1c100s_debe.o \
+	${OBJECTDIR}/f1c100s_dramc.o \
+	${OBJECTDIR}/f1c100s_pio.o \
+	${OBJECTDIR}/f1c100s_spi.o \
+	${OBJECTDIR}/f1c100s_tcon.o \
 	${OBJECTDIR}/lcdisplay.o \
 	${OBJECTDIR}/mousehandling.o \
 	${OBJECTDIR}/xlibfunctions.o
@@ -84,15 +91,50 @@ ${OBJECTDIR}/armv5tl.o: armv5tl.c
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/armv5tl.o armv5tl.c
 
-${OBJECTDIR}/armv5tl_thunb.o: armv5tl_thunb.c
+${OBJECTDIR}/armv5tl_thumb.o: armv5tl_thumb.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/armv5tl_thunb.o armv5tl_thunb.c
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/armv5tl_thumb.o armv5tl_thumb.c
 
 ${OBJECTDIR}/buttons.o: buttons.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/buttons.o buttons.c
+
+${OBJECTDIR}/f1c100s.o: f1c100s.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/f1c100s.o f1c100s.c
+
+${OBJECTDIR}/f1c100s_ccu.o: f1c100s_ccu.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/f1c100s_ccu.o f1c100s_ccu.c
+
+${OBJECTDIR}/f1c100s_debe.o: f1c100s_debe.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/f1c100s_debe.o f1c100s_debe.c
+
+${OBJECTDIR}/f1c100s_dramc.o: f1c100s_dramc.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/f1c100s_dramc.o f1c100s_dramc.c
+
+${OBJECTDIR}/f1c100s_pio.o: f1c100s_pio.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/f1c100s_pio.o f1c100s_pio.c
+
+${OBJECTDIR}/f1c100s_spi.o: f1c100s_spi.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/f1c100s_spi.o f1c100s_spi.c
+
+${OBJECTDIR}/f1c100s_tcon.o: f1c100s_tcon.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/f1c100s_tcon.o f1c100s_tcon.c
 
 ${OBJECTDIR}/lcdisplay.o: lcdisplay.c
 	${MKDIR} -p ${OBJECTDIR}
