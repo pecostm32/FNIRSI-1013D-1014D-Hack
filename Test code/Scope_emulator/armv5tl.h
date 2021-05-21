@@ -5,10 +5,16 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+#include <sys/ipc.h> 
+#include <sys/shm.h> 
 #include <sys/types.h>
 
 #include "armv5tl_thumb_structs.h"
 #include "f1c100s_structs.h"
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Key for sharing the memory between the threads
+#define SHARED_MEMORY_KEY   0x72A5F31E
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -540,6 +546,9 @@ struct tagARMV5TL_CORE
   F1C100S_DRAMC             f1c100s_dramc;            //The dram control registers
   
   F1C100S_SPI               f1c100s_spi[2];           //SPI 0-1 control registers
+  
+  F1C100S_TCON              f1c100s_tcon;             //LCD timing control registers
+  F1C100S_DEBE              f1c100s_debe;             //Display engine back end control registers
   
   F1C100S_PIO_PORT          f1c100s_port[6];          //Port A-F registers
   F1C100S_PIO_INT           f1c100s_port_int[3];      //Port D-F interrupt registers

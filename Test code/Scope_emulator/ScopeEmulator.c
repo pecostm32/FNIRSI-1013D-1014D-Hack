@@ -22,6 +22,24 @@ Window display_msg_id = 0;
 
 int main(int argc,char **argv)
 {
+  //The arm core needs to be readable from here to be able to get to the display data
+  //Setup a key for getting the shared memory
+  key_t key = SHARED_MEMORY_KEY;
+ 
+  //Get a handle to the shared memory
+  int shmid = shmget(key, sizeof(ARMV5TL_CORE), 0666 | IPC_CREAT); 
+
+  //Check on error shmid == -1.
+  if(shmid == -1)
+  {
+    //On error exit
+    return(-1);
+  }
+  
+  //Attach to the shared memory
+  PARMV5TL_CORE parm_core = (PARMV5TL_CORE)shmat(shmid, (void*)0, 0);
+  
+  //Basic setup for the xlib system  
   //Since multi threads are used to control display objects initialize the xlib for it
   XInitThreads();
   
@@ -118,6 +136,28 @@ int main(int argc,char **argv)
   rflag = XftColorAllocName(display, xc.visual, xc.cmap, LogoColor, &xc.color[1]);
   
   xc.draw = XftDrawCreate(display, win, xc.visual, xc.cmap);
+
+  //Image for the scope display
+//  XImage *scopedisplay = XCreateImage(display, xc.visual, 24, ZPixmap, 0)
+  
+  //Let op hier rekening houden met de scaler!!!!!!!!!!!!
+  XImage *scopedisplay = XGetImage(display, win, 60 + BORDER_SIZE, 60 + BORDER_SIZE, 800, 480, 0, ZPixmap);
+
+  int ix,iy,idx;
+  
+  for(iy=0;iy<scopedisplay->height;iy++)
+  {
+    idx = iy * scopedisplay->bytes_per_line;
+    
+    for(ix=0;ix<scopedisplay->width;ix++)
+    {
+      scopedisplay->data[idx + 1] = 127;
+      scopedisplay->data[idx + 2] = 19;
+      scopedisplay->data[idx + 3] = 211;
+      
+      idx += (scopedisplay->bits_per_pixel / 8);
+    }
+  }
   
   //Start the arm emulator window thread
   startarmemulator();
@@ -134,6 +174,10 @@ int main(int argc,char **argv)
 			case Expose:
         //Setup the screen
         DrawScopePanel(&xc);
+        
+        //Dit moet naar display update gebeuren toe
+        //Let op hier rekening houden met de scaler!!!!!!!!!!!!
+        XPutImage(display, win, gc, scopedisplay, 0, 0, 60 + BORDER_SIZE, 60 + BORDER_SIZE, 800, 480);
 				break;
         
 			case KeyPress:
@@ -167,6 +211,15 @@ int main(int argc,char **argv)
         {
           //Here the scope display update needs to be done
 //          LedDisplaySetBCD(&leddisplays[event.xclient.data.l[0]], event.xclient.data.l[1]);
+          
+          //XPutImage fucntie moet bekeken worden voor dit deel.
+          //XImage is de struct die hiervoor gebruikt moet worden
+          //Met XInitImage deze eerst invullen
+          //Kijken hoe de data van de scope omgezet moet worden naar wat het scherm wil
+          
+          //This message needs to receive pixel data and store it in its own image buffer
+          //An other option is to look into shared memory between tasks
+          
         }
         break;
 		}
@@ -193,9 +246,17 @@ int main(int argc,char **argv)
   //Throw away the window and close up the display
   XDestroyWindow(display, win);
 	XCloseDisplay(display);
+  
+  //detach from shared memory  
+  shmdt(parm_core);   
+
+  //destroy the shared memory 
+  shmctl(shmid, IPC_RMID, NULL); 
+  
 	return 0;
 }
 
+//----------------------------------------------------------------------------------------------------------------------------------
 //Function for drawing the frontpanel and all the objects on it
 int DrawScopePanel(tagXlibContext *xc)
 {
@@ -217,4 +278,29 @@ int DrawScopePanel(tagXlibContext *xc)
 
   return 0;
 }
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Function to be called from other threads to send a message to the scope emulator window
+void checkdisplaymessage()
+{
+  Display *display;
+  XEvent   event;
+ 
+  if(main_window_id && display_msg_id)
+  {
+    display = XOpenDisplay(NULL);
+    
+    event.xclient.type = ClientMessage;
+    event.xclient.display = display;
+    event.xclient.window = main_window_id;
+    event.xclient.message_type = display_msg_id;
+    event.xclient.format = 32;
+
+    XSendEvent(display, main_window_id, False, NoEventMask, &event);
+  
+    XCloseDisplay(display);
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
 

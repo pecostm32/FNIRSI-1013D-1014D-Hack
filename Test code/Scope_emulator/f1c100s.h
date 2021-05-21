@@ -104,10 +104,21 @@ void F1C100sSPIWrite(PARMV5TL_CORE core, F1C100S_SPI *registers, u_int32_t addre
 
 //PIO control registers
 void *F1C100sPIO(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
-
-
 void *F1C100sPIOPort(F1C100S_PIO_PORT *registers, u_int32_t address, u_int32_t mode);
 void *F1C100sPIOInt(F1C100S_PIO_INT *registers, u_int32_t address, u_int32_t mode);
+
+//TCON registers
+void *F1C100sTCON(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+void F1C100sTCONRead(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+void F1C100sTCONWrite(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+
+//DEBE registers
+void *F1C100sDEBE(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+void F1C100sDEBERead(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+void F1C100sDEBEWrite(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+
+//Function for checking on the display frame buffer bounds after a write to DRAM
+void F1C100sDisplayCheck(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

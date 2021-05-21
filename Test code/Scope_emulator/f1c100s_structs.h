@@ -13,6 +13,8 @@ typedef struct tagF1C100S_SPI              F1C100S_SPI;
 typedef struct tagF1C100S_PIO_PORT         F1C100S_PIO_PORT;
 typedef struct tagF1C100S_PIO_INT          F1C100S_PIO_INT;
 typedef struct tagF1C100S_PIO_DDR          F1C100S_PIO_DDR;
+typedef struct tagF1C100S_TCON             F1C100S_TCON;
+typedef struct tagF1C100S_DEBE             F1C100S_DEBE;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 // Not a F1C100s peripheral but for simplicity implemented here for now
@@ -189,6 +191,114 @@ struct tagF1C100S_PIO_DDR
 {
   F1C100S_MEMORY paddrv;
   F1C100S_MEMORY padpul;
+};
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//LCD timing control registers
+struct tagF1C100S_TCON
+{
+  F1C100S_MEMORY ctrl;
+  F1C100S_MEMORY int0;
+  F1C100S_MEMORY int1;
+  F1C100S_MEMORY frm_ctrl;
+  F1C100S_MEMORY frm_seed0_r;
+  F1C100S_MEMORY frm_seed0_g;
+  F1C100S_MEMORY frm_seed0_b;
+  F1C100S_MEMORY frm_seed1_r;
+  F1C100S_MEMORY frm_seed1_g;
+  F1C100S_MEMORY frm_seed1_b;
+  F1C100S_MEMORY frm_tbl0;
+  F1C100S_MEMORY frm_tbl1;
+  F1C100S_MEMORY frm_tbl2;
+  F1C100S_MEMORY frm_tbl3;
+  F1C100S_MEMORY clk_ctrl;
+  F1C100S_MEMORY debug_info;
+  F1C100S_MEMORY tcon0_ctrl;
+  F1C100S_MEMORY tcon0_basic_timing0;
+  F1C100S_MEMORY tcon0_basic_timing1;
+  F1C100S_MEMORY tcon0_basic_timing2;
+  F1C100S_MEMORY tcon0_basic_timing3;
+  F1C100S_MEMORY tcon0_hv_timing;
+  F1C100S_MEMORY tcon0_cpu_if;
+  F1C100S_MEMORY tcon0_cpu_wr;
+  F1C100S_MEMORY tcon0_cpu_rd;
+  F1C100S_MEMORY tcon0_cpu_rd_nx;
+  F1C100S_MEMORY tcon0_io_ctrl0;
+  F1C100S_MEMORY tcon0_io_ctrl1;
+  F1C100S_MEMORY tcon1_ctrl;
+  F1C100S_MEMORY tcon1_basic_timing0;
+  F1C100S_MEMORY tcon1_basic_timing1;
+  F1C100S_MEMORY tcon1_basic_timing2;
+  F1C100S_MEMORY tcon1_basic_timing3;
+  F1C100S_MEMORY tcon1_basic_timing4;
+  F1C100S_MEMORY tcon1_basic_timing5;
+  F1C100S_MEMORY tcon1_io_ctrl0;
+  F1C100S_MEMORY tcon1_io_ctrl1;
+};
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Display engine back end registers
+struct tagF1C100S_DEBE
+{
+  F1C100S_MEMORY mode_ctrl;
+  F1C100S_MEMORY color_ctrl;
+  F1C100S_MEMORY lay_size;
+  F1C100S_MEMORY lay0_size;
+  F1C100S_MEMORY lay1_size;
+  F1C100S_MEMORY lay2_size;
+  F1C100S_MEMORY lay3_size;
+  F1C100S_MEMORY lay0_codnt;
+  F1C100S_MEMORY lay1_codnt;
+  F1C100S_MEMORY lay2_codnt;
+  F1C100S_MEMORY lay3_codnt;
+  F1C100S_MEMORY lay0_linewidth;
+  F1C100S_MEMORY lay1_linewidth;
+  F1C100S_MEMORY lay2_linewidth;
+  F1C100S_MEMORY lay3_linewidth;
+  F1C100S_MEMORY lay0_fb_addr1;
+  F1C100S_MEMORY lay1_fb_addr1;
+  F1C100S_MEMORY lay2_fb_addr1;
+  F1C100S_MEMORY lay3_fb_addr1;
+  F1C100S_MEMORY lay0_fb_addr2;
+  F1C100S_MEMORY lay1_fb_addr2;
+  F1C100S_MEMORY lay2_fb_addr2;
+  F1C100S_MEMORY lay3_fb_addr2;
+  F1C100S_MEMORY regbuff_ctrl;
+  F1C100S_MEMORY ck_max;
+  F1C100S_MEMORY ck_min;
+  F1C100S_MEMORY ck_cfg;
+  F1C100S_MEMORY lay0_att_ctrl0;
+  F1C100S_MEMORY lay1_att_ctrl0;
+  F1C100S_MEMORY lay2_att_ctrl0;
+  F1C100S_MEMORY lay3_att_ctrl0;
+  F1C100S_MEMORY lay0_att_ctrl1;
+  F1C100S_MEMORY lay1_att_ctrl1;
+  F1C100S_MEMORY lay2_att_ctrl1;
+  F1C100S_MEMORY lay3_att_ctrl1;
+  F1C100S_MEMORY hwc_ctrl;
+  F1C100S_MEMORY hwcfb_ctrl;
+  F1C100S_MEMORY wb_ctrl;
+  F1C100S_MEMORY wb_addr;
+  F1C100S_MEMORY wb_lw;
+  F1C100S_MEMORY iyuv_ch_ctrl;
+  F1C100S_MEMORY ch0_yuv_fb_addr;
+  F1C100S_MEMORY ch1_yuv_fb_addr;
+  F1C100S_MEMORY ch2_yuv_fb_addr;
+  F1C100S_MEMORY ch0_yuv_blw;
+  F1C100S_MEMORY ch1_yuv_blw;
+  F1C100S_MEMORY ch2_yuv_blw;
+  F1C100S_MEMORY coef00;
+  F1C100S_MEMORY coef01;
+  F1C100S_MEMORY coef02;
+  F1C100S_MEMORY coef03;
+  F1C100S_MEMORY coef10;
+  F1C100S_MEMORY coef11;
+  F1C100S_MEMORY coef12;
+  F1C100S_MEMORY coef13;
+  F1C100S_MEMORY coef20;
+  F1C100S_MEMORY coef21;
+  F1C100S_MEMORY coef22;
+  F1C100S_MEMORY coef23;
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------

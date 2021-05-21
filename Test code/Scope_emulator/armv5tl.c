@@ -9,7 +9,7 @@
 #include "armv5tl_thumb.h"
 #include "f1c100s.h"
 
-#define MY_BREAK_POINT 0x241C
+#define MY_BREAK_POINT 0x80035348
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -17,16 +17,14 @@ pthread_t arm_core_thread;
 
 int quit_armcore_thread_on_zero = 0;
 
-ARMV5TL_CORE arm_core;
-
 //----------------------------------------------------------------------------------------------------------------------------------
 
 int startarmcore(void)
 {
-  //Setup for keeping the arm ui window thread running
+  //Setup for keeping the arm core thread running
   quit_armcore_thread_on_zero = 1;
   
-  //Start up the led blink thread
+  //Start up the arm core thread
   return(pthread_create(&arm_core_thread, NULL, armcorethread, NULL));
 }
 
@@ -34,7 +32,7 @@ int startarmcore(void)
 
 void stoparmcore(void)
 {
-  //Stop the arm ui window thread
+  //Stop the arm core thread
   quit_armcore_thread_on_zero = 0;
 }
 
@@ -42,24 +40,57 @@ void stoparmcore(void)
 
 void *armcorethread(void *arg)
 {
+  //Setup a key for getting the shared memory
+  key_t key = SHARED_MEMORY_KEY;
+ 
+  //Get a handle to the shared memory
+  int shmid = shmget(key, sizeof(ARMV5TL_CORE), 0666 | IPC_CREAT); 
+
+  //Check on error shmid == -1.
+  if(shmid == -1)
+  {
+    //On error exit the thread the way it is supposed to
+    pthread_exit(NULL);
+  }
+  
+  //Attach to the shared memory
+  PARMV5TL_CORE parm_core = (PARMV5TL_CORE)shmat(shmid, (void*)0, 0);
+  
   //Initialize the core
-  ArmV5tlSetup(&arm_core);
+  ArmV5tlSetup(parm_core);
+  
+  //Load a program to arm memory
+  FILE *fp = fopen("scope_spl.bin", "rb");
+  
+  if(fp)
+  {
+    fread(parm_core->sram1, 1, sizeof(parm_core->sram1), fp);
+    
+    fclose(fp);
+  }
+
+  //Open the flash image
+  parm_core->FlashFilePointer = fopen("W25Q32_scope.bin", "rb");
   
   //Keep running the core until stopped
   while(quit_armcore_thread_on_zero)
   {
-    ArmV5tlCore(&arm_core);
+    ArmV5tlCore(parm_core);
   }
   
   //Check if the dram memory has been allocated and free it if so
-  if(arm_core.dram)
-    free(arm_core.dram);
+  if(parm_core->dram)
+    free(parm_core->dram);
 
+  //detach from shared memory  
+  shmdt(parm_core);   
+
+  //destroy the shared memory 
+  shmctl(shmid, IPC_RMID, NULL); 
+  
   //Exit the thread the way it is supposed to
   pthread_exit(NULL);
 }
-
-//----------------------------------------------------------------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -594,44 +625,44 @@ void ArmV5tlCore(PARMV5TL_CORE core)
 //Here the specific memory map is programmed
 ARMV5TL_ADDRESS_MAP address_map[] = 
 {
-  //     Start,        End, Memory funcion,     Read function,   Write function
-  { 0x00000000, 0x00007FFF,   F1C100sSram1,              NULL,               NULL },   //SRAM1
-  { 0x00010000, 0x00019FFF,   F1C100sSram2,              NULL,               NULL },   //SRAM2
-  { 0x01C00000, 0x01C00FFF,           NULL,              NULL,               NULL },   //System Controller
-  { 0x01C01000, 0x01C01FFF,   F1C100sDRAMC,  F1C100sDRAMCRead,  F1C100sDRAMCWrite },   //DRAMC
-  { 0x01C02000, 0x01C02FFF,           NULL,              NULL,               NULL },   //DMA
-  { 0x01C05000, 0x01C05FFF,    F1C100sSPI0,   F1C100sSPI0Read,   F1C100sSPI0Write },   //SPI0
-  { 0x01C06000, 0x01C06FFF,           NULL,              NULL,               NULL },   //SPI1
-  { 0x01C0A000, 0x01C0AFFF,           NULL,              NULL,               NULL },   //TVE
-  { 0x01C0B000, 0x01C0BFFF,           NULL,              NULL,               NULL },   //TVD
-  { 0x01C0C000, 0x01C0CFFF,           NULL,              NULL,               NULL },   //TCON
-  { 0x01C0E000, 0x01C0EFFF,           NULL,              NULL,               NULL },   //VE
-  { 0x01C0F000, 0x01C0FFFF,           NULL,              NULL,               NULL },   //SD/MMC0
-  { 0x01C10000, 0x01C10FFF,           NULL,              NULL,               NULL },   //SD/MMC1
-  { 0x01C13000, 0x01C13FFF,           NULL,              NULL,               NULL },   //USB-OTG
-  { 0x01C20000, 0x01C203FF,     F1C100sCCU,    F1C100sCCURead,    F1C100sCCUWrite },   //CCU
-  { 0x01C20400, 0x01C207FF,           NULL,              NULL,               NULL },   //INTC
-  { 0x01C20800, 0x01C20BFF,     F1C100sPIO,              NULL,               NULL },   //PIO
-  { 0x01C20C00, 0x01C20FFF,           NULL,              NULL,               NULL },   //TIMER
-  { 0x01C21000, 0x01C213FF,           NULL,              NULL,               NULL },   //PWM
-  { 0x01C21400, 0x01C217FF,           NULL,              NULL,               NULL },   //OWA
-  { 0x01C21800, 0x01C21BFF,           NULL,              NULL,               NULL },   //RSB
-  { 0x01C22000, 0x01C223FF,           NULL,              NULL,               NULL },   //DAUDIO
-  { 0x01C22C00, 0x01C22FFF,           NULL,              NULL,               NULL },   //CIR
-  { 0x01C23400, 0x01C237FF,           NULL,              NULL,               NULL },   //KEYADC
-  { 0x01C23C00, 0x01C23FFF,           NULL,              NULL,               NULL },   //Audio Codec
-  { 0x01C24800, 0x01C24BFF,           NULL,              NULL,               NULL },   //TP
-  { 0x01C25000, 0x01C253FF,           NULL,              NULL,               NULL },   //UART0
-  { 0x01C25400, 0x01C257FF,           NULL,              NULL,               NULL },   //UART1
-  { 0x01C25800, 0x01C25BFF,           NULL,              NULL,               NULL },   //UART2
-  { 0x01C27000, 0x01C273FF,           NULL,              NULL,               NULL },   //TWI0
-  { 0x01C27400, 0x01C277FF,           NULL,              NULL,               NULL },   //TWI1
-  { 0x01C27800, 0x01C27BFF,           NULL,              NULL,               NULL },   //TWI2
-  { 0x01CB0000, 0x01CB0FFF,           NULL,              NULL,               NULL },   //CSI
-  { 0x01CE0000, 0x01CE1FFF,           NULL,              NULL,               NULL },   //DEFE
-  { 0x01CE6000, 0x01CE6FFF,           NULL,              NULL,               NULL },   //DEBE
-  { 0x01CE7000, 0x01CE7FFF,           NULL,              NULL,               NULL },   //DE Interlace
-  { 0x80000000, 0x81FFFFFF,     F1C100sDDR,              NULL,               NULL },   //DRAM 32MB
+  //     Start,        End, Memory function,     Read function,     Write function
+  { 0x00000000, 0x00007FFF,    F1C100sSram1,              NULL,                NULL },   //SRAM1
+  { 0x00010000, 0x00019FFF,    F1C100sSram2,              NULL,                NULL },   //SRAM2
+  { 0x01C00000, 0x01C00FFF,            NULL,              NULL,                NULL },   //System Controller
+  { 0x01C01000, 0x01C01FFF,    F1C100sDRAMC,  F1C100sDRAMCRead,   F1C100sDRAMCWrite },   //DRAMC
+  { 0x01C02000, 0x01C02FFF,            NULL,              NULL,                NULL },   //DMA
+  { 0x01C05000, 0x01C05FFF,     F1C100sSPI0,   F1C100sSPI0Read,    F1C100sSPI0Write },   //SPI0
+  { 0x01C06000, 0x01C06FFF,            NULL,              NULL,                NULL },   //SPI1
+  { 0x01C0A000, 0x01C0AFFF,            NULL,              NULL,                NULL },   //TVE
+  { 0x01C0B000, 0x01C0BFFF,            NULL,              NULL,                NULL },   //TVD
+  { 0x01C0C000, 0x01C0CFFF,     F1C100sTCON,   F1C100sTCONRead,    F1C100sTCONWrite },   //TCON
+  { 0x01C0E000, 0x01C0EFFF,            NULL,              NULL,                NULL },   //VE
+  { 0x01C0F000, 0x01C0FFFF,            NULL,              NULL,                NULL },   //SD/MMC0
+  { 0x01C10000, 0x01C10FFF,            NULL,              NULL,                NULL },   //SD/MMC1
+  { 0x01C13000, 0x01C13FFF,            NULL,              NULL,                NULL },   //USB-OTG
+  { 0x01C20000, 0x01C203FF,      F1C100sCCU,    F1C100sCCURead,     F1C100sCCUWrite },   //CCU
+  { 0x01C20400, 0x01C207FF,            NULL,              NULL,                NULL },   //INTC
+  { 0x01C20800, 0x01C20BFF,      F1C100sPIO,              NULL,                NULL },   //PIO
+  { 0x01C20C00, 0x01C20FFF,            NULL,              NULL,                NULL },   //TIMER
+  { 0x01C21000, 0x01C213FF,            NULL,              NULL,                NULL },   //PWM
+  { 0x01C21400, 0x01C217FF,            NULL,              NULL,                NULL },   //OWA
+  { 0x01C21800, 0x01C21BFF,            NULL,              NULL,                NULL },   //RSB
+  { 0x01C22000, 0x01C223FF,            NULL,              NULL,                NULL },   //DAUDIO
+  { 0x01C22C00, 0x01C22FFF,            NULL,              NULL,                NULL },   //CIR
+  { 0x01C23400, 0x01C237FF,            NULL,              NULL,                NULL },   //KEYADC
+  { 0x01C23C00, 0x01C23FFF,            NULL,              NULL,                NULL },   //Audio Codec
+  { 0x01C24800, 0x01C24BFF,            NULL,              NULL,                NULL },   //TP
+  { 0x01C25000, 0x01C253FF,            NULL,              NULL,                NULL },   //UART0
+  { 0x01C25400, 0x01C257FF,            NULL,              NULL,                NULL },   //UART1
+  { 0x01C25800, 0x01C25BFF,            NULL,              NULL,                NULL },   //UART2
+  { 0x01C27000, 0x01C273FF,            NULL,              NULL,                NULL },   //TWI0
+  { 0x01C27400, 0x01C277FF,            NULL,              NULL,                NULL },   //TWI1
+  { 0x01C27800, 0x01C27BFF,            NULL,              NULL,                NULL },   //TWI2
+  { 0x01CB0000, 0x01CB0FFF,            NULL,              NULL,                NULL },   //CSI
+  { 0x01E00000, 0x01E1FFFF,            NULL,              NULL,                NULL },   //DEFE
+  { 0x01E60000, 0x01E6FFFF,     F1C100sDEBE,   F1C100sDEBERead,    F1C100sDEBEWrite },   //DEBE
+  { 0x01E70000, 0x01E7FFFF,            NULL,              NULL,                NULL },   //DE Interlace
+  { 0x80000000, 0x81FFFFFF,      F1C100sDDR,              NULL, F1C100sDisplayCheck },   //DRAM 32MB
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------

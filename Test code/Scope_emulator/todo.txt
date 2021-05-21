@@ -1,4 +1,13 @@
-For the arm core the next steps are
+The system start with loading the program and runs to the call of sys_init_display. Here it hangs on a loop. Need to figure out what it does there
+
+For the arm emulator window it it necessary that the core structure is in shared memory. Apart from the run flag the data should only be read in the emulator window
+Same applies for the scope window
+
+
+
+
+
+v For the arm core the next steps are
 
 v coprocessor instructions with support for cp15 (mmu for now only the control register needs to be read and written)
 
@@ -7,9 +16,8 @@ v ldm and stm instructions
 v branch instructions
 
 
-thumb instructions
+v thumb instructions
 
-  aparte bestanden hiervoor opzetten. Ook voor het decoden een fucntie aanroep doen naar een functie in dit aparte bestand
 
 
 

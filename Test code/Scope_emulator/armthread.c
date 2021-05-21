@@ -13,6 +13,7 @@
 #include "buttons.h"
 
 #include "armthread.h"
+#include "armv5tl.h"
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -112,6 +113,23 @@ void stoparmemulator(void)
 
 void *armemulatorthread(void *arg)
 {
+  //The arm core needs to be readable from here to be able to get to the display data
+  //Setup a key for getting the shared memory
+  key_t key = SHARED_MEMORY_KEY;
+ 
+  //Get a handle to the shared memory
+  int shmid = shmget(key, sizeof(ARMV5TL_CORE), 0666 | IPC_CREAT); 
+
+  //Check on error shmid == -1.
+  if(shmid == -1)
+  {
+    //On error exit the thread the way it is supposed to
+    pthread_exit(NULL);
+  }
+  
+  //Attach to the shared memory
+  PARMV5TL_CORE parm_core = (PARMV5TL_CORE)shmat(shmid, (void*)0, 0);
+  
   //Since multi threads are used to control display objects initialize the xlib for it
   XInitThreads();
   
@@ -270,6 +288,12 @@ void *armemulatorthread(void *arg)
   //Throw away the window and close up the display
   XDestroyWindow(display, win);
 	XCloseDisplay(display);
+  
+  //detach from shared memory  
+  shmdt(parm_core);   
+
+  //destroy the shared memory 
+  shmctl(shmid, IPC_RMID, NULL); 
   
   //Exit the thread the way it is supposed to
   pthread_exit(NULL);
