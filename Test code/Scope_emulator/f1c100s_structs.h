@@ -17,12 +17,14 @@ typedef struct tagF1C100S_TCON             F1C100S_TCON;
 typedef struct tagF1C100S_DEBE             F1C100S_DEBE;
 
 //----------------------------------------------------------------------------------------------------------------------------------
-// Not a F1C100s peripheral but for simplicity implemented here for now
+//Not a F1C100s peripheral but for simplicity implemented here for now
 typedef struct tagFLASH_MEMORY             FLASH_MEMORY;
+
+typedef struct tagDISPLAY_MEMORY           DISPLAY_MEMORY;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-typedef union tagF1C100S_MEMORY      F1C100S_MEMORY;
+typedef union tagF1C100S_MEMORY            F1C100S_MEMORY;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -40,6 +42,20 @@ struct tagFLASH_MEMORY
   u_int32_t commandstate;
   u_int32_t mode;
   u_int32_t readaddress;
+};
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Data for display handling
+struct tagDISPLAY_MEMORY
+{
+  u_int32_t startaddress;            //Start of the video buffer in the core memory
+  u_int32_t linewidth;               //Number of bytes per line
+  u_int32_t xsize;                   //Number of x pixels
+  u_int32_t ysize;                   //Number of y pixels
+  u_int64_t prevcycles;              //CPU cycles count last vertical sync was triggered on
+  u_int64_t numcycles;               //Number of CPU cycles needed for a vertical trigger to occur
+  u_int32_t linetime;                //Number of cpu cycles for a line
+  u_int32_t verticaltime;            //Number of lines for vertical front and back porch
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------

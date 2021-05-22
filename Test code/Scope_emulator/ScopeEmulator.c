@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <errno.h>
+
 #include "xlibfunctions.h"
 
 #include "armthread.h"
@@ -26,7 +28,7 @@ int main(int argc,char **argv)
   //Setup a key for getting the shared memory
   key_t key = SHARED_MEMORY_KEY;
  
-  //Get a handle to the shared memory
+  //Get a handle to the shared memory  sizeof(ARMV5TL_CORE) 0666 | 
   int shmid = shmget(key, sizeof(ARMV5TL_CORE), 0666 | IPC_CREAT); 
 
   //Check on error shmid == -1.
@@ -138,26 +140,13 @@ int main(int argc,char **argv)
   xc.draw = XftDrawCreate(display, win, xc.visual, xc.cmap);
 
   //Image for the scope display
-//  XImage *scopedisplay = XCreateImage(display, xc.visual, 24, ZPixmap, 0)
+  x = BORDER_SIZE + (60 * xc.scaler);
+  y = BORDER_SIZE + (60 * xc.scaler);
+  width = 800 * xc.scaler;
+  height = 480 * xc.scaler;
   
-  //Let op hier rekening houden met de scaler!!!!!!!!!!!!
-  XImage *scopedisplay = XGetImage(display, win, 60 + BORDER_SIZE, 60 + BORDER_SIZE, 800, 480, 0, ZPixmap);
-
-  int ix,iy,idx;
-  
-  for(iy=0;iy<scopedisplay->height;iy++)
-  {
-    idx = iy * scopedisplay->bytes_per_line;
-    
-    for(ix=0;ix<scopedisplay->width;ix++)
-    {
-      scopedisplay->data[idx + 1] = 127;
-      scopedisplay->data[idx + 2] = 19;
-      scopedisplay->data[idx + 3] = 211;
-      
-      idx += (scopedisplay->bits_per_pixel / 8);
-    }
-  }
+  //Setup the image based on a capture of the screen
+  XImage *scopedisplay = XGetImage(display, win, x, y, width, height, 0, ZPixmap);
   
   //Start the arm emulator window thread
   startarmemulator();
@@ -174,13 +163,10 @@ int main(int argc,char **argv)
 			case Expose:
         //Setup the screen
         DrawScopePanel(&xc);
-        
-        //Dit moet naar display update gebeuren toe
-        //Let op hier rekening houden met de scaler!!!!!!!!!!!!
-        XPutImage(display, win, gc, scopedisplay, 0, 0, 60 + BORDER_SIZE, 60 + BORDER_SIZE, 800, 480);
 				break;
         
 			case KeyPress:
+        
 				if(event.xkey.keycode == XKeysymToKeycode(display,XK_Escape))
 				{
 					rflag = 0;
@@ -209,17 +195,30 @@ int main(int argc,char **argv)
         }
         else if(event.xclient.message_type == display_msg_id)
         {
-          //Here the scope display update needs to be done
-//          LedDisplaySetBCD(&leddisplays[event.xclient.data.l[0]], event.xclient.data.l[1]);
+          //Need some scaling algo here to match the scope display to the screen display. The scaling will mostly be one but just in case
           
-          //XPutImage fucntie moet bekeken worden voor dit deel.
-          //XImage is de struct die hiervoor gebruikt moet worden
-          //Met XInitImage deze eerst invullen
-          //Kijken hoe de data van de scope omgezet moet worden naar wat het scherm wil
-          
-          //This message needs to receive pixel data and store it in its own image buffer
-          //An other option is to look into shared memory between tasks
-          
+  int ix,iy,idx;
+ 
+  u_int16_t *dptr = (u_int16_t *)&parm_core->dram[parm_core->displaymemory.startaddress].m_16bit[0];
+  
+  for(iy=0;iy<scopedisplay->height;iy++)
+  {
+    idx = iy * scopedisplay->bytes_per_line;
+    
+    for(ix=0;ix<scopedisplay->width;ix++)
+    {
+      scopedisplay->data[idx + 0] = (unsigned char)(*dptr << 3) & 0x00F8;   //Blue
+      scopedisplay->data[idx + 1] = (unsigned char)(*dptr >> 3) & 0x00FC;   //Green
+      scopedisplay->data[idx + 2] = (unsigned char)(*dptr >> 8) & 0x00F8;   //Red
+      
+      dptr++;
+      
+      idx += (scopedisplay->bits_per_pixel / 8);
+    }
+  }
+          //Draw the image on the screen
+          XPutImage(display, win, gc, scopedisplay, 0, 0, x, y, width, height);
+  
         }
         break;
 		}
@@ -281,7 +280,7 @@ int DrawScopePanel(tagXlibContext *xc)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Function to be called from other threads to send a message to the scope emulator window
-void checkdisplaymessage()
+void updatedisplaymessage()
 {
   Display *display;
   XEvent   event;

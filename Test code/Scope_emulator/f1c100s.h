@@ -71,6 +71,7 @@
 void F1C100sProcess(PARMV5TL_CORE core);
 
 void F1C100sProcessSPI0(PARMV5TL_CORE core);
+void F1C100sProcessTCON(PARMV5TL_CORE core);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Reset functions
@@ -116,9 +117,6 @@ void F1C100sTCONWrite(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
 void *F1C100sDEBE(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
 void F1C100sDEBERead(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
 void F1C100sDEBEWrite(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
-
-//Function for checking on the display frame buffer bounds after a write to DRAM
-void F1C100sDisplayCheck(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

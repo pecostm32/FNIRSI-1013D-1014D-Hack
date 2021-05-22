@@ -226,12 +226,16 @@ void F1C100sCCURead(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
   switch(address & 0x000003FC)
   {
     case CCU_PLL_CPU_CTRL:
+      //For now just make sure the pll is signaled locked
+      core->f1c100s_ccu.pll_cpu_ctrl.m_32bit |= (1 << 28);
       break;
       
     case CCU_PLL_AUDIO_CTRL:
       break;
       
     case CCU_PLL_VIDEO_CTRL:
+      //For now just make sure the pll is signaled locked
+      core->f1c100s_ccu.pll_video_ctrl.m_32bit |= (1 << 28);
       break;
       
     case CCU_PLL_VE_CTRL:
@@ -243,6 +247,8 @@ void F1C100sCCURead(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
       break;
       
     case CCU_PLL_PERIPH_CTRL:
+      //For now just make sure the pll is signaled locked
+      core->f1c100s_ccu.pll_periph_ctrl.m_32bit |= (1 << 28);
       break;
       
     case CCU_CPU_CLK_SRC:

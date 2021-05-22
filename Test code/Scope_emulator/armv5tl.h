@@ -534,7 +534,7 @@ struct tagARMV5TL_CORE
   ARMV5TL_MEMORY            sram1[8192];              //32K core startup memory located at address 0x00000000
   ARMV5TL_MEMORY            sram2[10240];             //40K core static memory located at address 0x00010000
   
-  ARMV5TL_MEMORY           *dram;                     //Pointer to the memory in the system
+  ARMV5TL_MEMORY            dram[8388608];            //32M of DDR memory
 
   ARMV5TL_REGS              regs;                     //The actual register bank
   
@@ -560,7 +560,8 @@ struct tagARMV5TL_CORE
   
   PERIPHERALFUNC            peripheralfunction;       //Pointer to function for handling the peripherals. When not used set to NULL
   
-  //Storage for flash memory handling
+  //Storage for display and flash memory handling
+  DISPLAY_MEMORY            displaymemory;            //Display memory handling data
   FLASH_MEMORY              flashmemory;              //Flash memory handling data
   
   //Flash file pointer

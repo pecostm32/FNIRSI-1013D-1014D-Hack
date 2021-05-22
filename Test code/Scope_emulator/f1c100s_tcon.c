@@ -7,6 +7,26 @@
 #include "f1c100s.h"
 #include "f1c100s_tcon.h"
 
+#include "scopeemulator.h"
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Processing of the LCD timing
+void F1C100sProcessTCON(PARMV5TL_CORE core)
+{
+  //Check if device enabled
+  if(core->f1c100s_tcon.ctrl.m_32bit & TCON_CTRL_MODULE_EN)
+  {
+    if((core->cpu_cycles - core->displaymemory.prevcycles) > core->displaymemory.numcycles)
+    {
+      //Signal main window to update the display
+      updatedisplaymessage();
+      
+      //Setup for next delay
+      core->displaymemory.prevcycles = core->cpu_cycles;
+    }
+  }
+}
+
 //----------------------------------------------------------------------------------------------------------------------------------
 //LCD timing control registers
 void *F1C100sTCON(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
@@ -369,9 +389,21 @@ void F1C100sTCONWrite(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
       break;
       
     case TCON0_BASIC_TIMING1:
+      //Gives line time.
+      core->displaymemory.linetime = ((core->f1c100s_tcon.tcon0_basic_timing1.m_32bit >> 16) & 0x0FFF) * 10;
+      
+      //Check if verticaltime already set
+      if(core->displaymemory.verticaltime)
+        core->displaymemory.numcycles = core->displaymemory.linetime * core->displaymemory.verticaltime;
       break;
       
     case TCON0_BASIC_TIMING2:
+      //Gives vertical front porch and back porch time in line times
+      core->displaymemory.verticaltime = ((core->f1c100s_tcon.tcon0_basic_timing2.m_32bit >> 16) & 0x0FFF) + (core->f1c100s_tcon.tcon0_basic_timing2.m_32bit & 0x03FF);
+      
+      //Check if line time already set
+      if(core->displaymemory.linetime)
+        core->displaymemory.numcycles = core->displaymemory.linetime * core->displaymemory.verticaltime;
       break;
       
     case TCON0_BASIC_TIMING3:

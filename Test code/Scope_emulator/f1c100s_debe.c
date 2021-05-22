@@ -8,81 +8,8 @@
 #include "f1c100s_debe.h"
 
 //----------------------------------------------------------------------------------------------------------------------------------
-//To connect the video system into the emulator the memory address where the frame buffer resides needs to be known
-//core->f1c100s_debe.lay0_fb_addr1.m_32bit >> 3 gives the low part of the address
-//core->f1c100s_debe.lay0_fb_addr2.m_32bit << 29 gives the upper three bits of the address
-
-//core->f1c100s_debe.lay0_size holds the information about the screen dimensions
-//bit 26:16 give the height minus 1
-//bit 10:0  give the width minus 1
-
-//For this system it is known that it is 800x480 pixels with 2 bytes per pixel 565 rgb color coding
-
-//A function is needed that checks the writing to the dram on the frame buffer bounds to enable copying to the emulator screen
-
-//Need a struct with data for display memory bounds
-
-void F1C100sDisplayCheck(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
-{
-  //Check if address in range of of the display frame buffer bounds
-  
-  //Need a function to send messages to the emulator with the address and the changed data. Based on the mode the data size needs to be set and used
-  
-  
-  //Other option is to look into shared memory between the threads
-  /*
-   * 
-  #define SHARED_MEMORY_KEY   0x32D5F90C
-
-  //Setup a key for getting the shared memory
-  key_t key = SHARED_MEMORY_KEY;
- 
-  //Get a handle to the shared memory
-  int shmid = shmget(key,sizeof(RAWDATA),0666|IPC_CREAT); 
-
-  //Check on error shmid == -1.
-  if(shmid == -1)
-  {
-    cout << "Error " << errno << " getting shared memory: " << strerror (errno) << endl;
-    return(-1);
-  }
-  
-  //Attach to the shared memory
-  PRAWDATA prawdata = (PRAWDATA)shmat(shmid,(void*)0,0);
-   * 
-    //detach from shared memory  
-    shmdt(prawdata);   
-
-    //destroy the shared memory 
-    shmctl(shmid,IPC_RMID,NULL); 
 
 
-   * In all parts it is the same setup
-   * 
-  //Setup a key for getting the shared memory
-  key_t key = SHARED_MEMORY_KEY;
- 
-  //Get a handle to the shared memory
-  int shmid = shmget(key,sizeof(RAWDATA),0666|IPC_CREAT); 
-
-  //Check on error shmid == -1.
-  if(shmid == -1)
-  {
-    cout << "Error: " << errno << " getting shared memory: " << strerror (errno) << endl;
-    return(-1);
-  }
-  
-  //Attach to the shared memory
-  PRAWDATA prawdata = (PRAWDATA)shmat(shmid,(void*)0,0);
-   * 
-  //detach from shared memory  
-  shmdt(prawdata);   
-
-  //destroy the shared memory 
-  shmctl(shmid,IPC_RMID,NULL); 
-   * 
-   */
-}
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //LCD timing control registers
@@ -359,8 +286,6 @@ void *F1C100sDEBE(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
 //LCD timing control registers
 void F1C100sDEBERead(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
 {
-  F1C100S_MEMORY *ptr = NULL;
-  
   //Select the target register based on word address
   switch(address & 0x00000FFC)
   {
@@ -408,7 +333,7 @@ void F1C100sDEBERead(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
       
     case DEBE_LAY3_LINEWIDTH:
       break;
-      
+
     case DEBE_LAY0_FB_ADDR1:
       break;
       
@@ -547,8 +472,6 @@ void F1C100sDEBERead(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
 //LCD timing control registers
 void F1C100sDEBEWrite(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
 {
-  F1C100S_MEMORY *ptr = NULL;
-  
   //Select the target register based on word address
   switch(address & 0x00000FFC)
   {
@@ -562,6 +485,9 @@ void F1C100sDEBEWrite(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
       break;
       
     case DEBE_LAY0_SIZE:
+      //Setup part of the display memory based on written data
+      core->displaymemory.xsize = (core->f1c100s_debe.lay0_size.m_32bit & 0x07FF) + 1;
+      core->displaymemory.ysize = ((core->f1c100s_debe.lay0_size.m_32bit >> 16) & 0x07FF) + 1;
       break;
       
     case DEBE_LAY1_SIZE:
@@ -586,6 +512,7 @@ void F1C100sDEBEWrite(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
       break;
       
     case DEBE_LAY0_LINEWIDTH:
+      core->displaymemory.linewidth = core->f1c100s_debe.lay0_linewidth.m_32bit >> 3;
       break;
       
     case DEBE_LAY1_LINEWIDTH:
@@ -598,6 +525,8 @@ void F1C100sDEBEWrite(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
       break;
       
     case DEBE_LAY0_FB_ADDR1:
+      //The dram array is 4 bytes per word and the information set in this register is a bit address so divide by 32 to get the actual index
+      core->displaymemory.startaddress = core->f1c100s_debe.lay0_fb_addr1.m_32bit >> 5;
       break;
       
     case DEBE_LAY1_FB_ADDR1:

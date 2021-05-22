@@ -64,7 +64,7 @@ void *armcorethread(void *arg)
   
   if(fp)
   {
-    fread(parm_core->sram1, 1, sizeof(parm_core->sram1), fp);
+    fread(parm_core->sram1, 1, 32768, fp);
     
     fclose(fp);
   }
@@ -77,10 +77,6 @@ void *armcorethread(void *arg)
   {
     ArmV5tlCore(parm_core);
   }
-  
-  //Check if the dram memory has been allocated and free it if so
-  if(parm_core->dram)
-    free(parm_core->dram);
 
   //detach from shared memory  
   shmdt(parm_core);   
@@ -154,9 +150,6 @@ void ArmV5tlSetup(PARMV5TL_CORE core)
   //For easy access of important registers
   core->status = (ARMV5TL_STATUS *)&core->regs.cpsr;
   core->program_counter = &core->regs.r15;
-  
-  //The F1C100s has 32MB of DDR memory. Malloced here
-  core->dram = malloc(0x02000000);
   
   //Set peripheral handler for the F1C100s
   core->peripheralfunction = F1C100sProcess;
@@ -662,7 +655,7 @@ ARMV5TL_ADDRESS_MAP address_map[] =
   { 0x01E00000, 0x01E1FFFF,            NULL,              NULL,                NULL },   //DEFE
   { 0x01E60000, 0x01E6FFFF,     F1C100sDEBE,   F1C100sDEBERead,    F1C100sDEBEWrite },   //DEBE
   { 0x01E70000, 0x01E7FFFF,            NULL,              NULL,                NULL },   //DE Interlace
-  { 0x80000000, 0x81FFFFFF,      F1C100sDDR,              NULL, F1C100sDisplayCheck },   //DRAM 32MB
+  { 0x80000000, 0x81FFFFFF,      F1C100sDDR,              NULL,                NULL },   //DRAM 32MB
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
