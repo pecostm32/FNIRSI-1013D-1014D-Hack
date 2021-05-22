@@ -19,6 +19,8 @@
 
 int DrawArmPanel(tagXlibContext *xc);
 
+void UpdateArmPanel(tagXlibContext *xc, PARMV5TL_CORE core);
+
 //----------------------------------------------------------------------------------------------------------------------------------
 
 #define DESIGN_WIDTH       1100
@@ -230,48 +232,53 @@ void *armemulatorthread(void *arg)
   //Quit on window close or thread being stopped
   while(quit_armemulator_thread_on_zero && rflag)
   {
-		XNextEvent(display, &event);
-		switch(event.type)
-		{
-			case Expose:
-        //Setup the screen
-        DrawArmPanel(&xc);
-				break;
-        
-			case KeyPress:
-				if(event.xkey.keycode == XKeysymToKeycode(display,XK_Escape))
-				{
-					rflag = 0;
-				}
-        break;
-        
-      case ButtonPress:
-        //Call mouse handling function down()
-        MouseDown(&event);
-        break;
-        
-      case ButtonRelease:
-        //Call mouse handling function up()
-        MouseUp(mouseranges, &event);
-        break;
-        
-      case MotionNotify:
-        //Call mouse handling function move()
-        MouseMove(mouseranges, &event);
-        break;
-        
-      case ClientMessage:
-        if((event.xclient.message_type == WM_PROTOCOLS) && (event.xclient.data.l[0] == WM_DELETE_WINDOW))
-        {
-					rflag = 0;
-        }
-        else if(event.xclient.message_type == arm_msg_id)
-        {
-          //Here the scope display update needs to be done
-//          LedDisplaySetBCD(&leddisplays[event.xclient.data.l[0]], event.xclient.data.l[1]);
-        }
-        break;
-		}
+    if(XPending(display))
+    {
+      XNextEvent(display, &event);
+      switch(event.type)
+      {
+        case Expose:
+          //Setup the screen
+          DrawArmPanel(&xc);
+          break;
+
+        case KeyPress:
+          if(event.xkey.keycode == XKeysymToKeycode(display,XK_Escape))
+          {
+            rflag = 0;
+          }
+          break;
+
+        case ButtonPress:
+          //Call mouse handling function down()
+          MouseDown(&event);
+          break;
+
+        case ButtonRelease:
+          //Call mouse handling function up()
+          MouseUp(mouseranges, &event);
+          break;
+
+        case MotionNotify:
+          //Call mouse handling function move()
+          MouseMove(mouseranges, &event);
+          break;
+
+        case ClientMessage:
+          if((event.xclient.message_type == WM_PROTOCOLS) && (event.xclient.data.l[0] == WM_DELETE_WINDOW))
+          {
+            rflag = 0;
+          }
+          else if(event.xclient.message_type == arm_msg_id)
+          {
+            //Here the scope display update needs to be done
+  //          LedDisplaySetBCD(&leddisplays[event.xclient.data.l[0]], event.xclient.data.l[1]);
+          }
+          break;
+      }
+    }
+    
+    UpdateArmPanel(&xc, parm_core);
   }
 
   //Cleanup on close  
@@ -346,27 +353,86 @@ int DrawArmPanel(tagXlibContext *xc)
   LcdDisplayText(&lcdisplays[0], 0, 13, "  EXECUTION STATE BITS  ");
   LcdDisplayText(&lcdisplays[0], 0, 14, "         J  T           ");
   LcdDisplayText(&lcdisplays[0], 0, 15, "         0  0           ");
+
+  return 0;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+const char regnames[16][7] =
+{
+  "R0    ",
+  "R1    ",
+  "R2    ",
+  "R3    ",
+  "R4    ",
+  "R5    ",
+  "R6    ",
+  "R7    ",
+  "R8    ",
+  "R9    ",
+  "R10   ",
+  "R11   ",
+  "R12   ",
+  "R13 SP",
+  "R14 LR",
+  "R15 PC"
+};
+
+const char banknames[16][6][4] =
+{
+  { "   ", "   ", "   ", "   ", "   ", "   " },
+  { "   ", "   ", "   ", "   ", "   ", "   " },
+  { "   ", "   ", "   ", "   ", "   ", "   " },
+  { "   ", "   ", "   ", "   ", "   ", "   " },
+  { "   ", "   ", "   ", "   ", "   ", "   " },
+  { "   ", "   ", "   ", "   ", "   ", "   " },
+  { "   ", "   ", "   ", "   ", "   ", "   " },
+  { "   ", "   ", "   ", "   ", "   ", "   " },
+  { "usr", "fiq", "usr", "usr", "usr", "usr" },
+  { "usr", "fiq", "usr", "usr", "usr", "usr" },
+  { "usr", "fiq", "usr", "usr", "usr", "usr" },
+  { "usr", "fiq", "usr", "usr", "usr", "usr" },
+  { "usr", "fiq", "usr", "usr", "usr", "usr" },
+  { "usr", "fiq", "irq", "svc", "abt", "und" },
+  { "usr", "fiq", "irq", "svc", "abt", "und" },
+  { "   ", "   ", "   ", "   ", "   ", "   " },
+};
+
+void UpdateArmPanel(tagXlibContext *xc, PARMV5TL_CORE core)
+{
+  char displaytext[32];
+  int  reg;
   
   //Display registers
-  LcdDisplayText(&lcdisplays[1], 0,  0, "R0            0x00000000");
-  LcdDisplayText(&lcdisplays[1], 0,  1, "R1            0x00000000");
-  LcdDisplayText(&lcdisplays[1], 0,  2, "R2            0x00000000");
-  LcdDisplayText(&lcdisplays[1], 0,  3, "R3            0x00000000");
-  LcdDisplayText(&lcdisplays[1], 0,  4, "R4            0x00000000");
-  LcdDisplayText(&lcdisplays[1], 0,  5, "R5            0x00000000");
-  LcdDisplayText(&lcdisplays[1], 0,  6, "R6            0x00000000");
-  LcdDisplayText(&lcdisplays[1], 0,  7, "R7            0x00000000");
-  LcdDisplayText(&lcdisplays[1], 0,  8, "R8      usr   0x00000000");
-  LcdDisplayText(&lcdisplays[1], 0,  9, "R9      usr   0x00000000");
-  LcdDisplayText(&lcdisplays[1], 0, 10, "R10     usr   0x00000000");
-  LcdDisplayText(&lcdisplays[1], 0, 11, "R11     usr   0x00000000");
-  LcdDisplayText(&lcdisplays[1], 0, 12, "R12     usr   0x00000000");
-  LcdDisplayText(&lcdisplays[1], 0, 13, "R13 SP  usr   0x00000000");
-  LcdDisplayText(&lcdisplays[1], 0, 14, "R14 LR  usr   0x00000000");
-  LcdDisplayText(&lcdisplays[1], 0, 15, "R15 PC        0x00000000");
+  for(reg=0;reg<16;reg++)
+  {
+    snprintf(displaytext, sizeof(displaytext), "%s  %s   0x%08X", regnames[reg], banknames[reg][core->current_bank], *core->registers[core->current_bank][reg]);
+    LcdDisplayText(&lcdisplays[1], 0,  reg, displaytext);
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Function to call for sending the emulator window a message indicating the core executed another instruction
+void updateemulatormessage(void)
+{
+  Display *display;
+  XEvent   event;
+ 
+  if(arm_window_id && arm_msg_id)
+  {
+    display = XOpenDisplay(NULL);
+    
+    event.xclient.type = ClientMessage;
+    event.xclient.display = display;
+    event.xclient.window = arm_window_id;
+    event.xclient.message_type = arm_msg_id;
+    event.xclient.format = 32;
+
+    XSendEvent(display, arm_window_id, False, NoEventMask, &event);
   
-  
-  return 0;
+    XCloseDisplay(display);
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

@@ -5,7 +5,7 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-//Function to call for sending the main window a message indicating the display needs to be checked for updating
+//Function to call for sending the main window a message indicating the display needs to be updated
 void updatedisplaymessage(void);
 
 //----------------------------------------------------------------------------------------------------------------------------------

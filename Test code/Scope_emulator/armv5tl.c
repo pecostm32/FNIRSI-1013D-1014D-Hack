@@ -9,6 +9,8 @@
 #include "armv5tl_thumb.h"
 #include "f1c100s.h"
 
+#include "armthread.h"
+
 #define MY_BREAK_POINT 0x80035348
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -76,6 +78,9 @@ void *armcorethread(void *arg)
   while(quit_armcore_thread_on_zero)
   {
     ArmV5tlCore(parm_core);
+  
+//This is not an option. Way to much impact on performance    
+//    updateemulatormessage();    
   }
 
   //detach from shared memory  
