@@ -5,3 +5,6 @@
 01-MAY-2021    Found more functions and editted their names in the Ghidra file. Large parts of the initialization code has been examined and commented.
 
 03-MAY-2021    Started looking into the display system. Named several functions belonging to or being used by.
+
+22-MAY-2021    Identified a global variable Timer_ticks used for delay based on timer0 interrupt increments
+
