@@ -340,19 +340,14 @@ int DrawArmPanel(tagXlibContext *xc)
   n = sizeof(buttons) / sizeof(tagButton);
   for(i=0;i<n;i++)
     ButtonSetup(xc, &buttons[i]);
-  
-  //Display status
-  LcdDisplayText(&lcdisplays[0], 0,  0, "MODE[4:0]           USER");
-  LcdDisplayText(&lcdisplays[0], 0,  1, "10000                   ");
+
+  //Setup constant lines for status display  
   LcdDisplayText(&lcdisplays[0], 0,  4, "  CONDITION CODE FLAGS  ");
-  LcdDisplayText(&lcdisplays[0], 0,  5, "N  Z  C  V   Q   GE[3:0]");
-  LcdDisplayText(&lcdisplays[0], 0,  6, "0  0  0  0   0   0000   ");
+  LcdDisplayText(&lcdisplays[0], 0,  5, "   N   Z   C   V   Q    ");
   LcdDisplayText(&lcdisplays[0], 0,  9, " INTERRUPT DISABLE BITS ");
-  LcdDisplayText(&lcdisplays[0], 0, 10, "        A  I  F         ");
-  LcdDisplayText(&lcdisplays[0], 0, 11, "        0  0  0         ");
+  LcdDisplayText(&lcdisplays[0], 0, 10, "         I   F          ");
   LcdDisplayText(&lcdisplays[0], 0, 13, "  EXECUTION STATE BITS  ");
-  LcdDisplayText(&lcdisplays[0], 0, 14, "         J  T           ");
-  LcdDisplayText(&lcdisplays[0], 0, 15, "         0  0           ");
+  LcdDisplayText(&lcdisplays[0], 0, 14, "         J   T          ");
 
   return 0;
 }
@@ -399,10 +394,22 @@ const char banknames[16][6][4] =
   { "   ", "   ", "   ", "   ", "   ", "   " },
 };
 
+const char modenames[7][11] =
+{
+  "      USER",
+  "       FIQ",
+  "       IRQ",
+  "SUPERVISOR",
+  "     ABORT",
+  " UNDEFINED",
+  "    SYSTEM"
+};
+
 void UpdateArmPanel(tagXlibContext *xc, PARMV5TL_CORE core)
 {
   char displaytext[32];
   int  reg;
+  int  i;
   
   //Display registers
   for(reg=0;reg<16;reg++)
@@ -410,6 +417,46 @@ void UpdateArmPanel(tagXlibContext *xc, PARMV5TL_CORE core)
     snprintf(displaytext, sizeof(displaytext), "%s  %s   0x%08X", regnames[reg], banknames[reg][core->current_bank], *core->registers[core->current_bank][reg]);
     LcdDisplayText(&lcdisplays[1], 0,  reg, displaytext);
   }
+  
+  //Decide which mode string needs to be shown. System is special, otherwise it is the selected register bank
+  if(core->status->flags.M == 0x1F)
+    reg = 7;
+  else
+    reg = core->current_bank;
+
+  //Display the current mode  
+  snprintf(displaytext, sizeof(displaytext), "MODE[4:0]     %s", modenames[reg]);
+  LcdDisplayText(&lcdisplays[0], 0,  0, displaytext);
+  
+  displaytext[0] = ' ';
+  
+  //Setup the mode bits for printing
+  for(reg=16,i=1;reg>0;reg>>=1,i++)
+  {
+    if(core->status->flags.M & reg)
+      displaytext[i] = '1';
+    else
+      displaytext[i] ='0';
+  }
+  
+  //Terminate
+  displaytext[i] = 0;
+
+  //Display
+  LcdDisplayText(&lcdisplays[0], 0,  1, displaytext);
+  
+  //Display the status bits
+  snprintf(displaytext, sizeof(displaytext), "   %c   %c   %c   %c   %c    ", '0' + core->status->flags.N, '0' + core->status->flags.Z, '0' + core->status->flags.C, '0' + core->status->flags.V, '0' + core->status->flags.Q);
+  LcdDisplayText(&lcdisplays[0], 0,  6, displaytext);
+
+  //Display the interrupt disable bits
+  snprintf(displaytext, sizeof(displaytext), "         %c   %c          ", '0' + core->status->flags.I, '0' + core->status->flags.F);
+  LcdDisplayText(&lcdisplays[0], 0, 11, displaytext);
+    
+  //Display the execution state bits
+  snprintf(displaytext, sizeof(displaytext), "         %c   %c          ", '0' + core->status->flags.T, '0' + core->status->flags.J);
+  LcdDisplayText(&lcdisplays[0], 0, 15, displaytext);
+  
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
