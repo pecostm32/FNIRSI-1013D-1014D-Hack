@@ -34,5 +34,7 @@ There is progress in getting to an open source version. The bootloader is revers
 
 The main program is slowly revealing its secrets.
 
-For this to happen an emulator is being written. It is quite the job but it is already running the boot loader code and some of the initialization of the main program. The startup imagewith the FNIRSI logo is displayed and the emulator window shows the processor status and the registers when the core is running. STill a lot of work needs to be done before it is finished. Hopefully it will aid in a full reversal of the actual code.
+For this to happen an emulator is being written. It is quite the job but it is already running the boot loader code and some of the initialization of the
+main program. The startup imagewith the FNIRSI logo is displayed and the emulator window shows the processor status and the registers when the core is running.
+Still a lot of work needs to be done before it is finished. Hopefully it will aid in a full reversal of the actual code.
 
