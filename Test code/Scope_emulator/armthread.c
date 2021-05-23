@@ -88,6 +88,8 @@ pthread_t arm_emulator_thread;
 
 int quit_armemulator_thread_on_zero = 0;
 
+int arm_emulator_still_running = 1;
+
 //ID's for communication between the threads and the main window
 Window arm_window_id = 0;
 Window arm_msg_id = 0;
@@ -99,7 +101,7 @@ int startarmemulator(void)
   //Setup for keeping the arm ui window thread running
   quit_armemulator_thread_on_zero = 1;
   
-  //Start up the led blink thread
+  //Start up the arm emulator ui window thread
   return(pthread_create(&arm_emulator_thread, NULL, armemulatorthread, NULL));
 }
 
@@ -232,6 +234,9 @@ void *armemulatorthread(void *arg)
   //Quit on window close or thread being stopped
   while(quit_armemulator_thread_on_zero && rflag)
   {
+    //Let other threads know this one is still running
+    arm_emulator_still_running = 1;
+    
     if(XPending(display))
     {
       XNextEvent(display, &event);
@@ -300,7 +305,10 @@ void *armemulatorthread(void *arg)
   shmdt(parm_core);   
 
   //destroy the shared memory 
-  shmctl(shmid, IPC_RMID, NULL); 
+  shmctl(shmid, IPC_RMID, NULL);
+  
+  //Signal arm emulator window stopped
+  arm_emulator_still_running = 0;
   
   //Exit the thread the way it is supposed to
   pthread_exit(NULL);
@@ -456,7 +464,7 @@ void UpdateArmPanel(tagXlibContext *xc, PARMV5TL_CORE core)
   //Display the execution state bits
   snprintf(displaytext, sizeof(displaytext), "         %c   %c          ", '0' + core->status->flags.T, '0' + core->status->flags.J);
   LcdDisplayText(&lcdisplays[0], 0, 15, displaytext);
-  
+
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

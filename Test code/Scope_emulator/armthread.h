@@ -1,3 +1,5 @@
+//----------------------------------------------------------------------------------------------------------------------------------
+
 #ifndef ARMTHREAD_H
 #define ARMTHREAD_H
 
@@ -13,7 +15,7 @@ void *armemulatorthread(void *arg);
 //Function to call for sending the emulator window a message indicating the core executed another instruction
 void updateemulatormessage(void);
 
-
+//----------------------------------------------------------------------------------------------------------------------------------
 
 #endif /* ARMTHREAD_H */
 

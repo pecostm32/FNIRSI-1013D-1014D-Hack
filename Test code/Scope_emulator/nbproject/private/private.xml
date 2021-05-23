@@ -7,20 +7,18 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="6"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_emulator/xlibfunctions.h</file>
-            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_emulator/armv5tl.h</file>
-            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_emulator/xlibfunctions.c</file>
-            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_emulator/f1c100s.h</file>
-            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_emulator/f1c100s_ccu.c</file>
-            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_emulator/f1c100s.c</file>
-            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_emulator/scopeemulator.h</file>
-            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_emulator/ScopeEmulator.c</file>
-            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_emulator/f1c100s_debe.c</file>
             <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_emulator/todo.txt</file>
+            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_emulator/f1c100s_intc.c</file>
+            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_emulator/armv5tl.h</file>
             <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_emulator/f1c100s_structs.h</file>
+            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_emulator/f1c100s_timer.c</file>
+            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_emulator/f1c100s.h</file>
+            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_emulator/f1c100s_timer.h</file>
             <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_emulator/armv5tl.c</file>
+            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_emulator/f1c100s_intc.h</file>
+            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_emulator/f1c100s.c</file>
             <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_emulator/armthread.c</file>
-            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_emulator/f1c100s_tcon.c</file>
+            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_emulator/ScopeEmulator.c</file>
         </group>
     </open-files>
 </project-private>

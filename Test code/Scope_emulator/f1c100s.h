@@ -70,6 +70,9 @@
 //Main process peripheral handling functions
 void F1C100sProcess(PARMV5TL_CORE core);
 
+void F1C100sProcessINTC(PARMV5TL_CORE core);
+void F1C100sProcessTimer(PARMV5TL_CORE core);
+
 void F1C100sProcessSPI0(PARMV5TL_CORE core);
 void F1C100sProcessTCON(PARMV5TL_CORE core);
 
@@ -88,11 +91,20 @@ void *F1C100sCCU(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
 void F1C100sCCURead(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
 void F1C100sCCUWrite(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
 
-
 //DRAM control registers
 void *F1C100sDRAMC(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
 void F1C100sDRAMCRead(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
 void F1C100sDRAMCWrite(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+
+//Interrupt control registers
+void *F1C100sINTC(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+void F1C100sINTCRead(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+void F1C100sINTCWrite(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+
+//Timer control registers
+void *F1C100sTimer(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+void F1C100sTimerRead(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+void F1C100sTimerWrite(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
 
 //SPI control registers
 void *F1C100sSPI0(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);

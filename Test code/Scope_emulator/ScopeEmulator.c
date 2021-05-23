@@ -11,16 +11,25 @@
 
 #include "resources.h"  //All the panel resources are defined in this file. Needs to be the last include file
 
+//----------------------------------------------------------------------------------------------------------------------------------
 
 int DrawScopePanel(tagXlibContext *xc);
 
+//----------------------------------------------------------------------------------------------------------------------------------
+
 #define DESIGN_WIDTH       920
 #define DESIGN_HEIGHT      630
+
+//----------------------------------------------------------------------------------------------------------------------------------
 
 //ID's for communication between the threads and the main window
 Window main_window_id = 0;
 Window display_msg_id = 0;
 
+//Signal from arm emulator window thread to allow error free stop
+extern int arm_emulator_still_running;
+
+//----------------------------------------------------------------------------------------------------------------------------------
 
 int main(int argc,char **argv)
 {
@@ -148,11 +157,11 @@ int main(int argc,char **argv)
   //Setup the image based on a capture of the screen
   XImage *scopedisplay = XGetImage(display, win, x, y, width, height, 0, ZPixmap);
   
-  //Start the arm emulator window thread
-  startarmemulator();
-  
   //Start the arm processing core
   startarmcore();
+  
+  //Start the arm emulator window thread
+  startarmemulator();
   
   //Keep running until window is destroyed
 	while(rflag)
@@ -196,40 +205,42 @@ int main(int argc,char **argv)
         else if(event.xclient.message_type == display_msg_id)
         {
           //Need some scaling algo here to match the scope display to the screen display. The scaling will mostly be one but just in case
+          int ix,iy,idx;
+
+          u_int16_t *dptr = (u_int16_t *)&parm_core->dram[parm_core->displaymemory.startaddress].m_16bit[0];
+
+          for(iy=0;iy<scopedisplay->height;iy++)
+          {
+            idx = iy * scopedisplay->bytes_per_line;
+
+            for(ix=0;ix<scopedisplay->width;ix++)
+            {
+              scopedisplay->data[idx + 0] = (unsigned char)(*dptr << 3) & 0x00F8;   //Blue
+              scopedisplay->data[idx + 1] = (unsigned char)(*dptr >> 3) & 0x00FC;   //Green
+              scopedisplay->data[idx + 2] = (unsigned char)(*dptr >> 8) & 0x00F8;   //Red
+
+              dptr++;
+
+              idx += (scopedisplay->bits_per_pixel / 8);
+            }
+          }
           
-  int ix,iy,idx;
- 
-  u_int16_t *dptr = (u_int16_t *)&parm_core->dram[parm_core->displaymemory.startaddress].m_16bit[0];
-  
-  for(iy=0;iy<scopedisplay->height;iy++)
-  {
-    idx = iy * scopedisplay->bytes_per_line;
-    
-    for(ix=0;ix<scopedisplay->width;ix++)
-    {
-      scopedisplay->data[idx + 0] = (unsigned char)(*dptr << 3) & 0x00F8;   //Blue
-      scopedisplay->data[idx + 1] = (unsigned char)(*dptr >> 3) & 0x00FC;   //Green
-      scopedisplay->data[idx + 2] = (unsigned char)(*dptr >> 8) & 0x00F8;   //Red
-      
-      dptr++;
-      
-      idx += (scopedisplay->bits_per_pixel / 8);
-    }
-  }
           //Draw the image on the screen
           XPutImage(display, win, gc, scopedisplay, 0, 0, x, y, width, height);
-  
         }
         break;
 		}
 	}
   
+  //Stop the arm emulator window thread from running
+  stoparmemulator();
+
+  //Need to wait on the emulator window to stop
+  //Otherwise an segmentation fault occurs on core data no longer available
+  while(arm_emulator_still_running);
   
   //Stop the arm processing core
   stoparmcore();
-  
-  //Stop the arm emulator window thread from running
-  stoparmemulator();
   
   //Cleanup on close  
   XftColorFree(display, xc.visual, xc.cmap, &xc.color[0]);

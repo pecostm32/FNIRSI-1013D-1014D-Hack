@@ -44,9 +44,11 @@ OBJECTFILES= \
 	${OBJECTDIR}/f1c100s_ccu.o \
 	${OBJECTDIR}/f1c100s_debe.o \
 	${OBJECTDIR}/f1c100s_dramc.o \
+	${OBJECTDIR}/f1c100s_intc.o \
 	${OBJECTDIR}/f1c100s_pio.o \
 	${OBJECTDIR}/f1c100s_spi.o \
 	${OBJECTDIR}/f1c100s_tcon.o \
+	${OBJECTDIR}/f1c100s_timer.o \
 	${OBJECTDIR}/lcdisplay.o \
 	${OBJECTDIR}/mousehandling.o \
 	${OBJECTDIR}/xlibfunctions.o
@@ -121,6 +123,11 @@ ${OBJECTDIR}/f1c100s_dramc.o: f1c100s_dramc.c
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/f1c100s_dramc.o f1c100s_dramc.c
 
+${OBJECTDIR}/f1c100s_intc.o: f1c100s_intc.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/f1c100s_intc.o f1c100s_intc.c
+
 ${OBJECTDIR}/f1c100s_pio.o: f1c100s_pio.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
@@ -135,6 +142,11 @@ ${OBJECTDIR}/f1c100s_tcon.o: f1c100s_tcon.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/f1c100s_tcon.o f1c100s_tcon.c
+
+${OBJECTDIR}/f1c100s_timer.o: f1c100s_timer.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/f1c100s_timer.o f1c100s_timer.c
 
 ${OBJECTDIR}/lcdisplay.o: lcdisplay.c
 	${MKDIR} -p ${OBJECTDIR}

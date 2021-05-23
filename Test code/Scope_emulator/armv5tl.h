@@ -544,6 +544,8 @@ struct tagARMV5TL_CORE
   //F1C100s peripherals
   F1C100S_CCU               f1c100s_ccu;              //The clock control registers
   F1C100S_DRAMC             f1c100s_dramc;            //The dram control registers
+  F1C100S_INTC              f1c100s_intc;             //Interrupt controller registers
+  F1C100S_TIMER             f1c100s_timer;            //Timer control registers
   
   F1C100S_SPI               f1c100s_spi[2];           //SPI 0-1 control registers
   

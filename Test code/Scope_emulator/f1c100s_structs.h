@@ -9,6 +9,8 @@ typedef struct tagF1C100S_PERIPH_STATUS    F1C100S_PERIPH_STATUS;
 
 typedef struct tagF1C100S_CCU              F1C100S_CCU;
 typedef struct tagF1C100S_DRAMC            F1C100S_DRAMC;
+typedef struct tagF1C100S_TIMER            F1C100S_TIMER;
+typedef struct tagF1C100S_INTC             F1C100S_INTC;
 typedef struct tagF1C100S_SPI              F1C100S_SPI;
 typedef struct tagF1C100S_PIO_PORT         F1C100S_PIO_PORT;
 typedef struct tagF1C100S_PIO_INT          F1C100S_PIO_INT;
@@ -31,6 +33,7 @@ typedef union tagF1C100S_MEMORY            F1C100S_MEMORY;
 union tagF1C100S_MEMORY
 {
   u_int32_t m_32bit;
+  int32_t   s_32bit;
   u_int16_t m_16bit[2];
   u_int8_t  m_8bit[4];
 };
@@ -152,6 +155,65 @@ struct tagF1C100S_DRAMC
   F1C100S_MEMORY mcr10;
   F1C100S_MEMORY mcr11;
   F1C100S_MEMORY bwcr;
+};
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//The timer registers
+struct tagF1C100S_TIMER
+{
+  F1C100S_MEMORY tmr_irq_en;
+  F1C100S_MEMORY tmr_irq_sta;
+  F1C100S_MEMORY tmr0_ctrl;
+  F1C100S_MEMORY tmr0_intv_value;
+  F1C100S_MEMORY tmr0_cur_value;
+  F1C100S_MEMORY tmr1_ctrl;
+  F1C100S_MEMORY tmr1_intv_value;
+  F1C100S_MEMORY tmr1_cur_value;
+  F1C100S_MEMORY tmr2_ctrl;
+  F1C100S_MEMORY tmr2_intv_value;
+  F1C100S_MEMORY tmr2_cur_value;
+  F1C100S_MEMORY avs_cnt_ctl;
+  F1C100S_MEMORY avs_cnt0;
+  F1C100S_MEMORY avs_cnt1;
+  F1C100S_MEMORY avs_cnt_div;
+  F1C100S_MEMORY wdog_irq_en;
+  F1C100S_MEMORY wdog_irq_sta;
+  F1C100S_MEMORY wdog_ctrl;
+  F1C100S_MEMORY wdog_cfg;
+  F1C100S_MEMORY wdog_mode;
+  
+  //Pre scaler counters for the timers
+  int32_t prescaler[5];
+  int32_t prescalerreload[5];
+  
+  //Timer control previous values for start detect
+  u_int32_t ctrl_previous[5];
+  
+  //Timer interrupt status bits
+  u_int32_t interruptstatus;
+};
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//The interrupt controller registers
+struct tagF1C100S_INTC
+{
+  F1C100S_MEMORY vector;
+  F1C100S_MEMORY base_addr;
+  F1C100S_MEMORY nmi_int_ctrl;
+  F1C100S_MEMORY pend0;
+  F1C100S_MEMORY pend1;
+  F1C100S_MEMORY en0;
+  F1C100S_MEMORY en1;
+  F1C100S_MEMORY mask0;
+  F1C100S_MEMORY mask1;
+  F1C100S_MEMORY resp0;
+  F1C100S_MEMORY resp1;
+  F1C100S_MEMORY ff0;
+  F1C100S_MEMORY ff1;
+  F1C100S_MEMORY prio0;
+  F1C100S_MEMORY prio1;
+  F1C100S_MEMORY prio2;
+  F1C100S_MEMORY prio3;
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------

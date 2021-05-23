@@ -12,9 +12,11 @@
       <itemPath>f1c100s.h</itemPath>
       <itemPath>f1c100s_ccu.h</itemPath>
       <itemPath>f1c100s_debe.h</itemPath>
+      <itemPath>f1c100s_intc.h</itemPath>
       <itemPath>f1c100s_spi.h</itemPath>
       <itemPath>f1c100s_structs.h</itemPath>
       <itemPath>f1c100s_tcon.h</itemPath>
+      <itemPath>f1c100s_timer.h</itemPath>
       <itemPath>lcdisplay.h</itemPath>
       <itemPath>mousehandling.h</itemPath>
       <itemPath>resources.h</itemPath>
@@ -37,9 +39,11 @@
       <itemPath>f1c100s_ccu.c</itemPath>
       <itemPath>f1c100s_debe.c</itemPath>
       <itemPath>f1c100s_dramc.c</itemPath>
+      <itemPath>f1c100s_intc.c</itemPath>
       <itemPath>f1c100s_pio.c</itemPath>
       <itemPath>f1c100s_spi.c</itemPath>
       <itemPath>f1c100s_tcon.c</itemPath>
+      <itemPath>f1c100s_timer.c</itemPath>
       <itemPath>lcdisplay.c</itemPath>
       <itemPath>mousehandling.c</itemPath>
       <itemPath>xlibfunctions.c</itemPath>
@@ -117,6 +121,10 @@
       </item>
       <item path="f1c100s_dramc.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="f1c100s_intc.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_intc.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="f1c100s_pio.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="f1c100s_spi.c" ex="false" tool="0" flavor2="0">
@@ -128,6 +136,10 @@
       <item path="f1c100s_tcon.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="f1c100s_tcon.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_timer.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_timer.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="lcdisplay.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -200,6 +212,10 @@
       </item>
       <item path="f1c100s_dramc.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="f1c100s_intc.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_intc.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="f1c100s_pio.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="f1c100s_spi.c" ex="false" tool="0" flavor2="0">
@@ -211,6 +227,10 @@
       <item path="f1c100s_tcon.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="f1c100s_tcon.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_timer.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_timer.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="lcdisplay.c" ex="false" tool="0" flavor2="0">
       </item>

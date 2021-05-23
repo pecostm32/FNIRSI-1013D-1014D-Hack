@@ -21,7 +21,11 @@ void F1C100sProcess(PARMV5TL_CORE core)
   
   
   
+  //Timer peripheral is always enabled at this level
+  F1C100sProcessTimer(core);
   
+  //Interrupt controller also needs to be handled every instruction
+  F1C100sProcessINTC(core);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

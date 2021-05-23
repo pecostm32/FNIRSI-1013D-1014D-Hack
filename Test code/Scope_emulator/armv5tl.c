@@ -639,9 +639,9 @@ ARMV5TL_ADDRESS_MAP address_map[] =
   { 0x01C10000, 0x01C10FFF,            NULL,              NULL,                NULL },   //SD/MMC1
   { 0x01C13000, 0x01C13FFF,            NULL,              NULL,                NULL },   //USB-OTG
   { 0x01C20000, 0x01C203FF,      F1C100sCCU,    F1C100sCCURead,     F1C100sCCUWrite },   //CCU
-  { 0x01C20400, 0x01C207FF,            NULL,              NULL,                NULL },   //INTC
+  { 0x01C20400, 0x01C207FF,     F1C100sINTC,   F1C100sINTCRead,    F1C100sINTCWrite },   //INTC
   { 0x01C20800, 0x01C20BFF,      F1C100sPIO,              NULL,                NULL },   //PIO
-  { 0x01C20C00, 0x01C20FFF,            NULL,              NULL,                NULL },   //TIMER
+  { 0x01C20C00, 0x01C20FFF,    F1C100sTimer,  F1C100sTimerRead,   F1C100sTimerWrite },   //TIMER
   { 0x01C21000, 0x01C213FF,            NULL,              NULL,                NULL },   //PWM
   { 0x01C21400, 0x01C217FF,            NULL,              NULL,                NULL },   //OWA
   { 0x01C21800, 0x01C21BFF,            NULL,              NULL,                NULL },   //RSB
