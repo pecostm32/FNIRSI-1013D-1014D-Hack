@@ -38,6 +38,9 @@ the screen. The shared memory part seems to work since the project starts and ru
 After that it is still a lot of work to implement the rest of the peripherals, the interrupt system and the emulator stuff like disassembly,
 breakpoints and tracing.
 
-
-
+----------------------------------------------------------------------------------------------
+24-May-2021 19:50
+Implemented the core interrupt handling for just the irq and finished the f1c100s timer and intc peripheral to do what is needed for the scope code.
+Unfortunately the scope code goes wrong at address 0x800197AC where it jumps to address 0 where there is no valid code.
+To be able to see where it goes wrong I implemented a better tracing system. For this I need to write a program that can read the trace information.
 
