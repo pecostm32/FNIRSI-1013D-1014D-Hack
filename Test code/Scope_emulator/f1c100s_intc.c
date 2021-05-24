@@ -19,6 +19,22 @@ void F1C100sProcessINTC(PARMV5TL_CORE core)
   
   //Once an interrupt has come in and has priority the core irq or fiq flag needs to be set
   //When the FF register bit for an interrupt is set it will be redirected to the fiq.
+  
+  //For the scope a simple implementation is ok. It does not use the interrupt vector system the hardware provides.
+  
+  //Check if timer 0 interrupt is enabled
+  if(core->f1c100s_intc.en0.m_32bit & INTC_EN0_TIMER0_EN)
+  {
+    //Check if the timer tripped an interrupt
+    if(core->f1c100s_timer.interruptstatus & TMR_IRQ_EN_TMR0_EN)
+    {
+      //Signal timer 0 pending
+      core->f1c100s_intc.interruptstatus[0] |= INTC_EN0_TIMER0_EN;
+      
+      //Signal global interrupt
+      core->irq = 1;
+    }
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -143,9 +159,13 @@ void F1C100sINTCRead(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
       break;
       
     case INTC_PEND0:
+      //Output the internal status bits
+      core->f1c100s_intc.pend0.m_32bit = core->f1c100s_intc.interruptstatus[0];
       break;
       
     case INTC_PEND1:
+      //Output the internal status bits
+      core->f1c100s_intc.pend1.m_32bit = core->f1c100s_intc.interruptstatus[1];
       break;
       
     case INTC_EN0:
@@ -205,9 +225,19 @@ void F1C100sINTCWrite(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
       break;
       
     case INTC_PEND0:
+      //Clear the needed internal status bits
+      core->f1c100s_intc.interruptstatus[0] &=  ~core->f1c100s_intc.pend0.m_32bit;
+      
+      //Let the status register reflect the actual status after the clear
+      core->f1c100s_intc.pend0.m_32bit = core->f1c100s_intc.interruptstatus[0];
       break;
       
     case INTC_PEND1:
+      //Clear the needed internal status bits
+      core->f1c100s_intc.interruptstatus[1] &=  ~core->f1c100s_intc.pend1.m_32bit;
+      
+      //Let the status register reflect the actual status after the clear
+      core->f1c100s_intc.pend1.m_32bit = core->f1c100s_intc.interruptstatus[1];
       break;
       
     case INTC_EN0:

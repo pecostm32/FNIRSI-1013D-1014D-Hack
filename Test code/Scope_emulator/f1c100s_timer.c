@@ -244,6 +244,9 @@ void F1C100sTimerWrite(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
     case TMR_IRQ_STA:
       //Clear the bits in the internal interrupt status register on write with 1
       core->f1c100s_timer.interruptstatus &= ~(core->f1c100s_timer.tmr_irq_sta.m_32bit & 0x07);
+
+      //Let the status register reflect the actual status after the clear
+      core->f1c100s_timer.tmr_irq_sta.m_32bit = core->f1c100s_timer.interruptstatus & 0x07;
       break;
       
     case TMR0_CTRL:

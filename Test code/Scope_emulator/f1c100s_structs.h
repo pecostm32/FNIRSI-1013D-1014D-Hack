@@ -158,6 +158,32 @@ struct tagF1C100S_DRAMC
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
+//The interrupt controller registers
+struct tagF1C100S_INTC
+{
+  F1C100S_MEMORY vector;
+  F1C100S_MEMORY base_addr;
+  F1C100S_MEMORY nmi_int_ctrl;
+  F1C100S_MEMORY pend0;
+  F1C100S_MEMORY pend1;
+  F1C100S_MEMORY en0;
+  F1C100S_MEMORY en1;
+  F1C100S_MEMORY mask0;
+  F1C100S_MEMORY mask1;
+  F1C100S_MEMORY resp0;
+  F1C100S_MEMORY resp1;
+  F1C100S_MEMORY ff0;
+  F1C100S_MEMORY ff1;
+  F1C100S_MEMORY prio0;
+  F1C100S_MEMORY prio1;
+  F1C100S_MEMORY prio2;
+  F1C100S_MEMORY prio3;
+  
+  //Internal interrupt status bits
+  u_int32_t interruptstatus[2];
+};
+
+//----------------------------------------------------------------------------------------------------------------------------------
 //The timer registers
 struct tagF1C100S_TIMER
 {
@@ -191,29 +217,6 @@ struct tagF1C100S_TIMER
   
   //Timer interrupt status bits
   u_int32_t interruptstatus;
-};
-
-//----------------------------------------------------------------------------------------------------------------------------------
-//The interrupt controller registers
-struct tagF1C100S_INTC
-{
-  F1C100S_MEMORY vector;
-  F1C100S_MEMORY base_addr;
-  F1C100S_MEMORY nmi_int_ctrl;
-  F1C100S_MEMORY pend0;
-  F1C100S_MEMORY pend1;
-  F1C100S_MEMORY en0;
-  F1C100S_MEMORY en1;
-  F1C100S_MEMORY mask0;
-  F1C100S_MEMORY mask1;
-  F1C100S_MEMORY resp0;
-  F1C100S_MEMORY resp1;
-  F1C100S_MEMORY ff0;
-  F1C100S_MEMORY ff1;
-  F1C100S_MEMORY prio0;
-  F1C100S_MEMORY prio1;
-  F1C100S_MEMORY prio2;
-  F1C100S_MEMORY prio3;
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------

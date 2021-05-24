@@ -51,6 +51,10 @@ typedef struct tagARMV5TL_CORE              ARMV5TL_CORE, *PARMV5TL_CORE;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+typedef struct tagARMV5TL_TRACE_ENTRY       ARMV5TL_TRACE_ENTRY;
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 typedef union tagARMV5TL_STATUS             ARMV5TL_STATUS, *PARMV5TL_STATUS;
 typedef union tagARMV5TL_ARM_INSTRUCTION    ARMV5TL_ARM_INSTRUCTION;
 typedef union tagARMV5TL_MEMORY             ARMV5TL_MEMORY;
@@ -506,6 +510,21 @@ struct tagARMV5TL_REGS
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
+
+struct tagARMV5TL_TRACE_ENTRY
+{
+  u_int32_t    instruction_address;    //Address of the traced instruction
+  u_int32_t    instruction_word;       //Instruction word for arm, half word for thumb
+  u_int32_t    execution_status;       //Information about if the arm instruction has been executed or not
+  ARMV5TL_REGS registers;              //The 37 registers
+  u_int32_t    memory_address;         //Depending on the type of instruction this is set with the targeted memory address
+  u_int32_t    memory_direction;       //For load or store multiple instructions this signals if the given address is incremented or decremented
+  u_int32_t    data_width;             //For instructions that load or store half words or bytes this will reflect this, otherwise word width
+  u_int32_t    data_count;             //The number of words read or written by the instruction
+  u_int32_t    data[16];               //The data read or written. Single instruction can do a max of 16 words
+};
+
+//----------------------------------------------------------------------------------------------------------------------------------
 //The core main struct
 struct tagARMV5TL_CORE
 {
@@ -571,6 +590,14 @@ struct tagARMV5TL_CORE
  
   //Debug and tracing support
   FILE                     *TraceFilePointer;         //Null if tracing is disabled
+  
+  u_int32_t                 tracetriggeraddress;      //Instruction address to start tracing on
+  u_int32_t                 tracetriggered;           //Flag to signal tracing has been triggered
+  u_int32_t                 tracecount;               //Counter for limiting trace files to 256K Lines
+  u_int32_t                 tracefileindex;           //Index counter for the trace file name
+  u_int32_t                 tracebufferenabled;       //Flag to signal writing into the trace buffer is enabled
+  u_int32_t                 traceindex;               //Index into the trace buffer
+  ARMV5TL_TRACE_ENTRY       tracebuffer[4096];        //A trace buffer to be able to get pre trace trigger info
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -665,6 +692,12 @@ struct tagARMV5TL_CORE
 #define ARM_PRIVILEGED_MASK       0x000000DF
 
 //----------------------------------------------------------------------------------------------------------------------------------
+
+#define ARM_INSTRUCTION_SKIPPED            0
+#define ARM_INSTRUCTION_EXECUTED           1
+#define ARM_INSTRUCTION_THUMB              2
+
+//----------------------------------------------------------------------------------------------------------------------------------
 //Thread functions
 int startarmcore(void);
 void stoparmcore(void);
@@ -680,6 +713,10 @@ void ArmV5tlCore(PARMV5TL_CORE core);
 //----------------------------------------------------------------------------------------------------------------------------------
 //General memory handler
 void *ArmV5tlGetMemoryPointer(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void ArmV5tlSetMemoryTraceData(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode, u_int32_t count, u_int32_t direction);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

@@ -11,7 +11,8 @@
 
 #include "armthread.h"
 
-#define MY_BREAK_POINT 0x8003534C
+#define MY_BREAK_POINT 0x800197AC
+//#define MY_BREAK_POINT 0x8003534C
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -78,9 +79,6 @@ void *armcorethread(void *arg)
   while(quit_armcore_thread_on_zero)
   {
     ArmV5tlCore(parm_core);
-  
-//This is not an option. Way to much impact on performance    
-//    updateemulatormessage();    
   }
 
   //detach from shared memory  
@@ -161,7 +159,13 @@ void ArmV5tlSetup(PARMV5TL_CORE core)
   
   //Test tracing
   core->TraceFilePointer = NULL;
-//  core->TraceFilePointer = fopen("test_trace.txt", "w");
+  core->TraceFilePointer = fopen("test_trace_000000.txt", "w");
+  
+  //Enable tracing into buffer
+  core->tracebufferenabled = 1;
+  
+  //Start tracing when address is hit
+  core->tracetriggeraddress = 0x8003534c;  //Address where setup_display_lib is called
   
   //On startup processor is running
   core->run = 1;
@@ -173,6 +177,8 @@ void ArmV5tlCore(PARMV5TL_CORE core)
 {
   u_int32_t *memorypointer;
   u_int32_t  execute = 0;
+  int        i;
+  char       tracefilename[64];
   
   //Check if running. Do nothing when stopped
   if((core == NULL) && (core->run == 0))
@@ -200,6 +206,35 @@ void ArmV5tlCore(PARMV5TL_CORE core)
   if((core->status->flags.I == 0) && (core->irq == 1))
   {
     //Handle the interrupt
+    //Load exception r14 with current pc plus 4. The manual states for entering and returning from interrupt sub r14, r14, #4; stmfd sp!, {r14}; ...; ldmfd sp!, {pc}^
+    *core->registers[ARM_REG_BANK_IRQ][14] = *core->program_counter + 4;
+    
+    //Load exception spsr with current psr
+    *core->registers[ARM_REG_BANK_IRQ][ARM_REG_SPSR_IDX] = core->status->word;
+      
+    //Switch to irq exception mode
+    core->status->flags.M = ARM_MODE_IRQ;
+    
+    //Return to arm execution state
+    core->status->flags.T = 0;
+    core->status->flags.J = 0;
+    
+    //Disable interrupts
+    core->status->flags.I = 1;
+    
+    //Clear the interrupt flag to signal it has been handled
+    core->irq = 0;
+    
+    //Load endianness from cp15 (not implemented here since it is not used in the scope)
+    
+    //Switch the current bank to the irq bank
+    core->current_bank = ARM_REG_BANK_IRQ;
+    
+    //Set the internal mode to irq mode
+    core->current_mode = ARM_MODE_IRQ;
+    
+    //Load pc with the irq vector address. Depending om cp15 it could also be 0xFFFF0018, but not implemented here.
+    *core->program_counter = 0x00000018;
   }
   
   //Check fast interrupt on enabled and active
@@ -214,18 +249,47 @@ void ArmV5tlCore(PARMV5TL_CORE core)
     memorypointer = NULL;
   }
   
+  //Check if trace buffer writing enabled
+  if(core->tracebufferenabled)
+  {
+    //Check on trace trigger address
+    if(core->tracetriggeraddress == *core->program_counter)
+    {
+      //Enable trace writing
+      core->tracetriggered = 1;
+      
+      //Check if there is a file to write to
+      if(core->TraceFilePointer)
+      {
+        //Write pre trigger data to the trace file
+        for(i=0;i<(sizeof(core->tracebuffer) / sizeof(ARMV5TL_TRACE_ENTRY));i++)
+        {
+          fwrite(&core->tracebuffer[core->traceindex], 1, sizeof(ARMV5TL_TRACE_ENTRY), core->TraceFilePointer);
+          
+          //Point to next trace buffer entry and keep it in range of the trace buffer size
+          core->traceindex = (core->traceindex + 1) % (sizeof(core->tracebuffer) / sizeof(ARMV5TL_TRACE_ENTRY));
+        }
+
+        //Set trace count for file splitting
+        core->tracecount = i;
+      }
+    }
+    
+    //Clear the memory data in the trace buffer
+    core->tracebuffer[core->traceindex].memory_address = 0;
+    core->tracebuffer[core->traceindex].data_width = 0;
+    core->tracebuffer[core->traceindex].data_count = 0;
+    core->tracebuffer[core->traceindex].memory_direction = 0;
+
+    //Clear the data field
+    memset(core->tracebuffer[core->traceindex].data, 0, sizeof(core->tracebuffer[core->traceindex].data));
+  }
+  
   //Check on which execution state the core is in
   if(core->status->flags.T)
   {
     //Assume program counter needs to be incremented for thumb instructions
     core->pcincrvalue = 2;
-    
-    //Initial tracing just the pc sequence
-    if(core->TraceFilePointer)
-    {
-      fprintf(core->TraceFilePointer, "pc: 0x%08X  T\n", *core->program_counter);
-      fflush(core->TraceFilePointer);
-    }
     
     //Handle thumb instructions
     ArmV5tlHandleThumb(core);
@@ -347,11 +411,13 @@ void ArmV5tlCore(PARMV5TL_CORE core)
           break;
       }
 
-      //Initial tracing just the pc sequence
-      if(core->TraceFilePointer)
+      //Check if tracing into buffer is enabled.
+      if(core->tracebufferenabled)
       {
-        fprintf(core->TraceFilePointer, "pc: 0x%08X  exec: %d\n", *core->program_counter, execute);
-        fflush(core->TraceFilePointer);
+        //Setup the trace buffer entry for arm tracing
+        core->tracebuffer[core->traceindex].instruction_address = *core->program_counter;
+        core->tracebuffer[core->traceindex].instruction_word = core->arm_instruction.instr;
+        core->tracebuffer[core->traceindex].execution_status = execute;
       }
 
       //Check if instruction needs to be executed
@@ -604,6 +670,45 @@ void ArmV5tlCore(PARMV5TL_CORE core)
       ArmV5tlUndefinedInstruction(core);
     }
   }
+
+  //Check if trace buffer writing enabled
+  if(core->tracebufferenabled)
+  {
+    //Copy the registers into the trace buffer
+    memcpy(&core->tracebuffer[core->traceindex].registers, &core->regs, sizeof(ARMV5TL_REGS));
+
+    //Check if writing of trace data is enabled
+    if((core->tracetriggered) && (core->TraceFilePointer))
+    {
+      //Write trace data to the trace file
+      fwrite(&core->tracebuffer[core->traceindex], 1, sizeof(ARMV5TL_TRACE_ENTRY), core->TraceFilePointer);
+      
+      //Add on to the trace count for limiting files to 25K lines
+      core->tracecount++;
+
+      //Check if limit reached
+      if(core->tracecount > 25000)
+      {
+        //Reset the count
+        core->tracecount = 0;
+        
+        //Close the current file
+        fclose(core->TraceFilePointer);
+
+        //Select next file index
+        core->tracefileindex++;
+
+        //Print the new file name
+        snprintf(tracefilename, 64, "test_trace_%06d.txt", core->tracefileindex);
+
+        //Try to open it
+        core->TraceFilePointer = fopen(tracefilename, "w");
+      }
+    }
+
+    //Point to next trace buffer entry and keep it in range of the trace buffer size
+    core->traceindex = (core->traceindex + 1) % (sizeof(core->tracebuffer) / sizeof(ARMV5TL_TRACE_ENTRY));
+  }
   
   //One more cycle done
   core->cpu_cycles++;
@@ -695,6 +800,57 @@ void *ArmV5tlGetMemoryPointer(PARMV5TL_CORE core, u_int32_t address, u_int32_t m
   
   //Nothing found then return a null address
   return(NULL);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void ArmV5tlSetMemoryTraceData(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode, u_int32_t count, u_int32_t direction)
+{
+  int i;
+  void *memory;
+  
+  //Add memory data to the trace buffer
+  core->tracebuffer[core->traceindex].memory_address = address;
+  core->tracebuffer[core->traceindex].data_width = mode;
+  core->tracebuffer[core->traceindex].data_count = count;
+  core->tracebuffer[core->traceindex].memory_direction = direction;
+
+  //Copy the data from memory to the trace buffer
+  for(i=0;i<count;i++)
+  {
+    //Get a pointer to the given address based on the mode
+    memory = ArmV5tlGetMemoryPointer(core, address, mode);
+
+    //Check if valid memory pointer received
+    if(memory)
+    {
+      //Do it based on the given mode
+      switch(mode)  
+      {
+        case ARM_MEMORY_WORD:
+          core->tracebuffer[core->traceindex].data[0] = *(u_int32_t *)memory;
+          break;
+
+        case ARM_MEMORY_SHORT:
+          core->tracebuffer[core->traceindex].data[0] = *(u_int16_t *)memory;
+          break;
+
+        case ARM_MEMORY_BYTE:
+          core->tracebuffer[core->traceindex].data[0] = *(u_int8_t *)memory;
+          break;
+      }
+    }
+    
+    //Check if memory needs to be incremented or decremented. This is only used for word based actions due to how arm works
+    if(direction)
+    {
+      address += 4;
+    }
+    else
+    {
+      address -= 4;
+    }
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -1038,7 +1194,7 @@ void ArmV5tlDPR(PARMV5TL_CORE core, u_int32_t vn, u_int32_t vm, u_int32_t c)
     if((update) && (core->arm_instruction.dpsi.rd == 15) && (core->registers[core->current_bank][ARM_REG_SPSR_IDX]))
     {
       //Load the current status with the saved one if it is available
-      core->status->word =  ((PARMV5TL_STATUS)core->registers[core->current_bank][ARM_REG_SPSR_IDX])->word;
+      core->status->word = *core->registers[core->current_bank][ARM_REG_SPSR_IDX];
       
       //Adjust the current processor state accordingly
       core->current_mode = core->status->flags.M;
@@ -1630,6 +1786,13 @@ void ArmV5tlLS(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
   {
     //Need exception here
   }
+  
+  //Check if tracing into buffer is enabled.
+  if(core->tracebufferenabled)
+  {
+    //Set the data in the trace buffer
+    ArmV5tlSetMemoryTraceData(core, address, memtype, 1, 0);
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -1637,6 +1800,7 @@ void ArmV5tlLS(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
 void ArmV5tlLSM(PARMV5TL_CORE core)
 {
   u_int32_t address = *core->registers[core->current_bank][core->arm_instruction.type4.rn];
+  u_int32_t traceaddress;
   u_int32_t *memory;
   u_int32_t reglist = core->arm_instruction.instr & 0x0000FFFF;
   int       numregs = 0;
@@ -1715,6 +1879,9 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
       address -= 4;
     }
   }
+  
+  //Set the trace address
+  traceaddress = address;
   
   //Lowest register needs to be in lowest address, so list is walked through different for increment or decrement
   //Check if increment or decrement
@@ -1862,7 +2029,14 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
     
     //Signal no increment of pc if so
     core->pcincrvalue = 0;
-  }  
+  }
+  
+  //Check if tracing into buffer is enabled.
+  if(core->tracebufferenabled)
+  {
+    //Set the data in the trace buffer
+    ArmV5tlSetMemoryTraceData(core, traceaddress, ARM_MEMORY_WORD, numregs, core->arm_instruction.type4.u);
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

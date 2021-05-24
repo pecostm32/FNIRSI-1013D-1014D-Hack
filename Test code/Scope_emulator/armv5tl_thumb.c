@@ -21,6 +21,15 @@ void ArmV5tlHandleThumb(PARMV5TL_CORE core)
     //get the current instruction
     core->thumb_instruction.instr = (u_int16_t)*memorypointer;
     
+    //Check if tracing into buffer is enabled.
+    if(core->tracebufferenabled)
+    {
+      //Setup the trace buffer entry for arm tracing
+      core->tracebuffer[core->traceindex].instruction_address = *core->program_counter;
+      core->tracebuffer[core->traceindex].instruction_word = core->arm_instruction.instr;
+      core->tracebuffer[core->traceindex].execution_status = ARM_INSTRUCTION_THUMB;
+    }
+    
     //Decode based on the type bits
     switch(core->thumb_instruction.base.type)
     {
@@ -1019,6 +1028,14 @@ void ArmV5tlThumbLS(PARMV5TL_CORE core, u_int32_t type, u_int32_t rd, u_int32_t 
     //Signal no increment if so
     core->pcincrvalue = 0;
   }
+  
+  
+  //Check if tracing into buffer is enabled.
+  if(core->tracebufferenabled)
+  {
+    //Set the data in the trace buffer
+    ArmV5tlSetMemoryTraceData(core, address, mode, 1, 0);
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -1026,6 +1043,7 @@ void ArmV5tlThumbLS(PARMV5TL_CORE core, u_int32_t type, u_int32_t rd, u_int32_t 
 void ArmV5tlThumbLSMIA(PARMV5TL_CORE core)
 {
   u_int32_t address = *core->registers[core->current_bank][core->thumb_instruction.lsm.rn];
+  u_int32_t traceaddress = address;
   u_int32_t *memory;
   u_int32_t reglist = core->thumb_instruction.lsm.rl;
   int       numregs = 0;
@@ -1099,6 +1117,13 @@ void ArmV5tlThumbLSMIA(PARMV5TL_CORE core)
     //Increment the base address
     *core->registers[core->current_bank][core->thumb_instruction.lsm.rn] += (numregs * 4);
   }
+  
+  //Check if tracing into buffer is enabled.
+  if(core->tracebufferenabled)
+  {
+    //Set the data in the trace buffer
+    ArmV5tlSetMemoryTraceData(core, traceaddress, ARM_MEMORY_WORD, numregs, 1);
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -1106,6 +1131,7 @@ void ArmV5tlThumbLSMIA(PARMV5TL_CORE core)
 void ArmV5tlThumbPOP(PARMV5TL_CORE core)
 {
   u_int32_t address = *core->registers[core->current_bank][13];
+  u_int32_t traceaddress = address;
   u_int32_t *memory;
   u_int32_t reglist = core->thumb_instruction.lsm.rl;
   int       numregs = 0;
@@ -1171,6 +1197,13 @@ void ArmV5tlThumbPOP(PARMV5TL_CORE core)
   
   //Increment the stack pointer address
   *core->registers[core->current_bank][13] += (numregs * 4);
+  
+  //Check if tracing into buffer is enabled.
+  if(core->tracebufferenabled)
+  {
+    //Set the data in the trace buffer
+    ArmV5tlSetMemoryTraceData(core, traceaddress, ARM_MEMORY_WORD, numregs, 1);
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -1179,6 +1212,7 @@ void ArmV5tlThumbPUSH(PARMV5TL_CORE core)
 {
   //For a push an extra 4 needs to be subtracted from the start address (decrement before)
   u_int32_t address = *core->registers[core->current_bank][13] - 4;
+  u_int32_t traceaddress = address;
   u_int32_t *memory;
   u_int32_t reglist = core->thumb_instruction.lsm.rl;
   int       numregs = 0;
@@ -1241,6 +1275,13 @@ void ArmV5tlThumbPUSH(PARMV5TL_CORE core)
 
   //Decrement the stack pointer address
   *core->registers[core->current_bank][13] -= (numregs * 4);
+  
+  //Check if tracing into buffer is enabled.
+  if(core->tracebufferenabled)
+  {
+    //Set the data in the trace buffer
+    ArmV5tlSetMemoryTraceData(core, traceaddress, ARM_MEMORY_WORD, numregs, 0);
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
