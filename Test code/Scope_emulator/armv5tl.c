@@ -159,7 +159,7 @@ void ArmV5tlSetup(PARMV5TL_CORE core)
   
   //Test tracing
   core->TraceFilePointer = NULL;
-  core->TraceFilePointer = fopen("test_trace_000000.txt", "w");
+  core->TraceFilePointer = fopen("test_trace_000000.bin", "wb");
   
   //Enable tracing into buffer
   core->tracebufferenabled = 1;
@@ -687,7 +687,7 @@ void ArmV5tlCore(PARMV5TL_CORE core)
       core->tracecount++;
 
       //Check if limit reached
-      if(core->tracecount > 25000)
+      if(core->tracecount >= 25000)
       {
         //Reset the count
         core->tracecount = 0;
@@ -699,10 +699,10 @@ void ArmV5tlCore(PARMV5TL_CORE core)
         core->tracefileindex++;
 
         //Print the new file name
-        snprintf(tracefilename, 64, "test_trace_%06d.txt", core->tracefileindex);
+        snprintf(tracefilename, 64, "test_trace_%06d.bin", core->tracefileindex);
 
         //Try to open it
-        core->TraceFilePointer = fopen(tracefilename, "w");
+        core->TraceFilePointer = fopen(tracefilename, "wb");
       }
     }
 
