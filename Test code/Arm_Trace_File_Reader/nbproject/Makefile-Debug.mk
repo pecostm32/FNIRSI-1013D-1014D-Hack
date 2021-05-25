@@ -35,7 +35,8 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
-	${OBJECTDIR}/arm_trace_filer_reader.o \
+	${OBJECTDIR}/arm_trace_file_reader.o \
+	${OBJECTDIR}/armdisassemble.o \
 	${OBJECTDIR}/buttons.o \
 	${OBJECTDIR}/lcdisplay.o \
 	${OBJECTDIR}/mousehandling.o \
@@ -66,10 +67,15 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/arm_trace_file_reader: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/arm_trace_file_reader ${OBJECTFILES} ${LDLIBSOPTIONS} -lX11 -lXft -lXrandr -lpthread
 
-${OBJECTDIR}/arm_trace_filer_reader.o: arm_trace_filer_reader.c
+${OBJECTDIR}/arm_trace_file_reader.o: arm_trace_file_reader.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.c) -g -I/usr/include/freetype2 -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/arm_trace_filer_reader.o arm_trace_filer_reader.c
+	$(COMPILE.c) -g -I/usr/include/freetype2 -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/arm_trace_file_reader.o arm_trace_file_reader.c
+
+${OBJECTDIR}/armdisassemble.o: armdisassemble.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -I/usr/include/freetype2 -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/armdisassemble.o armdisassemble.c
 
 ${OBJECTDIR}/buttons.o: buttons.c
 	${MKDIR} -p ${OBJECTDIR}

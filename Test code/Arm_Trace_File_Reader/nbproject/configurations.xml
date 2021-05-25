@@ -4,6 +4,7 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
+      <itemPath>armdisassemble.h</itemPath>
       <itemPath>armthread.h</itemPath>
       <itemPath>armv5tl.h</itemPath>
       <itemPath>buttons.h</itemPath>
@@ -19,7 +20,8 @@
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
-      <itemPath>arm_trace_filer_reader.c</itemPath>
+      <itemPath>arm_trace_file_reader.c</itemPath>
+      <itemPath>armdisassemble.c</itemPath>
       <itemPath>buttons.c</itemPath>
       <itemPath>lcdisplay.c</itemPath>
       <itemPath>mousehandling.c</itemPath>
@@ -64,7 +66,11 @@
           <commandLine>-lX11 -lXft -lXrandr -lpthread</commandLine>
         </linkerTool>
       </compileType>
-      <item path="arm_trace_filer_reader.c" ex="false" tool="0" flavor2="0">
+      <item path="arm_trace_file_reader.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="armdisassemble.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="armdisassemble.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="armthread.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -109,7 +115,11 @@
           <developmentMode>5</developmentMode>
         </asmTool>
       </compileType>
-      <item path="arm_trace_filer_reader.c" ex="false" tool="0" flavor2="0">
+      <item path="arm_trace_file_reader.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="armdisassemble.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="armdisassemble.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="armthread.h" ex="false" tool="3" flavor2="0">
       </item>

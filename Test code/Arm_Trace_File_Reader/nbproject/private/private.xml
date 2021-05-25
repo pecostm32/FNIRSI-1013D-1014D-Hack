@@ -8,8 +8,9 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Arm_Trace_File_Reader/todo.txt</file>
-            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Arm_Trace_File_Reader/armv5tl.h</file>
-            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Arm_Trace_File_Reader/arm_trace_filer_reader.c</file>
+            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Arm_Trace_File_Reader/armdisassemble.h</file>
+            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Arm_Trace_File_Reader/arm_trace_file_reader.c</file>
+            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Arm_Trace_File_Reader/armdisassemble.c</file>
         </group>
     </open-files>
 </project-private>
