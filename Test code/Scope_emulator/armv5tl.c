@@ -253,7 +253,7 @@ void ArmV5tlCore(PARMV5TL_CORE core)
   if(core->tracebufferenabled)
   {
     //Check on trace trigger address
-    if(core->tracetriggeraddress == *core->program_counter)
+    if((core->tracetriggeraddress == *core->program_counter) && (core->tracetriggered == 0))
     {
       //Enable trace writing
       core->tracetriggered = 1;
@@ -312,7 +312,7 @@ void ArmV5tlCore(PARMV5TL_CORE core)
     {
       //get the current instruction
       core->arm_instruction.instr = (u_int32_t)*memorypointer;
-    
+     
       //Check the condition bits against the status bits to decide if the instruction needs to be executed
       switch(core->arm_instruction.base.cond)
       {
