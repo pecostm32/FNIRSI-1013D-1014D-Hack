@@ -472,6 +472,7 @@ union tagARM_INSTRUCTION
 #define ARM_MEMORY_WORD          0x0000
 #define ARM_MEMORY_SHORT         0x0001
 #define ARM_MEMORY_BYTE          0x0002
+#define ARM_MEMORY_DWORD         0x0003
 
 #define ARM_SIGN_EXTEND          0x0010
 
@@ -493,15 +494,17 @@ void ArmV5tlDisassemble(char *instrstr, u_int32_t strsize, ARM_INSTRUCTION arm_i
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void ArmLSImmediate(ARM_INSTRUCTION arm_instruction, char *instrstr, char *cond);
-void ArmLSRegister(ARM_INSTRUCTION arm_instruction, char *instrstr, char *cond);
-void ArmLSExtraImmediate(ARM_INSTRUCTION arm_instruction, char *instrstr, char *cond);
-void ArmLSExtraRegister(ARM_INSTRUCTION arm_instruction, char *instrstr, char *cond);
-void ArmLS(ARM_INSTRUCTION arm_instruction, u_int32_t mode, char *instrstr, char *cond, char *op2);
+void ArmLSImmediate(ARM_INSTRUCTION arm_instruction, char *instrstr);
+void ArmLSRegister(ARM_INSTRUCTION arm_instruction, char *instrstr);
+void ArmLSExtraImmediate(ARM_INSTRUCTION arm_instruction, char *instrstr);
+void ArmLSExtraRegister(ARM_INSTRUCTION arm_instruction, char *instrstr);
+void ArmLS(ARM_INSTRUCTION arm_instruction, u_int32_t mode, char *instrstr, const char *op2);
 
-void ArmMSRImmediate(ARM_INSTRUCTION arm_instruction, char *instrstr, char *cond);
-void ArmMSRRegister(ARM_INSTRUCTION arm_instruction, char *instrstr, char *cond);
-void ArmMSR(ARM_INSTRUCTION arm_instruction, char *instrstr, char *cond, const char *op2);
+void ArmMSRImmediate(ARM_INSTRUCTION arm_instruction, char *instrstr);
+void ArmMSRRegister(ARM_INSTRUCTION arm_instruction, char *instrstr);
+void ArmMSR(ARM_INSTRUCTION arm_instruction, char *instrstr, const char *op2);
+
+void ArmMRS(ARM_INSTRUCTION arm_instruction, char *instrstr);
 
 
 //----------------------------------------------------------------------------------------------------------------------------------

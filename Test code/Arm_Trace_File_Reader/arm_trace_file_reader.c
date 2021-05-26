@@ -9,9 +9,9 @@
 #include "lcdisplay.h"
 #include "buttons.h"
 
-#include "armv5tl.h"
+#include "armtracedata.h"
 
-#include "resources.h"  //All the panel resources are defined in this file. Needs to be the last include file
+#include "armdisassemble.h"
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -22,18 +22,9 @@ void DrawTracePanel(tagXlibContext *xc);
 #define DESIGN_WIDTH       1600
 #define DESIGN_HEIGHT      1000
 
-//Need display for trace list to be 88 chars wide by 24 lines
-
-//A second display of 88 x 20 lines for registers and memory
-//Need two additional displays for the registers and the memory
-//12 lines by 88 for the registers
-
-//4 lines for the memory to show a max 4x4 array of words or a single word, half word or byte when that type is set
-
 //----------------------------------------------------------------------------------------------------------------------------------
 
 #define TextColor               "#D5D5D5"
-#define LogoColor               "#858585"
 
 #define ArmLineColor            0x000000
 #define ArmPanelColor           0x414244
@@ -90,7 +81,6 @@ int main(int argc,char **argv)
     
     fclose(fp);
   }
-  
   
   //Basic setup for the xlib system  
 	Display *display = XOpenDisplay(NULL);
@@ -170,18 +160,11 @@ int main(int argc,char **argv)
   //Create all the used fonts
   fsize = 14 * xc.scaler;
   xc.font[0] = XftFontOpen(display, screen_num, XFT_FAMILY, XftTypeString, "Arial", XFT_WEIGHT, XftTypeInteger, XFT_WEIGHT_BOLD, XFT_SIZE, XftTypeDouble, fsize, XFT_ANTIALIAS, XftTypeBool, True, NULL);
-
-  fsize = 12 * xc.scaler;
-  xc.font[1] = XftFontOpen(display, screen_num, XFT_FAMILY, XftTypeString, "Arial Narrow", XFT_WEIGHT, XftTypeInteger, XFT_WEIGHT_BOLD, XFT_SIZE, XftTypeDouble, fsize, XFT_ANTIALIAS, XftTypeBool, True, NULL);
   
   //Create the used font colors
   rflag = XftColorAllocName(display, xc.visual, xc.cmap, TextColor, &xc.color[0]);
-
-  rflag = XftColorAllocName(display, xc.visual, xc.cmap, LogoColor, &xc.color[1]);
   
   xc.draw = XftDrawCreate(display, win, xc.visual, xc.cmap);
-  
-  
   
   //Keep running until window is destroyed
 	while(rflag)
@@ -290,14 +273,20 @@ void DrawTracePanel(tagXlibContext *xc)
   char exetext[4][4] = { "NO ", "YES", "   ", "   " };
   
   char displaytext[128];
-
+  char disassemtext[94];
+  
   n = listitems - 31;
+  n = 0;
   
   for(i=0;i<31;i++)
   {
 
-    //memset(displaytext, 0x20, sizeof(displaytext));
-    snprintf(displaytext, sizeof(displaytext), "0x%08X  0x%08X  %s       ??", tracelist[n].instruction_address, tracelist[n].instruction_word, exetext[tracelist[n].execution_status & 3]);
+    memset(disassemtext, 0x20, sizeof(disassemtext));
+    disassemtext[0] = 0;
+    
+    ArmV5tlDisassemble(disassemtext, sizeof(disassemtext), (ARM_INSTRUCTION)tracelist[n].instruction_word);
+  
+    snprintf(displaytext, sizeof(displaytext), "0x%08X  0x%08X  %s       %s", tracelist[n].instruction_address, tracelist[n].instruction_word, exetext[tracelist[n].execution_status & 3], disassemtext);
     LcdDisplayText(&lcdisplays[0], 0, i + 1, displaytext);
     
     n++;

@@ -28,17 +28,31 @@ const char *regnames[16] =
   "pc"
 };
 
+const char *condnames[16] = 
+{
+  "eq",
+  "ne",
+  "cs",
+  "cc",
+  "mi",
+  "pl",
+  "vs",
+  "vc",
+  "hi",
+  "ls",
+  "ge",
+  "lt",
+  "gt",
+  "le",
+  "  ",
+  "  "
+};
+
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void ArmV5tlDisassemble(char *instrstr, u_int32_t strsize, ARM_INSTRUCTION arm_instruction)
 {
   u_int32_t idx = 0;
-  
-  char *instrname;
-  char *cond;
-  char *op1name;
-  char *op2name;
-  char *op3name;
   
   //Need a string pointer and it has to have adequate size
   if((instrstr == NULL) || (strsize < 90))
@@ -97,70 +111,6 @@ void ArmV5tlDisassemble(char *instrstr, u_int32_t strsize, ARM_INSTRUCTION arm_i
   }
   else
   {
-    //Decode the condition bits for instruction name extension
-    switch(arm_instruction.base.cond)
-    {
-      case ARM_COND_EQUAL:
-        cond = "eq";
-        break;
-
-      case ARM_COND_NOT_EQUAL:
-        cond = "ne";
-        break;
-
-      case ARM_COND_CARRY_SET:
-        cond = "cs";
-        break;
-
-      case ARM_COND_CARRY_CLEAR:
-        cond = "cc";
-        break;
-
-      case ARM_COND_MINUS:
-        cond = "mi";
-        break;
-
-      case ARM_COND_PLUS:
-        cond = "pl";
-        break;
-
-      case ARM_COND_OVERFLOW:
-        cond = "vs";
-        break;
-
-      case ARM_COND_NO_OVERFLOW:
-        cond = "vc";
-        break;
-
-      case ARM_COND_HIGHER:
-        cond = "hi";
-        break;
-
-      case ARM_COND_LOWER_SAME:
-        cond = "ls";
-        break;
-
-      case ARM_COND_GREATER_EQUAL:
-        cond = "ge";
-        break;
-
-      case ARM_COND_LESS_THAN:
-        cond = "lt";
-        break;
-
-      case ARM_COND_GREATER_THAN:
-        cond = "gt";
-        break;
-
-      case ARM_COND_LESS_THAN_EQUAL:
-        cond = "le";
-        break;
-
-      case ARM_COND_ALWAYS:
-        cond = "  ";
-        break;
-    }
-    
     //Decode the conditional instructions
     switch(arm_instruction.base.type)
     {
@@ -190,12 +140,12 @@ void ArmV5tlDisassemble(char *instrstr, u_int32_t strsize, ARM_INSTRUCTION arm_i
           else if(arm_instruction.lsx.i)
           {
             //Handle extra load and store immediate instructions
-//            ArmV5tlLSExtraImmediate(core);
+            ArmLSExtraImmediate(arm_instruction, instrstr);
           }
           //Leaves the extra load store register instructions
           else
           {
-//            ArmV5tlLSExtraRegister(core);
+            ArmLSExtraRegister(arm_instruction, instrstr);
           }
         }
         //Check for miscellaneous instructions. Bit20 (s) needs to be cleared and opcode bit3 is set and bit2 is cleared (So opcodes 8,9,10 and 11)
@@ -208,12 +158,12 @@ void ArmV5tlDisassemble(char *instrstr, u_int32_t strsize, ARM_INSTRUCTION arm_i
             if(arm_instruction.msrr.d)
             {
               //Move register to status register
-              ArmMSRRegister(arm_instruction, instrstr, cond);
+              ArmMSRRegister(arm_instruction, instrstr);
             }
             else
             {
               //Move status register to register
-//              ArmV5tlMRS(core);
+              ArmMRS(arm_instruction, instrstr);
             }
           }
           else
@@ -275,7 +225,7 @@ void ArmV5tlDisassemble(char *instrstr, u_int32_t strsize, ARM_INSTRUCTION arm_i
         else if((arm_instruction.type1.s == 0) && ((arm_instruction.type1.opcode & 0x0D) == 0x09))
         {
           //Move immediate to status register
-  //        ArmV5tlMSRImmediate(core);
+          ArmMSRImmediate(arm_instruction, instrstr);
         }
         else
         {
@@ -286,7 +236,7 @@ void ArmV5tlDisassemble(char *instrstr, u_int32_t strsize, ARM_INSTRUCTION arm_i
 
       case 2:
         //Load / store immediate offset instructions
-//        ArmV5tlLSImmediate(core);
+        ArmLSImmediate(arm_instruction, instrstr);
         break;
         
       case 3:
@@ -306,7 +256,7 @@ void ArmV5tlDisassemble(char *instrstr, u_int32_t strsize, ARM_INSTRUCTION arm_i
         else
         {
           //Load / store register offset instructions
-//          ArmV5tlLSRegister(core);
+          ArmLSRegister(arm_instruction, instrstr);
         }
         break;
 
@@ -354,61 +304,34 @@ void ArmV5tlDisassemble(char *instrstr, u_int32_t strsize, ARM_INSTRUCTION arm_i
   }
 }
 
+//----------------------------------------------------------------------------------------------------------------------------------
 
-
+const char signtext[2][2]  = { "-", "" };
+const char savetext[2][2]  = { "", "!" };
+const char shifttext[4][4] = { "lsl", "lsr", "asr", "ror" };
+const char lstext[2][4]    = { "str", "ldr" };
+const char dstext[4][2]    = { "", "h", "b", "d" };
+const char setext[2][2]    = { "", "s" };
+const char ttext[2][2]     = { "", "t" };
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Load and store immediate instruction handling
-void ArmLSImmediate(ARM_INSTRUCTION arm_instruction, char *instrstr, char *cond)
+void ArmLSImmediate(ARM_INSTRUCTION arm_instruction, char *instrstr)
 {
   //Get the input data. Assume target is a word
   u_int32_t mode = ARM_MEMORY_WORD;
-  u_int32_t vn = *registers[current_bank][arm_instruction.lsi.rn];
-  u_int32_t addr;
-  
-  //             I     B   S
-  //LDR   cccc 011 P U 0 W 1 nnnn dddd aaaa aaaa aaaa
-  //LDRT  cccc 011 0 U 0 1 1 nnnn dddd aaaa aaaa aaaa
-  //LDRB  cccc 011 P U 1 W 1 nnnn dddd aaaa aaaa aaaa
-  //LDRBT cccc 011 0 U 1 1 1 nnnn dddd aaaa aaaa aaaa
-  
-  
+  char      op2[32];
   
   //Check on pre or post indexed
   if(arm_instruction.lsi.p == 0)
   {
-    //Do post indexed
-    addr = vn;
-    
-    //Update rn
-    if(arm_instruction.lsi.u)
-    {
-      //When u = 1 add the offset
-      *registers[current_bank][arm_instruction.lsi.rn] += arm_instruction.lsi.of;
-    }
-    else
-    {
-      //When u = 0 subtract the offset
-      *registers[current_bank][arm_instruction.lsi.rn] -= arm_instruction.lsi.of;
-    }
+    //Post indexed ==> [rn], #+/-offset_12
+    sprintf(op2, "[%s], #%s%d", regnames[arm_instruction.lsi.rn], signtext[arm_instruction.lsi.u], arm_instruction.lsi.of);
   }
   else
   {
-    //Immediate offset or pre-indexed
-    if(arm_instruction.lsi.u)
-    {
-      //When u = 1 add the offset
-      addr = vn + arm_instruction.lsi.of;
-    }
-    else
-    {
-      //When u = 0 subtract the offset
-      addr = vn - arm_instruction.lsi.of;
-    }
-    
-    //Check if rn needs to be updated
-    if(arm_instruction.lsi.w)
-      *registers[current_bank][arm_instruction.lsi.rn] = addr;
+    //Immediate offset or pre-indexed ==> [rn, #+/-offset_12]{!}
+    sprintf(op2, "[%s, #%s%d]%s", regnames[arm_instruction.lsi.rn], signtext[arm_instruction.lsi.u], arm_instruction.lsi.of, savetext[arm_instruction.lsi.w]);
   }
   
   //Check if action needs to be done on a byte
@@ -419,140 +342,45 @@ void ArmLSImmediate(ARM_INSTRUCTION arm_instruction, char *instrstr, char *cond)
   }
   
   //Decode the actual instruction
-  ArmLS(arm_instruction, mode, instrstr, cond, op2);
+  ArmLS(arm_instruction, mode, instrstr, op2);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Load and store register instruction handling
-void ArmLSRegister(ARM_INSTRUCTION arm_instruction, char *instrstr, char *cond)
+void ArmLSRegister(ARM_INSTRUCTION arm_instruction, char *instrstr)
 {
   //Get the input data. Assume target is a word
   u_int32_t mode = ARM_MEMORY_WORD;
-  u_int32_t vm = *registers[current_bank][arm_instruction.lsr.rm];
-  u_int32_t vn = *registers[current_bank][arm_instruction.lsr.rn];
-  u_int32_t addr;
-  u_int32_t sa;
-
-  //Amend the values when r15 (pc) is used
-  if(arm_instruction.lsr.rn == 15)
-  {
-    vn += 8;
-  }
-
-  //Same for the to be shifted register
-  if(arm_instruction.lsr.rm == 15)
-  {
-    vm += 8;
-  }
-  
-  //shifting is only done when scaled mode bits11:4 not zero
-  if(arm_instruction.lsrn.ns != 0)
-  {
-    //Get the immediate shift amount
-    sa = arm_instruction.lsr.sa;
-
-    //Take action based on the shift mode
-    switch(arm_instruction.lsr.sm)
-    {
-      case ARM_SHIFT_MODE_LSL:
-        //For lsl shifting is always done since sa can't be zero
-        vm <<= sa;
-        break;
-
-      case ARM_SHIFT_MODE_LSR:
-        //Check if an actual shift amount is given
-        if(sa == 0)
-        {
-          //When not, it is treated as 32
-          vm = 0;
-        }
-        else
-        {
-          //Normal lsr shifting is done
-          vm >>= sa;
-        }
-        break;
-
-      case ARM_SHIFT_MODE_ASR:
-        //Check if an actual shift amount is given
-        if(sa == 0)
-        {
-          //When not, it is treated as 32
-          if((vm & 0x80000000) == 0)
-          {
-            vm = 0;
-          }
-          else
-          {
-            vm = 0xFFFFFFFF;
-          }
-        }
-        else
-        {
-          //Check if sign needs to be extended
-          if((vm & 0x80000000) == 0)
-          {
-            //No so normal shift right does the trick
-            vm >>= sa;
-          }
-          else
-          {
-            //Otherwise inversions before and after shifting does the trick
-            vm = ~(~vm >> sa);
-          }
-        }
-        break;
-
-      case ARM_SHIFT_MODE_ROR:
-        if(sa == 0)
-        {
-          //Special case here where the shift amount is 0. Rotate right with extend. Carry is an extra bit
-          vm = (status->flags.C << 31) | (vm >> 1);
-        }
-        else
-        {
-          //rotate the bits
-          vm = (vm >> sa) | (vm << (32 - sa));
-        }
-        break;
-    }
-  }
+  char      op2[32];
   
   //Check on pre or post indexed
   if(arm_instruction.lsr.p == 0)
   {
-    //Do post indexed
-    addr = vn;
-    
-    //Update rn
-    if(arm_instruction.lsr.u)
+    //See if without shift
+    if(arm_instruction.lsrn.ns == 0)
     {
-      //When u = 1 add the offset
-      *registers[current_bank][arm_instruction.lsr.rn] += vm;
+      //Post indexed no shift ==> [rn], +/-rm
+      sprintf(op2, "[%s], #%s%s", regnames[arm_instruction.lsr.rn], signtext[arm_instruction.lsr.u], regnames[arm_instruction.lsr.rm]);
     }
     else
     {
-      //When u = 0 subtract the offset
-      *registers[current_bank][arm_instruction.lsr.rn] -= vm;
+      //Post indexed shift ==> [rn], +/-rm, shift #shift_imm
+      sprintf(op2, "[%s], #%s%s, %s #%d", regnames[arm_instruction.lsr.rn], signtext[arm_instruction.lsr.u], regnames[arm_instruction.lsr.rm], shifttext[arm_instruction.lsr.sm], arm_instruction.lsr.sa);
     }
   }
   else
   {
-    //Immediate offset or pre-indexed
-    if(arm_instruction.lsr.u)
+    //See if without shift
+    if(arm_instruction.lsrn.ns == 0)
     {
-      //When u = 1 add the offset
-      addr = vn + vm;
+      //Offset or pre indexed no shift ==> [rn, +/-rm]{!}
+      sprintf(op2, "[%s, #%s%s]%s", regnames[arm_instruction.lsr.rn], signtext[arm_instruction.lsr.u], regnames[arm_instruction.lsr.rm], savetext[arm_instruction.lsr.w]);
     }
     else
     {
-      //When u = 0 subtract the offset
-      addr = vn - vm;
+      //Offset or pre indexed shift ==> [rn], +/-rm, shift #shift_imm
+      sprintf(op2, "[%s, #%s%s, %s #%d]%s", regnames[arm_instruction.lsr.rn], signtext[arm_instruction.lsr.u], regnames[arm_instruction.lsr.rm], shifttext[arm_instruction.lsr.sm], arm_instruction.lsr.sa, savetext[arm_instruction.lsr.w]);
     }
-    
-    //Check if rn needs to be updated
-    if(arm_instruction.lsr.w)
-      *registers[current_bank][arm_instruction.lsr.rn] = addr;
   }
    
   //Check if action needs to be done on a byte
@@ -562,61 +390,29 @@ void ArmLSRegister(ARM_INSTRUCTION arm_instruction, char *instrstr, char *cond)
     mode = ARM_MEMORY_BYTE;
   }
   
-  //Do the actual processing
-  ArmV5tlLS(core, addr, mode);
+  //Decode the actual instruction
+  ArmLS(arm_instruction, mode, instrstr, op2);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Load and store extra immediate instruction handling
-void ArmLSExtraImmediate(ARM_INSTRUCTION arm_instruction, char *instrstr, char *cond)
+void ArmLSExtraImmediate(ARM_INSTRUCTION arm_instruction, char *instrstr)
 {
   //The offset is constructed by shifting the high part 4 positions and oring the low part. (rs = immedH, rm = immedL)
   u_int32_t of = (arm_instruction.lsx.rs << 4) | arm_instruction.lsx.rm;
-  u_int32_t vn = *registers[current_bank][arm_instruction.lsx.rn];
   u_int32_t mode = ARM_MEMORY_WORD;
-  u_int32_t addr;
-  
-  //Amend the value when r15 (pc) is used
-  if(arm_instruction.lsx.rn == 15)
-  {
-    vn += 8;
-  }
+  char      op2[32];
   
   //Check on pre or post indexed
   if(arm_instruction.lsx.p == 0)
   {
-    //Do post indexed
-    addr = vn;
-    
-    //Update rn
-    if(arm_instruction.lsx.u)
-    {
-      //When u = 1 add the offset
-      *registers[current_bank][arm_instruction.lsx.rn] += of;
-    }
-    else
-    {
-      //When u = 0 subtract the offset
-      *registers[current_bank][arm_instruction.lsx.rn] -= of;
-    }
+    //Post indexed ==> [rn], #+/-offset_8
+    sprintf(op2, "[%s], #%s%d", regnames[arm_instruction.lsx.rn], signtext[arm_instruction.lsx.u], of);
   }
   else
   {
-    //Immediate offset or pre-indexed
-    if(arm_instruction.lsx.u)
-    {
-      //When u = 1 add the offset
-      addr = vn + of;
-    }
-    else
-    {
-      //When u = 0 subtract the offset
-      addr = vn - of;
-    }
-    
-    //Check if rn needs to be updated
-    if(arm_instruction.lsx.w)
-      *registers[current_bank][arm_instruction.lsx.rn] = addr;
+    //Immediate offset or pre-indexed ==> [rn, #+/-offset_8]{!}
+    sprintf(op2, "[%s, #%s%d]%s", regnames[arm_instruction.lsx.rn], signtext[arm_instruction.lsx.u], of, savetext[arm_instruction.lsx.w]);
   }
   
   //Check if normal half word instructions
@@ -646,80 +442,32 @@ void ArmLSExtraImmediate(ARM_INSTRUCTION arm_instruction, char *instrstr, char *
     //Set the load store bit for the handling function to work
     arm_instruction.lsx.l = ~(arm_instruction.lsx.op1 & 1);
 
-    //Make sure rd is even
-    arm_instruction.lsx.rd &= 0x0E;
-    
-    //Process the first word
-    ArmV5tlLS(core, addr, mode);
-    
-    //Add 4 to the address for the next word
-    addr += 4;
-    
-    //Select the next register
-    arm_instruction.lsx.rd++;
+    //Set mode to double word
+    mode = ARM_MEMORY_DWORD;
   }
   
-  //Do the actual processing
-  ArmV5tlLS(core, addr, mode);
+  //Decode the actual instruction
+  ArmLS(arm_instruction, mode, instrstr, op2);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Load and store extra immediate instruction handling
-void ArmLSExtraRegister(ARM_INSTRUCTION arm_instruction, char *instrstr, char *cond)
+void ArmLSExtraRegister(ARM_INSTRUCTION arm_instruction, char *instrstr)
 {
   //Get the input data. Assume target is a word
   u_int32_t mode = ARM_MEMORY_WORD;
-  u_int32_t vm = *registers[current_bank][arm_instruction.lsx.rm];
-  u_int32_t vn = *registers[current_bank][arm_instruction.lsx.rn];
-  u_int32_t addr;
-
-  //Amend the values when r15 (pc) is used
-  if(arm_instruction.lsx.rn == 15)
-  {
-    vn += 8;
-  }
-
-  //Same for the to be shifted register
-  if(arm_instruction.lsx.rm == 15)
-  {
-    vm += 8;
-  }
+  char      op2[32];
   
   //Check on pre or post indexed
   if(arm_instruction.lsx.p == 0)
   {
-    //Do post indexed
-    addr = vn;
-    
-    //Update rn
-    if(arm_instruction.lsx.u)
-    {
-      //When u = 1 add the offset
-      *registers[current_bank][arm_instruction.lsx.rn] += vm;
-    }
-    else
-    {
-      //When u = 0 subtract the offset
-      *registers[current_bank][arm_instruction.lsx.rn] -= vm;
-    }
+    //Post indexed ==> [rn], +/-rm
+    sprintf(op2, "[%s], #%s%s", regnames[arm_instruction.lsx.rn], signtext[arm_instruction.lsx.u], regnames[arm_instruction.lsx.rm]);
   }
   else
   {
-    //Immediate offset or pre-indexed
-    if(arm_instruction.lsx.u)
-    {
-      //When u = 1 add the offset
-      addr = vn + vm;
-    }
-    else
-    {
-      //When u = 0 subtract the offset
-      addr = vn - vm;
-    }
-    
-    //Check if rn needs to be updated
-    if(arm_instruction.lsx.w)
-      *registers[current_bank][arm_instruction.lsx.rn] = addr;
+    //Offset or pre indexed ==> [rn, +/-rm]{!}
+    sprintf(op2, "[%s, #%s%s]%s", regnames[arm_instruction.lsx.rn], signtext[arm_instruction.lsx.u], regnames[arm_instruction.lsx.rm], savetext[arm_instruction.lsx.w]);
   }
 
   //Check if normal half word instructions
@@ -749,113 +497,38 @@ void ArmLSExtraRegister(ARM_INSTRUCTION arm_instruction, char *instrstr, char *c
     //Set the load store bit for the handling function to work
     arm_instruction.lsx.l = ~(arm_instruction.lsx.op1 & 1);
 
-    //Make sure rd is even
-    arm_instruction.lsx.rd &= 0x0E;
-    
-    //Process the first word
-    ArmV5tlLS(core, addr, mode);
-    
-    //Add 4 to the address for the next word
-    addr += 4;
-    
-    //Select the next register
-    arm_instruction.lsx.rd++;
+    //Set mode to double word
+    mode = ARM_MEMORY_DWORD;
   }
   
-  //Do the actual processing
-  ArmV5tlLS(core, addr, mode);
+  //Decode the actual instruction
+  ArmLS(arm_instruction, mode, instrstr, op2);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Load and store instruction handling
-void ArmLS(ARM_INSTRUCTION arm_instruction, u_int32_t mode, char *instrstr, char *cond, char *op2)
+void ArmLS(ARM_INSTRUCTION arm_instruction, u_int32_t mode, char *instrstr, const char *op2)
 {
-    
-
-    //Perform the requested action on the requested size mode
-    switch(memtype)  
-    {
-      case ARM_MEMORY_WORD:
-        //Check if a load or a store is requested
-        if(arm_instruction.lsr.l)
-        {
-          //Load from found memory address
-          *registers[current_bank][arm_instruction.lsr.rd] = *(u_int32_t *)memory;
-        }
-        else
-        {
-          //Store to found memory address
-          *(u_int32_t *)memory = *registers[current_bank][arm_instruction.lsr.rd];
-        }
-        break;
-        
-      case ARM_MEMORY_SHORT:
-        //Check if a load or a store is requested
-        if(arm_instruction.lsr.l)
-        {
-          //Load from found memory address
-          *registers[current_bank][arm_instruction.lsr.rd] = *(u_int16_t *)memory;
-          
-          //Sign extend here when needed
-          if((mode & ARM_SIGN_EXTEND) && (*(u_int16_t *)memory & 0x8000))
-          {
-            *registers[current_bank][arm_instruction.lsr.rd] |= 0xFFFF0000;
-          }
-        }
-        else
-        {
-          //Store to found memory address
-          *(u_int16_t *)memory = *registers[current_bank][arm_instruction.lsr.rd];
-        }
-        break;
-        
-      case ARM_MEMORY_BYTE:
-        //Check if a load or a store is requested
-        if(arm_instruction.lsr.l)
-        {
-          //Load from found memory address
-          *registers[current_bank][arm_instruction.lsr.rd] = *(u_int8_t *)memory;
-          
-          //Sign extend here when needed
-          if((mode & ARM_SIGN_EXTEND) && (*(u_int8_t *)memory & 0x80))
-          {
-            *registers[current_bank][arm_instruction.lsr.rd] |= 0xFFFFFF00;
-          }
-        }
-        else
-        {
-          //Store to found memory address
-          *(u_int8_t *)memory = (u_int8_t)*registers[current_bank][arm_instruction.lsr.rd];
-        }
-        break;
-    }
-            
-    //Check if store and peripheral write function set for this address
-    if((arm_instruction.lsr.l == 0) && (periph_write_func))
-    {
-      //Call it if so
-      periph_write_func(core, address, memtype);
-    }
-    
-    //Check if program counter used as target
-    if((arm_instruction.lsr.l) && (arm_instruction.lsr.rd == 15))
-    {
-      //Signal no increment if so
-      pcincrvalue = 0;
-    }
-  }
-  else
+  u_int32_t memtype = mode & ARM_MEMORY_MASK;
+  u_int32_t signextend = 0;
+  u_int32_t translate = 0;
+  
+  //Check if sign extend function
+  if(mode & ARM_SIGN_EXTEND)
   {
-    //Need exception here
+    signextend = 1;
   }
   
+  //Print the instruction name (base name, sign extend, data size, translation and condition)
+  sprintf(instrstr, "%s%s%s%s%s         ", lstext[arm_instruction.lsr.l], setext[signextend], dstext[memtype], ttext[translate], condnames[arm_instruction.base.cond]);
+  
+  //Print the remainder of the instruction
+  sprintf(&instrstr[12], "%s, %s", regnames[arm_instruction.lsr.rd], op2);
 }
-
-*/
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Move immediate to status register
-void ArmMSRImmediate(ARM_INSTRUCTION arm_instruction, char *instrstr, char *cond)
+void ArmMSRImmediate(ARM_INSTRUCTION arm_instruction, char *instrstr)
 {
   //Get the input data
   u_int32_t vm = arm_instruction.msri.im;
@@ -873,24 +546,23 @@ void ArmMSRImmediate(ARM_INSTRUCTION arm_instruction, char *instrstr, char *cond
   snprintf(op2, sizeof(op2), "#%d", vm);
    
   //Decode the actual instruction
-  ArmMSR(arm_instruction, instrstr, cond, op2);
+  ArmMSR(arm_instruction, instrstr, op2);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Move register to status register
-void ArmMSRRegister(ARM_INSTRUCTION arm_instruction, char *instrstr, char *cond)
+void ArmMSRRegister(ARM_INSTRUCTION arm_instruction, char *instrstr)
 {
   //Decode the actual instruction
-  ArmMSR(arm_instruction, instrstr, cond, regnames[arm_instruction.msrr.rm]);
+  ArmMSR(arm_instruction, instrstr, regnames[arm_instruction.msrr.rm]);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Move to status register
-void ArmMSR(ARM_INSTRUCTION arm_instruction, char *instrstr, char *cond, const char *op2)
+void ArmMSR(ARM_INSTRUCTION arm_instruction, char *instrstr, const char *op2)
 {
   char cpsrfield[12];
   char *ptr = &cpsrfield[5];
-  
 
   //Check which register is the destination
   if(arm_instruction.msri.r == 0)
@@ -925,9 +597,27 @@ void ArmMSR(ARM_INSTRUCTION arm_instruction, char *instrstr, char *cond, const c
   *ptr++ = 0;
 
   //Print the instruction
-  sprintf(instrstr, "msr%s       %s, %s", cond, cpsrfield, op2);
+  sprintf(instrstr, "msr%s       %s, %s", condnames[arm_instruction.base.cond], cpsrfield, op2);
 }
 
+//----------------------------------------------------------------------------------------------------------------------------------
+//Move status register to register
+void ArmMRS(ARM_INSTRUCTION arm_instruction, char *instrstr)
+{
+  char *op2;
+  
+  //Check if the cpsr or the spsr is the source
+  if(arm_instruction.mrs.r == 0)
+  {
+    op2 = "cpsr";
+  }
+  else
+  {
+    op2 = "spsr";
+  }
+
+  sprintf(instrstr, "mrs%s       %s, %s", condnames[arm_instruction.base.cond], regnames[arm_instruction.mrs.rd], op2);
+}
 
 /*  
 
@@ -1668,33 +1358,6 @@ void ArmV5tlMUL(PARMV5TL_CORE core)
   }
 }
 
-//----------------------------------------------------------------------------------------------------------------------------------
-//Move status register to register
-void ArmV5tlMRS(PARMV5TL_CORE core)
-{
-  //Check if the cpsr or the spsr is the source
-  if(arm_instruction.mrs.r == 0)
-  {
-    //Copy the cpsr into the destination register
-    *registers[current_bank][arm_instruction.mrs.rd] = status->word;
-  }
-  else
-  {
-    //Check if there is a saved status register for the current register bank
-    if(registers[current_bank][ARM_REG_SPSR_IDX])
-    {
-      //Copy the spsr if available
-      *registers[current_bank][arm_instruction.mrs.rd] = *registers[current_bank][ARM_REG_SPSR_IDX];
-    }
-  }
-
-  //Check if program counter used as destination
-  if(arm_instruction.mrs.rd == 15)
-  {
-    //Signal no increment if so
-    pcincrvalue = 0;
-  }
-}
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Move register to coprocessor or coprocessor to register
