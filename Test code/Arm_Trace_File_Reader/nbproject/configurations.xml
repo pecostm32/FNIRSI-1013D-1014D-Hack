@@ -5,12 +5,10 @@
                    displayName="Header Files"
                    projectFiles="true">
       <itemPath>armdisassemble.h</itemPath>
-      <itemPath>armthread.h</itemPath>
-      <itemPath>armv5tl.h</itemPath>
+      <itemPath>armtracedata.h</itemPath>
       <itemPath>buttons.h</itemPath>
       <itemPath>lcdisplay.h</itemPath>
       <itemPath>mousehandling.h</itemPath>
-      <itemPath>resources.h</itemPath>
       <itemPath>xlibfunctions.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
@@ -72,9 +70,7 @@
       </item>
       <item path="armdisassemble.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="armthread.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="armv5tl.h" ex="false" tool="3" flavor2="0">
+      <item path="armtracedata.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="buttons.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -87,8 +83,6 @@
       <item path="mousehandling.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="mousehandling.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="resources.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="xlibfunctions.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -121,9 +115,7 @@
       </item>
       <item path="armdisassemble.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="armthread.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="armv5tl.h" ex="false" tool="3" flavor2="0">
+      <item path="armtracedata.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="buttons.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -136,8 +128,6 @@
       <item path="mousehandling.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="mousehandling.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="resources.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="xlibfunctions.c" ex="false" tool="0" flavor2="0">
       </item>
