@@ -8,49 +8,24 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-const char *regnames[16] = 
-{
-  "r0",
-  "r1",
-  "r2",
-  "r3",
-  "r4",
-  "r5",
-  "r6",
-  "r7",
-  "r8",
-  "r9",
-  "r10",
-  "r11",
-  "r12",
-  "sp",
-  "lr",
-  "pc"
-};
-
-const char *condnames[16] = 
-{
-  "eq",
-  "ne",
-  "cs",
-  "cc",
-  "mi",
-  "pl",
-  "vs",
-  "vc",
-  "hi",
-  "ls",
-  "ge",
-  "lt",
-  "gt",
-  "le",
-  "  ",
-  "  "
-};
+const char *regnames[16]  = { "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11", "r12", "sp", "lr", "pc" };
+const char *condnames[16] = { "eq", "ne", "cs", "cc", "mi", "pl", "vs", "vc", "hi", "ls", "ge", "lt", "gt", "le", "", "" };
+const char *signtext[2]   = { "-", "" };
+const char *savetext[2]   = { "", "!" };
+const char *ictext[2]     = { "", "^" };
+const char *shifttext[4]  = { "lsl", "lsr", "asr", "ror" };
+const char *lstext[2]     = { "str", "ldr" };
+const char *lsmtext[2]    = { "stm", "ldm" };
+const char *amtext[4]     = { "da", "db", "ia", "ib" };
+const char *dstext[4]     = { "", "h", "b", "d" };
+const char *setext[2]     = { "", "s" };
+const char *ttext[2]      = { "", "t" };
+const char *dprtext[16]   = { "and", "eor", "sub", "rsb", "add", "adc", "sbc", "rsc", "tst", "teq", "cmp", "cmn", "orr", "mov", "bic", "mvn" }; 
+const char *bltext[2]     = { "b", "bl" };
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void ArmV5tlDisassemble(char *instrstr, u_int32_t strsize, ARM_INSTRUCTION arm_instruction)
+void ArmDisassemble(char *instrstr, u_int32_t strsize, u_int32_t program_counter, ARM_INSTRUCTION arm_instruction)
 {
   u_int32_t idx = 0;
   
@@ -89,8 +64,7 @@ void ArmV5tlDisassemble(char *instrstr, u_int32_t strsize, ARM_INSTRUCTION arm_i
 
       case 5:
         //Branch with link and change to thumb
-        //This one is actually used!!!!!!!
-        //BLX
+        ArmBranchLinkExchange1(program_counter, arm_instruction, instrstr);
         break;
 
       case 6:
@@ -181,18 +155,17 @@ void ArmV5tlDisassemble(char *instrstr, u_int32_t strsize, ARM_INSTRUCTION arm_i
 
                 case 1:
                   //Branch and exchange instruction set thumb
-//                  ArmV5tlBranchExchangeT(core);
+                  ArmBranchExchangeT(arm_instruction, instrstr);
                   break;
 
                 case 2:
                   //Branch and exchange instruction set java (jazelle)
-                  //ArmV5tlBranchExchangeJ(core);
-//                  ArmV5tlUndefinedInstruction(core);
+                  ArmBranchExchangeJ(arm_instruction, instrstr);
                   break;
 
                 case 3:
                   //Branch and link / exchange instruction set thumb
-//                  ArmV5tlBranchLinkExchange2(core);
+                  ArmBranchLinkExchange2(arm_instruction, instrstr);
                   break;
               }
             }
@@ -209,7 +182,7 @@ void ArmV5tlDisassemble(char *instrstr, u_int32_t strsize, ARM_INSTRUCTION arm_i
         else
         {
           //Data processing with shift instructions
-//          ArmV5tlDPRShift(core);
+          ArmDPRShift(arm_instruction, instrstr);
         }
         
         break;
@@ -230,7 +203,7 @@ void ArmV5tlDisassemble(char *instrstr, u_int32_t strsize, ARM_INSTRUCTION arm_i
         else
         {
           //Data processing immediate
-  //        ArmV5tlDPRImmediate(core);
+          ArmDPRImmediate(arm_instruction, instrstr);
         }
         break;
 
@@ -262,12 +235,12 @@ void ArmV5tlDisassemble(char *instrstr, u_int32_t strsize, ARM_INSTRUCTION arm_i
 
       case 4:
         //Load / store multiple instructions
-//        ArmV5tlLSM(core);
+        ArmLSM(arm_instruction, instrstr);
         break;
 
       case 5:
         //Branch instructions
-//        ArmV5tlBranch(core);
+        ArmBranch(program_counter, arm_instruction, instrstr);
         break;
 
       case 6:
@@ -303,16 +276,6 @@ void ArmV5tlDisassemble(char *instrstr, u_int32_t strsize, ARM_INSTRUCTION arm_i
     }        
   }
 }
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-const char signtext[2][2]  = { "-", "" };
-const char savetext[2][2]  = { "", "!" };
-const char shifttext[4][4] = { "lsl", "lsr", "asr", "ror" };
-const char lstext[2][4]    = { "str", "ldr" };
-const char dstext[4][2]    = { "", "h", "b", "d" };
-const char setext[2][2]    = { "", "s" };
-const char ttext[2][2]     = { "", "t" };
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Load and store immediate instruction handling
@@ -619,671 +582,231 @@ void ArmMRS(ARM_INSTRUCTION arm_instruction, char *instrstr)
   sprintf(instrstr, "mrs%s       %s, %s", condnames[arm_instruction.base.cond], regnames[arm_instruction.mrs.rd], op2);
 }
 
-/*  
-
 //----------------------------------------------------------------------------------------------------------------------------------
 //Data processing immediate and register shift
-void ArmV5tlDPRShift(PARMV5TL_CORE core)
+void ArmDPRShift(ARM_INSTRUCTION arm_instruction, char *instrstr)
 {
-  //Get the input data
-  u_int32_t vm = *registers[current_bank][arm_instruction.dpsi.rm];
-  u_int32_t vn = *registers[current_bank][arm_instruction.dpsi.rn];
-  u_int32_t sa;
-  u_int32_t c = status->flags.C;
-
-  //Amend the values when r15 (pc) is used
-  if(arm_instruction.dpsi.rn == 15)
+  char op2[32];
+ 
+  //Fill in the register which is used as operand
+  sprintf(op2, "%s", regnames[arm_instruction.dpsi.rm]);
+  
+  //Check if rotate right with extend instruction
+  if((arm_instruction.instr & 0x00000FF0) == 0x00000060)
   {
-    vn += 8;
+    sprintf(&op2[2], ", rrx");
   }
-
-  //Same for the to be shifted register
-  if(arm_instruction.dpsi.rm == 15)
+  //Otherwise check if shifting selected
+  else if(arm_instruction.instr & 0x00000FF0)
   {
-    vm += 8;
+    sprintf(&op2[2], ", %s ", shifttext[arm_instruction.dpsi.sm]);
+    
+    //Check if immediate shift or register shift. For immediate shift bit4 is cleared
+    if(arm_instruction.type0.it1 == 0)
+    {
+      //Data processing immediate shift
+      sprintf(&op2[8], "#%d", arm_instruction.dpsi.sa);
+    }
+    else
+    {
+      //Data processing register shift
+      sprintf(&op2[8], "%s", regnames[arm_instruction.dpsr.rs]);
+    }
   }
   
-  //Check if immediate shift or register shift. For immediate shift bit4 is cleared
-  if(arm_instruction.type0.it1 == 0)
-  {
-    //Data processing immediate shift
-    //Get the immediate shift amount
-    sa = arm_instruction.dpsi.sa;
-  }
-  else
-  {
-    //Data processing register shift
-    //Get the register shift amount.
-    sa = *registers[current_bank][arm_instruction.dpsr.rs] & 0x000000FF;
-  }
-  
-  //Take action based on the shift mode
-  switch(arm_instruction.dpsi.sm)
-  {
-    case ARM_SHIFT_MODE_LSL:
-      if((sa > 0) && (sa < 32))
-      {
-        //When the shift is less then 32 the carry is the last bit shifted out and vm is shifted sa times
-        c = (vm >> (32 - sa)) & 1;
-        vm <<= sa;
-      }
-      else if(sa == 32)
-      {
-        //When the shift is 32 the carry is bit0 of vm and vm is set to zero
-        c = vm & 1;
-        vm = 0;
-      }
-      else if(sa > 32)
-      {
-        //when shifting is more then 32 both carry and vm are set to zero
-        c = 0;
-        vm = 0;
-      }
-      break;
-      
-    case ARM_SHIFT_MODE_LSR:
-      if(sa == 0)
-      {
-        //Check on immediate or register shift
-        if(arm_instruction.type0.it1 == 0)
-        {
-          //In immediate mode shifter 0 equals to 32
-          c = vm >> 31;
-          vm = 0;
-        }
-      }
-      else if(sa < 32)
-      {
-        //When the shift is less then 32 the carry is the last bit shifted out and vm is shifted sa times
-        c = (vm >> (sa - 1)) & 1;
-        vm >>= sa;
-      }
-      else if(sa == 32)
-      {
-        //When the shift is 32 the carry is bit0 of vm and vm is set to zero
-        c = vm >> 31;
-        vm = 0;
-      }
-      else
-      {
-        //when shifting is more then 32 both carry and vm are set to zero
-        c = 0;
-        vm = 0;
-      }
-      break;
-      
-    case ARM_SHIFT_MODE_ASR:
-      if(sa == 0)
-      {
-        //Check on immediate or register shiftPARMV5TL_STATUS
-        if(arm_instruction.type0.it1 == 0)
-        {
-          //In immediate mode shifter 0 equals to 32
-          c = vm >> 31;
-          
-          //Check if sign bit is cleared
-          if(c == 0)
-          {
-            vm = 0;
-          }
-          else
-          {
-            vm = 0xFFFFFFFF;
-          }
-        }
-      }
-      else if(sa < 32)
-      {
-        //When the shift is less then 32 the carry is the last bit shifted out and vm is shifted sa times
-        c = (vm >> (sa - 1)) & 1;
-        
-        if((vm & 0x80000000) == 0)
-        {
-          vm >>= sa;
-        }
-        else
-        {
-          vm = ~(~vm >> sa);
-        }
-      }
-      else if(sa == 32)
-      {
-        //When the shift is 32 the carry is bit0 of vm and vm is set to zero
-        c = vm >> 31;
-        
-        if(c == 0)
-        {
-          vm = 0;
-        }
-        else
-        {
-          vm = 0xFFFFFFFF;
-        }
-      }
-      else
-      {
-        //when shifting is more then 32 both carry and vm are set to zero
-        c = 0;
-        vm = 0;
-      }
-      break;
-      
-    case ARM_SHIFT_MODE_ROR:
-      if(sa == 0)
-      {
-        //Check on immediate or register shift
-        if(arm_instruction.type0.it1 == 0)
-        {
-          //Special case here where the shift amount is 0. Rotate right with extend. Carry is an extra bit
-          c = vm & 1;
-          vm = (status->flags.C << 31) | (vm >> 1);
-        }
-      }
-      else if((sa & 0x1F) == 0)
-      {
-        //When only the lowest 5 bits are zero the carry is bit31
-        c = vm >> 31;
-      }
-      else
-      {
-        //Make sure upper bits of the number of rotates are cleared
-        sa &= 0x1F;
-        
-        //Get the carry
-        c = (vm >> (sa - 1)) & 1;
-        
-        //rotate the bits
-        vm = (vm >> sa) | (vm << (32 - sa));
-      }
-      break;
-  }
-  
-  //Go and do the actual processing
-  ArmV5tlDPR(core, vn, vm, c);
+  //Go and do the actual decoding
+  ArmDPR(arm_instruction, instrstr, op2);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Data processing immediate
-void ArmV5tlDPRImmediate(PARMV5TL_CORE core)
+void ArmDPRImmediate(ARM_INSTRUCTION arm_instruction, char *instrstr)
 {
   //Get the input data
   u_int32_t vm = arm_instruction.dpi.im;
-  u_int32_t vn = *registers[current_bank][arm_instruction.dpsi.rn];
   u_int32_t ri = arm_instruction.dpi.ri << 1;
-  u_int32_t c = status->flags.C;
-  
-  //Amend the operand value when r15 (pc) is used
-  if(arm_instruction.dpsi.rn == 15)
-  {
-    vn += 8;
-  }
+  char      op2[32];
   
   //Check if rotation is needed
   if(ri)
   {
     //rotate the bits
     vm = (vm >> ri) | (vm << (32 - ri));
-
-    //Get the carry if so
-    c = vm >> 31;
   }
+
+  //Print the operand
+  sprintf(op2, "#%d", vm);
   
-  //Go and do the actual processing
-  ArmV5tlDPR(core, vn, vm, c);
+  //Go and do the actual decoding
+  ArmDPR(arm_instruction, instrstr, op2);
 }  
   
 //----------------------------------------------------------------------------------------------------------------------------------
 //Actual data processing handling
-void ArmV5tlDPR(PARMV5TL_CORE core, u_int32_t vn, u_int32_t vm, u_int32_t c)
+void ArmDPR(ARM_INSTRUCTION arm_instruction, char *instrstr, char *op2)
 {
-  u_int64_t vd;
-  u_int32_t update = 1;
-  u_int32_t docandv = ARM_FLAGS_UPDATE_CV_NO;
-  
-  //Perform the correct action based on the opcode
+  //Print the remainder of the instruction based on it's opcode
   switch(arm_instruction.type0.opcode)
   {
     case ARM_OPCODE_AND:
-      vd = vn & vm;
-      break;
-      
     case ARM_OPCODE_EOR:
-      vd = vn ^ vm;
-      break;
-
     case ARM_OPCODE_SUB:
-      vd = (int64_t)vn - (int64_t)vm;
-      
-      //Signal how to update the flags
-      docandv = ARM_FLAGS_UPDATE_NBV;
-      break;
-
     case ARM_OPCODE_RSB:
-      vd = (int64_t)vm - (int64_t)vn;
-      
-      //Signal how to update the flags
-      docandv = ARM_FLAGS_UPDATE_NBV;
-      break;
-
     case ARM_OPCODE_ADD:
-      vd = (int64_t)vn + (int64_t)vm;
-      
-      //Signal how to update the flags
-      docandv = ARM_FLAGS_UPDATE_CV;
-      break;
-
     case ARM_OPCODE_ADC:
-      vd = (int64_t)vn + (int64_t)vm + status->flags.C;
-      
-      //Signal how to update the flags
-      docandv = ARM_FLAGS_UPDATE_CV;
-      break;
-
     case ARM_OPCODE_SBC:
-      vd = (int64_t)vn - (int64_t)vm - (status->flags.C ^ 1);
-      
-      //Signal how to update the flags
-      docandv = ARM_FLAGS_UPDATE_NBV;
-      break;
-
     case ARM_OPCODE_RSC:
-      vd = (int64_t)vm - (int64_t)vn - (status->flags.C ^ 1);
-      
-      //Signal how to update the flags
-      docandv = ARM_FLAGS_UPDATE_NBV;
+    case ARM_OPCODE_ORR:
+    case ARM_OPCODE_BIC:
+      //Print the instruction name (base name, condition and status update)
+      sprintf(instrstr, "%s%s%s         ", dprtext[arm_instruction.type0.opcode], condnames[arm_instruction.base.cond], setext[arm_instruction.type0.s]);
+  
+      //These use both rd and rn plus the rest of the operands
+      sprintf(&instrstr[12], "%s, %s, %s", regnames[arm_instruction.lsr.rd], regnames[arm_instruction.lsr.rn], op2);
       break;
 
     case ARM_OPCODE_TST:
-      vd = vn & vm;
-      
-      //Do not update the destination register
-      update = 0;
-      break;
-
     case ARM_OPCODE_TEQ:
-      vd = vn ^ vm;
-      
-      //Do not update the destination register
-      update = 0;
-      break;
-
     case ARM_OPCODE_CMP:
-      vd = (int64_t)vn - (int64_t)vm;
-      
-      //Signal how to update the flags
-      docandv = ARM_FLAGS_UPDATE_NBV;
-
-      //Do not update the destination register
-      update = 0;
-      break;
-
     case ARM_OPCODE_CMN:
-      vd = (int64_t)vn + (int64_t)vm;
-      
-      //Signal how to update the flags
-      docandv = ARM_FLAGS_UPDATE_CV;
-
-      //Do not update the destination register
-      update = 0;
-      break;
-
-    case ARM_OPCODE_ORR:
-      vd = vn | vm;
+      //Print the instruction name (base name, condition) These instructions always update the status
+      sprintf(instrstr, "%s%s          ", dprtext[arm_instruction.type0.opcode], condnames[arm_instruction.base.cond]);
+  
+      //These use only rn plus the rest of the operands
+      sprintf(&instrstr[12], "%s, %s", regnames[arm_instruction.lsr.rn], op2);
       break;
 
     case ARM_OPCODE_MOV:
-      vd = vm;
-      break;
-
-    case ARM_OPCODE_BIC:
-      vd = vn & ~vm;
-      break;
-
     case ARM_OPCODE_MVN:
-      vd = ~vm;
+      //Print the instruction name (base name, condition and status update)
+      sprintf(instrstr, "%s%s%s         ", dprtext[arm_instruction.type0.opcode], condnames[arm_instruction.base.cond], setext[arm_instruction.type0.s]);
+  
+      //These use only rd plus the rest of the operands
+      sprintf(&instrstr[12], "%s, %s", regnames[arm_instruction.lsr.rd], op2);
       break;
-  }
-  
-  //Check if program status register needs to be updated
-  if(arm_instruction.type0.s)
-  {
-    //Check if destination register needs to be updated, is r15 (pc) and the current mode has a saved program status register
-    if((update) && (arm_instruction.dpsi.rd == 15) && (registers[current_bank][ARM_REG_SPSR_IDX]))
-    {
-      //Load the current status with the saved one if it is available
-      status->word = *registers[current_bank][ARM_REG_SPSR_IDX];
-      
-      //Adjust the current processor state accordingly
-      current_mode = status->flags.M;
-
-      //Select the corresponding register bank
-      switch(status->flags.M)
-      {
-        case ARM_MODE_USER:
-          current_bank = ARM_REG_BANK_USER;
-          break;
-          
-        case ARM_MODE_FIQ:
-          current_bank = ARM_REG_BANK_FIQ;
-          break;
-          
-        case ARM_MODE_IRQ:
-          current_bank = ARM_REG_BANK_IRQ;
-          break;
-          
-        case ARM_MODE_SUPERVISOR:
-          current_bank = ARM_REG_BANK_SUPERVISOR;
-          break;
-          
-        case ARM_MODE_ABORT:
-          current_bank = ARM_REG_BANK_ABORT;
-          break;
-          
-        case ARM_MODE_UNDEFINED:
-          current_bank = ARM_REG_BANK_UNDEFINED;
-          break;
-          
-        case ARM_MODE_SYSTEM:
-          current_bank = ARM_REG_BANK_SYSTEM;
-          break;
-      }
-    }
-    else
-    {
-      //Update the negative bit
-      status->flags.N = (vd >> 31) & 1;
-
-      //Update the zero bit (only the lower 32 bits count)
-      status->flags.Z = ((vd & 0xFFFFFFFF) == 0);
-
-      //Check if carry and overflow need to be updated with arithmetic result
-      if(docandv != ARM_FLAGS_UPDATE_CV_NO)
-      {
-        //Handle the carry and overflow according to type of arithmetic
-        if(docandv == ARM_FLAGS_UPDATE_CV)
-        {
-          //Update the overflow bit for additions. When inputs have equal signs the sign of the output should remain the same as the inputs, otherwise there is an overflow
-          status->flags.V = (((vn & 0x80000000) == (vm & 0x80000000)) && (vn & 0x80000000) != (vd & 0x80000000));
-          
-          //Carry from addition.
-          status->flags.C = vd >> 32;
-        }
-        else
-        {
-          //Update the overflow bit for subtractions. When inputs not have equal signs the sign of the output should be the same as that of the first operand, otherwise there is an overflow
-          status->flags.V = (((vn & 0x80000000) != (vm & 0x80000000)) && (vn & 0x80000000) != (vd & 0x80000000));
-          
-          //Not borrow from subtraction
-          status->flags.C = (vd <= 0xFFFFFFFF);
-        }
-      }
-      else
-      {
-        //When not the carry is the shifter output
-        status->flags.C = c;
-      }
-    }
-  }
-  
-  //Check if destination register needs to be updated
-  if(update)
-  {
-    //Write the result back as a singed 32 bit integer
-    *registers[current_bank][arm_instruction.dpsi.rd] = (int32_t)vd;
-    
-    //Check if program counter used as target
-    if(arm_instruction.lsr.rd == 15)
-    {
-      //Signal no increment if so
-      pcincrvalue = 0;
-    }
   }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Load and store multiple instruction handling
-void ArmV5tlLSM(PARMV5TL_CORE core)
+void ArmLSM(ARM_INSTRUCTION arm_instruction, char *instrstr)
 {
-  u_int32_t address = *registers[current_bank][arm_instruction.type4.rn];
-  u_int32_t traceaddress;
-  u_int32_t *memory;
   u_int32_t reglist = arm_instruction.instr & 0x0000FFFF;
-  int       numregs = 0;
-  int       bank = current_bank;
   int       i;
+  int       length;
+  char     *ptr;
   
-  //Check if S bit is set. Needed to determine which register bank is used.
-  if(arm_instruction.type4.s)
-  {
-    //Check if r15 is included in the list and it is a load instruction
-    if((arm_instruction.type4.r15) && (arm_instruction.type4.l))
-    {
-      //Need to restore cpsr from spsr
-      //Check if there is a saved status register for the current register bank
-      if(registers[current_bank][ARM_REG_SPSR_IDX])
-      {
-        //Copy the spsr if available
-        *registers[current_bank][arm_instruction.mrs.rd] = *registers[current_bank][ARM_REG_SPSR_IDX];
-      }
-      
-      //Handle the possible mode change
-      //Adjust the current processor state accordingly
-      current_mode = status->flags.M;
+  //                             update                save status
+  //ldm{cond}addressing_mode  rn{!}, '{' reg list '}' {^}
 
-      //Select the corresponding register bank
-      switch(status->flags.M)
-      {
-        case ARM_MODE_USER:
-          current_bank = ARM_REG_BANK_USER;
-          break;
+  //Print the instruction name (base name, condition and status update)
+  sprintf(instrstr, "%s%s%s         ", lsmtext[arm_instruction.type4.l], condnames[arm_instruction.base.cond], amtext[(arm_instruction.type4.u << 1) || arm_instruction.type4.p]);
 
-        case ARM_MODE_FIQ:
-          current_bank = ARM_REG_BANK_FIQ;
-          break;
-
-        case ARM_MODE_IRQ:
-          current_bank = ARM_REG_BANK_IRQ;
-          break;
-
-        case ARM_MODE_SUPERVISOR:
-          current_bank = ARM_REG_BANK_SUPERVISOR;
-          break;
-
-        case ARM_MODE_ABORT:
-          current_bank = ARM_REG_BANK_ABORT;
-          break;
-
-        case ARM_MODE_UNDEFINED:
-          current_bank = ARM_REG_BANK_UNDEFINED;
-          break;
-
-        case ARM_MODE_SYSTEM:
-          current_bank = ARM_REG_BANK_SYSTEM;
-          break;
-      }
-    }
-    else
-    {
-      //For all stores and the loads without r15 the user mode registers are used
-      bank = ARM_REG_BANK_USER;
-    }
-  }
+  //Add the base register plus update flag if needed
+  length = sprintf(&instrstr[12], "%s%s, { ", regnames[arm_instruction.lsr.rd], savetext[arm_instruction.type4.w]) + 12;
   
-  //Check if base address not included in the range (Increment / decrement before)
-  if(arm_instruction.type4.p)
-  {
-    //Not includes so check if range is below or above the base address
-    if(arm_instruction.type4.u)
-    {
-      //Below so add to the base address
-      address += 4;
-    }
-    else
-    {
-      //Above so subtract from the base address
-      address -= 4;
-    }
-  }
+  //Point to start of register list space
+  ptr = &instrstr[length];
   
-  //Set the trace address
-  traceaddress = address;
-  
-  //Lowest register needs to be in lowest address, so list is walked through different for increment or decrement
-  //Check if increment or decrement
-  if(arm_instruction.type4.u)
+  //Check the register list for which registers need to be loaded
+  for(i=0;i<16;i++)
   {
-    //Check the register list for which registers need to be loaded
-    for(i=0;i<16;i++)
+    //Check if register included
+    if(reglist & 1)
     {
-      //Check if register included
-      if(reglist & 1)
-      {
-        //Get the pointer for this address        
-        memory = ArmV5tlGetMemoryPointer(core, address, ARM_MEMORY_WORD);
-        
-        //Check if valid memory found
-        if(memory)
-        {
-          //Check if load or store
-          if(arm_instruction.type4.l)
-          {
-            //Check if peripheral read function set for this address
-            if(periph_read_func)
-            {
-              //Call it if so
-              periph_read_func(core, address, ARM_MEMORY_WORD);
-            }
-
-            //Load the register with the data from memory
-            *registers[bank][i] = *memory;
-          }
-          else
-          {
-            //Store the register to memory
-            *memory = *registers[bank][i];
-            
-            //Check if peripheral write function set for this address
-            if(periph_write_func)
-            {
-              //Call it if so
-              periph_write_func(core, address, ARM_MEMORY_WORD);
-            }
-          }
-        }
-        else
-        {
-          //Signal a data abort exception  
-        }
-        
-        //Select the next address
-        address += 4;
-
-        //Add one to the number of registers loaded
-        numregs++;
-      }
-        
-      //Select next register
-      reglist >>= 1;
+      //Add the register to the list
+      ptr += sprintf(ptr, "%s ", regnames[i]);
     }
-  }
-  else
-  {
-    //Check the register list for which registers need to be loaded
-    for(i=15;i>=0;i--)
-    {
-      //Check if register included
-      if(reglist & 0x00008000)
-      {
-        //Get the pointer for this address        
-        memory = ArmV5tlGetMemoryPointer(core, address, ARM_MEMORY_WORD);
-        
-        //Check if valid memory found
-        if(memory)
-        {
-          //Check if load or store
-          if(arm_instruction.type4.l)
-          {
-            //Check if peripheral read function set for this address
-            if(periph_read_func)
-            {
-              //Call it if so
-              periph_read_func(core, address, ARM_MEMORY_WORD);
-            }
 
-            //Load the register with the data from memory
-            *registers[bank][i] = *memory;
-          }
-          else
-          {
-            //Store the register to memory
-            *memory = *registers[bank][i];
-            
-            //Check if peripheral write function set for this address
-            if(periph_write_func)
-            {
-              //Call it if so
-              periph_write_func(core, address, ARM_MEMORY_WORD);
-            }
-          }
-        }
-        else
-        {
-          //Signal a data abort exception  
-        }
-        
-        //Select the next address
-        address -= 4;
-
-        //Add one to the number of registers loaded
-        numregs++;
-      }
-
-      //Select next register
-      reglist <<= 1;
-    }
+    //Select next register
+    reglist >>= 1;
   }
 
-  //Check if base register needs to be updated
-  if(arm_instruction.type4.w)
-  {
-    //Check if increment or decrement
-    if(arm_instruction.type4.u)
-    {
-      //Increment the base address
-      *registers[current_bank][arm_instruction.type4.rn] += (numregs * 4);
-    }
-    else
-    {
-      //Decrement the base address
-      *registers[current_bank][arm_instruction.type4.rn] -= (numregs * 4);
-    }
-  }
-  
-  //Check if r15 is included in the list and it is a load instruction
-  if((arm_instruction.type4.r15) && (arm_instruction.type4.l))
-  {
-    //Check if thumb state bit needs to be updated
-    if(arm_instruction.type4.s == 0)
-    {
-      //When s == 1 this is already done by restoring cpsr from spsr. For s == 0 it needs to be taken from the pc
-      status->flags.T = *program_counter & 1;
-    }
-    
-    //Make sure the program counter is not on an invalid byte boundary
-    *program_counter &= 0xFFFFFFFE;
-    
-    //Signal no increment of pc if so
-    pcincrvalue = 0;
-  }
-  
-  //Check if tracing into buffer is enabled.
-  if(tracebufferenabled)
-  {
-    //Set the data in the trace buffer
-    ArmV5tlSetMemoryTraceData(core, traceaddress, ARM_MEMORY_WORD, numregs, arm_instruction.type4.u);
-  }
+  //Finish the disassembly of this instruction with the possible inclusion of the psr flag
+  sprintf(ptr, "}%s", ictext[arm_instruction.type4.s]);
 }
 
+//----------------------------------------------------------------------------------------------------------------------------------
+//Handle branch instructions
+void ArmBranch(u_int32_t program_counter, ARM_INSTRUCTION arm_instruction, char *instrstr)
+{
+  int32_t address = arm_instruction.type5.offset << 2;
+  
+  //Print the instruction name (base name and condition)
+  sprintf(instrstr, "%s%s            ", bltext[arm_instruction.type5.l], condnames[arm_instruction.base.cond]);
+  
+  //Check if negative address given
+  if(address & 0x02000000)
+  {
+    //Extend the sign if so
+    address |= 0xFC000000;
+  }
+
+  //Calculate the new address. The actual pc point to instruction address plus 8
+  program_counter += (8 + address);
+
+  //Add the target address
+  sprintf(&instrstr[12], "0x%08X", program_counter);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Handle branch with link and exchange instructions
+void ArmBranchLinkExchange1(u_int32_t program_counter, ARM_INSTRUCTION arm_instruction, char *instrstr)
+{
+  int32_t address = arm_instruction.type5.offset << 2;
+  
+  //Check if negative address given
+  if(address & 0x02000000)
+  {
+    //Extend the sing if so
+    address |= 0xFC000000;
+  }
+
+  //Merge the H bit into the address (is l bit from type5 instruction)
+  address |= (arm_instruction.type5.l << 1);
+  
+  //Calculate the new address. The actual pc point to instruction address plus 8
+  program_counter += (8 + address);
+
+  //Print the instruction name (base name and condition)
+  sprintf(instrstr, "blx         0x%08X", program_counter);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Handle branch with link and exchange instructions
+void ArmBranchLinkExchange2(ARM_INSTRUCTION arm_instruction, char *instrstr)
+{
+  //Print the instruction name (base name and condition)
+  sprintf(instrstr, "blx%s             ", condnames[arm_instruction.base.cond]);
+  
+  //Add the register holding the target  address
+  sprintf(&instrstr[12], "%s", regnames[arm_instruction.misc0.rm]);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Handle branch with exchange instructions
+void ArmBranchExchangeT(ARM_INSTRUCTION arm_instruction, char *instrstr)
+{
+  //Print the instruction name (base name and condition)
+  sprintf(instrstr, "bx%s              ", condnames[arm_instruction.base.cond]);
+  
+  //Add the register holding the target  address
+  sprintf(&instrstr[12], "%s", regnames[arm_instruction.misc0.rm]);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+//Handle branch with exchange instructions
+void ArmBranchExchangeJ(ARM_INSTRUCTION arm_instruction, char *instrstr)
+{
+  //Print the instruction name (base name and condition)
+  sprintf(instrstr, "bxj%s             ", condnames[arm_instruction.base.cond]);
+  
+  //Add the register holding the target  address
+  sprintf(&instrstr[12], "%s", regnames[arm_instruction.misc0.rm]);
+}
+
+/*
 //----------------------------------------------------------------------------------------------------------------------------------
 //Multiply instruction handling
 //MUL, MULS, MLA, MLAS, UMULL, UMULLS, UMLAL, UMLALS, SMULL, SMULLS, SMLAL, SMLALS  
@@ -1375,115 +898,6 @@ void ArmV5tlMRCMCR(PARMV5TL_CORE core)
   }
 }
 
-//----------------------------------------------------------------------------------------------------------------------------------
-//Handle branch instructions
-void ArmV5tlBranch(PARMV5TL_CORE core)
-{
-  int32_t address = arm_instruction.type5.offset << 2;
-  
-  //Check if negative address given
-  if(address & 0x02000000)
-  {
-    //Extend the sign if so
-    address |= 0xFC000000;
-  }
-  
-  //Check if link register needs to be set
-  if(arm_instruction.type5.l)
-  {
-    //Load the address after this instruction to the link register r14
-    *registers[current_bank][14] = *program_counter + 4;
-  }
-
-  //Calculate the new address. The actual pc point to instruction address plus 8
-  *program_counter += (8 + address);
-
-  //Signal no increment of the pc
-  pcincrvalue = 0;
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-//Handle branch with link and exchange instructions
-void ArmV5tlBranchLinkExchange1(PARMV5TL_CORE core)
-{
-  int32_t address = arm_instruction.type5.offset << 2;
-  
-  //Check if negative address given
-  if(address & 0x02000000)
-  {
-    //Extend the sing if so
-    address |= 0xFC000000;
-  }
-  
-  //Load the address after this instruction to the link register r14
-  *registers[current_bank][14] = *program_counter + 4;
-
-  //Merge the H bit into the address (is l bit from type5 instruction)
-  address |= (arm_instruction.type5.l << 1);
-  
-  //Calculate the new address. The actual pc point to instruction address plus 8
-  *program_counter += (8 + address);
-
-  //Signal the processor to continue in thumb state
-  status->flags.T = 1;
-  
-  //Signal no increment of the pc
-  pcincrvalue = 0;
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-//Handle branch with link and exchange instructions
-void ArmV5tlBranchLinkExchange2(PARMV5TL_CORE core)
-{
-  u_int32_t address = *registers[current_bank][arm_instruction.misc0.rm];
-  
-  //Load the address after this instruction to the link register r14
-  *registers[current_bank][14] = *program_counter + 4;
-
-  //Set the new address. Needs to be on a thumb boundary
-  *program_counter = address & 0xFFFFFFFE;
-
-  //Signal the processor to continue in either thumb or arm state
-  status->flags.T = address & 1;
-  
-  //Signal no increment of the pc
-  pcincrvalue = 0;
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-//Handle branch with exchange instructions
-void ArmV5tlBranchExchangeT(PARMV5TL_CORE core)
-{
-  u_int32_t address = *registers[current_bank][arm_instruction.misc0.rm];
-  
-  //Set the new address. Needs to be on a thumb boundary
-  *program_counter = address & 0xFFFFFFFE;
-
-  //Signal the processor to continue in either thumb or arm state
-  status->flags.T = address & 1;
-  
-  //Signal no increment of the pc
-  pcincrvalue = 0;
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-//Handle branch with exchange instructions
-void ArmV5tlBranchExchangeJ(PARMV5TL_CORE core)
-{
-  u_int32_t address = *registers[current_bank][arm_instruction.misc0.rm];
-  
-  //This is not correct and needs system info to do the correct things
-  
-  //Set the new address. Needs to be on a thumb boundary
-  *program_counter = address & 0xFFFFFFFE;
-
-  //Signal the processor to continue in either jazelle or arm state
-  status->flags.J = address & 1;
-  
-  //Signal no increment of the pc
-  pcincrvalue = 0;
-}
 
 //----------------------------------------------------------------------------------------------------------------------------------
 */

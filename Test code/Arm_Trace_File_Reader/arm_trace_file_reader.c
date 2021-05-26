@@ -284,7 +284,7 @@ void DrawTracePanel(tagXlibContext *xc)
     memset(disassemtext, 0x20, sizeof(disassemtext));
     disassemtext[0] = 0;
     
-    ArmV5tlDisassemble(disassemtext, sizeof(disassemtext), (ARM_INSTRUCTION)tracelist[n].instruction_word);
+    ArmDisassemble(disassemtext, sizeof(disassemtext), tracelist[n].instruction_address, (ARM_INSTRUCTION)tracelist[n].instruction_word);
   
     snprintf(displaytext, sizeof(displaytext), "0x%08X  0x%08X  %s       %s", tracelist[n].instruction_address, tracelist[n].instruction_word, exetext[tracelist[n].execution_status & 3], disassemtext);
     LcdDisplayText(&lcdisplays[0], 0, i + 1, displaytext);

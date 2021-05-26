@@ -490,7 +490,7 @@ union tagARM_INSTRUCTION
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void ArmV5tlDisassemble(char *instrstr, u_int32_t strsize, ARM_INSTRUCTION arm_instruction);
+void ArmDisassemble(char *instrstr, u_int32_t strsize, u_int32_t program_counter, ARM_INSTRUCTION arm_instruction);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -506,6 +506,17 @@ void ArmMSR(ARM_INSTRUCTION arm_instruction, char *instrstr, const char *op2);
 
 void ArmMRS(ARM_INSTRUCTION arm_instruction, char *instrstr);
 
+void ArmDPRShift(ARM_INSTRUCTION arm_instruction, char *instrstr);
+void ArmDPRImmediate(ARM_INSTRUCTION arm_instruction, char *instrstr);
+void ArmDPR(ARM_INSTRUCTION arm_instruction, char *instrstr, char *op2);
+
+void ArmLSM(ARM_INSTRUCTION arm_instruction, char *instrstr);
+
+void ArmBranch(u_int32_t program_counter, ARM_INSTRUCTION arm_instruction, char *instrstr);
+void ArmBranchLinkExchange1(u_int32_t program_counter, ARM_INSTRUCTION arm_instruction, char *instrstr);
+void ArmBranchLinkExchange2(ARM_INSTRUCTION arm_instruction, char *instrstr);
+void ArmBranchExchangeT(ARM_INSTRUCTION arm_instruction, char *instrstr);
+void ArmBranchExchangeJ(ARM_INSTRUCTION arm_instruction, char *instrstr);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
