@@ -518,6 +518,8 @@ void ArmBranchLinkExchange2(ARM_INSTRUCTION arm_instruction, char *instrstr);
 void ArmBranchExchangeT(ARM_INSTRUCTION arm_instruction, char *instrstr);
 void ArmBranchExchangeJ(ARM_INSTRUCTION arm_instruction, char *instrstr);
 
+void ArmMRCMCR(ARM_INSTRUCTION arm_instruction, char *instrstr);
+
 //----------------------------------------------------------------------------------------------------------------------------------
 
 #endif /* ARMDISASSEMBLE_H */

@@ -22,6 +22,7 @@ const char *setext[2]     = { "", "s" };
 const char *ttext[2]      = { "", "t" };
 const char *dprtext[16]   = { "and", "eor", "sub", "rsb", "add", "adc", "sbc", "rsc", "tst", "teq", "cmp", "cmn", "orr", "mov", "bic", "mvn" }; 
 const char *bltext[2]     = { "b", "bl" };
+const char *mctext[4]     = { "mcr", "mrc", "mcr2", "mrc2" };
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -261,7 +262,7 @@ void ArmDisassemble(char *instrstr, u_int32_t strsize, u_int32_t program_counter
           if(arm_instruction.type7.it1)
           {
             //Coprocessor register transfer instructions
-//            ArmV5tlMRCMCR(core);
+            ArmMRCMCR(arm_instruction, instrstr);
           }
           else
           {
@@ -882,24 +883,25 @@ void ArmV5tlMUL(PARMV5TL_CORE core)
     }
   }
 }
-
+*/
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Move register to coprocessor or coprocessor to register
-void ArmV5tlMRCMCR(PARMV5TL_CORE core)
+void ArmMRCMCR(ARM_INSTRUCTION arm_instruction, char *instrstr)
 {
-//  u_int32_t cpn = arm_instruction.mrcmcr.cpn;
-//  u_int32_t crm = arm_instruction.mrcmcr.crm;
-//  u_int32_t crn = arm_instruction.mrcmcr.crn;
+  int in = arm_instruction.mrcmcr.d;
   
-  //For now only coprocessor 15 read is implemented
-  if((arm_instruction.mrcmcr.cpn == 15) && (arm_instruction.mrcmcr.d))
+  //Check if mcr2 or mrc2 instructions
+  if(arm_instruction.base.cond == 15)
   {
-    //Clear destination register to indicate MMU is disabled and vectors are in low memory
-    *registers[current_bank][arm_instruction.mrcmcr.rd] = 0;
+    in |= 0x02;
   }
+    
+  //Print the instruction name (base name and condition)
+  sprintf(instrstr, "%s%s             ", mctext[in], condnames[arm_instruction.base.cond]);
+
+  //Add the register holding the target  address
+  sprintf(&instrstr[12], "p%d, %d, %s, cr%d, cr%d, %d", arm_instruction.mrcmcr.cpn, arm_instruction.mrcmcr.op1, regnames[arm_instruction.mrcmcr.rd], arm_instruction.mrcmcr.crn, arm_instruction.mrcmcr.crm, arm_instruction.mrcmcr.op2);
 }
 
-
 //----------------------------------------------------------------------------------------------------------------------------------
-*/
