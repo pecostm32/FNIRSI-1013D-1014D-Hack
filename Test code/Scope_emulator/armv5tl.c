@@ -11,13 +11,28 @@
 
 #include "armthread.h"
 
+//----------------------------------------------------------------------------------------------------------------------------------
+
 //#define MY_BREAK_POINT 0x800306f4
-//#define MY_BREAK_POINT 0x8002FAD4   //faulty jump due to missing data
+//#define MY_BREAK_POINT 0x8002FAD4      //faulty jump due to missing data
 //#define MY_BREAK_POINT 0x800197AC
 //#define MY_BREAK_POINT 0x8003534C
-//#define MY_BREAK_POINT 0x80035320     //main
+//#define MY_BREAK_POINT 0x800182fc      //In this function pointers aer multiplied by 0x78
+//#define MY_BREAK_POINT 0x80035320      //main
 
-#define MY_BREAK_POINT 0x800182fc      //In this function pointers aer multiplied by 0x78
+#define MY_BREAK_POINT 0x80035334        //call to sys_init_uart0
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+//#define MY_TRACE_START_POINT    0x8003534c  //Address where setup_display_lib is called
+
+#define MY_TRACE_START_POINT    0x8003532c   //Call to some_memory_stuff
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+//#define TRACE_FILE_NAME         "test_trace_000000.bin"
+
+#define TRACE_FILE_NAME           "mmu_p15_setup"
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -100,7 +115,8 @@ void *armcorethread(void *arg)
 
 void ArmV5tlSetup(PARMV5TL_CORE core)
 {
-  int i,b,r;
+  int  b,r;
+  char tracefilename[64];
   
   if(core == NULL)
     return;
@@ -163,14 +179,17 @@ void ArmV5tlSetup(PARMV5TL_CORE core)
   core->peripheralfunction = F1C100sProcess;
   
   //Test tracing
-  core->TraceFilePointer = NULL;
-  core->TraceFilePointer = fopen("test_trace_000000.bin", "wb");
+//  core->TraceFilePointer = NULL;
+  
+  //Print the trace file name
+  snprintf(tracefilename, 64, "%s_%06d.bin", TRACE_FILE_NAME, core->tracefileindex);
+  core->TraceFilePointer = fopen(tracefilename, "wb");
   
   //Enable tracing into buffer
   core->tracebufferenabled = 1;
   
   //Start tracing when address is hit
-  core->tracetriggeraddress = 0x8003534c;  //Address where setup_display_lib is called
+  core->tracetriggeraddress = MY_TRACE_START_POINT;
   
   //On startup processor is running
   core->run = 1;
@@ -704,7 +723,7 @@ void ArmV5tlCore(PARMV5TL_CORE core)
         core->tracefileindex++;
 
         //Print the new file name
-        snprintf(tracefilename, 64, "test_trace_%06d.bin", core->tracefileindex);
+        snprintf(tracefilename, 64, "%s_%06d.bin", TRACE_FILE_NAME, core->tracefileindex);
 
         //Try to open it
         core->TraceFilePointer = fopen(tracefilename, "wb");
