@@ -26,9 +26,10 @@ void F1C100sProcessTimer(PARMV5TL_CORE core)
         //Check if interrupt is enabled for this timer
         if(core->f1c100s_timer.tmr_irq_en.m_32bit & TMR_IRQ_EN_TMR0_EN)
         {
-          //Set the interrupt status for this timer to 1 in both the internal and readable register
+          //Set the interrupt status for this timer to 1 in all the internal and readable register
           core->f1c100s_timer.tmr_irq_sta.m_32bit |= TMR_IRQ_EN_TMR0_EN;
           core->f1c100s_timer.interruptstatus |= TMR_IRQ_EN_TMR0_EN;
+          core->f1c100s_timer.interruptrequest |= TMR_IRQ_EN_TMR0_EN;
         }
         
         //Check if single mode

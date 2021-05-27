@@ -26,8 +26,11 @@ void F1C100sProcessINTC(PARMV5TL_CORE core)
   if(core->f1c100s_intc.en0.m_32bit & INTC_EN0_TIMER0_EN)
   {
     //Check if the timer tripped an interrupt
-    if(core->f1c100s_timer.interruptstatus & TMR_IRQ_EN_TMR0_EN)
+    if((core->f1c100s_timer.interruptrequest & TMR_IRQ_EN_TMR0_EN))
     {
+      //Signal the request as handled
+      core->f1c100s_timer.interruptrequest &= ~TMR_IRQ_EN_TMR0_EN;
+        
       //Signal timer 0 pending
       core->f1c100s_intc.interruptstatus[0] |= INTC_EN0_TIMER0_EN;
       
@@ -226,18 +229,12 @@ void F1C100sINTCWrite(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
       
     case INTC_PEND0:
       //Clear the needed internal status bits
-      core->f1c100s_intc.interruptstatus[0] &=  ~core->f1c100s_intc.pend0.m_32bit;
-      
-      //Let the status register reflect the actual status after the clear
-      core->f1c100s_intc.pend0.m_32bit = core->f1c100s_intc.interruptstatus[0];
+      core->f1c100s_intc.interruptstatus[0] = core->f1c100s_intc.pend0.m_32bit;
       break;
       
     case INTC_PEND1:
       //Clear the needed internal status bits
-      core->f1c100s_intc.interruptstatus[1] &=  ~core->f1c100s_intc.pend1.m_32bit;
-      
-      //Let the status register reflect the actual status after the clear
-      core->f1c100s_intc.pend1.m_32bit = core->f1c100s_intc.interruptstatus[1];
+      core->f1c100s_intc.interruptstatus[1] = core->f1c100s_intc.pend1.m_32bit;
       break;
       
     case INTC_EN0:

@@ -217,6 +217,7 @@ struct tagF1C100S_TIMER
   
   //Timer interrupt status bits
   u_int32_t interruptstatus;
+  u_int32_t interruptrequest;
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------

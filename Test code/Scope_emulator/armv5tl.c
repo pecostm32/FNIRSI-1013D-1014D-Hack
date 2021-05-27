@@ -11,8 +11,13 @@
 
 #include "armthread.h"
 
-#define MY_BREAK_POINT 0x800197AC
+//#define MY_BREAK_POINT 0x800306f4
+//#define MY_BREAK_POINT 0x8002FAD4   //faulty jump due to missing data
+//#define MY_BREAK_POINT 0x800197AC
 //#define MY_BREAK_POINT 0x8003534C
+//#define MY_BREAK_POINT 0x80035320     //main
+
+#define MY_BREAK_POINT 0x800182fc      //In this function pointers aer multiplied by 0x78
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -778,6 +783,11 @@ void *ArmV5tlGetMemoryPointer(PARMV5TL_CORE core, u_int32_t address, u_int32_t m
   //Raise an exception and return NULL pointer
   
   //MMU needs to be implemented here
+  if(address == 0x8038479C)
+  {
+    i = 20;
+  }
+  
   
   //Check all the entries in the address map
   for(i=0;i<sizeof(address_map)/sizeof(ARMV5TL_ADDRESS_MAP);i++)
@@ -828,15 +838,15 @@ void ArmV5tlSetMemoryTraceData(PARMV5TL_CORE core, u_int32_t address, u_int32_t 
       switch(mode)  
       {
         case ARM_MEMORY_WORD:
-          core->tracebuffer[core->traceindex].data[0] = *(u_int32_t *)memory;
+          core->tracebuffer[core->traceindex].data[i] = *(u_int32_t *)memory;
           break;
 
         case ARM_MEMORY_SHORT:
-          core->tracebuffer[core->traceindex].data[0] = *(u_int16_t *)memory;
+          core->tracebuffer[core->traceindex].data[i] = *(u_int16_t *)memory;
           break;
 
         case ARM_MEMORY_BYTE:
-          core->tracebuffer[core->traceindex].data[0] = *(u_int8_t *)memory;
+          core->tracebuffer[core->traceindex].data[i] = *(u_int8_t *)memory;
           break;
       }
     }
@@ -1573,14 +1583,17 @@ void ArmV5tlLSExtraImmediate(PARMV5TL_CORE core)
     //Make sure rd is even
     core->arm_instruction.lsx.rd &= 0x0E;
     
-    //Process the first word
-    ArmV5tlLS(core, addr, mode);
+    //Process the first word without memory trace
+    ArmV5tlLS(core, addr, mode | ARM_NO_MEM_TRACE);
     
     //Add 4 to the address for the next word
     addr += 4;
     
     //Select the next register
     core->arm_instruction.lsx.rd++;
+    
+    //Set trace mode to double word
+    mode |= ARM_MEM_TRACE_DOUBLE;
   }
   
   //Do the actual processing
@@ -1676,14 +1689,17 @@ void ArmV5tlLSExtraRegister(PARMV5TL_CORE core)
     //Make sure rd is even
     core->arm_instruction.lsx.rd &= 0x0E;
     
-    //Process the first word
-    ArmV5tlLS(core, addr, mode);
+    //Process the first word without memory trace
+    ArmV5tlLS(core, addr, mode | ARM_NO_MEM_TRACE);
     
     //Add 4 to the address for the next word
     addr += 4;
     
     //Select the next register
     core->arm_instruction.lsx.rd++;
+    
+    //Set trace mode to double word
+    mode |= ARM_MEM_TRACE_DOUBLE;
   }
   
   //Do the actual processing
@@ -1788,10 +1804,19 @@ void ArmV5tlLS(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
   }
   
   //Check if tracing into buffer is enabled.
-  if(core->tracebufferenabled)
+  if((core->tracebufferenabled) && ((mode & ARM_NO_MEM_TRACE) == 0))
   {
-    //Set the data in the trace buffer
-    ArmV5tlSetMemoryTraceData(core, address, memtype, 1, 0);
+    //Check if double word trace
+    if(mode & ARM_MEM_TRACE_DOUBLE)
+    {
+      //Set the data in the trace buffer
+      ArmV5tlSetMemoryTraceData(core, address - 4, memtype, 2, 1);
+    }
+    else
+    {
+      //Set the data in the trace buffer
+      ArmV5tlSetMemoryTraceData(core, address, memtype, 1, 1);
+    }
   }
 }
 
