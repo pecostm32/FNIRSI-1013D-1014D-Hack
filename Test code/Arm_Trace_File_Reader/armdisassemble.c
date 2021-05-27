@@ -27,8 +27,6 @@ const char *bltext[2]     = { "b", "bl" };
 
 void ArmDisassemble(char *instrstr, u_int32_t strsize, u_int32_t program_counter, ARM_INSTRUCTION arm_instruction)
 {
-  u_int32_t idx = 0;
-  
   //Need a string pointer and it has to have adequate size
   if((instrstr == NULL) || (strsize < 90))
     return;
@@ -323,12 +321,12 @@ void ArmLSRegister(ARM_INSTRUCTION arm_instruction, char *instrstr)
     if(arm_instruction.lsrn.ns == 0)
     {
       //Post indexed no shift ==> [rn], +/-rm
-      sprintf(op2, "[%s], #%s%s", regnames[arm_instruction.lsr.rn], signtext[arm_instruction.lsr.u], regnames[arm_instruction.lsr.rm]);
+      sprintf(op2, "[%s], %s%s", regnames[arm_instruction.lsr.rn], signtext[arm_instruction.lsr.u], regnames[arm_instruction.lsr.rm]);
     }
     else
     {
       //Post indexed shift ==> [rn], +/-rm, shift #shift_imm
-      sprintf(op2, "[%s], #%s%s, %s #%d", regnames[arm_instruction.lsr.rn], signtext[arm_instruction.lsr.u], regnames[arm_instruction.lsr.rm], shifttext[arm_instruction.lsr.sm], arm_instruction.lsr.sa);
+      sprintf(op2, "[%s], %s%s, %s #%d", regnames[arm_instruction.lsr.rn], signtext[arm_instruction.lsr.u], regnames[arm_instruction.lsr.rm], shifttext[arm_instruction.lsr.sm], arm_instruction.lsr.sa);
     }
   }
   else
@@ -337,12 +335,12 @@ void ArmLSRegister(ARM_INSTRUCTION arm_instruction, char *instrstr)
     if(arm_instruction.lsrn.ns == 0)
     {
       //Offset or pre indexed no shift ==> [rn, +/-rm]{!}
-      sprintf(op2, "[%s, #%s%s]%s", regnames[arm_instruction.lsr.rn], signtext[arm_instruction.lsr.u], regnames[arm_instruction.lsr.rm], savetext[arm_instruction.lsr.w]);
+      sprintf(op2, "[%s, %s%s]%s", regnames[arm_instruction.lsr.rn], signtext[arm_instruction.lsr.u], regnames[arm_instruction.lsr.rm], savetext[arm_instruction.lsr.w]);
     }
     else
     {
       //Offset or pre indexed shift ==> [rn], +/-rm, shift #shift_imm
-      sprintf(op2, "[%s, #%s%s, %s #%d]%s", regnames[arm_instruction.lsr.rn], signtext[arm_instruction.lsr.u], regnames[arm_instruction.lsr.rm], shifttext[arm_instruction.lsr.sm], arm_instruction.lsr.sa, savetext[arm_instruction.lsr.w]);
+      sprintf(op2, "[%s, %s%s, %s #%d]%s", regnames[arm_instruction.lsr.rn], signtext[arm_instruction.lsr.u], regnames[arm_instruction.lsr.rm], shifttext[arm_instruction.lsr.sm], arm_instruction.lsr.sa, savetext[arm_instruction.lsr.w]);
     }
   }
    
@@ -425,12 +423,12 @@ void ArmLSExtraRegister(ARM_INSTRUCTION arm_instruction, char *instrstr)
   if(arm_instruction.lsx.p == 0)
   {
     //Post indexed ==> [rn], +/-rm
-    sprintf(op2, "[%s], #%s%s", regnames[arm_instruction.lsx.rn], signtext[arm_instruction.lsx.u], regnames[arm_instruction.lsx.rm]);
+    sprintf(op2, "[%s], %s%s", regnames[arm_instruction.lsx.rn], signtext[arm_instruction.lsx.u], regnames[arm_instruction.lsx.rm]);
   }
   else
   {
     //Offset or pre indexed ==> [rn, +/-rm]{!}
-    sprintf(op2, "[%s, #%s%s]%s", regnames[arm_instruction.lsx.rn], signtext[arm_instruction.lsx.u], regnames[arm_instruction.lsx.rm], savetext[arm_instruction.lsx.w]);
+    sprintf(op2, "[%s, %s%s]%s", regnames[arm_instruction.lsx.rn], signtext[arm_instruction.lsx.u], regnames[arm_instruction.lsx.rm], savetext[arm_instruction.lsx.w]);
   }
 
   //Check if normal half word instructions
@@ -559,8 +557,11 @@ void ArmMSR(ARM_INSTRUCTION arm_instruction, char *instrstr, const char *op2)
   //Terminate the string
   *ptr++ = 0;
 
-  //Print the instruction
-  sprintf(instrstr, "msr%s       %s, %s", condnames[arm_instruction.base.cond], cpsrfield, op2);
+  //Print the instruction name (base name and condition)
+  sprintf(instrstr, "msr%s            ", condnames[arm_instruction.base.cond]);
+  
+  //Add the cpsr field plus the rest of the operands
+  sprintf(&instrstr[12], "%s, %s", cpsrfield, op2);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -579,7 +580,11 @@ void ArmMRS(ARM_INSTRUCTION arm_instruction, char *instrstr)
     op2 = "spsr";
   }
 
-  sprintf(instrstr, "mrs%s       %s, %s", condnames[arm_instruction.base.cond], regnames[arm_instruction.mrs.rd], op2);
+  //Print the instruction name (base name and condition)
+  sprintf(instrstr, "mrs%s            ", condnames[arm_instruction.base.cond]);
+  
+  //Add the rd plus the rest of the operands
+  sprintf(&instrstr[12], "%s, %s", regnames[arm_instruction.mrs.rd], op2);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -695,15 +700,12 @@ void ArmLSM(ARM_INSTRUCTION arm_instruction, char *instrstr)
   int       i;
   int       length;
   char     *ptr;
-  
-  //                             update                save status
-  //ldm{cond}addressing_mode  rn{!}, '{' reg list '}' {^}
 
-  //Print the instruction name (base name, condition and status update)
-  sprintf(instrstr, "%s%s%s         ", lsmtext[arm_instruction.type4.l], condnames[arm_instruction.base.cond], amtext[(arm_instruction.type4.u << 1) || arm_instruction.type4.p]);
+  //Print the instruction name (base name, direction and condition)
+  sprintf(instrstr, "%s%s%s         ", lsmtext[arm_instruction.type4.l], amtext[(arm_instruction.type4.u << 1) | arm_instruction.type4.p], condnames[arm_instruction.base.cond]);
 
   //Add the base register plus update flag if needed
-  length = sprintf(&instrstr[12], "%s%s, { ", regnames[arm_instruction.lsr.rd], savetext[arm_instruction.type4.w]) + 12;
+  length = sprintf(&instrstr[12], "%s%s, { ", regnames[arm_instruction.type4.rn], savetext[arm_instruction.type4.w]) + 12;
   
   //Point to start of register list space
   ptr = &instrstr[length];
