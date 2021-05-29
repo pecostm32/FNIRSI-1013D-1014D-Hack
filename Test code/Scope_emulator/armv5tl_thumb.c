@@ -1029,10 +1029,15 @@ void ArmV5tlThumbLS(PARMV5TL_CORE core, u_int32_t type, u_int32_t rd, u_int32_t 
     core->pcincrvalue = 0;
   }
   
-  
   //Check if tracing into buffer is enabled.
   if(core->tracebufferenabled)
   {
+    //Check on load or store
+    if(type & ARM_THUMB_LOAD_FLAG)
+    {
+      mode |= ARM_MEM_TRACE_WRITE;
+    }
+    
     //Set the data in the trace buffer
     ArmV5tlSetMemoryTraceData(core, address, mode, 1, 0);
   }
@@ -1046,6 +1051,7 @@ void ArmV5tlThumbLSMIA(PARMV5TL_CORE core)
   u_int32_t traceaddress = address;
   u_int32_t *memory;
   u_int32_t reglist = core->thumb_instruction.lsm.rl;
+  u_int32_t mode = ARM_MEMORY_WORD;
   int       numregs = 0;
   int       update = 1;
   int       i;
@@ -1057,7 +1063,7 @@ void ArmV5tlThumbLSMIA(PARMV5TL_CORE core)
     if(reglist & 1)
     {
       //Get the pointer for this address        
-      memory = ArmV5tlGetMemoryPointer(core, address, ARM_MEMORY_WORD);
+      memory = ArmV5tlGetMemoryPointer(core, address, mode);
 
       //Check if valid memory found
       if(memory)
@@ -1069,7 +1075,7 @@ void ArmV5tlThumbLSMIA(PARMV5TL_CORE core)
           if(core->periph_read_func)
           {
             //Call it if so
-            core->periph_read_func(core, address, ARM_MEMORY_WORD);
+            core->periph_read_func(core, address, mode);
           }
 
           //Load the register with the data from memory
@@ -1084,7 +1090,7 @@ void ArmV5tlThumbLSMIA(PARMV5TL_CORE core)
           if(core->periph_write_func)
           {
             //Call it if so
-            core->periph_write_func(core, address, ARM_MEMORY_WORD);
+            core->periph_write_func(core, address, mode);
           }
        }
       }
@@ -1121,8 +1127,14 @@ void ArmV5tlThumbLSMIA(PARMV5TL_CORE core)
   //Check if tracing into buffer is enabled.
   if(core->tracebufferenabled)
   {
+    //Check on load or store
+    if(core->thumb_instruction.lsm.l == 0)
+    {
+      mode |= ARM_MEM_TRACE_WRITE;
+    }
+    
     //Set the data in the trace buffer
-    ArmV5tlSetMemoryTraceData(core, traceaddress, ARM_MEMORY_WORD, numregs, 1);
+    ArmV5tlSetMemoryTraceData(core, traceaddress, mode, numregs, 1);
   }
 }
 
@@ -1280,7 +1292,7 @@ void ArmV5tlThumbPUSH(PARMV5TL_CORE core)
   if(core->tracebufferenabled)
   {
     //Set the data in the trace buffer
-    ArmV5tlSetMemoryTraceData(core, traceaddress, ARM_MEMORY_WORD, numregs, 0);
+    ArmV5tlSetMemoryTraceData(core, traceaddress, ARM_MEMORY_WORD | ARM_MEM_TRACE_WRITE, numregs, 0);
   }
 }
 

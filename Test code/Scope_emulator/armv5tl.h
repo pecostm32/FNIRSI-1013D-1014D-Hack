@@ -686,6 +686,7 @@ struct tagARMV5TL_CORE
 #define ARM_SIGN_EXTEND          0x0010
 #define ARM_NO_MEM_TRACE         0x0020
 #define ARM_MEM_TRACE_DOUBLE     0x0040
+#define ARM_MEM_TRACE_WRITE      0x0080
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

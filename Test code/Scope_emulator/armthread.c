@@ -320,20 +320,10 @@ void *armemulatorthread(void *arg)
 int DrawArmPanel(tagXlibContext *xc)
 {
   int i,n;
-  char text[32];
   
-  //Draw the scope outline
+  //Draw the emulator window outline
   DrawFillRoundedRect(xc, 0, 0, 8, DESIGN_WIDTH, 1000, ArmPanelColor, ArmLineColor, 1);
-  
 
-  //Place the front panels text  
-//  PlaceText(xc, 70, 600, "TABLET", 0, 0, ALIGN_TEXT_LEFT);
-//  PlaceText(xc, 250, 600, "OSCILLOSCOPE", 1, 0, ALIGN_TEXT_LEFT);
-
-//  PlaceText(xc, 780, 575, "100MHZ", 1, 0, ALIGN_TEXT_LEFT);
-//  PlaceText(xc, 780, 600, "1 GSa/s", 1, 0, ALIGN_TEXT_LEFT);
-
-  
   //Place all the texts
   n = sizeof(texts) / sizeof(tagPlaceText);
   for(i=0;i<n;i++)
@@ -462,7 +452,7 @@ void UpdateArmPanel(tagXlibContext *xc, PARMV5TL_CORE core)
   LcdDisplayText(&lcdisplays[0], 0, 11, displaytext);
     
   //Display the execution state bits
-  snprintf(displaytext, sizeof(displaytext), "         %c   %c          ", '0' + core->status->flags.T, '0' + core->status->flags.J);
+  snprintf(displaytext, sizeof(displaytext), "         %c   %c          ", '0' + core->status->flags.J, '0' + core->status->flags.T);
   LcdDisplayText(&lcdisplays[0], 0, 15, displaytext);
 
 }

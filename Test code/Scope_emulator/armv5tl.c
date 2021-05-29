@@ -14,27 +14,42 @@
 //----------------------------------------------------------------------------------------------------------------------------------
 
 //#define MY_BREAK_POINT 0x800306f4
+//#define MY_BREAK_POINT 0x8002CF3C      //function called from setup_display_lib
 //#define MY_BREAK_POINT 0x8002FAD4      //faulty jump due to missing data
 //#define MY_BREAK_POINT 0x800197AC
 //#define MY_BREAK_POINT 0x8003534C
 //#define MY_BREAK_POINT 0x80035334      //call to sys_init_uart0
 //#define MY_BREAK_POINT 0x800182FC      //In this data is multiplied by 0x78
 //#define MY_BREAK_POINT 0x80035320      //main
+//#define MY_BREAK_POINT  0x80035350   //call to touch panel setup
+//#define MY_BREAK_POINT  0x800353d4   //Infinit loop after sd card error
 
 
-#define MY_BREAK_POINT  0x8002CF3C
+//#define MY_BREAK_POINT  0x8001933C     //Within setup_display_lib function
+
+//#define MY_BREAK_POINT_1  0x8001d0D0
+//#define MY_BREAK_POINT_2  0x8001d0D8
+
+//#define MY_BREAK_POINT_1  0x8001cdc8   //Function that calls a function pointer
+
+#define MY_BREAK_POINT_2  0x8002f028   //Within the function called via the function pointer
+#define MY_BREAK_POINT_1  0x8002f02C   //Function that calls a function pointer
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-//#define MY_TRACE_START_POINT    0x8003534c  //Address where setup_display_lib is called
+//#define MY_TRACE_START_POINT    0x8003532c   //Call to some_memory_stuff (now mmu_setup)
 
-#define MY_TRACE_START_POINT    0x8003532c   //Call to some_memory_stuff
+//#define MY_TRACE_START_POINT    0x8001933C  //Address where setup_display_lib is called
+
+#define MY_TRACE_START_POINT    0x8002f028  //Address where setup_display_lib is called
+//#define MY_TRACE_STOP_POINT    0x8001933C  //Address where setup_display_lib is called
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 //#define TRACE_FILE_NAME         "test_trace"
+//#define TRACE_FILE_NAME           "mmu_p15_setup"
 
-#define TRACE_FILE_NAME           "mmu_p15_setup"
+#define TRACE_FILE_NAME         "screen_buf_clear"
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -181,17 +196,17 @@ void ArmV5tlSetup(PARMV5TL_CORE core)
   core->peripheralfunction = F1C100sProcess;
   
   //Test tracing
-  core->TraceFilePointer = NULL;
+//  core->TraceFilePointer = NULL;
   
   //Print the trace file name
-//  snprintf(tracefilename, 64, "%s_%06d.bin", TRACE_FILE_NAME, core->tracefileindex);
-//  core->TraceFilePointer = fopen(tracefilename, "wb");
+  snprintf(tracefilename, 64, "%s_%06d.bin", TRACE_FILE_NAME, core->tracefileindex);
+  core->TraceFilePointer = fopen(tracefilename, "wb");
   
   //Enable tracing into buffer
-//  core->tracebufferenabled = 1;
+  core->tracebufferenabled = 1;
   
   //Start tracing when address is hit
-//  core->tracetriggeraddress = MY_TRACE_START_POINT;
+  core->tracetriggeraddress = MY_TRACE_START_POINT;
   
   //On startup processor is running
   core->run = 1;
@@ -270,7 +285,12 @@ void ArmV5tlCore(PARMV5TL_CORE core)
   }
   
   //Breakpoint
-  if(*core->program_counter == MY_BREAK_POINT)
+  if(*core->program_counter == MY_BREAK_POINT_1)
+  {
+    memorypointer = NULL;
+  }
+
+  if(*core->program_counter == MY_BREAK_POINT_2)
   {
     memorypointer = NULL;
   }
@@ -1827,6 +1847,12 @@ void ArmV5tlLS(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
   //Check if tracing into buffer is enabled.
   if((core->tracebufferenabled) && ((mode & ARM_NO_MEM_TRACE) == 0))
   {
+    //Check on load or store
+    if(core->arm_instruction.lsr.l == 0)
+    {
+      memtype |= ARM_MEM_TRACE_WRITE;
+    }
+    
     //Check if double word trace
     if(mode & ARM_MEM_TRACE_DOUBLE)
     {
@@ -1849,6 +1875,7 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
   u_int32_t traceaddress;
   u_int32_t *memory;
   u_int32_t reglist = core->arm_instruction.instr & 0x0000FFFF;
+  u_int32_t mode = ARM_MEMORY_WORD;
   int       numregs = 0;
   int       bank = core->current_bank;
   int       i;
@@ -1940,7 +1967,7 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
       if(reglist & 1)
       {
         //Get the pointer for this address        
-        memory = ArmV5tlGetMemoryPointer(core, address, ARM_MEMORY_WORD);
+        memory = ArmV5tlGetMemoryPointer(core, address, mode);
         
         //Check if valid memory found
         if(memory)
@@ -1952,7 +1979,7 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
             if(core->periph_read_func)
             {
               //Call it if so
-              core->periph_read_func(core, address, ARM_MEMORY_WORD);
+              core->periph_read_func(core, address, mode);
             }
 
             //Load the register with the data from memory
@@ -1967,7 +1994,7 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
             if(core->periph_write_func)
             {
               //Call it if so
-              core->periph_write_func(core, address, ARM_MEMORY_WORD);
+              core->periph_write_func(core, address, mode);
             }
           }
         }
@@ -1996,7 +2023,7 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
       if(reglist & 0x00008000)
       {
         //Get the pointer for this address        
-        memory = ArmV5tlGetMemoryPointer(core, address, ARM_MEMORY_WORD);
+        memory = ArmV5tlGetMemoryPointer(core, address, mode);
         
         //Check if valid memory found
         if(memory)
@@ -2008,7 +2035,7 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
             if(core->periph_read_func)
             {
               //Call it if so
-              core->periph_read_func(core, address, ARM_MEMORY_WORD);
+              core->periph_read_func(core, address, mode);
             }
 
             //Load the register with the data from memory
@@ -2023,7 +2050,7 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
             if(core->periph_write_func)
             {
               //Call it if so
-              core->periph_write_func(core, address, ARM_MEMORY_WORD);
+              core->periph_write_func(core, address, mode);
             }
           }
         }
@@ -2080,8 +2107,14 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
   //Check if tracing into buffer is enabled.
   if(core->tracebufferenabled)
   {
+    //Check on load or store
+    if(core->arm_instruction.type4.l == 0)
+    {
+      mode |= ARM_MEM_TRACE_WRITE;
+    }
+    
     //Set the data in the trace buffer
-    ArmV5tlSetMemoryTraceData(core, traceaddress, ARM_MEMORY_WORD, numregs, core->arm_instruction.type4.u);
+    ArmV5tlSetMemoryTraceData(core, traceaddress, mode, numregs, core->arm_instruction.type4.u);
   }
 }
 
