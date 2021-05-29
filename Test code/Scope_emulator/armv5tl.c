@@ -17,10 +17,12 @@
 //#define MY_BREAK_POINT 0x8002FAD4      //faulty jump due to missing data
 //#define MY_BREAK_POINT 0x800197AC
 //#define MY_BREAK_POINT 0x8003534C
-//#define MY_BREAK_POINT 0x800182fc      //In this function pointers aer multiplied by 0x78
+//#define MY_BREAK_POINT 0x80035334      //call to sys_init_uart0
+//#define MY_BREAK_POINT 0x800182FC      //In this data is multiplied by 0x78
 //#define MY_BREAK_POINT 0x80035320      //main
 
-#define MY_BREAK_POINT 0x80035334        //call to sys_init_uart0
+
+#define MY_BREAK_POINT  0x8002CF3C
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -30,7 +32,7 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-//#define TRACE_FILE_NAME         "test_trace_000000.bin"
+//#define TRACE_FILE_NAME         "test_trace"
 
 #define TRACE_FILE_NAME           "mmu_p15_setup"
 
@@ -179,17 +181,17 @@ void ArmV5tlSetup(PARMV5TL_CORE core)
   core->peripheralfunction = F1C100sProcess;
   
   //Test tracing
-//  core->TraceFilePointer = NULL;
+  core->TraceFilePointer = NULL;
   
   //Print the trace file name
-  snprintf(tracefilename, 64, "%s_%06d.bin", TRACE_FILE_NAME, core->tracefileindex);
-  core->TraceFilePointer = fopen(tracefilename, "wb");
+//  snprintf(tracefilename, 64, "%s_%06d.bin", TRACE_FILE_NAME, core->tracefileindex);
+//  core->TraceFilePointer = fopen(tracefilename, "wb");
   
   //Enable tracing into buffer
-  core->tracebufferenabled = 1;
+//  core->tracebufferenabled = 1;
   
   //Start tracing when address is hit
-  core->tracetriggeraddress = MY_TRACE_START_POINT;
+//  core->tracetriggeraddress = MY_TRACE_START_POINT;
   
   //On startup processor is running
   core->run = 1;
@@ -396,7 +398,7 @@ void ArmV5tlCore(PARMV5TL_CORE core)
 
         case ARM_COND_LOWER_SAME:
           //For execute on lower or the same C needs to be cleared and Z needs to be set
-          if((core->status->flags.C == 0) && (core->status->flags.Z ))
+          if((core->status->flags.C == 0) || (core->status->flags.Z))
             execute = 1;
           break;
 
@@ -420,7 +422,7 @@ void ArmV5tlCore(PARMV5TL_CORE core)
 
         case ARM_COND_LESS_THAN_EQUAL:
           //For execute on less than or equal than N needs to be not equal to V and Z needs to be set
-          if((core->status->flags.N != core->status->flags.V) && (core->status->flags.Z))
+          if((core->status->flags.N != core->status->flags.V) || (core->status->flags.Z))
             execute = 1;
           break;
 
