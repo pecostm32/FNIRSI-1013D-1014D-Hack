@@ -600,9 +600,14 @@ void ArmV5tlCore(PARMV5TL_CORE core)
                         break;
                     }
                   }
+                  //Check on count leading zeros
+                  else if((core->arm_instruction.instr & 0x0FFF0FF0) == 0x016F0F10)
+                  {
+                    //Handle count leading zeros
+                    ArmV5tlCLZ(core);
+                  }
                   else
                   {
-                    //Count leading zeros
                     //Saturating add / subtract
                     //Software breakpoint
                     //Signed multiplies (type 2)
@@ -2448,7 +2453,6 @@ void ArmV5tlBranchExchangeT(PARMV5TL_CORE core)
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
-
 //Handle branch with exchange instructions
 void ArmV5tlBranchExchangeJ(PARMV5TL_CORE core)
 {
@@ -2467,3 +2471,32 @@ void ArmV5tlBranchExchangeJ(PARMV5TL_CORE core)
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
+//Handle count leading zeros
+void ArmV5tlCLZ(PARMV5TL_CORE core)
+{
+  //Get input data
+  u_int32_t vm = *core->registers[core->current_bank][core->arm_instruction.clz.rm];
+  u_int32_t cnt = 0;
+  
+  //Check on input being zero
+  if(vm == 0)
+  {
+    //This means 32 zeros
+    cnt = 32;
+  }
+  else
+  {
+    //count the actual zeros
+    while((vm & 0x80000000) == 0)
+    {
+      //Add one zero to the count
+      cnt++;
+      
+      //Shift the bits to the right
+      vm <<= 1;
+    }
+  }
+  
+  //Write the result to the destination register
+  *core->registers[core->current_bank][core->arm_instruction.clz.rd] = cnt;
+}

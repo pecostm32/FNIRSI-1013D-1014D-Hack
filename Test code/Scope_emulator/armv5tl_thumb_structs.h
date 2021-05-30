@@ -180,7 +180,7 @@ union tagARMV5TL_THUMB_INSTRUCTION
   ARMV5TL_INSTR_THUMB_LSM    lsm;         //Instruction data for load store multiple instructions
   ARMV5TL_INSTR_THUMB_B2     b2;          //Instruction data for type 2 branch instructions
   ARMV5TL_INSTR_THUMB_B6     b6;          //Instruction data for type 6 branch instructions
-  ARMV5TL_INSTR_THUMB_B6     b7;          //Instruction data for type 7 branch instructions
+  ARMV5TL_INSTR_THUMB_B7     b7;          //Instruction data for type 7 branch instructions
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------

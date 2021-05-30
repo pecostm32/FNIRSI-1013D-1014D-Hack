@@ -42,6 +42,7 @@ typedef struct tagARMV5TL_INSTR_MSRI        ARMV5TL_INSTR_MSRI;       //Move imm
 typedef struct tagARMV5TL_INSTR_MSRR        ARMV5TL_INSTR_MSRR;       //Move register to status register instructions
 typedef struct tagARMV5TL_INSTR_MRS         ARMV5TL_INSTR_MRS;        //Move status register to register instructions
 typedef struct tagARMV5TL_INSTR_MRCMCR      ARMV5TL_INSTR_MRCMCR;     //Move register to coprocessor or coprocessor to register instructions
+typedef struct tagARMV5TL_INSTR_CLZ         ARMV5TL_INSTR_CLZ;        //Count leading zero instruction
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -294,6 +295,16 @@ struct tagARMV5TL_INSTR_MISC0
   u_int32_t cond:4;       //Condition bits
 };
 
+struct tagARMV5TL_INSTR_CLZ
+{
+  u_int32_t rm:4;         //Register
+  u_int32_t nu2:4;        //Not used
+  u_int32_t sbo:4;        //Should be one
+  u_int32_t rd:4;         //Destination register
+  u_int32_t nu1:12;       //Not used
+  u_int32_t cond:4;       //Condition bits
+};
+
 //----------------------------------------------------------------------------------------------------------------------------------
 
 struct tagARMV5TL_INSTR_TYPE0
@@ -476,6 +487,7 @@ union tagARMV5TL_ARM_INSTRUCTION
   ARMV5TL_INSTR_MSRR       msrr;       //Move register to status register instructions
   ARMV5TL_INSTR_MRS        mrs;        //Move status register to register instructions
   ARMV5TL_INSTR_MRCMCR     mrcmcr;     //Move register to coprocessor or coprocessor to register instructions
+  ARMV5TL_INSTR_CLZ        clz;        //Count leading zero instruction
 };                                        
 
 union tagARMV5TL_MEMORY
@@ -785,6 +797,10 @@ void ArmV5tlBranchExchangeT(PARMV5TL_CORE core);
 
 //Handle branch with exchange instructions
 void ArmV5tlBranchExchangeJ(PARMV5TL_CORE core);
+
+//Handle count leading zeros
+void ArmV5tlCLZ(PARMV5TL_CORE core);
+
 
 #endif /* ARMV5TL_H */
 

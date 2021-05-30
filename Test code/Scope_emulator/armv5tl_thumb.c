@@ -26,7 +26,7 @@ void ArmV5tlHandleThumb(PARMV5TL_CORE core)
     {
       //Setup the trace buffer entry for arm tracing
       core->tracebuffer[core->traceindex].instruction_address = *core->program_counter;
-      core->tracebuffer[core->traceindex].instruction_word = core->arm_instruction.instr;
+      core->tracebuffer[core->traceindex].instruction_word = core->thumb_instruction.instr;
       core->tracebuffer[core->traceindex].execution_status = ARM_INSTRUCTION_THUMB;
     }
     
@@ -622,6 +622,9 @@ void ArmV5tlThumbDP2S(PARMV5TL_CORE core)
       type = ARM_OPCODE_MOV | ARM_OPCODE_THUMB_NO_FLAGS;
       break;
   }  
+  
+  //Go and do the actual processing
+  ArmV5tlThumbDP(core, type, rd, vn, vm);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -1391,7 +1394,7 @@ void ArmV5tlThumbBranch6(PARMV5TL_CORE core)
 
     case ARM_COND_LOWER_SAME:
       //For execute on lower or the same C needs to be cleared and Z needs to be set
-      if((core->status->flags.C == 0) && (core->status->flags.Z ))
+      if((core->status->flags.C == 0) || (core->status->flags.Z ))
         execute = 1;
       break;
 
@@ -1415,7 +1418,7 @@ void ArmV5tlThumbBranch6(PARMV5TL_CORE core)
 
     case ARM_COND_LESS_THAN_EQUAL:
       //For execute on less than or equal than N needs to be not equal to V and Z needs to be set
-      if((core->status->flags.N != core->status->flags.V) && (core->status->flags.Z))
+      if((core->status->flags.N != core->status->flags.V) || (core->status->flags.Z))
         execute = 1;
       break;
   }
