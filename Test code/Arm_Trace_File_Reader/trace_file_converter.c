@@ -5,6 +5,7 @@
 
 #include "../../FNIRSI-1013D/Arm_Trace_File_Reader/armtracedata.h"
 #include "../../FNIRSI-1013D/Arm_Trace_File_Reader/armdisassemble.h"
+#include "../../FNIRSI-1013D/Arm_Trace_File_Reader/thumbdisassemble.h"
 
 const char *trregnames[37] = 
 {
@@ -36,72 +37,85 @@ int listitems = 0;
 //The emulator writes max 25000 lines per file
 ARMV5TL_TRACE_ENTRY tracelist[25100];
 
+#define TRACE_FILE_NAME         "screen_buf_clear"
+
 int main(int argc, char** argv)
 {
-  //For now just a single file opened here
-  FILE *fp = fopen("../../FNIRSI-1013D/Scope_emulator/test_trace_000088.bin", "rb");
-  
-  if(fp)  
+  int n;
+  char tracefilename[128];
+
+  for(n=0;n<3;n++)
   {
-    int size = fread(tracelist, 1, sizeof(tracelist) , fp);
-    
-    listitems = size / sizeof(ARMV5TL_TRACE_ENTRY);
-    
-    fclose(fp);
-  }
+//    snprintf(tracefilename, 128, "../../FNIRSI-1013D/Scope_emulator/setup_display_lib_trace/%s_%06d.bin", TRACE_FILE_NAME, n);
+    snprintf(tracefilename, 128, "../../FNIRSI-1013D/Scope_emulator/%s_%06d.bin", TRACE_FILE_NAME, n);
+    FILE *fp = fopen(tracefilename, "rb");
 
-  fp = fopen("test_trace_000088.txt", "w");
-  
-  if(fp)
-  {
-    int i,r;
-    int spaces;
-    
-    u_int32_t *rptr;
-    
-    char exetext[4][4] = { "NO ", "YES", "   ", "   " };
-
-    char displaytext[128];
-    char disassemtext[94];
-
-    for(i=0;i<listitems;i++)
+    if(fp)  
     {
-      spaces = 110;
+      int size = fread(tracelist, 1, sizeof(tracelist) , fp);
 
-      memset(disassemtext, 0x20, sizeof(disassemtext));
-      disassemtext[0] = 0;
+      listitems = size / sizeof(ARMV5TL_TRACE_ENTRY);
 
-      ArmDisassemble(disassemtext, sizeof(disassemtext), tracelist[i].instruction_address, (ARM_INSTRUCTION)tracelist[i].instruction_word);
+      fclose(fp);
 
-      spaces -= fprintf(fp, "pa:0x%08X  0x%08X  %s       %s", tracelist[i].instruction_address, tracelist[i].instruction_word, exetext[tracelist[i].execution_status & 3], disassemtext);
-      
-      while(spaces)
+      snprintf(tracefilename, 128, "%s_%06d.txt", TRACE_FILE_NAME, n);
+      fp = fopen(tracefilename, "w");
+
+      if(fp)
       {
-        fprintf(fp, " ");
-        spaces--;
-      }
-      
-      rptr = &tracelist[i].registers.r0;
-      
-      for(r=0;r<37;r++)
-      {
-        fprintf(fp, "%s0x%08X  ", trregnames[r], *rptr++);
-      }
-      
-      if(tracelist[i].data_count)
-      {
-        fprintf(fp, "  memory:0x%08X  type:%s  count:%2d  dir:%s  ", tracelist[i].memory_address, memsizetext[tracelist[i].data_width], tracelist[i].data_count, dirtext[tracelist[i].memory_direction]);
-        
-        for(r=0;r<tracelist[i].data_count;r++)
+        int i,r;
+        int spaces;
+
+        u_int32_t *rptr;
+
+        char exetext[4][4] = { "NO ", "YES", "T  ", "   " };
+
+        char disassemtext[94];
+
+        for(i=0;i<listitems;i++)
         {
-          fprintf(fp, "0x%08X  ", tracelist[i].data[r]);
+          spaces = 110;
+
+          memset(disassemtext, 0x20, sizeof(disassemtext));
+          disassemtext[0] = 0;
+
+          if(tracelist[i].execution_status != ARM_INSTRUCTION_THUMB)
+            ArmDisassemble(disassemtext, sizeof(disassemtext), tracelist[i].instruction_address, (ARM_INSTRUCTION)tracelist[i].instruction_word);
+          else
+            ThumbDisassemble(disassemtext, sizeof(disassemtext), tracelist[i].instruction_address, (ARM_THUMB_INSTRUCTION)(u_int16_t)tracelist[i].instruction_word);
+
+          spaces -= fprintf(fp, "pa:0x%08X  0x%08X  %s       %s", tracelist[i].instruction_address, tracelist[i].instruction_word, exetext[tracelist[i].execution_status & 3], disassemtext);
+
+          while(spaces)
+          {
+            fprintf(fp, " ");
+            spaces--;
+          }
+
+          rptr = &tracelist[i].registers.r0;
+
+          for(r=0;r<37;r++)
+          {
+            fprintf(fp, "%s0x%08X  ", trregnames[r], *rptr++);
+          }
+
+          if(tracelist[i].data_count)
+          {
+            //Add memory read or write info (tracelist[i].data_width & ARM_MEM_TRACE_WRITE) true then write else read
+            fprintf(fp, "  memory:0x%08X  type:%s  count:%2d  dir:%s  ", tracelist[i].memory_address, memsizetext[(tracelist[i].data_width & ARM_MEMORY_MASK)], tracelist[i].data_count, dirtext[tracelist[i].memory_direction]);
+
+            for(r=0;r<tracelist[i].data_count;r++)
+            {
+              fprintf(fp, "0x%08X  ", tracelist[i].data[r]);
+            }
+          }
+
+          fprintf(fp, "\n");
         }
+        
+        fclose(fp);
       }
-      
-      fprintf(fp, "\n");
     }
-    
-    fclose(fp);
   }
 }
 
