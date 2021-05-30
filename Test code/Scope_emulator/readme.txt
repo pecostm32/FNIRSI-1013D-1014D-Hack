@@ -44,3 +44,17 @@ Implemented the core interrupt handling for just the irq and finished the f1c100
 Unfortunately the scope code goes wrong at address 0x800197AC where it jumps to address 0 where there is no valid code.
 To be able to see where it goes wrong I implemented a better tracing system. For this I need to write a program that can read the trace information.
 
+----------------------------------------------------------------------------------------------
+30-May-2021 20:25
+Fixed several errors in both the arm and the thumb instruction handling.
+1) ARM condition code checks had errors
+2) Thumb branch condition code checks had the same errors
+3) The thumb special data processing instructions were not being handled
+4) Fixed thumb instruction short not being written in the trace buffer. Instead the last arm_instruction was used.
+5) The thumb instruction union had a copy paste not modify error. The struct type for branch type 7 in the union was not modified from type 6 and
+   therefore bl, bl / blx combination failed.
+6) Added the clz instruction
+   
+Also looked into the memory management system and decided it is not needed in the emulator for running the scope.
+
+The scope is now running down into the sd card handling code and sits there since the peripheral is not yet implemented.
