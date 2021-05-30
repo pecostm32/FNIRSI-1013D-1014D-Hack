@@ -475,6 +475,7 @@ union tagARM_INSTRUCTION
 #define ARM_MEMORY_DWORD         0x0003
 
 #define ARM_SIGN_EXTEND          0x0010
+#define ARM_MEM_TRACE_WRITE      0x0080
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -517,6 +518,8 @@ void ArmBranchLinkExchange1(u_int32_t program_counter, ARM_INSTRUCTION arm_instr
 void ArmBranchLinkExchange2(ARM_INSTRUCTION arm_instruction, char *instrstr);
 void ArmBranchExchangeT(ARM_INSTRUCTION arm_instruction, char *instrstr);
 void ArmBranchExchangeJ(ARM_INSTRUCTION arm_instruction, char *instrstr);
+
+void ArmMUL(ARM_INSTRUCTION arm_instruction, char *instrstr);
 
 void ArmMRCMCR(ARM_INSTRUCTION arm_instruction, char *instrstr);
 

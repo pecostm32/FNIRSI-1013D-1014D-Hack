@@ -23,6 +23,7 @@ const char *ttext[2]      = { "", "t" };
 const char *dprtext[16]   = { "and", "eor", "sub", "rsb", "add", "adc", "sbc", "rsc", "tst", "teq", "cmp", "cmn", "orr", "mov", "bic", "mvn" }; 
 const char *bltext[2]     = { "b", "bl" };
 const char *mctext[4]     = { "mcr", "mrc", "mcr2", "mrc2" };
+const char *multext[8]    = { "mul", "mla", "umaal", "und", "umull", "umlal", "smull", "smlal" };
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -95,7 +96,7 @@ void ArmDisassemble(char *instrstr, u_int32_t strsize, u_int32_t program_counter
           if((arm_instruction.mul.type == 0) && (arm_instruction.mul.nu == 0x09))
           {
             //Handle multiplies (MUL, MULS, MLA, MLAS, UMULL, UMULLS, UMLAL, UMLALS, SMULL, SMULLS, SMLAL, SMLALS)
-//            ArmV5tlMUL(core);
+            ArmMUL(arm_instruction, instrstr);
           }
           //Check on swap instructions
           else if((arm_instruction.instr & 0x0FB00FF0) == 0x01000090)
@@ -711,7 +712,7 @@ void ArmLSM(ARM_INSTRUCTION arm_instruction, char *instrstr)
   //Point to start of register list space
   ptr = &instrstr[length];
   
-  //Check the register list for which registers need to be loaded
+  //Check the register list for which registers need to be printed
   for(i=0;i<16;i++)
   {
     //Check if register included
@@ -809,81 +810,35 @@ void ArmBranchExchangeJ(ARM_INSTRUCTION arm_instruction, char *instrstr)
   sprintf(&instrstr[12], "%s", regnames[arm_instruction.misc0.rm]);
 }
 
-/*
+
 //----------------------------------------------------------------------------------------------------------------------------------
 //Multiply instruction handling
 //MUL, MULS, MLA, MLAS, UMULL, UMULLS, UMLAL, UMLALS, SMULL, SMULLS, SMLAL, SMLALS  
-void ArmV5tlMUL(PARMV5TL_CORE core)
+void ArmMUL(ARM_INSTRUCTION arm_instruction, char *instrstr)
 {
-  u_int32_t rm = *registers[current_bank][arm_instruction.mul.rm];
-  u_int32_t rs = *registers[current_bank][arm_instruction.mul.rs];
-  int64_t vd;
-  int64_t va;
-  
-  //Check if signed or unsigned multiply needed (SMULL op1:6, SMLAL op1:7)
-  if((arm_instruction.mul.op1 == 6) || (arm_instruction.mul.op1 == 7))
+  //Print the instruction name (base name, condition and status update)
+  sprintf(instrstr, "%s%s%s         ", multext[arm_instruction.mul.op1], condnames[arm_instruction.base.cond], setext[arm_instruction.mul.s]);
+
+  //MUL has only three parameters
+  if(arm_instruction.mul.op1 == 0)
   {
-    //Do multiply with signed inputs
-    vd = (int32_t)rs * (int32_t)rm;
+    //MUL has rd, rm and rs
+    sprintf(&instrstr[12], "%s, %s, %s", regnames[arm_instruction.mul.rd], regnames[arm_instruction.mul.rm], regnames[arm_instruction.mul.rs]);
   }
-  else
-  {
-    //Do multiply with unsigned inputs
-    vd = rs * rm;
-  }
-  
-  //Check if 64 bit accumulate needed (UMLAL op1:5, SMLAL op1:7)
-  if((arm_instruction.mul.op1 == 5) || (arm_instruction.mul.op1 == 7))
-  {
-    //Get the value to add from the two destination registers. rd holds high part, rn holds low part.
-    va  = (u_int64_t)*registers[current_bank][arm_instruction.mul.rd] << 32;
-    va |= *registers[current_bank][arm_instruction.mul.rn];
-    
-    //Do the summation
-    vd += va;
-  }
-  //Check if 32 bit accumulation needed (MLA op1:1)
+  //MLA has four but in different order than the 64 bit versions
   else if(arm_instruction.mul.op1 == 1)
   {
-    //Add the value held in rn to the result
-    vd += *registers[current_bank][arm_instruction.mul.rn];
+    //MLA has rd, rm, rs and rn
+    sprintf(&instrstr[12], "%s, %s, %s, %s", regnames[arm_instruction.mul.rd], regnames[arm_instruction.mul.rm], regnames[arm_instruction.mul.rs], regnames[arm_instruction.mul.rn]);
   }
-  
-  //Check if 32 bit result instruction (MUL op1:0, MLA op1:1)
-  if((arm_instruction.mul.op1 == 0) || (arm_instruction.mul.op1 == 1))
-  {
-    //Store the 32 bit result back to rd
-    *registers[current_bank][arm_instruction.mul.rd] = (u_int32_t)vd;
-    
-    //Check if status flags need to be updated
-    if(arm_instruction.mul.s)
-    {
-        //Update the negative bit
-        status->flags.N = (vd >> 31) & 1;
-
-        //Update the zero bit (only the lower 32 bits count)
-        status->flags.Z = ((vd & 0xFFFFFFFF) == 0);
-    }
-  }
-  //Leaves 64 bit result instructions
+  //The remainder of instructions have the same four parameters
   else
   {
-    //Store the 64 bit result back to register pair. rd holds high part, rn holds low part.
-    *registers[current_bank][arm_instruction.mul.rd] = (u_int32_t)(vd >> 32);
-    *registers[current_bank][arm_instruction.mul.rn] = (u_int32_t)vd;
-    
-    //Check if status flags need to be updated
-    if(arm_instruction.mul.s)
-    {
-        //Update the negative bit
-        status->flags.N = (vd >> 63) & 1;
-
-        //Update the zero bit (only the lower 32 bits count)
-        status->flags.Z = (vd == 0);
-    }
+    //The others use rd, rn, rm and rs
+    sprintf(&instrstr[12], "%s, %s, %s, %s", regnames[arm_instruction.mul.rd], regnames[arm_instruction.mul.rn], regnames[arm_instruction.mul.rm], regnames[arm_instruction.mul.rs]);
   }
 }
-*/
+
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Move register to coprocessor or coprocessor to register
