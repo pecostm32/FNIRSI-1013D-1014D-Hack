@@ -58,3 +58,14 @@ Fixed several errors in both the arm and the thumb instruction handling.
 Also looked into the memory management system and decided it is not needed in the emulator for running the scope.
 
 The scope is now running down into the sd card handling code and sits there since the peripheral is not yet implemented.
+
+----------------------------------------------------------------------------------------------
+31-MAY-2021 20:50
+Modified the original scope code to remove the SD card check to allow testing of the emulator without implementing the SD peripheral. To use it remanme the
+original W25Q32_scope.bin file and rename the W25Q32_scope_no_sd.bin to W25Q32_scope.bin. The emulater as is will then display the basic scope screen.
+
+Started with the implementation of the touch panel emulation to be able to control the emulated scope. This should work since the scope code ends up in 
+the infinite main loop where it does the actual scope process.
+
+Still needs a lot of work before it is a fully functional emulator, but the main target is to get to the FPGA commands used so one can write it's
+own scope program.
