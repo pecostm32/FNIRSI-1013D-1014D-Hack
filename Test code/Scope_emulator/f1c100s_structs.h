@@ -12,6 +12,7 @@ typedef struct tagF1C100S_DRAMC            F1C100S_DRAMC;
 typedef struct tagF1C100S_TIMER            F1C100S_TIMER;
 typedef struct tagF1C100S_INTC             F1C100S_INTC;
 typedef struct tagF1C100S_SPI              F1C100S_SPI;
+typedef struct tagF1C100S_UART             F1C100S_UART;
 typedef struct tagF1C100S_PIO_PORT         F1C100S_PIO_PORT;
 typedef struct tagF1C100S_PIO_INT          F1C100S_PIO_INT;
 typedef struct tagF1C100S_PIO_DDR          F1C100S_PIO_DDR;
@@ -19,7 +20,8 @@ typedef struct tagF1C100S_TCON             F1C100S_TCON;
 typedef struct tagF1C100S_DEBE             F1C100S_DEBE;
 
 //----------------------------------------------------------------------------------------------------------------------------------
-//Not a F1C100s peripheral but for simplicity implemented here for now
+//Not F1C100s peripherals but for simplicity implemented here for now
+
 typedef struct tagFLASH_MEMORY             FLASH_MEMORY;
 
 typedef struct tagDISPLAY_MEMORY           DISPLAY_MEMORY;
@@ -239,6 +241,43 @@ struct tagF1C100S_SPI
   F1C100S_MEMORY rxd;
   
   //Not directly addressable are the two fifo's each spi interface has
+  u_int8_t txfifo[64];
+  u_int8_t rxfifo[64];
+};
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//The UART controller register set
+struct tagF1C100S_UART
+{
+  //Basic 16550 registers
+  F1C100S_MEMORY reg0;     //rbr, thr, dll
+  F1C100S_MEMORY reg1;     //ier, dlh
+  F1C100S_MEMORY reg2;     //iir, fcr
+  F1C100S_MEMORY lcr;
+  F1C100S_MEMORY mcr;
+  F1C100S_MEMORY lsr;
+  F1C100S_MEMORY msr;
+  F1C100S_MEMORY sch;
+  
+  //Additional registers
+  F1C100S_MEMORY usr;
+  F1C100S_MEMORY tfl;
+  F1C100S_MEMORY rfl;
+  F1C100S_MEMORY hsk;
+  F1C100S_MEMORY halt;
+  F1C100S_MEMORY dbg_dll;
+  F1C100S_MEMORY dbg_dlh;
+
+  //Internal registers
+  u_int32_t rbr;
+  u_int32_t thr;
+  u_int32_t dll;
+  u_int32_t dlh;
+  u_int32_t ier;
+  u_int32_t iir;
+  u_int32_t fcr;
+  
+  //Not directly addressable are the two fifo's each uart interface has
   u_int8_t txfifo[64];
   u_int8_t rxfifo[64];
 };

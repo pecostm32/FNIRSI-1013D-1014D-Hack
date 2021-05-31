@@ -6,14 +6,25 @@
 
 #include "xlibfunctions.h"
 
+#include "mousehandling.h"
+
 #include "armthread.h"
 #include "armv5tl.h"
 
-#include "resources.h"  //All the panel resources are defined in this file. Needs to be the last include file
+#include "resources.h"
+#include "touchpanel.h"  //All the panel resources are defined in this file. Needs to be the last include file
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 int DrawScopePanel(tagXlibContext *xc);
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//For touch panel control
+//                             xc,                 action,   previous, left, right, top, bottom, move, down,   up, out,    xpos, ypos, width, height 
+tagTouchPanel touchpanel = { NULL,                   NULL, {     NULL,    0,     0,   0,      0, NULL, NULL, NULL, NULL },   60,   60,   800,    480, 0 };
+
+//Set pointer to last mouse range for scanning
+MouseRange *scopemouseranges = &touchpanel.mouse;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -184,17 +195,17 @@ int main(int argc,char **argv)
         
       case ButtonPress:
         //Call mouse handling function down()
-//        MouseDown(&event);
+        MouseDown(&event);
         break;
         
       case ButtonRelease:
         //Call mouse handling function up()
-//        MouseUp(mouseranges, &event);
+        MouseUp(scopemouseranges, &event);
         break;
         
       case MotionNotify:
         //Call mouse handling function move()
-//        MouseMove(mouseranges, &event);
+        MouseMove(scopemouseranges, &event);
         break;
         
       case ClientMessage:
@@ -279,6 +290,9 @@ int DrawScopePanel(tagXlibContext *xc)
   //Draw the display  
   DrawFillRect(xc, 60, 60, 800, 480, ScopeDisplayColor, ScopeDisplayColor, 1);
 
+  //Setup the touchpanel
+  TouchPanelSetup(xc, &touchpanel);
+  
   //Place the front panels text  
   PlaceText(xc, 70, 600, "TABLET", 0, 0, ALIGN_TEXT_LEFT);
   PlaceText(xc, 250, 600, "OSCILLOSCOPE", 1, 0, ALIGN_TEXT_LEFT);
@@ -312,5 +326,4 @@ void updatedisplaymessage()
   }
 }
 
-//----------------------------------------------------------------------------------------------------------------------------------
-
+//-----------------------------------------------------------------------------------------------------

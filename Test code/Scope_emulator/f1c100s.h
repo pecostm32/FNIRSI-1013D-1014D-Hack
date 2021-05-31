@@ -115,10 +115,25 @@ void *F1C100sSPI(F1C100S_SPI *registers, u_int32_t address, u_int32_t mode);
 void F1C100sSPIRead(F1C100S_SPI *registers, u_int32_t address, u_int32_t mode);
 void F1C100sSPIWrite(PARMV5TL_CORE core, F1C100S_SPI *registers, u_int32_t address, u_int32_t mode);
 
+//UART control registers
+void *F1C100sUART0(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+void F1C100sUART0Read(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+void F1C100sUART0Write(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+
+void *F1C100sUART(F1C100S_UART *registers, u_int32_t address, u_int32_t mode);
+void F1C100sUARTRead(F1C100S_UART *registers, u_int32_t address, u_int32_t mode);
+void F1C100sUARTWrite(F1C100S_UART *registers, u_int32_t address, u_int32_t mode);
+
 //PIO control registers
 void *F1C100sPIO(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
 void *F1C100sPIOPort(F1C100S_PIO_PORT *registers, u_int32_t address, u_int32_t mode);
 void *F1C100sPIOInt(F1C100S_PIO_INT *registers, u_int32_t address, u_int32_t mode);
+void F1C100sPIORead(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+void F1C100sPIOWrite(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+void F1C100sPIOPortRead(F1C100S_PIO_PORT *registers, u_int32_t address, u_int32_t mode);
+void F1C100sPIOIntRead(F1C100S_PIO_INT *registers, u_int32_t address, u_int32_t mode);
+void F1C100sPIOPortWrite(F1C100S_PIO_PORT *registers, u_int32_t address, u_int32_t mode);
+void F1C100sPIOIntWrite(F1C100S_PIO_INT *registers, u_int32_t address, u_int32_t mode);
 
 //TCON registers
 void *F1C100sTCON(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);

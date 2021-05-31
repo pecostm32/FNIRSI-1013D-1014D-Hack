@@ -49,8 +49,10 @@ OBJECTFILES= \
 	${OBJECTDIR}/f1c100s_spi.o \
 	${OBJECTDIR}/f1c100s_tcon.o \
 	${OBJECTDIR}/f1c100s_timer.o \
+	${OBJECTDIR}/f1c100s_uart.o \
 	${OBJECTDIR}/lcdisplay.o \
 	${OBJECTDIR}/mousehandling.o \
+	${OBJECTDIR}/touchpanel.o \
 	${OBJECTDIR}/xlibfunctions.o
 
 
@@ -148,6 +150,11 @@ ${OBJECTDIR}/f1c100s_timer.o: f1c100s_timer.c
 	${RM} "$@.d"
 	$(COMPILE.c) -g -I/usr/include/freetype2 -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/f1c100s_timer.o f1c100s_timer.c
 
+${OBJECTDIR}/f1c100s_uart.o: f1c100s_uart.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -I/usr/include/freetype2 -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/f1c100s_uart.o f1c100s_uart.c
+
 ${OBJECTDIR}/lcdisplay.o: lcdisplay.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
@@ -157,6 +164,11 @@ ${OBJECTDIR}/mousehandling.o: mousehandling.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -g -I/usr/include/freetype2 -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/mousehandling.o mousehandling.c
+
+${OBJECTDIR}/touchpanel.o: touchpanel.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -I/usr/include/freetype2 -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/touchpanel.o touchpanel.c
 
 ${OBJECTDIR}/xlibfunctions.o: xlibfunctions.c
 	${MKDIR} -p ${OBJECTDIR}

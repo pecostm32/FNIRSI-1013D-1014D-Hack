@@ -17,10 +17,12 @@
       <itemPath>f1c100s_structs.h</itemPath>
       <itemPath>f1c100s_tcon.h</itemPath>
       <itemPath>f1c100s_timer.h</itemPath>
+      <itemPath>f1c100s_uart.h</itemPath>
       <itemPath>lcdisplay.h</itemPath>
       <itemPath>mousehandling.h</itemPath>
       <itemPath>resources.h</itemPath>
       <itemPath>scopeemulator.h</itemPath>
+      <itemPath>touchpanel.h</itemPath>
       <itemPath>xlibfunctions.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
@@ -44,8 +46,10 @@
       <itemPath>f1c100s_spi.c</itemPath>
       <itemPath>f1c100s_tcon.c</itemPath>
       <itemPath>f1c100s_timer.c</itemPath>
+      <itemPath>f1c100s_uart.c</itemPath>
       <itemPath>lcdisplay.c</itemPath>
       <itemPath>mousehandling.c</itemPath>
+      <itemPath>touchpanel.c</itemPath>
       <itemPath>xlibfunctions.c</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
@@ -141,6 +145,10 @@
       </item>
       <item path="f1c100s_timer.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="f1c100s_uart.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_uart.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="lcdisplay.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="lcdisplay.h" ex="false" tool="3" flavor2="0">
@@ -152,6 +160,10 @@
       <item path="resources.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="scopeemulator.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="touchpanel.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="touchpanel.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="xlibfunctions.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -232,6 +244,10 @@
       </item>
       <item path="f1c100s_timer.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="f1c100s_uart.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_uart.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="lcdisplay.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="lcdisplay.h" ex="false" tool="3" flavor2="0">
@@ -243,6 +259,10 @@
       <item path="resources.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="scopeemulator.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="touchpanel.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="touchpanel.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="xlibfunctions.c" ex="false" tool="0" flavor2="0">
       </item>

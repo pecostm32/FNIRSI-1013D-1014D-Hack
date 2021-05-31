@@ -261,7 +261,7 @@ void *F1C100sDEBE(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
   if(ptr)
   {
     //Return the pointer based on the requested mode
-    switch(mode)
+    switch(mode & ARM_MEMORY_MASK)
     {
       case ARM_MEMORY_WORD:
         //Return the word aligned data
@@ -276,10 +276,8 @@ void *F1C100sDEBE(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
         return(&ptr->m_8bit[address & 3]);
     }
   }
-  else
-  {
-    return(NULL); 
-  }
+  
+  return(NULL); 
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

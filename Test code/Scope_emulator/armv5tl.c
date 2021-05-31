@@ -32,8 +32,13 @@
 
 //#define MY_BREAK_POINT_1  0x8001cdc8   //Function that calls a function pointer
 
-#define MY_BREAK_POINT_2  0x8002f028   //Within the function called via the function pointer
-#define MY_BREAK_POINT_1  0x8002f02C   //Function that calls a function pointer
+//#define MY_BREAK_POINT_2  0x8002f028   //Within the function called via the function pointer
+//#define MY_BREAK_POINT_1  0x8002f02C   //Function that calls a function pointer
+
+
+//#define MY_BREAK_POINT_1  0x80023F88   //SD card stuf
+
+#define MY_BREAK_POINT_1  0x80035444    //Start of endless main loop
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -41,15 +46,18 @@
 
 //#define MY_TRACE_START_POINT    0x8001933C  //Address where setup_display_lib is called
 
-#define MY_TRACE_START_POINT    0x8002f028  //Address where setup_display_lib is called
+//#define MY_TRACE_START_POINT    0x8002f028  //Address where setup_display_lib is called
 //#define MY_TRACE_STOP_POINT    0x8001933C  //Address where setup_display_lib is called
+
+#define MY_TRACE_START_POINT    0x80035360   //Address where sd card setup and check is called
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 //#define TRACE_FILE_NAME         "test_trace"
 //#define TRACE_FILE_NAME           "mmu_p15_setup"
 
-#define TRACE_FILE_NAME         "screen_buf_clear"
+//#define TRACE_FILE_NAME         "screen_buf_clear"
+#define TRACE_FILE_NAME         "sd_card_check"
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -199,14 +207,14 @@ void ArmV5tlSetup(PARMV5TL_CORE core)
 //  core->TraceFilePointer = NULL;
   
   //Print the trace file name
-  snprintf(tracefilename, 64, "%s_%06d.bin", TRACE_FILE_NAME, core->tracefileindex);
-  core->TraceFilePointer = fopen(tracefilename, "wb");
+//  snprintf(tracefilename, 64, "%s_%06d.bin", TRACE_FILE_NAME, core->tracefileindex);
+//  core->TraceFilePointer = fopen(tracefilename, "wb");
   
   //Enable tracing into buffer
-  core->tracebufferenabled = 1;
+//  core->tracebufferenabled = 1;
   
   //Start tracing when address is hit
-  core->tracetriggeraddress = MY_TRACE_START_POINT;
+//  core->tracetriggeraddress = MY_TRACE_START_POINT;
   
   //On startup processor is running
   core->run = 1;
@@ -290,10 +298,10 @@ void ArmV5tlCore(PARMV5TL_CORE core)
     memorypointer = NULL;
   }
 
-  if(*core->program_counter == MY_BREAK_POINT_2)
-  {
-    memorypointer = NULL;
-  }
+//  if(*core->program_counter == MY_BREAK_POINT_2)
+//  {
+//    memorypointer = NULL;
+//  }
   
   //Check if trace buffer writing enabled
   if(core->tracebufferenabled)
@@ -606,6 +614,12 @@ void ArmV5tlCore(PARMV5TL_CORE core)
                     //Handle count leading zeros
                     ArmV5tlCLZ(core);
                   }
+                  //Check on signed multiplies (SMULxy)
+                  else if((core->arm_instruction.mul.type == 1) && (core->arm_instruction.mul.op1 == 3))
+                  {
+                    //Go and handle the multiply
+                    ArmV5tlSMULxy(core);
+                  }
                   else
                   {
                     //Saturating add / subtract
@@ -796,7 +810,7 @@ ARMV5TL_ADDRESS_MAP address_map[] =
   { 0x01C13000, 0x01C13FFF,            NULL,              NULL,                NULL },   //USB-OTG
   { 0x01C20000, 0x01C203FF,      F1C100sCCU,    F1C100sCCURead,     F1C100sCCUWrite },   //CCU
   { 0x01C20400, 0x01C207FF,     F1C100sINTC,   F1C100sINTCRead,    F1C100sINTCWrite },   //INTC
-  { 0x01C20800, 0x01C20BFF,      F1C100sPIO,              NULL,                NULL },   //PIO
+  { 0x01C20800, 0x01C20BFF,      F1C100sPIO,    F1C100sPIORead,     F1C100sPIOWrite },   //PIO
   { 0x01C20C00, 0x01C20FFF,    F1C100sTimer,  F1C100sTimerRead,   F1C100sTimerWrite },   //TIMER
   { 0x01C21000, 0x01C213FF,            NULL,              NULL,                NULL },   //PWM
   { 0x01C21400, 0x01C217FF,            NULL,              NULL,                NULL },   //OWA
@@ -806,7 +820,7 @@ ARMV5TL_ADDRESS_MAP address_map[] =
   { 0x01C23400, 0x01C237FF,            NULL,              NULL,                NULL },   //KEYADC
   { 0x01C23C00, 0x01C23FFF,            NULL,              NULL,                NULL },   //Audio Codec
   { 0x01C24800, 0x01C24BFF,            NULL,              NULL,                NULL },   //TP
-  { 0x01C25000, 0x01C253FF,            NULL,              NULL,                NULL },   //UART0
+  { 0x01C25000, 0x01C253FF,    F1C100sUART0,  F1C100sUART0Read,   F1C100sUART0Write },   //UART0
   { 0x01C25400, 0x01C257FF,            NULL,              NULL,                NULL },   //UART1
   { 0x01C25800, 0x01C25BFF,            NULL,              NULL,                NULL },   //UART2
   { 0x01C27000, 0x01C273FF,            NULL,              NULL,                NULL },   //TWI0
@@ -881,7 +895,7 @@ void ArmV5tlSetMemoryTraceData(PARMV5TL_CORE core, u_int32_t address, u_int32_t 
     if(memory)
     {
       //Do it based on the given mode
-      switch(mode)  
+      switch(mode & ARM_MEMORY_MASK)  
       {
         case ARM_MEMORY_WORD:
           core->tracebuffer[core->traceindex].data[i] = *(u_int32_t *)memory;
@@ -2195,6 +2209,46 @@ void ArmV5tlMUL(PARMV5TL_CORE core)
         core->status->flags.Z = (vd == 0);
     }
   }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Multiply instruction handling
+//SMULxy
+void ArmV5tlSMULxy(PARMV5TL_CORE core)
+{
+  int32_t rm = *core->registers[core->current_bank][core->arm_instruction.smulxy.rm];
+  int32_t rs = *core->registers[core->current_bank][core->arm_instruction.smulxy.rs];
+  
+  //Check which part of rm needs to be used
+  if(core->arm_instruction.smulxy.x)
+  {
+    //Upper half of the word
+    rm >> 16;
+  }
+  
+  //Check if sign extend is needed for this input
+  if(rm & 0x00008000)
+  {
+    //If needed set the upper bits
+    rm |= 0xFFFF0000;
+  }
+
+  //Check which part of rs needs to be used
+  if(core->arm_instruction.smulxy.y)
+  {
+    //Upper half of the word
+    rs >> 16;
+  }
+  
+  //Check if sign extend is needed for this input
+  if(rs & 0x00008000)
+  {
+    //If needed set the upper bits
+    rs |= 0xFFFF0000;
+  }
+  
+  //Do the actual multiplication
+  *core->registers[core->current_bank][core->arm_instruction.smulxy.rd] = rm * rs;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
