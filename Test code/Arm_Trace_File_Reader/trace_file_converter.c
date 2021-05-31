@@ -37,14 +37,15 @@ int listitems = 0;
 //The emulator writes max 25000 lines per file
 ARMV5TL_TRACE_ENTRY tracelist[25100];
 
-#define TRACE_FILE_NAME         "screen_buf_clear"
+//#define TRACE_FILE_NAME         "screen_buf_clear"
+#define TRACE_FILE_NAME         "sd_card_check"
 
 int main(int argc, char** argv)
 {
   int n;
   char tracefilename[128];
 
-  for(n=0;n<3;n++)
+  for(n=0;n<11;n++)
   {
 //    snprintf(tracefilename, 128, "../../FNIRSI-1013D/Scope_emulator/setup_display_lib_trace/%s_%06d.bin", TRACE_FILE_NAME, n);
     snprintf(tracefilename, 128, "../../FNIRSI-1013D/Scope_emulator/%s_%06d.bin", TRACE_FILE_NAME, n);
@@ -68,8 +69,9 @@ int main(int argc, char** argv)
 
         u_int32_t *rptr;
 
-        char exetext[4][4] = { "NO ", "YES", "T  ", "   " };
-
+        char *exetext[4] = { "NO ", "YES", "T  ", "   " };
+        char *modetext[2] = { "read ", "write" };
+        
         char disassemtext[94];
 
         for(i=0;i<listitems;i++)
@@ -102,7 +104,7 @@ int main(int argc, char** argv)
           if(tracelist[i].data_count)
           {
             //Add memory read or write info (tracelist[i].data_width & ARM_MEM_TRACE_WRITE) true then write else read
-            fprintf(fp, "  memory:0x%08X  type:%s  count:%2d  dir:%s  ", tracelist[i].memory_address, memsizetext[(tracelist[i].data_width & ARM_MEMORY_MASK)], tracelist[i].data_count, dirtext[tracelist[i].memory_direction]);
+            fprintf(fp, "  memory:0x%08X  type:%s  mode:%s  count:%2d  dir:%s  ", tracelist[i].memory_address, memsizetext[(tracelist[i].data_width & ARM_MEMORY_MASK)], modetext[(tracelist[i].data_width & ARM_MEM_TRACE_WRITE) >> 7], tracelist[i].data_count, dirtext[tracelist[i].memory_direction]);
 
             for(r=0;r<tracelist[i].data_count;r++)
             {
