@@ -69,3 +69,11 @@ the infinite main loop where it does the actual scope process.
 
 Still needs a lot of work before it is a fully functional emulator, but the main target is to get to the FPGA commands used so one can write it's
 own scope program.
+
+----------------------------------------------------------------------------------------------
+02-JUNE-2021 21:10
+Finished the touch panel implementation and the scope seems to read the coordinates, but does not react to them. It looks like more FPGA functionality 
+needs to be implemented to get it to work.
+
+The screen shows more of the actual scope screen after a "touch event", so there is progress.
+
