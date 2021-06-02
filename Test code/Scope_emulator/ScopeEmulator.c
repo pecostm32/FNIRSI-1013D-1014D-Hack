@@ -6,7 +6,7 @@
 
 #include "xlibfunctions.h"
 
-#include "mousehandling.h"
+#include "scopeemulator.h"
 
 #include "armthread.h"
 #include "armv5tl.h"
@@ -20,11 +20,15 @@ int DrawScopePanel(tagXlibContext *xc);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //For touch panel control
-//                             xc,                 action,   previous, left, right, top, bottom, move, down,   up, out,    xpos, ypos, width, height 
-tagTouchPanel touchpanel = { NULL,                   NULL, {     NULL,    0,     0,   0,      0, NULL, NULL, NULL, NULL },   60,   60,   800,    480, 0 };
+//                             xc,            action,   previous, left, right, top, bottom, move, down,   up, out,    xpos, ypos, width, height 
+tagTouchPanel touchpanel = { NULL, touchpanelhandler, {     NULL,    0,     0,   0,      0, NULL, NULL, NULL, NULL },   60,   60,   800,    480, 0 };
 
 //Set pointer to last mouse range for scanning
 MouseRange *scopemouseranges = &touchpanel.mouse;
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Pointer to the touch panel driver data 
+TOUCH_PANEL_DATA *global_touchpanel;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -60,6 +64,10 @@ int main(int argc,char **argv)
   
   //Attach to the shared memory
   PARMV5TL_CORE parm_core = (PARMV5TL_CORE)shmat(shmid, (void*)0, 0);
+  
+  
+  //Setup the pointer for the touch panel driver connection with the mouse system
+  global_touchpanel = &parm_core->touchpaneldata;
   
   //Basic setup for the xlib system  
   //Since multi threads are used to control display objects initialize the xlib for it
@@ -327,3 +335,37 @@ void updatedisplaymessage()
 }
 
 //-----------------------------------------------------------------------------------------------------
+
+#define CalcCoordX(x) (BORDER_SIZE + ((touchpanel->xpos + (x)) * xc->scaler))
+#define CalcCoordY(y) (BORDER_SIZE + ((touchpanel->ypos + (y)) * xc->scaler))
+
+void touchpanelhandler(MouseEvent *event)
+{
+  XMotionEvent  *motionevent = &event->event->xmotion;
+  tagTouchPanel *touchpanel = event->data;
+  tagXlibContext *xc = touchpanel->xc;
+  
+  int x = motionevent->x - CalcCoordX(0);
+  int y = motionevent->y - CalcCoordY(0);
+  
+  //The scope expects the touch data to run from 0 - 1024 for the x direction
+  x = (x * 128) / 100;
+  
+  //For the y direction it expects it to run from 0 to 600
+  y = (y * 100) / 80;
+
+  //Let the touch panel driver know if the mouse is down
+  global_touchpanel->mouse_down = touchpanel->state;
+  
+  //Touch panel data only uses the low 0x1FF part of the register addresses
+  //On address 0x8150 is the low byte of the x coordinate
+  global_touchpanel->panel_data[0x150] = x & 0xFF;
+  global_touchpanel->panel_data[0x151] = (x >> 8) & 0xFF;
+
+  //On address 0x8152 is the low byte of the y coordinate
+  global_touchpanel->panel_data[0x152] = y & 0xFF;
+  global_touchpanel->panel_data[0x153] = (y >> 8) & 0xFF;
+}
+
+//-----------------------------------------------------------------------------------------------------
+    

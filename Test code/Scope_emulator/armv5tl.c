@@ -38,7 +38,15 @@
 
 //#define MY_BREAK_POINT_1  0x80023F88   //SD card stuf
 
-#define MY_BREAK_POINT_1  0x80035444    //Start of endless main loop
+//#define MY_BREAK_POINT_1  0x80035444    //Start of endless main loop
+
+//#define MY_BREAK_POINT_1  0x80017AD4     //I2C read after port read
+
+//#define MY_BREAK_POINT_1  0x80017BC0      //I2C after byte read res in r4
+
+//800178e0
+#define MY_BREAK_POINT_1  0x80017868      //After I2C coordinate read r1,r3 x
+#define MY_BREAK_POINT_2  0x800178A8      //r1,r12 y
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -216,6 +224,15 @@ void ArmV5tlSetup(PARMV5TL_CORE core)
   //Start tracing when address is hit
 //  core->tracetriggeraddress = MY_TRACE_START_POINT;
   
+  //Setup port handling functions
+  core->f1c100s_port[0].porthandler = PortAHandler;
+  core->f1c100s_port[0].portdata = &core->touchpaneldata;
+
+  core->f1c100s_port[4].porthandler = PortEHandler;
+  core->f1c100s_port[4].portdata = &core->fpgadata;
+  
+  core->fpgadata.fp = fopen("fpga_trace_2.txt", "w");
+  
   //On startup processor is running
   core->run = 1;
 }
@@ -298,10 +315,10 @@ void ArmV5tlCore(PARMV5TL_CORE core)
     memorypointer = NULL;
   }
 
-//  if(*core->program_counter == MY_BREAK_POINT_2)
-//  {
-//    memorypointer = NULL;
-//  }
+  if(*core->program_counter == MY_BREAK_POINT_2)
+  {
+    memorypointer = NULL;
+  }
   
   //Check if trace buffer writing enabled
   if(core->tracebufferenabled)

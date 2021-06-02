@@ -67,6 +67,11 @@
 #define SDR_PAD_PUL              0x000002C4
 
 //----------------------------------------------------------------------------------------------------------------------------------
+
+#define PORT_READ                1
+#define PORT_WRITE               2
+
+//----------------------------------------------------------------------------------------------------------------------------------
 //Main process peripheral handling functions
 void F1C100sProcess(PARMV5TL_CORE core);
 
@@ -144,6 +149,12 @@ void F1C100sTCONWrite(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
 void *F1C100sDEBE(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
 void F1C100sDEBERead(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
 void F1C100sDEBEWrite(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Port data handling functions
+void PortAHandler(F1C100S_PIO_PORT *registers,  u_int32_t mode);
+
+void PortEHandler(F1C100S_PIO_PORT *registers,  u_int32_t mode);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

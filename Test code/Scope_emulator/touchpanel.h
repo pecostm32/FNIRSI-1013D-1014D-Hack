@@ -11,12 +11,12 @@
 //-----------------------------------------------------------------------------------------------------
 
 //Function pointer to handle the events
-typedef void (*HANDLEBUTTON)(void);
+typedef void (*HANDLETOUCH)(MouseEvent *event);
 
 typedef struct
 {
   tagXlibContext *xc;               //Xlib context for drawing
-  HANDLEBUTTON    action;           //Action to take on button down
+  HANDLETOUCH     action;           //Action to take on button down
   MouseRange      mouse;            //Mouse object for this button. Is used for setting the bounding box and to connect the handlers
   int             xpos;             //Un scaled x position
   int             ypos;             //Un scaled y position

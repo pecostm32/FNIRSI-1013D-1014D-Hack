@@ -26,9 +26,17 @@ typedef struct tagFLASH_MEMORY             FLASH_MEMORY;
 
 typedef struct tagDISPLAY_MEMORY           DISPLAY_MEMORY;
 
+typedef struct tagTOUCH_PANEL_DATA         TOUCH_PANEL_DATA;
+
+typedef struct tagFPGA_DATA                FPGA_DATA;
+
 //----------------------------------------------------------------------------------------------------------------------------------
 
 typedef union tagF1C100S_MEMORY            F1C100S_MEMORY;
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+typedef void (*PORTFUNC)(F1C100S_PIO_PORT *registers, u_int32_t mode);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -61,6 +69,39 @@ struct tagDISPLAY_MEMORY
   u_int64_t numcycles;               //Number of CPU cycles needed for a vertical trigger to occur
   u_int32_t linetime;                //Number of cpu cycles for a line
   u_int32_t verticaltime;            //Number of lines for vertical front and back porch
+};
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Data for touch panel handling
+struct tagTOUCH_PANEL_DATA
+{
+  u_int8_t  i2c_currentbyte;
+  u_int8_t  i2c_currentbit;
+  u_int8_t  i2c_state;
+  
+  u_int8_t  panel_state;              //Process state for the panel state machine
+  u_int8_t  panel_mode;               //Data direction mode for the current data stream
+  u_int16_t panel_address;            //Internal address for panel read and write actions
+  u_int8_t  panel_data[0x200];        //Panel has a lot of registers. For easy implementation set to 0x200 (address range 0x8000 - 0x8200)
+  
+  u_int8_t  prev_port_data;
+  
+  u_int8_t  mouse_down;               //Signal from mouse touch panel that there is touch
+};
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Data for FPGA handling
+struct tagFPGA_DATA
+{
+  u_int8_t current_command;
+  
+  u_int8_t read_count;
+  u_int8_t read_index;
+  u_int8_t read_buffer[4];
+  
+  u_int8_t prev_ctrl_bits;
+  
+  FILE *fp;
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -295,6 +336,10 @@ struct tagF1C100S_PIO_PORT
   F1C100S_MEMORY drv1;
   F1C100S_MEMORY pul0;
   F1C100S_MEMORY pul1;
+  
+  //For handling data read or written to the port data register
+  PORTFUNC  porthandler;
+  void     *portdata;
 };
 
 struct tagF1C100S_PIO_INT

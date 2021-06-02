@@ -51,7 +51,7 @@ void TouchDown(MouseEvent *event)
 
   //Check if there is an action on this touch panel and execute it if so
   if(touchpanel->action)
-    touchpanel->action();
+    touchpanel->action(event);
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -62,6 +62,10 @@ void TouchUp(MouseEvent *event)
 
   //Set state to released up
   touchpanel->state = 0;
+  
+  //Check if there is an action on this touch panel and execute it if so
+  if(touchpanel->action)
+    touchpanel->action(event);
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -69,12 +73,10 @@ void TouchUp(MouseEvent *event)
 void TouchMove(MouseEvent *event)
 {
   tagTouchPanel *touchpanel = event->data;
-
-  
   
   //Check if there is an action on this touch panel and execute it if so
-  if(touchpanel->action)
-    touchpanel->action();
+  if((touchpanel->action) && (touchpanel->state))
+    touchpanel->action(event);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
