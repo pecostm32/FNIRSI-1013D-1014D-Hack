@@ -624,6 +624,8 @@ struct tagARMV5TL_CORE
   //Debug and tracing support
   FILE                     *TraceFilePointer;         //Null if tracing is disabled
   
+  u_int32_t                 breakpointaddress;        //Instruction address for breakpoint
+  
   u_int32_t                 tracetriggeraddress;      //Instruction address to start tracing on
   u_int32_t                 tracetriggered;           //Flag to signal tracing has been triggered
   u_int32_t                 tracecount;               //Counter for limiting trace files to 256K Lines

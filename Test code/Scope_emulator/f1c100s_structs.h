@@ -93,13 +93,21 @@ struct tagTOUCH_PANEL_DATA
 //Data for FPGA handling
 struct tagFPGA_DATA
 {
-  u_int8_t current_command;
+  u_int8_t        current_command;
+  u_int8_t        read_count;
+  const u_int8_t *read_ptr;
+  u_int8_t        write_count;
+  u_int8_t       *write_ptr;
+  u_int8_t        prev_ctrl_bits;
   
-  u_int8_t read_count;
-  u_int8_t read_index;
-  u_int8_t read_buffer[4];
+  //Data for parameter storage system
+  u_int8_t   param_state;
+  u_int8_t   param_crypt;
+  u_int8_t   param_mode;
+  u_int8_t   param_id;
+  u_int8_t   param_data[7];
+  FILE      *param_file;
   
-  u_int8_t prev_ctrl_bits;
   
   FILE *fp;
 };

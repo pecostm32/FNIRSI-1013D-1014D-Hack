@@ -36,23 +36,6 @@
 #define I2C_SCL_BIT            0x08
 
 //----------------------------------------------------------------------------------------------------------------------------------
-//Port E defines for handling the FPGA
-
-//FPGA control pins located in the second byte
-#define FPGA_CLOCK             0x01
-#define FPGA_READ_WRITE        0x02
-#define FPGA_DATA_COMMAND      0x04
-
-//Mask for separating the two control lines
-#define FPGA_CONTROL_MASK      0x06
-
-#define FPGA_COMMAND_WRITE     0x06
-#define FPGA_COMMAND_READ      0x04
-#define FPGA_DATA_WRITE        0x02
-#define FPGA_DATA_READ         0x00
-
-
-//----------------------------------------------------------------------------------------------------------------------------------
 void PortAHandler(F1C100S_PIO_PORT *registers,  u_int32_t mode)
 {
   TOUCH_PANEL_DATA *pd = (TOUCH_PANEL_DATA *)registers->portdata;
@@ -277,15 +260,40 @@ void PortAHandler(F1C100S_PIO_PORT *registers,  u_int32_t mode)
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
+//Port E defines for handling the FPGA
+
+//FPGA control pins located in the second byte
+#define FPGA_CLOCK             0x01
+#define FPGA_READ_WRITE        0x02
+#define FPGA_DATA_COMMAND      0x04
+
+//Mask for separating the two control lines
+#define FPGA_CONTROL_MASK      0x06
+
+#define FPGA_COMMAND_WRITE     0x06
+#define FPGA_COMMAND_READ      0x04
+#define FPGA_DATA_WRITE        0x02
+#define FPGA_DATA_READ         0x00
+
+//Parameter storage handling
+#define PARAM_MODE_READ          0
+#define PARAM_MODE_WRITE         1
+
+#define PARAM_STATE_NOT_INIT     0
+#define PARAM_STATE_INIT         1
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Static data
+const char tp_coord_reg[2] = { 0x81, 0x50 };
+
+const char param_status_byte = 0x01;
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//FPGA handling
 void PortEHandler(F1C100S_PIO_PORT *registers,  u_int32_t mode)
 {
   FPGA_DATA *pd = (FPGA_DATA *)registers->portdata;
-  
-  
-  //The low 8 bits of this port are the data lines
-  
-  //In the second 8 bits there are three control lines
-  
+  int i;
   
    //Check if there is device data
   if(pd)
@@ -300,14 +308,154 @@ void PortEHandler(F1C100S_PIO_PORT *registers,  u_int32_t mode)
         switch(registers->data.m_8bit[1] & FPGA_CONTROL_MASK)
         {
           case FPGA_COMMAND_WRITE:
-            if(registers->data.m_8bit[0] == 0x41)
+            //switch on command byte
+            
+            //0x65 needs to be called twice, followed by the data set and then the start processing command 0x66
+            //when finished he status is read with 0x67
+            
+            //Parameter data is read with command 0x64 called twice and then 0x66. Status again via 0x67
+            //Return data needs to be set in the data set
+            //Probably best to handle this with file io
+            
+            //Set the new command as current
+            pd->current_command = registers->data.m_8bit[0];
+            
+            //Decide on which action to take
+            switch(pd->current_command)
             {
-              pd->current_command = 0x41;
-              
-              pd->read_count = 2;
-              pd->read_index = 0;
-              pd->read_buffer[0] = 0x81;
-              pd->read_buffer[1] = 0x50;
+              case 0x41:
+                //Read touch panel coordinates register address
+                pd->read_count = 2;
+                pd->read_ptr = tp_coord_reg;
+                break;
+                
+              case 0x64:
+                pd->param_mode = PARAM_MODE_READ;
+                break;
+                
+              case 0x65:
+                pd->param_mode = PARAM_MODE_WRITE;
+                break;
+                
+              case 0x66:
+                //Start the process based on the mode
+                if(pd->param_mode == PARAM_MODE_READ)
+                {
+                  //Check if this is the first read after start up
+                  if(pd->param_state == PARAM_STATE_NOT_INIT)
+                  {
+                    //Return the last crypt byte
+                    if(pd->param_file)
+                    {
+                      //Make sure file is at start point
+                      fseek(pd->param_file, 0, SEEK_SET);
+                      
+                      //Get the crypt byte from the file
+                      fread(&pd->param_crypt, 1, 1, pd->param_file);
+                    }
+                    
+                    //Set it for reading
+                    pd->param_data[3] = pd->param_crypt;
+                    
+                    //Signal parameter storage has been initialized
+                    pd->param_state = PARAM_STATE_INIT;
+                  }
+                  else
+                  {
+                    if(pd->param_file)
+                    {
+                      //Point to the data in the file
+                      fseek(pd->param_file, (pd->param_id + 1) * 4, SEEK_SET);
+                      
+                      //Get the data from the file
+                      fread(&pd->param_data[3], 1, 4, pd->param_file);
+                    }
+                    
+                    //Add the crypt byte to the data
+                    pd->param_data[0] = pd->param_crypt;
+                    
+                    //Invert it for the crypting
+                    pd->param_crypt = ~pd->param_crypt;
+                    
+                    //Decide what size descriptor needs to be returned
+                    if(pd->param_data[3])
+                    {
+                      //More than 24 bits used then use 0xAA
+                      pd->param_data[1] = 0xAA;
+                    }
+                    else if(pd->param_data[4])
+                    {
+                      //More than 16 bits but less than 24 bits used then use 0xA5
+                      pd->param_data[1] = 0xA5;
+                    }
+                    else if(pd->param_data[5])
+                    {
+                      //More than 8 bits but less than 16 bits used then use 0x5A
+                      pd->param_data[1] = 0x5A;
+                    }
+                    else
+                    {
+                      //8 bits or less used then use 0x55
+                      pd->param_data[1] = 0x55;
+                    }
+                    
+                    //Calculate the checksum
+                    pd->param_data[2] = pd->param_crypt + pd->param_data[1] + pd->param_data[3] + pd->param_data[4] + pd->param_data[5] + pd->param_data[6];
+                    
+                    //Crypt the data
+                    for(i=1;i<7;i++)
+                    {
+                      pd->param_data[i] ^= pd->param_crypt;
+                    }  
+                  }
+                }
+                else
+                {
+                  //For write store the data in the file but the question is when??
+                  
+                  
+                  //Get the parameter id for file handling
+                  pd->param_id = pd->param_data[1] >> 2;
+                }
+                
+                
+                //Need a flag to keep track of first read. With this read the last crypt byte needs to be returned in pd->param_data[3]
+                
+                //The following write mangles this byte after processing the data and sends it in pd->param_data[0]
+                
+                //The following read decrypts the data but inverts the crypt byte before doing so
+                
+                //Use the data from 0x69 from previous write session to get the intended parameter. 0x00 (no write done before)
+                //Needs to return the last crypt byte. Use 0 to avoid crypto???
+                
+                //Depending on data type the id + count byte (0x69) needs to be set to either 0x55, 0x5A, 0xA5 or 0xAA
+                //one byte, two bytes, three bytes or four bytes of data
+                break;
+                
+              case 0x67:
+                //Since the process is synchronous just respond with ready status
+                pd->read_ptr = &param_status_byte;
+                pd->read_count = 1;
+                break;
+                
+              case 0x68:
+              case 0x69:
+              case 0x6A:
+              case 0x6B:
+              case 0x6C:
+              case 0x6D:
+              case 0x6E:
+                if(pd->param_mode == PARAM_MODE_READ)
+                {
+                  pd->read_ptr = &pd->param_data[pd->current_command - 0x68];
+                  pd->read_count = 1;
+                }
+                else
+                {
+                  pd->write_ptr = &pd->param_data[pd->current_command - 0x68];
+                  pd->write_count = 1;
+                }
+                break;
             }
             if(pd->fp)
               fprintf(pd->fp, "command write: 0x%02X\n", registers->data.m_8bit[0]);
@@ -319,6 +467,14 @@ void PortEHandler(F1C100S_PIO_PORT *registers,  u_int32_t mode)
             break;
 
           case FPGA_DATA_WRITE:
+            if(pd->write_count)
+            {
+              *pd->write_ptr = registers->data.m_8bit[0];
+              
+              pd->write_ptr++;
+              pd->write_count--;
+            }
+
             if(pd->fp)
               fprintf(pd->fp, "data write: 0x%02X\n", registers->data.m_8bit[0]);
             break;
@@ -326,14 +482,14 @@ void PortEHandler(F1C100S_PIO_PORT *registers,  u_int32_t mode)
           case FPGA_DATA_READ:
             if(pd->read_count)
             {
-              registers->data.m_8bit[0] = pd->read_buffer[pd->read_index];
+              registers->data.m_8bit[0] = *pd->read_ptr;
               
-              pd->read_index++;
+              pd->read_ptr++;
               pd->read_count--;
             }
             
             if(pd->fp)
-              fprintf(pd->fp, "data read\n");
+              fprintf(pd->fp, "data read: 0x%02X\n", registers->data.m_8bit[0]);
             break;
         }
       }

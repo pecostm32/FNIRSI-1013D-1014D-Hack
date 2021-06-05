@@ -45,8 +45,15 @@
 //#define MY_BREAK_POINT_1  0x80017BC0      //I2C after byte read res in r4
 
 //800178e0
-#define MY_BREAK_POINT_1  0x80017868      //After I2C coordinate read r1,r3 x
-#define MY_BREAK_POINT_2  0x800178A8      //r1,r12 y
+//#define MY_BREAK_POINT_1  0x80017868      //After I2C coordinate read r1,r3 x
+//#define MY_BREAK_POINT_2  0x800178A8      //r1,r12 y
+
+
+//#define MY_BREAK_POINT_1  0x80024ED4      //end of init parameter storage
+//#define MY_BREAK_POINT_1  0x80025090      //end of write parameter storage
+
+#define MY_BREAK_POINT_2  0x80024AF8        //end of get setting from parameter storage
+#define MY_BREAK_POINT_1  0x80024A74        //first check on 0x55
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -128,12 +135,26 @@ void *armcorethread(void *arg)
   //Open the flash image
   parm_core->FlashFilePointer = fopen("W25Q32_scope.bin", "rb");
   
+  //Open the parameter storage file
+  parm_core->fpgadata.param_file = fopen("scope_settings.bin", "rb+");
+  
   //Keep running the core until stopped
   while(quit_armcore_thread_on_zero)
   {
     ArmV5tlCore(parm_core);
   }
 
+  //Close the files used in the emulator
+  if(parm_core->FlashFilePointer)
+  {
+    fclose(parm_core->FlashFilePointer);
+  }
+  
+  if(parm_core->fpgadata.param_file)
+  {
+    fclose(parm_core->fpgadata.param_file);
+  }
+  
   //detach from shared memory  
   shmdt(parm_core);   
 
@@ -224,6 +245,9 @@ void ArmV5tlSetup(PARMV5TL_CORE core)
   //Start tracing when address is hit
 //  core->tracetriggeraddress = MY_TRACE_START_POINT;
   
+  
+  core->breakpointaddress = MY_BREAK_POINT_1;
+  
   //Setup port handling functions
   core->f1c100s_port[0].porthandler = PortAHandler;
   core->f1c100s_port[0].portdata = &core->touchpaneldata;
@@ -231,7 +255,7 @@ void ArmV5tlSetup(PARMV5TL_CORE core)
   core->f1c100s_port[4].porthandler = PortEHandler;
   core->f1c100s_port[4].portdata = &core->fpgadata;
   
-  core->fpgadata.fp = fopen("fpga_trace_2.txt", "w");
+  core->fpgadata.fp = fopen("fpga_trace_3.txt", "w");
   
   //On startup processor is running
   core->run = 1;
@@ -310,7 +334,7 @@ void ArmV5tlCore(PARMV5TL_CORE core)
   }
   
   //Breakpoint
-  if(*core->program_counter == MY_BREAK_POINT_1)
+  if(*core->program_counter == core->breakpointaddress)
   {
     memorypointer = NULL;
   }
