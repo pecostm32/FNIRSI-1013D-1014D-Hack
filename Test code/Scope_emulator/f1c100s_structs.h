@@ -94,9 +94,9 @@ struct tagTOUCH_PANEL_DATA
 struct tagFPGA_DATA
 {
   u_int8_t        current_command;
-  u_int8_t        read_count;
+  u_int16_t       read_count;
   const u_int8_t *read_ptr;
-  u_int8_t        write_count;
+  u_int16_t       write_count;
   u_int8_t       *write_ptr;
   u_int8_t        prev_ctrl_bits;
   
