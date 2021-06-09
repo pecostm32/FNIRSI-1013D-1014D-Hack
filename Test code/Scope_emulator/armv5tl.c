@@ -64,7 +64,11 @@
 //#define MY_TRACE_START_POINT    0x8002f028  //Address where setup_display_lib is called
 //#define MY_TRACE_STOP_POINT    0x8001933C  //Address where setup_display_lib is called
 
-#define MY_TRACE_START_POINT    0x80035360   //Address where sd card setup and check is called
+//#define MY_TRACE_START_POINT    0x80035360   //Address where sd card setup and check is called
+#define MY_TRACE_START_POINT    0x80035444   //Address where the main loop starts
+
+
+//#define TRACE_ENABLED
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -72,7 +76,8 @@
 //#define TRACE_FILE_NAME           "mmu_p15_setup"
 
 //#define TRACE_FILE_NAME         "screen_buf_clear"
-#define TRACE_FILE_NAME         "sd_card_check"
+//#define TRACE_FILE_NAME         "sd_card_check"
+#define TRACE_FILE_NAME         "main_loop_trace/main_loop"
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -170,7 +175,10 @@ void *armcorethread(void *arg)
 void ArmV5tlSetup(PARMV5TL_CORE core)
 {
   int  b,r;
+  
+#ifdef TRACE_ENABLED  
   char tracefilename[64];
+#endif
   
   if(core == NULL)
     return;
@@ -232,19 +240,17 @@ void ArmV5tlSetup(PARMV5TL_CORE core)
   //Set peripheral handler for the F1C100s
   core->peripheralfunction = F1C100sProcess;
   
-  //Test tracing
-//  core->TraceFilePointer = NULL;
-  
+#ifdef TRACE_ENABLED  
   //Print the trace file name
-//  snprintf(tracefilename, 64, "%s_%06d.bin", TRACE_FILE_NAME, core->tracefileindex);
-//  core->TraceFilePointer = fopen(tracefilename, "wb");
+  snprintf(tracefilename, 64, "%s_%06d.bin", TRACE_FILE_NAME, core->tracefileindex);
+  core->TraceFilePointer = fopen(tracefilename, "wb");
   
   //Enable tracing into buffer
-//  core->tracebufferenabled = 1;
+  core->tracebufferenabled = 1;
   
   //Start tracing when address is hit
-//  core->tracetriggeraddress = MY_TRACE_START_POINT;
-  
+  core->tracetriggeraddress = MY_TRACE_START_POINT;
+#endif
   
   core->breakpointaddress = MY_BREAK_POINT_1;
   
@@ -255,7 +261,7 @@ void ArmV5tlSetup(PARMV5TL_CORE core)
   core->f1c100s_port[4].porthandler = PortEHandler;
   core->f1c100s_port[4].portdata = &core->fpgadata;
   
-  core->fpgadata.fp = fopen("fpga_trace_3.txt", "w");
+  //core->fpgadata.fp = fopen("fpga_trace_3.txt", "w");
   
   //On startup processor is running
   core->run = 1;
