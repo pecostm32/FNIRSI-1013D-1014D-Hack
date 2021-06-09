@@ -77,3 +77,14 @@ needs to be implemented to get it to work.
 
 The screen shows more of the actual scope screen after a "touch event", so there is progress.
 
+----------------------------------------------------------------------------------------------
+09-JUNE-2021 21:25
+Added command 0x0A to the FPGA. It looks like this just needs to return a 0x01. This makes that the code does not wait for touch any more.
+Looked into the data communication between the FPGA and the special chip used ofr parameter storage. It looks like it is more than just
+parameter storage. The data exchanged is also used for state changes of the scope. Data is read from the FPGA and send to the special chip.
+The resulting data is used to control what code is being executed. It is quite complex having to deal with two black boxes.
+
+One thing is clear. For the brightness setting the parameter id 0x10 is used. A single byte in the range of 0x00 to 0x64 is send to the chip and it
+translates it into a 16 bit value, where 0x64 translates into 0xEA60, which is the default setting.
+
+It looks like id 0x0B and 0x11 are used to control the state of the scope, but a lot more research is needed to figure it all out.
