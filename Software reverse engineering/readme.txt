@@ -8,3 +8,4 @@
 
 22-MAY-2021    Identified a global variable Timer_ticks used for delay based on timer0 interrupt increments
 
+09-JUNE-2021   Named some functions, labeled some data fields and added some comments
