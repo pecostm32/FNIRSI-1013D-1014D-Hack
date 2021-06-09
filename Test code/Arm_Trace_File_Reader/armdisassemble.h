@@ -21,6 +21,7 @@ typedef struct tagARM_INSTR_TYPE5       ARM_INSTR_TYPE5;
 typedef struct tagARM_INSTR_TYPE6       ARM_INSTR_TYPE6;
 typedef struct tagARM_INSTR_TYPE7       ARM_INSTR_TYPE7;
 typedef struct tagARM_INSTR_MUL         ARM_INSTR_MUL;        //Multiply instructions
+typedef struct tagARM_INSTR_SMULXY      ARM_INSTR_SMULXY;     //Signed multiply
 typedef struct tagARM_INSTR_ELS         ARM_INSTR_ELS;        //Extra load and store instructions
 typedef struct tagARM_INSTR_DPSI        ARM_INSTR_DPSI;       //Data processing shift immediate instructions
 typedef struct tagARM_INSTR_DPSR        ARM_INSTR_DPSR;       //Data processing shift register instructions
@@ -33,6 +34,7 @@ typedef struct tagARM_INSTR_MSRI        ARM_INSTR_MSRI;       //Move immediate t
 typedef struct tagARM_INSTR_MSRR        ARM_INSTR_MSRR;       //Move register to status register instructions
 typedef struct tagARM_INSTR_MRS         ARM_INSTR_MRS;        //Move status register to register instructions
 typedef struct tagARM_INSTR_MRCMCR      ARM_INSTR_MRCMCR;     //Move register to coprocessor or coprocessor to register instructions
+typedef struct tagARM_INSTR_CLZ         ARM_INSTR_CLZ;        //Count leading zero instruction
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -55,6 +57,22 @@ struct tagARM_INSTR_MUL
 {
   u_int32_t rm:4;         //Register m
   u_int32_t nu:4;         //Fixed value
+  u_int32_t rs:4;         //Register s
+  u_int32_t rn:4;         //Register n
+  u_int32_t rd:4;         //Destination register
+  u_int32_t s:1;          //Status update flag
+  u_int32_t op1:3;        //Opcode for type of multiply
+  u_int32_t type:4;       //Type of instructions
+  u_int32_t cond:4;       //Condition bits
+};
+
+struct tagARM_INSTR_SMULXY
+{
+  u_int32_t rm:4;         //Register m
+  u_int32_t nu2:1;        //Fixed value
+  u_int32_t x:1;          //mss or lss indicator for rm
+  u_int32_t y:1;          //mss or lss indicator for rs
+  u_int32_t nu1:1;        //Fixed value
   u_int32_t rs:4;         //Register s
   u_int32_t rn:4;         //Register n
   u_int32_t rd:4;         //Destination register
@@ -253,6 +271,16 @@ struct tagARM_INSTR_MISC0
   u_int32_t cond:4;       //Condition bits
 };
 
+struct tagARM_INSTR_CLZ
+{
+  u_int32_t rm:4;         //Register
+  u_int32_t nu2:4;        //Not used
+  u_int32_t sbo:4;        //Should be one
+  u_int32_t rd:4;         //Destination register
+  u_int32_t nu1:12;       //Not used
+  u_int32_t cond:4;       //Condition bits
+};
+
 //----------------------------------------------------------------------------------------------------------------------------------
 
 struct tagARM_INSTR_TYPE0
@@ -397,6 +425,7 @@ union tagARM_INSTRUCTION
   ARM_INSTR_TYPE6      type6;      //For type 6 instruction decoding
   ARM_INSTR_TYPE7      type7;      //For type 7 instruction decoding
   ARM_INSTR_MUL        mul;        //For multiply instructions
+  ARM_INSTR_SMULXY     smulxy;     //For signed multiply instruction
   ARM_INSTR_ELS        els;        //For extra load and store instructions
   ARM_INSTR_DPSI       dpsi;       //For data processing immediate shift instructions
   ARM_INSTR_DPSR       dpsr;       //For data processing register shift instructions
@@ -409,9 +438,8 @@ union tagARM_INSTRUCTION
   ARM_INSTR_MSRR       msrr;       //Move register to status register instructions
   ARM_INSTR_MRS        mrs;        //Move status register to register instructions
   ARM_INSTR_MRCMCR     mrcmcr;     //Move register to coprocessor or coprocessor to register instructions
+  ARM_INSTR_CLZ        clz;        //Count leading zero instruction
 };                                        
-
-
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -520,8 +548,12 @@ void ArmBranchExchangeT(ARM_INSTRUCTION arm_instruction, char *instrstr);
 void ArmBranchExchangeJ(ARM_INSTRUCTION arm_instruction, char *instrstr);
 
 void ArmMUL(ARM_INSTRUCTION arm_instruction, char *instrstr);
+void ArmSMULxy(ARM_INSTRUCTION arm_instruction, char *instrstr);
 
 void ArmMRCMCR(ARM_INSTRUCTION arm_instruction, char *instrstr);
+
+void ArmCLZ(ARM_INSTRUCTION arm_instruction, char *instrstr);
+
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

@@ -14,6 +14,7 @@ const char *signtext[2]   = { "-", "" };
 const char *savetext[2]   = { "", "!" };
 const char *ictext[2]     = { "", "^" };
 const char *shifttext[4]  = { "lsl", "lsr", "asr", "ror" };
+const char *smulxytext[2] = { "b", "t" };
 const char *lstext[2]     = { "str", "ldr" };
 const char *lsmtext[2]    = { "stm", "ldm" };
 const char *amtext[4]     = { "da", "db", "ia", "ib" };
@@ -169,9 +170,20 @@ void ArmDisassemble(char *instrstr, u_int32_t strsize, u_int32_t program_counter
                   break;
               }
             }
+            //Check on count leading zeros
+            else if((arm_instruction.instr & 0x0FFF0FF0) == 0x016F0F10)
+            {
+              //Handle count leading zeros
+              ArmCLZ(arm_instruction, instrstr);
+            }
+            //Check on signed multiplies (SMULxy)
+            else if((arm_instruction.mul.type == 1) && (arm_instruction.mul.op1 == 3))
+            {
+              //Go and handle the multiply
+              ArmSMULxy(arm_instruction, instrstr);
+            }
             else
             {
-              //Count leading zeros
               //Saturating add / subtract
               //Software breakpoint
               //Signed multiplies (type 2)
@@ -839,6 +851,16 @@ void ArmMUL(ARM_INSTRUCTION arm_instruction, char *instrstr)
   }
 }
 
+//----------------------------------------------------------------------------------------------------------------------------------
+//Signed multiply instruction handling
+void ArmSMULxy(ARM_INSTRUCTION arm_instruction, char *instrstr)
+{
+  //Print the instruction name (base name, x, y and condition)
+  sprintf(instrstr, "smul%s%s%s         ", smulxytext[arm_instruction.smulxy.x], smulxytext[arm_instruction.smulxy.y], condnames[arm_instruction.base.cond]);
+  
+  //SMULxy has rd, rm and rs
+  sprintf(&instrstr[12], "%s, %s, %s", regnames[arm_instruction.smulxy.rd], regnames[arm_instruction.smulxy.rm], regnames[arm_instruction.smulxy.rs]);
+}
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Move register to coprocessor or coprocessor to register
@@ -857,6 +879,17 @@ void ArmMRCMCR(ARM_INSTRUCTION arm_instruction, char *instrstr)
 
   //Add the register holding the target  address
   sprintf(&instrstr[12], "p%d, %d, %s, cr%d, cr%d, %d", arm_instruction.mrcmcr.cpn, arm_instruction.mrcmcr.op1, regnames[arm_instruction.mrcmcr.rd], arm_instruction.mrcmcr.crn, arm_instruction.mrcmcr.crm, arm_instruction.mrcmcr.op2);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Count leading zero instruction handling
+void ArmCLZ(ARM_INSTRUCTION arm_instruction, char *instrstr)
+{
+  //Print the instruction name (base name and condition)
+  sprintf(instrstr, "clz%s             ", condnames[arm_instruction.base.cond]);
+
+  //CLZ has rd and rm
+  sprintf(&instrstr[12], "%s, %s", regnames[arm_instruction.clz.rd], regnames[arm_instruction.clz.rm]);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
