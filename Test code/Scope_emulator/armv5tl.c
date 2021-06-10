@@ -53,7 +53,9 @@
 //#define MY_BREAK_POINT_1  0x80025090      //end of write parameter storage
 
 #define MY_BREAK_POINT_2  0x80024AF8        //end of get setting from parameter storage
-#define MY_BREAK_POINT_1  0x80024A74        //first check on 0x55
+//#define MY_BREAK_POINT_1  0x80024A74        //first check on 0x55
+
+#define MY_BREAK_POINT_1  0x800178B4
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -262,6 +264,11 @@ void ArmV5tlSetup(PARMV5TL_CORE core)
   core->f1c100s_port[4].portdata = &core->fpgadata;
   
   //core->fpgadata.fp = fopen("fpga_trace_3.txt", "w");
+  
+  //core->fpgadata.param_trace = fopen("param_trace/param_trace_1.txt", "w");
+  
+  core->fpgadata.cmd0x14count[0] = 0x07;
+  core->fpgadata.cmd0x14count[0] = 0xD5;
   
   //On startup processor is running
   core->run = 1;
@@ -2198,12 +2205,12 @@ void ArmV5tlMUL(PARMV5TL_CORE core)
   if((core->arm_instruction.mul.op1 == 6) || (core->arm_instruction.mul.op1 == 7))
   {
     //Do multiply with signed inputs
-    vd = (int32_t)rs * (int32_t)rm;
+    vd = (int64_t)rs * (int64_t)rm;
   }
   else
   {
     //Do multiply with unsigned inputs
-    vd = rs * rm;
+    vd = (u_int64_t)rs * (u_int64_t)rm;
   }
   
   //Check if 64 bit accumulate needed (UMLAL op1:5, SMLAL op1:7)

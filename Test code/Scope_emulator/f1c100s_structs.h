@@ -107,7 +107,9 @@ struct tagFPGA_DATA
   u_int8_t   param_id;
   u_int8_t   param_data[7];
   FILE      *param_file;
+  FILE      *param_trace;
   
+  u_int8_t  cmd0x14count[2];
   
   FILE *fp;
 };
