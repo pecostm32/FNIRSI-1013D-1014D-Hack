@@ -100,8 +100,8 @@ double convertdouble(u_int8_t *ptr)
 
 int main(int argc, char** argv)
 {
-  u_int8_t scldata[2500000];
-  u_int8_t sdadata[2500000];
+  u_int8_t scldata[4000000];
+  u_int8_t sdadata[4000000];
   int len;
   int process = 1;
   int j;
@@ -135,7 +135,9 @@ int main(int argc, char** argv)
   ByteAndBits crypt_in;
   ByteAndBits crypt_out;
   
-  FILE *fp = fopen("scope_param_i2c_capture/digital_2.bin", "rb");
+  u_int32_t value;
+  
+  FILE *fp = fopen("/home/peter/Downloads/FNIRSI 1013D/I2C_Capture/03_just-Brightness_bySteps/digital_2.bin", "rb");
   
   if(fp)
   {
@@ -172,7 +174,7 @@ int main(int argc, char** argv)
   //Check if scl is good to go
   if(process)
   {
-    fp = fopen("scope_param_i2c_capture/digital_3.bin", "rb");
+    fp = fopen("/home/peter/Downloads/FNIRSI 1013D/I2C_Capture/03_just-Brightness_bySteps/digital_3.bin", "rb");
     
     if(fp)
     {
@@ -210,7 +212,7 @@ int main(int argc, char** argv)
   //Check if both scl and sda good to go
   if(process)
   {
-    fp = fopen("i2c_data_out_1.txt", "w");
+    fp = fopen("i2c_data_out_5_a.txt", "w");
   }
     
   if(fp)
@@ -254,16 +256,14 @@ int main(int argc, char** argv)
         
         //Handle sda transition as needed here to determine start and stop
         //On scl high a start or stop state is signaled
-        if((scl_state) && (scl_time_1 != sda_time_1) && ((i2c_bytes == 0) || (i2c_bytes >= 9)))
+        //Since the data is way of I2C specs special filtering is needed to suppress faulty starts and stops
+        if((scl_state) && (scl_time_1 != sda_time_1) && ((i2c_bytes == 0) || (i2c_bytes >= 9)) && ((i2c_currentbit >= 1) || (i2c_bytes == 0)))
         {
           //In any case get the status of the SDA pin to see which condition has been send
           if(sda_state)
           {
-            if(i2c_state == I2C_STATE_GET_BITS)
-            {
-              //Switch to idle state
-              i2c_state = I2C_STATE_IDLE;
-            }
+            //Stop condition so switch to idle state
+            i2c_state = I2C_STATE_IDLE;
           }
           else
           {
@@ -320,17 +320,17 @@ int main(int argc, char** argv)
             
               //Decrypt the message
               
-              
               //Process the data based on action read or write
               if(data[1] == 0x01)
               {
+                //Read
                 crypt_byte = ~data[2];
 
                 data[2] = crypt_byte;
 
                 fprintf(fp, "{ 0x01, 0x%02X, ", data[2]);
 
-                //Read
+                //Decrypt the bytes
                 for(j=3;j<9;j++)
                 {
                   //Decrypt the bytes
@@ -347,9 +347,21 @@ int main(int argc, char** argv)
                 checksum = data[2] + data[3] + data[5] + data[6] + data[7] + data[8];
 
                 if(checksum == data[4])
-                  fprintf(fp, "  //Checksum ok\n");
+                  fprintf(fp, "  //Checksum ok");
                 else
-                  fprintf(fp, "  //Checksum error: 0x%02X\n", checksum);
+                  fprintf(fp, "  //Checksum error: 0x%02X", checksum);
+                
+                //Can be done in a better way, but for now simple and readable
+                if(data[3] == 0x55)
+                  value = data[8];
+                else if(data[3] == 0x5A)
+                  value = (data[7] << 8) | data[8];
+                else if(data[3] == 0xA5)
+                  value = (data[6] << 16) | (data[7] << 8) | data[8];
+                else if(data[3] == 0xAA)
+                  value = (data[5] << 24) | (data[6] << 16) | (data[7] << 8) | data[8];
+                
+                fprintf(fp, "  Data: 0x%08X\n", value);
               }
               else
               {
@@ -386,11 +398,31 @@ int main(int argc, char** argv)
                 else
                   fprintf(fp, "  //Checksum error: 0x%02X", checksum);
 
-                 //Get the id and length byte
-                 data[3] = data[3] ^ crypt_byte;
+                //Get the id and length byte
+                data[3] = data[3] ^ crypt_byte;
 
-                 fprintf(fp, "  Id: 0x%02X  Len: %d\n", data[3] >> 2, data[3] & 0x03);
-               }
+                //decode the data
+                switch(data[3] & 0x03)
+                {
+                  case 0:
+                    value = data[8] ^ crypt_byte;
+                    break;
+                    
+                  case 1:
+                    value = ((data[7] ^ crypt_byte) << 8) | (data[8]  ^ crypt_byte);
+                    break;
+                    
+                  case 2:
+                    value = ((data[6] ^ crypt_byte) << 16) | ((data[7] ^ crypt_byte) << 8) | (data[8] ^ crypt_byte);
+                    break;
+                    
+                  case 3:
+                    value = ((data[5] ^ crypt_byte) << 24) | ((data[6] ^ crypt_byte) << 16) | ((data[7] ^ crypt_byte) << 8) | (data[8] ^ crypt_byte);
+                    break;
+                }
+                 
+                fprintf(fp, "  Data: 0x%08X  Id: 0x%02X  Len: %d\n", value, data[3] >> 2, data[3] & 0x03);
+              }
             }
             
             //Switch to get ack state
