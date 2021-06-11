@@ -79,7 +79,7 @@
 
 //#define TRACE_FILE_NAME         "screen_buf_clear"
 //#define TRACE_FILE_NAME         "sd_card_check"
-#define TRACE_FILE_NAME         "main_loop_trace/main_loop"
+#define TRACE_FILE_NAME         "main_loop_trace_2/main_loop"
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -265,10 +265,10 @@ void ArmV5tlSetup(PARMV5TL_CORE core)
   
   //core->fpgadata.fp = fopen("fpga_trace_3.txt", "w");
   
-  //core->fpgadata.param_trace = fopen("param_trace/param_trace_1.txt", "w");
+  core->fpgadata.param_trace = fopen("param_trace/param_trace_2.txt", "w");
   
   core->fpgadata.cmd0x14count[0] = 0x07;
-  core->fpgadata.cmd0x14count[0] = 0xD5;
+  core->fpgadata.cmd0x14count[1] = 0xD5;
   
   //On startup processor is running
   core->run = 1;

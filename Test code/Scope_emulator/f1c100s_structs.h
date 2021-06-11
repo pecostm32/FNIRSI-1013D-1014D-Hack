@@ -87,6 +87,7 @@ struct tagTOUCH_PANEL_DATA
   u_int8_t  prev_port_data;
   
   u_int8_t  mouse_down;               //Signal from mouse touch panel that there is touch
+  u_int8_t  mouse_prev;               //Previous value to detect the change from touch to no touch
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------

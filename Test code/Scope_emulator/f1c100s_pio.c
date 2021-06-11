@@ -183,17 +183,21 @@ void PortAHandler(F1C100S_PIO_PORT *registers,  u_int32_t mode)
                 //Upper seven bits of the address are not used
                 if(pd->panel_address == 0x14E)
                 {
-                  if(pd->mouse_down)
+                  if(pd->mouse_down != pd->mouse_prev)
                   {
+                    //Keep for next check
+                    pd->mouse_prev = pd->mouse_down;
+                    
                     //Signal there is touch
-                    pd->panel_data[0x14E] = 0x81;
-                  }
-                  else
-                  {
-                    //Signal there is no touch
-                    pd->panel_data[0x14E] = 0x00;
+                    pd->panel_data[0x14E] = 0x80 | pd->mouse_down;
                   }
                 }
+                
+                //This needs a different approach to allow the scope code to detect touch has been removed.
+                
+                //As long as there is touch the status should be 0x81
+                //When touch is removed it should send 0x80
+                //On write to the status register the 0x80 should be cleared
                 
                 //Load the current byte with the data to send
                 pd->i2c_currentbyte = pd->panel_data[pd->panel_address];

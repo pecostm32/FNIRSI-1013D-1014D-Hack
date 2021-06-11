@@ -36,7 +36,7 @@ void TouchPanelSetup(tagXlibContext *xc, tagTouchPanel *touchpanel)
   
   //Setup the mouse actions
   mouse->down = TouchDown;
-  mouse->up   = TouchDown;
+  mouse->up   = TouchUp;
   mouse->move = TouchMove;
 }
 
