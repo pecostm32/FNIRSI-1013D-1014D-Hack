@@ -88,3 +88,30 @@ One thing is clear. For the brightness setting the parameter id 0x10 is used. A 
 translates it into a 16 bit value, where 0x64 translates into 0xEA60, which is the default setting.
 
 It looks like id 0x0B and 0x11 are used to control the state of the scope, but a lot more research is needed to figure it all out.
+
+----------------------------------------------------------------------------------------------
+12-JUNE-2021 21:50
+The emulator is functioning and it is revealing the secrets of the FPGA.
+
+Found that the settings are being kept in the main flash. The data block read from address 0x001FD000 (0x01F4 bytes) contain the settings. Need to find when
+the data is written to the flash. It could be done at power down.
+
+The FPGA commands for controlling the analog input stages are found.
+Channel 1 is controlled with 0x32, 0x33 and 0x34. (Scaling, offset, coupling)
+Channel 2 is controlled with 0x35, 0x36 and 0x37. (Scaling, offset, coupling)
+
+V/div    0x33 (0x36)
+500mV    0x05   //Uses the same setting as 1V/div. Scaling is done in software
+1V       0x05
+2V       0x04
+5V       0x03
+10V      0x02
+25V      0x01
+50V      0x00
+
+Coupling 0x34 (0x37)
+AC       0x00
+DC       0x01
+
+
+
