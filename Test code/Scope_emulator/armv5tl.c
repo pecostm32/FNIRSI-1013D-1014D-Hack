@@ -178,9 +178,7 @@ void ArmV5tlSetup(PARMV5TL_CORE core)
 {
   int  b,r;
   
-#ifdef TRACE_ENABLED  
-  char tracefilename[64];
-#endif
+  char tracefilename[256];
   
   if(core == NULL)
     return;
@@ -263,9 +261,11 @@ void ArmV5tlSetup(PARMV5TL_CORE core)
   core->f1c100s_port[4].porthandler = PortEHandler;
   core->f1c100s_port[4].portdata = &core->fpgadata;
   
-  //core->fpgadata.fp = fopen("fpga_trace_3.txt", "w");
+  sprintf(core->fpgadata.file_name, "fpga_trace/fpga_trace_a");
+  sprintf(tracefilename, "%s_%06d.txt", core->fpgadata.file_name, core->fpgadata.file_index);
+  core->fpgadata.trace_file = fopen(tracefilename, "w");
   
-  core->fpgadata.param_trace = fopen("param_trace/param_trace_2.txt", "w");
+//  core->fpgadata.param_trace = fopen("param_trace/param_trace_3.txt", "w");
   
   core->fpgadata.cmd0x14count[0] = 0x07;
   core->fpgadata.cmd0x14count[1] = 0xD5;

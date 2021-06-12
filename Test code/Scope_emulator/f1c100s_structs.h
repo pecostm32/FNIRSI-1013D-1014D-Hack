@@ -110,9 +110,20 @@ struct tagFPGA_DATA
   FILE      *param_file;
   FILE      *param_trace;
   
-  u_int8_t  cmd0x14count[2];
+  u_int8_t   cmd0x14count[2];
+
+  u_int8_t   cmd0x21data[2];
   
-  FILE *fp;
+  
+  u_int8_t   tracedata[1500];
+  u_int32_t  tracecount;
+  u_int32_t  datamode;
+  
+  u_int32_t  print_command;
+  char       file_name[128];
+  u_int32_t  file_line_count;
+  u_int32_t  file_index;
+  FILE      *trace_file;
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
