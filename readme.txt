@@ -38,3 +38,4 @@ For this to happen an emulator is being written. It is quite the job but it is a
 main program. The startup imagewith the FNIRSI logo is displayed and the emulator window shows the processor status and the registers when the core is running.
 Still a lot of work needs to be done before it is finished. Hopefully it will aid in a full reversal of the actual code.
 
+The emulator is functional and the working of the system is slowly being revealed. Quite a few commands to control the FPGA are now known.
