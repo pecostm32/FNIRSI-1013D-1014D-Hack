@@ -473,6 +473,9 @@ unsigned int read_parameter_ic(unsigned char id, unsigned int value)
         }
       }
       
+      //Need a delay here. In the scope it is delay(100) but not sure what the base of the delay is
+
+      
       //One more try if not valid
       j++;
     }
