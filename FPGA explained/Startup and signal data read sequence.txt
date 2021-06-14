@@ -1,0 +1,548 @@
+//----------------------------------------------------------------------------------------------------
+//Scope startup second program loader
+//Full display brightness
+command: 0x38  write  length: 2     data: 0xEA 0x60 
+
+//----------------------------------------------------------------------------------------------------
+//Beginning of main program
+//Turn display off
+command: 0x38  write  length: 2     data: 0x00 0x00 
+
+//----------------------------------------------------------------------------------------------------
+//Initialization
+
+//??
+command: 0x02  write  length: 1     data: 0x01 
+
+//??
+command: 0x03  write  length: 1     data: 0x01 
+
+//Set channel 1 50V/div
+command: 0x33  write  length: 1     data: 0x00 
+
+//Set channel 2 50V/div
+command: 0x36  write  length: 1     data: 0x00 
+
+//Set channel 1 DC coupling
+command: 0x34  write  length: 1     data: 0x01 
+
+//Set channel 2 DC coupling
+command: 0x37  write  length: 1     data: 0x01 
+
+command: 0x04  write  length: 1     data: 0x01 
+
+//Read data from special ic
+//Get the first exor crypt byte
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0x00 
+command: 0x6A  read   length: 1     data: 0x00 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0x00 
+
+//Write data to special ic
+//Id 0x0A
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x28 
+command: 0x6A  write  length: 1     data: 0xD3 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x99 
+command: 0x6E  write  length: 1     data: 0x13 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+
+//Read data from special ic
+//Data for id 0x0A
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0x84 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0xD8 
+
+//Write data to special ic
+//Id 0x14
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xAF 
+command: 0x6A  write  length: 1     data: 0x25 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x66 
+command: 0x6E  write  length: 1     data: 0x12 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+
+//Read data from special ic
+//Data for id 0x14
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x62 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0x0D
+ 
+//Set trigger for long time base
+command: 0x0D  write  length: 4     data: 0x00 0x00 0x00 0x27 
+
+//Set trigger source to channel 2
+command: 0x15  write  length: 1     data: 0x01 
+
+//Set trigger edge to rising
+command: 0x16  write  length: 1     data: 0x00 
+
+//?? Seems to be used in combination with trigger time / div setting or trigger mode
+command: 0x17  write  length: 1     data: 0x27 
+
+//Select trigger mode auto. Same setting used for single mode
+command: 0x1A  write  length: 1     data: 0x00 
+
+//Set channel 1 screen offset
+command: 0x32  write  length: 2     data: 0x02 0x43 
+
+//Set channel 2 screen offset
+command: 0x35  write  length: 2     data: 0x04 0xC6 
+
+//Write data to special ic
+//Id 0x16
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x58 
+command: 0x6A  write  length: 1     data: 0xF0 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x99 
+command: 0x6E  write  length: 1     data: 0x00 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+
+//Read data from special ic
+//Data for id 0x16
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xA5 
+command: 0x6A  read   length: 1     data: 0x79 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0x81 
+command: 0x6E  read   length: 1     data: 0x50 
+
+//Write result from read to FPGA command 0x3C. No idea what this does
+command: 0x3C  write  length: 2     data: 0x81 0x50 
+
+//Write data to special ic
+//Id 0x10
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xBF 
+command: 0x6A  write  length: 1     data: 0xF3 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x66 
+command: 0x6E  write  length: 1     data: 0xD0 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+
+//Read data from special ic
+//Data for id 0x10
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x5A 
+command: 0x6A  read   length: 1     data: 0xA4 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0xEA 
+command: 0x6E  read   length: 1     data: 0x60 
+
+//Set display brightness
+command: 0x38  write  length: 2     data: 0xEA 0x60 
+
+//----------------------------------------------------------------------------------------------------
+//Start of a scope sequence
+//?? Seems to be used in combination with trigger time / div setting or trigger mode
+command: 0x17  write  length: 1     data: 0x27 
+
+//Set time / div to 20uS
+command: 0x0E  write  length: 4     data: 0x00 0x00 0x25 0xDC 
+
+//??
+command: 0x0F  write  length: 1     data: 0x00 
+command: 0x28  write  length: 1     data: 0x00 
+command: 0x01  write  length: 1     data: 0x01 
+
+//??
+command: 0x05  read   length: 2     data: 0x05 0x05 
+
+//??
+command: 0x01  write  length: 1     data: 0x00 
+
+//Some sort of ready indicator. Code waits if 0x00 is returned
+command: 0x0A  read   length: 1     data: 0x01 
+
+//??
+command: 0x0F  write  length: 1     data: 0x01 
+
+//Read data for parameter id 0x11
+command: 0x14  read   length: 2     data: 0x07 0xD5 
+
+//Write data to special ic
+//Id 0x11
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x45 
+command: 0x6A  write  length: 1     data: 0x18 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x7D 
+command: 0x6E  write  length: 1     data: 0x57 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+
+//Read data from special ic
+//Data for id 0x11
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0xD0 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0x24 
+
+//??
+command: 0x1F  write  length: 2     data: 0x0D 0xEC 
+
+//Write data to special ic
+//Id 0x0C
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xCF 
+command: 0x6A  write  length: 1     data: 0x31 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x66 
+command: 0x6E  write  length: 1     data: 0xFE 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+
+//Read data from special ic
+//Data for id 0x0C
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x75 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0x20 
+
+//Read signal data for channel 1
+command: 0x20  read   length: 1500  data: 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 
+
+//Write data to special ic
+//Id 0x0B
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x2C 
+command: 0x6A  write  length: 1     data: 0xC4 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x99 
+command: 0x6E  write  length: 1     data: 0x00 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+
+//Read data from special ic
+//Data for id 0x0B
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0xF3 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0x47 
+
+//??
+command: 0x1F  write  length: 2     data: 0x0D 0xEC 
+
+//Write data to special ic
+//Id 0x0D
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xCB 
+command: 0x6A  write  length: 1     data: 0x2D 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x66 
+command: 0x6E  write  length: 1     data: 0xFE 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+
+//Read data from special ic
+//Data for id 0x0D
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x77 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0x22 
+
+//Read signal data for channel 2
+command: 0x22  read   length: 1500  data: 0x70 0x70 0x70 0x70 0x70 0x70 0x70 0x70 0x70 0x70 0x70 0x70 0x70 0x70 0x70 0x70 0x70 0x70 0x70 0x70 
+
+//Write data to special ic
+//Id 0x0B
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x2C 
+command: 0x6A  write  length: 1     data: 0xC4 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x99 
+command: 0x6E  write  length: 1     data: 0x00 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+
+//Read data from special ic
+//Data for id 0x0B
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0xF3 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0x47 
+
+//----------------------------------------------------------------------------------------------------
+//Start of a scope sequence
+//?? Seems to be used in combination with trigger time / div setting or trigger mode
+command: 0x17  write  length: 1     data: 0x27 
+
+//Set time / div to 20uS
+command: 0x0E  write  length: 4     data: 0x00 0x00 0x25 0xDC 
+
+//??
+command: 0x0F  write  length: 1     data: 0x00 
+command: 0x28  write  length: 1     data: 0x00 
+command: 0x01  write  length: 1     data: 0x01 
+
+//??
+command: 0x05  read   length: 2     data: 0x05 0x05 
+
+//??
+command: 0x01  write  length: 1     data: 0x00 
+
+//Some sort of ready indicator. Code waits if 0x00 is returned
+command: 0x0A  read   length: 1     data: 0x01 
+
+//??
+command: 0x0F  write  length: 1     data: 0x01 
+
+//Read data for parameter id 0x11
+command: 0x14  read   length: 2     data: 0x07 0xD5
+ 
+//Write data to special ic
+//Id 0x11
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xBA 
+command: 0x6A  write  length: 1     data: 0xE2 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x82 
+command: 0x6E  write  length: 1     data: 0xA8 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+
+//Read data from special ic
+//Data for id 0x11
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x30 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0xDB 
+
+//??
+command: 0x1F  write  length: 2     data: 0x0D 0xEC 
+
+//Write data to special ic
+//Id 0x0C
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x30 
+command: 0x6A  write  length: 1     data: 0xC9 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x99 
+command: 0x6E  write  length: 1     data: 0x01 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+
+//Read data from special ic
+//Data for id 0x0C
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0x8B 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0xDF 
+
+//Read signal data for channel 1
+command: 0x20  read   length: 1500  data: 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 
+
+//Write data to special ic
+//Id 0x0B
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xD3 
+command: 0x6A  write  length: 1     data: 0x36 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x66 
+command: 0x6E  write  length: 1     data: 0xFF 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+
+//Read data from special ic
+//Data for id 0x0B
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x0D 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0xB8 
+
+//??
+command: 0x1F  write  length: 2     data: 0x0D 0xEC 
+
+//Write data to special ic
+//Id 0x0D
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x34 
+command: 0x6A  write  length: 1     data: 0xCD 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x99 
+command: 0x6E  write  length: 1     data: 0x01 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+
+//Read data from special ic
+//Data for id 0x0D
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0x89 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0xDD 
+
+//Read signal data for channel 2
+command: 0x22  read   length: 1500  data: 0x70 0x70 0x70 0x70 0x70 0x70 0x70 0x70 0x70 0x70 0x70 0x70 0x70 0x70 0x70 0x70 0x70 0x70 0x70 0x70 
+
+//Write data to special ic
+//Id 0x0B
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xD3 
+command: 0x6A  write  length: 1     data: 0x36 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x66 
+command: 0x6E  write  length: 1     data: 0xFF 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+
+//Read data from special ic
+//Data for id 0x0B
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x0D 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0xB8 
+
+//----------------------------------------------------------------------------------------------------
+

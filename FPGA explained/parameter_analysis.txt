@@ -1,0 +1,55 @@
+The special ic is being called with the following ID's:
+
+It is not a storage device, but some sort of translator.
+
+
+0x0A   Get 16 bits data to write to the FPGA. The FPGA command is read with parameter ID 0x14. This is done in a single function.
+       Called at startup followed by the 0x14
+
+
+0x0B   Called when one or both channels are turned on.
+       This id is send right after a 0x0C or 0x0D command. When both channels are enabled it is send twice
+       The code shows it can be called with immediate numbers (hard coded) or variable numbers.
+       The hard coded numbers are 0 - 5. Data captures also showed 6
+       The chip seems to respond with fixed data for each input.
+       send 0x00  return  0xAD
+       send 0x01  return  0xAF
+       send 0x02  return  0xB4
+       send 0x03  return  0xB4
+       send 0x04  return  0xB8
+       send 0x05  return  0xB8
+       send 0x06  return  0xB8
+
+
+0x0C   Get FPGA command for channel 1 signal data reading. Turned of when the channel is turned of, otherwise it is called regular.
+
+
+0x0D   Get FPGA command for channel 2 signal data reading. Turned of when the channel is turned of, otherwise it is called regular.
+
+
+0x0E   Is called once in a while with a 32 bit value. Seems to return the same value.
+
+
+0x0F
+
+
+0x10   Display brightnes. Input is a value from 0x00 to 0x64. A 16 bit value is returend with max 0xEA60.
+
+
+0x11   Called regular. Input data shifted right 4 bits and then 2 is added and returned as 12 bits value.
+
+
+0x12
+
+
+0x14   Input is always 0xED and a FPGA command is returned. Data fetched with ID 0x0A is written to the FPGA after this FPGA command.
+
+
+0x15
+
+
+0x16   16 bits result is written to FPGA command 0x3C.
+       Called at startup.
+
+
+
