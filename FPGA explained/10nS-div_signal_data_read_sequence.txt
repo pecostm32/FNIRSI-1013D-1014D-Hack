@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------------------------------
 //Start of a scope sequence
 
-//?? Seems to be used in combination with trigger time / div setting or trigger mode (?? only once every 10 cycles ?? Maybe less for 25nS)
+//?? Seems to be used in combination with trigger time / div setting or trigger mode (Only once every 10 cycles, for both 10nS and 25nS)
 command: 0x17  write  length: 1     data: 0x27 
 
 //Set time / div to 10nS
@@ -55,7 +55,7 @@ command: 0x6C  read   length: 1     data: 0xFF
 command: 0x6D  read   length: 1     data: 0xFF 
 command: 0x6E  read   length: 1     data: 0x24 
 
-//??
+//?? (for 10nS/div 0x00 0xC7. for 25nS/div 0x00 0xAC)
 command: 0x1F  write  length: 2     data: 0x00 0xC7 
 
 //Write data to special ic
