@@ -1,0 +1,1288 @@
+//----------------------------------------------------------------------------------------------------
+//Start of a scope sequence
+command: 0x17  write  length: 1     data: 0x54 
+command: 0x17  write  length: 1     data: 0x54 
+command: 0x0E  write  length: 4     data: 0x00 0x00 0x0B 0xB8 
+command: 0x0F  write  length: 1     data: 0x00 
+command: 0x28  write  length: 1     data: 0x00 
+command: 0x01  write  length: 1     data: 0x01 
+command: 0x05  read   length: 2     data: 0x05 0x05 
+command: 0x01  write  length: 1     data: 0x00 
+command: 0x0A  read   length: 1     data: 0x01 
+command: 0x0F  write  length: 1     data: 0x01 
+command: 0x14  read   length: 2     data: 0x07 0xD5 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x45 
+command: 0x6A  write  length: 1     data: 0x18 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x7D 
+command: 0x6E  write  length: 1     data: 0x57 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0xD0 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0x24 
+command: 0x1F  write  length: 2     data: 0x0D 0xEC 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xCF 
+command: 0x6A  write  length: 1     data: 0x31 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x66 
+command: 0x6E  write  length: 1     data: 0xFE 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x75 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0x20 
+command: 0x20  read   length: 1500  data: 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x2C 
+command: 0x6A  write  length: 1     data: 0xC4 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x99 
+command: 0x6E  write  length: 1     data: 0x00 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0xF3 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0x47 
+command: 0x1F  write  length: 2     data: 0x0D 0xEC 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xCB 
+command: 0x6A  write  length: 1     data: 0x2D 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x66 
+command: 0x6E  write  length: 1     data: 0xFE 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x77 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0x22 
+command: 0x22  read   length: 1500  data: 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x2C 
+command: 0x6A  write  length: 1     data: 0xC4 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x99 
+command: 0x6E  write  length: 1     data: 0x00 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0xF3 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0x47 
+command: 0x17  write  length: 1     data: 0x54 
+command: 0x0E  write  length: 4     data: 0x00 0x00 0x0B 0xB8 
+command: 0x0F  write  length: 1     data: 0x00 
+command: 0x28  write  length: 1     data: 0x00 
+command: 0x01  write  length: 1     data: 0x01 
+command: 0x05  read   length: 2     data: 0x05 0x05 
+command: 0x01  write  length: 1     data: 0x00 
+command: 0x0A  read   length: 1     data: 0x01 
+command: 0x0F  write  length: 1     data: 0x01 
+command: 0x14  read   length: 2     data: 0x07 0xD5 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xBA 
+command: 0x6A  write  length: 1     data: 0xE2 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x82 
+command: 0x6E  write  length: 1     data: 0xA8 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x30 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0xDB 
+command: 0x1F  write  length: 2     data: 0x0D 0xEC 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x30 
+command: 0x6A  write  length: 1     data: 0xC9 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x99 
+command: 0x6E  write  length: 1     data: 0x01 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0x8B 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0xDF 
+command: 0x20  read   length: 1500  data: 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xD3 
+command: 0x6A  write  length: 1     data: 0x36 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x66 
+command: 0x6E  write  length: 1     data: 0xFF 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x0D 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0xB8 
+command: 0x1F  write  length: 2     data: 0x0D 0xEC 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x34 
+command: 0x6A  write  length: 1     data: 0xCD 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x99 
+command: 0x6E  write  length: 1     data: 0x01 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0x89 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0xDD 
+command: 0x22  read   length: 1500  data: 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xD3 
+command: 0x6A  write  length: 1     data: 0x36 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x66 
+command: 0x6E  write  length: 1     data: 0xFF 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x0D 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0xB8 
+command: 0x17  write  length: 1     data: 0x54 
+command: 0x0E  write  length: 4     data: 0x00 0x00 0x0B 0xB8 
+command: 0x0F  write  length: 1     data: 0x00 
+command: 0x28  write  length: 1     data: 0x00 
+command: 0x01  write  length: 1     data: 0x01 
+command: 0x05  read   length: 2     data: 0x05 0x05 
+command: 0x01  write  length: 1     data: 0x00 
+command: 0x0A  read   length: 1     data: 0x01 
+command: 0x0F  write  length: 1     data: 0x01 
+command: 0x14  read   length: 2     data: 0x07 0xD5 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x45 
+command: 0x6A  write  length: 1     data: 0x18 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x7D 
+command: 0x6E  write  length: 1     data: 0x57 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0xD0 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0x24 
+command: 0x1F  write  length: 2     data: 0x0D 0xEC 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xCF 
+command: 0x6A  write  length: 1     data: 0x31 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x66 
+command: 0x6E  write  length: 1     data: 0xFE 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x75 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0x20 
+command: 0x20  read   length: 1500  data: 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x2C 
+command: 0x6A  write  length: 1     data: 0xC4 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x99 
+command: 0x6E  write  length: 1     data: 0x00 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0xF3 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0x47 
+command: 0x1F  write  length: 2     data: 0x0D 0xEC 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xCB 
+command: 0x6A  write  length: 1     data: 0x2D 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x66 
+command: 0x6E  write  length: 1     data: 0xFE 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x77 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0x22 
+command: 0x22  read   length: 1500  data: 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x2C 
+command: 0x6A  write  length: 1     data: 0xC4 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x99 
+command: 0x6E  write  length: 1     data: 0x00 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0xF3 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0x47 
+command: 0x17  write  length: 1     data: 0x54 
+command: 0x0E  write  length: 4     data: 0x00 0x00 0x0B 0xB8 
+command: 0x0F  write  length: 1     data: 0x00 
+command: 0x28  write  length: 1     data: 0x00 
+command: 0x01  write  length: 1     data: 0x01 
+command: 0x05  read   length: 2     data: 0x05 0x05 
+command: 0x01  write  length: 1     data: 0x00 
+command: 0x0A  read   length: 1     data: 0x01 
+command: 0x0F  write  length: 1     data: 0x01 
+command: 0x14  read   length: 2     data: 0x07 0xD5 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xBA 
+command: 0x6A  write  length: 1     data: 0xE2 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x82 
+command: 0x6E  write  length: 1     data: 0xA8 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x30 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0xDB 
+command: 0x1F  write  length: 2     data: 0x0D 0xEC 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x30 
+command: 0x6A  write  length: 1     data: 0xC9 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x99 
+command: 0x6E  write  length: 1     data: 0x01 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0x8B 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0xDF 
+command: 0x20  read   length: 1500  data: 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xD3 
+command: 0x6A  write  length: 1     data: 0x36 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x66 
+command: 0x6E  write  length: 1     data: 0xFF 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x0D 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0xB8 
+command: 0x1F  write  length: 2     data: 0x0D 0xEC 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x34 
+command: 0x6A  write  length: 1     data: 0xCD 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x99 
+command: 0x6E  write  length: 1     data: 0x01 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0x89 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0xDD 
+command: 0x22  read   length: 1500  data: 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xD3 
+command: 0x6A  write  length: 1     data: 0x36 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x66 
+command: 0x6E  write  length: 1     data: 0xFF 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x0D 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0xB8 
+command: 0x17  write  length: 1     data: 0x54 
+command: 0x0E  write  length: 4     data: 0x00 0x00 0x0B 0xB8 
+command: 0x0F  write  length: 1     data: 0x00 
+command: 0x28  write  length: 1     data: 0x00 
+command: 0x01  write  length: 1     data: 0x01 
+command: 0x05  read   length: 2     data: 0x05 0x05 
+command: 0x01  write  length: 1     data: 0x00 
+command: 0x0A  read   length: 1     data: 0x01 
+command: 0x0F  write  length: 1     data: 0x01 
+command: 0x14  read   length: 2     data: 0x07 0xD5 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x45 
+command: 0x6A  write  length: 1     data: 0x18 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x7D 
+command: 0x6E  write  length: 1     data: 0x57 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0xD0 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0x24 
+command: 0x1F  write  length: 2     data: 0x0D 0xEC 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xCF 
+command: 0x6A  write  length: 1     data: 0x31 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x66 
+command: 0x6E  write  length: 1     data: 0xFE 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x75 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0x20 
+command: 0x20  read   length: 1500  data: 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x2C 
+command: 0x6A  write  length: 1     data: 0xC4 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x99 
+command: 0x6E  write  length: 1     data: 0x00 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0xF3 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0x47 
+command: 0x1F  write  length: 2     data: 0x0D 0xEC 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xCB 
+command: 0x6A  write  length: 1     data: 0x2D 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x66 
+command: 0x6E  write  length: 1     data: 0xFE 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x77 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0x22 
+command: 0x22  read   length: 1500  data: 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x2C 
+command: 0x6A  write  length: 1     data: 0xC4 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x99 
+command: 0x6E  write  length: 1     data: 0x00 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0xF3 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0x47 
+command: 0x17  write  length: 1     data: 0x54 
+command: 0x0E  write  length: 4     data: 0x00 0x00 0x0B 0xB8 
+command: 0x0F  write  length: 1     data: 0x00 
+command: 0x28  write  length: 1     data: 0x00 
+command: 0x01  write  length: 1     data: 0x01 
+command: 0x05  read   length: 2     data: 0x05 0x05 
+command: 0x01  write  length: 1     data: 0x00 
+command: 0x0A  read   length: 1     data: 0x01 
+command: 0x0F  write  length: 1     data: 0x01 
+command: 0x14  read   length: 2     data: 0x07 0xD5 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xBA 
+command: 0x6A  write  length: 1     data: 0xE2 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x82 
+command: 0x6E  write  length: 1     data: 0xA8 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x30 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0xDB 
+command: 0x1F  write  length: 2     data: 0x0D 0xEC 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x30 
+command: 0x6A  write  length: 1     data: 0xC9 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x99 
+command: 0x6E  write  length: 1     data: 0x01 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0x8B 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0xDF 
+command: 0x20  read   length: 1500  data: 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xD3 
+command: 0x6A  write  length: 1     data: 0x36 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x66 
+command: 0x6E  write  length: 1     data: 0xFF 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x0D 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0xB8 
+command: 0x1F  write  length: 2     data: 0x0D 0xEC 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x34 
+command: 0x6A  write  length: 1     data: 0xCD 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x99 
+command: 0x6E  write  length: 1     data: 0x01 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0x89 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0xDD 
+command: 0x22  read   length: 1500  data: 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xD3 
+command: 0x6A  write  length: 1     data: 0x36 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x66 
+command: 0x6E  write  length: 1     data: 0xFF 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x0D 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0xB8 
+command: 0x17  write  length: 1     data: 0x54 
+command: 0x0E  write  length: 4     data: 0x00 0x00 0x0B 0xB8 
+command: 0x0F  write  length: 1     data: 0x00 
+command: 0x28  write  length: 1     data: 0x00 
+command: 0x01  write  length: 1     data: 0x01 
+command: 0x05  read   length: 2     data: 0x05 0x05 
+command: 0x01  write  length: 1     data: 0x00 
+command: 0x0A  read   length: 1     data: 0x01 
+command: 0x0F  write  length: 1     data: 0x01 
+command: 0x14  read   length: 2     data: 0x07 0xD5 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x45 
+command: 0x6A  write  length: 1     data: 0x18 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x7D 
+command: 0x6E  write  length: 1     data: 0x57 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0xD0 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0x24 
+command: 0x1F  write  length: 2     data: 0x0D 0xEC 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xCF 
+command: 0x6A  write  length: 1     data: 0x31 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x66 
+command: 0x6E  write  length: 1     data: 0xFE 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x75 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0x20 
+command: 0x20  read   length: 1500  data: 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x2C 
+command: 0x6A  write  length: 1     data: 0xC4 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x99 
+command: 0x6E  write  length: 1     data: 0x00 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0xF3 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0x47 
+command: 0x1F  write  length: 2     data: 0x0D 0xEC 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xCB 
+command: 0x6A  write  length: 1     data: 0x2D 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x66 
+command: 0x6E  write  length: 1     data: 0xFE 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x77 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0x22 
+command: 0x22  read   length: 1500  data: 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x2C 
+command: 0x6A  write  length: 1     data: 0xC4 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x99 
+command: 0x6E  write  length: 1     data: 0x00 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0xF3 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0x47 
+command: 0x17  write  length: 1     data: 0x54 
+command: 0x0E  write  length: 4     data: 0x00 0x00 0x0B 0xB8 
+command: 0x0F  write  length: 1     data: 0x00 
+command: 0x28  write  length: 1     data: 0x00 
+command: 0x01  write  length: 1     data: 0x01 
+command: 0x05  read   length: 2     data: 0x05 0x05 
+command: 0x01  write  length: 1     data: 0x00 
+command: 0x0A  read   length: 1     data: 0x01 
+command: 0x0F  write  length: 1     data: 0x01 
+command: 0x14  read   length: 2     data: 0x07 0xD5 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xBA 
+command: 0x6A  write  length: 1     data: 0xE2 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x82 
+command: 0x6E  write  length: 1     data: 0xA8 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x30 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0xDB 
+command: 0x1F  write  length: 2     data: 0x0D 0xEC 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x30 
+command: 0x6A  write  length: 1     data: 0xC9 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x99 
+command: 0x6E  write  length: 1     data: 0x01 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0x8B 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0xDF 
+command: 0x20  read   length: 1500  data: 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xD3 
+command: 0x6A  write  length: 1     data: 0x36 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x66 
+command: 0x6E  write  length: 1     data: 0xFF 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x0D 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0xB8 
+command: 0x1F  write  length: 2     data: 0x0D 0xEC 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x34 
+command: 0x6A  write  length: 1     data: 0xCD 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x99 
+command: 0x6E  write  length: 1     data: 0x01 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0x89 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0xDD 
+command: 0x22  read   length: 1500  data: 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xD3 
+command: 0x6A  write  length: 1     data: 0x36 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x66 
+command: 0x6E  write  length: 1     data: 0xFF 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x0D 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0xB8 
+command: 0x17  write  length: 1     data: 0x54 
+command: 0x0E  write  length: 4     data: 0x00 0x00 0x0B 0xB8 
+command: 0x0F  write  length: 1     data: 0x00 
+command: 0x28  write  length: 1     data: 0x00 
+command: 0x01  write  length: 1     data: 0x01 
+command: 0x05  read   length: 2     data: 0x05 0x05 
+command: 0x01  write  length: 1     data: 0x00 
+command: 0x0A  read   length: 1     data: 0x01 
+command: 0x0F  write  length: 1     data: 0x01 
+command: 0x14  read   length: 2     data: 0x07 0xD5 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x45 
+command: 0x6A  write  length: 1     data: 0x18 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x7D 
+command: 0x6E  write  length: 1     data: 0x57 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0xD0 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0x24 
+command: 0x1F  write  length: 2     data: 0x0D 0xEC 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xCF 
+command: 0x6A  write  length: 1     data: 0x31 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x66 
+command: 0x6E  write  length: 1     data: 0xFE 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x75 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0x20 
+command: 0x20  read   length: 1500  data: 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x2C 
+command: 0x6A  write  length: 1     data: 0xC4 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x99 
+command: 0x6E  write  length: 1     data: 0x00 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0xF3 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0x47 
+command: 0x1F  write  length: 2     data: 0x0D 0xEC 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xCB 
+command: 0x6A  write  length: 1     data: 0x2D 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x66 
+command: 0x6E  write  length: 1     data: 0xFE 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x77 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0x22 
+command: 0x22  read   length: 1500  data: 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x2C 
+command: 0x6A  write  length: 1     data: 0xC4 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x99 
+command: 0x6E  write  length: 1     data: 0x00 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0xF3 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0x47 
+command: 0x17  write  length: 1     data: 0x54 
+command: 0x0E  write  length: 4     data: 0x00 0x00 0x0B 0xB8 
+command: 0x0F  write  length: 1     data: 0x00 
+command: 0x28  write  length: 1     data: 0x00 
+command: 0x01  write  length: 1     data: 0x01 
+command: 0x05  read   length: 2     data: 0x05 0x05 
+command: 0x01  write  length: 1     data: 0x00 
+command: 0x0A  read   length: 1     data: 0x01 
+command: 0x0F  write  length: 1     data: 0x01 
+command: 0x14  read   length: 2     data: 0x07 0xD5 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xBA 
+command: 0x6A  write  length: 1     data: 0xE2 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x82 
+command: 0x6E  write  length: 1     data: 0xA8 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x30 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0xDB 
+command: 0x1F  write  length: 2     data: 0x0D 0xEC 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x30 
+command: 0x6A  write  length: 1     data: 0xC9 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x99 
+command: 0x6E  write  length: 1     data: 0x01 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0x8B 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0xDF 
+command: 0x20  read   length: 1500  data: 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 0xB0 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xD3 
+command: 0x6A  write  length: 1     data: 0x36 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x66 
+command: 0x6E  write  length: 1     data: 0xFF 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x0D 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0xB8 
+command: 0x1F  write  length: 2     data: 0x0D 0xEC 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x34 
+command: 0x6A  write  length: 1     data: 0xCD 
+command: 0x6B  write  length: 1     data: 0x69 
+command: 0x6C  write  length: 1     data: 0x96 
+command: 0x6D  write  length: 1     data: 0x99 
+command: 0x6E  write  length: 1     data: 0x01 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0x89 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0xDD 
+command: 0x22  read   length: 1500  data: 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 0x28 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xD3 
+command: 0x6A  write  length: 1     data: 0x36 
+command: 0x6B  write  length: 1     data: 0x96 
+command: 0x6C  write  length: 1     data: 0x69 
+command: 0x6D  write  length: 1     data: 0x66 
+command: 0x6E  write  length: 1     data: 0xFF 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x0D 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0xB8 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0x00 
+command: 0x69  write  length: 1     data: 0x3B 
+command: 0x6A  write  length: 1     data: 0xDD 
+command: 0x6B  write  length: 1     data: 0xAC 
+command: 0x6C  write  length: 1     data: 0xFF 
+command: 0x6D  write  length: 1     data: 0xFF 
+command: 0x6E  write  length: 1     data: 0xF8 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0x00 
+command: 0x69  read   length: 1     data: 0xAA 
+command: 0x6A  read   length: 1     data: 0xAB 
+command: 0x6B  read   length: 1     data: 0xFF 
+command: 0x6C  read   length: 1     data: 0xFF 
+command: 0x6D  read   length: 1     data: 0xFF 
+command: 0x6E  read   length: 1     data: 0xFF 
+command: 0x65  cmd    length: 0     
+command: 0x65  cmd    length: 0     
+command: 0x68  write  length: 1     data: 0xFF 
+command: 0x69  write  length: 1     data: 0xC4 
+command: 0x6A  write  length: 1     data: 0xC3 
+command: 0x6B  write  length: 1     data: 0x00 
+command: 0x6C  write  length: 1     data: 0x00 
+command: 0x6D  write  length: 1     data: 0x00 
+command: 0x6E  write  length: 1     data: 0x00 
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x64  cmd    length: 0     
+command: 0x64  cmd    length: 0     
+command: 0x66  cmd    length: 0     
+command: 0x67  read   length: 1     data: 0x01 
+command: 0x68  read   length: 1     data: 0xFF 
+command: 0x69  read   length: 1     data: 0x55 
+command: 0x6A  read   length: 1     data: 0x55 
+command: 0x6B  read   length: 1     data: 0x00 
+command: 0x6C  read   length: 1     data: 0x00 
+command: 0x6D  read   length: 1     data: 0x00 
+command: 0x6E  read   length: 1     data: 0x00 
+

@@ -16,7 +16,7 @@ List of commands
 0x04    Write a data byte (0x00 or 0x01)
 
 
-0x05    Read two bytes
+0x05    Read two bytes. No idea what it is for yet, but read every signal read cycle.
 
 
 0x06    Check on FPGA version. Needs to return 0x1432. Only checked in a hardware check function, which can be enabled by changing two bytes in the flash memory. At address 0x001FE000 the code expects 0x9086 for skipping the check.
@@ -39,16 +39,20 @@ List of commands
 
 0x15    Write a data byte. Select trigger channel. 0x00 ==> channel 1, 0x01 ==> channel 2
 
+
 0x16    Write a data byte. Select trigger edge. 0x00 ==> rising, 0x01 ==> falling.
 
 
 0x17    Write a data byte. Something to do with trigger???
+        For 10nS and 25nS this command is only send once every 10 command 0x0E cycles
+        For 50nS, 100nS, 250nS, 500nS, 1uS, 2uS, 10uS, 20uS, 50Us, 100uS, 200uS, 500uS, 1mS, 2mS, 5mS, 10mS and 20mS this command is send twice at the start of a full sequence. A full cycle is 10 0x0E commands
+        For 20ms and 50mS this command is send twice at the start of a full sequence. A full cycle is 2 0x0E commands. Only 750 bytes are read.
 
 
 0x1A    Write a data byte. Select trigger mode. 0x00 ==> auto + single, 0x01 == normal.
 
 
-0x1F    Write two bytes of data
+0x1F    Write two bytes of data. Written per channel after every basic read (0x20, 0x22) The data is variable based on the time base setting.
 
 
 0x20    This command number is returned when reading from the special chip with parameter id 0x0C. Read 750 0r 1500 bytes of signal data for channel 1.
@@ -69,7 +73,7 @@ List of commands
 0x26    Used for the higher time / div settings. Read 10 bytes of signal data for channel 2
 
 
-0x28    Write a byte to data register
+0x28    Write a byte to data register. Some kind of mode select. 0x00 for all time base settings below 100mS. 0x01 for all from 100mS and up
 
 
 0x32    Write two bytes to data register               (Ch1 v/div setting, some screen offset. Value is lower near the top of the screen)
@@ -88,7 +92,7 @@ List of commands
 0x3C    Write two bytes gotten from parameter id 0x16
 
 
-0x41    Return touch panel coordinates register address. Always 0x8150 ?? (GT911 point 1 lsb X coordinate). There is a check in te software to see if this number is returned from the FPGA. It falls into an endless loop if this is not the case.
+0x41    Return touch panel coordinates register address. Always 0x8150 (GT911 point 1 lsb X coordinate). There is a check in te software to see if this number is returned from the FPGA. It falls into an endless loop if this is not the case.
 
 
 Commands to interface with the "I2C" chip connected to the FPGA
@@ -193,6 +197,7 @@ time / div     command 0x0E data
 50mS           0x00 0x00 0x03 0x20
 
 From here on it seems that the FPGA switches to 0x0D for time base setting and the data is read with 0x24 and 0x26, 10 bytes per read. 0x28 is written 1 after or before every read sequence. 0x0D is also written
+Once it switches to this state the special IC is no longer addressed. The scope just reads the data with the other hard coded FPGA commands. Probably based on timer interrupt.
 
 time / div     command 0x0D data
 100mS          0x00 0x00 0x07 0xD0
@@ -205,8 +210,62 @@ time / div     command 0x0D data
 20S            0x00 0x00 0x07 0xD0
 50S            0x00 0x00 0x07 0xD0
 
+========================================================================================================================================================================================================================================================
 
-There is some sequence on the 0x0D command. It first writes 0x00 0x00 0x00 0x27 and then 0x00 0x00 0x07 0xD0. This is not all the time, but after touch has been done.
+There is some sequence on the 0x0D command. It first writes 0x00 0x00 0x00 0x27 and then 0x00 0x00 0x07 0xD0. This is not all the time, but after touch has been done. Looks like a kind of reset which is only done when
+time base is switched to 100mS and up
+
+========================================================================================================================================================================================================================================================
+
+Settings for command 0x17
+
+10nS           0x27
+25nS           0x27
+50nS           0x27
+100nS          0x27
+250nS          0x27
+500nS          0x54
+1uS            0x54
+2uS            0x54
+5uS            0x54
+10uS           0x54
+20uS           0x54
+50uS           0x54
+100uS          0x54
+200uS          0x54
+500uS          0x54
+1mS            0x54
+2mS            0x54
+5mS            0x54
+10mS           0x54
+20mS           0x27
+50mS           0x27
+
+========================================================================================================================================================================================================================================================
+
+Settings for command 0x1F
+
+10nS           0x00 0xC7
+25nS           0x00 0xAC
+50nS           0x00 0x86
+100nS          0x00 0x31
+250nS          0x0F 0x31
+500nS          0x0D 0xEC
+1uS            0x0D 0xEC
+2uS            0x0D 0xEC
+5uS            0x0D 0xEC
+10uS           0x0D 0xEC
+20uS           0x0D 0xEC
+50uS           0x0D 0xEC
+100uS          0x0D 0xEC
+200uS          0x0D 0xEC
+500uS          0x0D 0xEC
+1mS            0x0D 0xEC
+2mS            0x0D 0xEC
+5mS            0x0D 0xEC
+10mS           0x0D 0xEC
+20ms           0x00 0x0A
+50ms           0x00 0x0A
 
 ========================================================================================================================================================================================================================================================
 
