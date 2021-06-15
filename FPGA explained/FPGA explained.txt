@@ -137,6 +137,9 @@ For the timebase there is also something done in software because for several se
 
 ========================================================================================================================================================================================================================================================
 
+The settings here are based on 10x probe setting. For 1x setting the range will be 50mV to 5V and for 100x the range will be 5V to 500V
+Need to investigate if the offset changes when the probe multiplier is changed
+
 Channel 1 settings
 0x32  Is some sort of offset. Changes when the trace on the screen is moved up or down.
 0x33  Select the input scaling. See table below
