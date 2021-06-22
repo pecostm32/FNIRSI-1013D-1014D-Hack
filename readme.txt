@@ -40,12 +40,12 @@ Still a lot of work needs to be done before it is finished. Hopefully it will ai
 
 The emulator is functional and the working of the system is slowly being revealed. Quite a few commands to control the FPGA are now known.
 
---------------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------
 14-JUNE-2021
 Most of the FPGA functions have been discovered and described. With the emulator the sequence of commands have been traced. With this information
 it should be possible to write new software for the scope.
 
---------------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------
 22-JUNE-2021
 The process of reversing the complete software is still ongoing. Focus at the moment is on the display library. Data structures are being discovered,
 with which the reversal of the code becomes more and more possible. The font data being used has been found in the flash. There are 8 fonts. The Ghidra
