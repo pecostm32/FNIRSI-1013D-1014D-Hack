@@ -48,3 +48,7 @@ Most of the FPGA functions have been discovered and described. With the emulator
 22-JUNE-2021
 The process of reversing the complete software is still ongoing. Focus at the moment is on the display library. Data structures are being discovered, with which the reversal of the code becomes more and more possible. The font data being used has been found in the flash. There are 8 fonts. The Ghidra archive uploaded today has them labeled and commented.
 
+----------------------------------------------------------------------------------------------------------
+26-JUNE-2021
+Wrote a font extractor and got font_2 from the binary.
+Also found more about the working of the color handling. Uploaded the Ghidra archive with the latest findings. Still a long way to go.
