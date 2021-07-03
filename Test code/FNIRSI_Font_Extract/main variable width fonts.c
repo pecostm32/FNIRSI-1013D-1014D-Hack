@@ -272,12 +272,16 @@ unsigned int processfontinformation(unsigned int datapos)
     fprintf(fo, "\n};\n");
     fprintf(fo, "\n//---------------------------------------------------------------------------------------------------------------------\n\n");
   
+    //!!!!!!!!!!!!!!
+    //For proper C the order of listing the information data needs to change
+    //Did this by hand in the output files
+
     //Print the font information data
     fprintf(fo, "FONTINFORMATION font_%d_information_%d = { 0x%04X, 0x%04X, font_%d_metrics_%d, ", FONT_ID, fontinformations, information.first_char, information.last_char, FONT_ID, fontinformations);
     
     if(information.next_info)
     {
-      fprintf(fo, "font_%d_information_%d", FONT_ID, fontinformations + 1);
+      fprintf(fo, "&font_%d_information_%d", FONT_ID, fontinformations + 1);
     }
     else
     {
