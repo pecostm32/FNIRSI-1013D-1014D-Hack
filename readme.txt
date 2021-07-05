@@ -52,3 +52,10 @@ The process of reversing the complete software is still ongoing. Focus at the mo
 26-JUNE-2021
 Wrote a font extractor and got font_2 from the binary.
 Also found more about the working of the color handling. Uploaded the Ghidra archive with the latest findings. Still a long way to go.
+
+----------------------------------------------------------------------------------------------------------
+05-JULY-2021
+Extracted the fonts and tested them with HTML and javascript. Looks like they used two font types. A variable width type like Arial and a fixed with type like courier. Since they use bitmap versions a separate font is needed for each size in use.
+Started with a new netbeans project for the scope code. Made a simple display library to display text and draw rectangles. Tested the code in the emulator.
+Need to make a code packer to write the separate parts to a binary file. (second program loader, bitmap and main program) Did it by hand for the tests, but is not a great solution:-(
+
