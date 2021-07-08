@@ -59,3 +59,9 @@ Extracted the fonts and tested them with HTML and javascript. Looks like they us
 Started with a new netbeans project for the scope code. Made a simple display library to display text and draw rectangles. Tested the code in the emulator.
 Need to make a code packer to write the separate parts to a binary file. (second program loader, bitmap and main program) Did it by hand for the tests, but is not a great solution:-(
 
+----------------------------------------------------------------------------------------------------------
+08-JULY-2021
+Found how the scope display's the menus. It uses a lot of bitmaps that are copied to the display instead of printing text. Updated the Ghidra archive with the new findings.
+The recreation of the scope project is setup to create a binary in the emulator project directory and start the emulator for testing.
+Checked a couple of the fill rects from the original scope code to see where they are used for. Found that the original code uses start and end coordinates to define a rectangle were as my code uses positions and dimensions. Not a big deal and might change my setup.
+
