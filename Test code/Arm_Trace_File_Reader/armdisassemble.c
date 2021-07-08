@@ -606,30 +606,31 @@ void ArmMRS(ARM_INSTRUCTION arm_instruction, char *instrstr)
 void ArmDPRShift(ARM_INSTRUCTION arm_instruction, char *instrstr)
 {
   char op2[32];
+  int  length;
  
   //Fill in the register which is used as operand
-  sprintf(op2, "%s", regnames[arm_instruction.dpsi.rm]);
+  length = sprintf(op2, "%s", regnames[arm_instruction.dpsi.rm]);
   
   //Check if rotate right with extend instruction
   if((arm_instruction.instr & 0x00000FF0) == 0x00000060)
   {
-    sprintf(&op2[2], ", rrx");
+    sprintf(&op2[length], ", rrx");
   }
   //Otherwise check if shifting selected
   else if(arm_instruction.instr & 0x00000FF0)
   {
-    sprintf(&op2[2], ", %s ", shifttext[arm_instruction.dpsi.sm]);
+    length += sprintf(&op2[length], ", %s ", shifttext[arm_instruction.dpsi.sm]);
     
     //Check if immediate shift or register shift. For immediate shift bit4 is cleared
     if(arm_instruction.type0.it1 == 0)
     {
       //Data processing immediate shift
-      sprintf(&op2[8], "#%d", arm_instruction.dpsi.sa);
+      sprintf(&op2[length], "#%d", arm_instruction.dpsi.sa);
     }
     else
     {
       //Data processing register shift
-      sprintf(&op2[8], "%s", regnames[arm_instruction.dpsr.rs]);
+      sprintf(&op2[length], "%s", regnames[arm_instruction.dpsr.rs]);
     }
   }
   
