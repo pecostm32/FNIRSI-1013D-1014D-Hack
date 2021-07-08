@@ -60,6 +60,7 @@ build: .build-post
 # Add your post 'build' code here...
 	arm-none-eabi-objcopy -O binary dist/Debug/GNU_ARM-Linux/fnirsi_1013d_scope.elf dist/Debug/GNU_ARM-Linux/fnirsi_1013d_scope.bin
 	./mksunxi dist/Debug/GNU_ARM-Linux/fnirsi_1013d_scope.bin
+	./flashfilepacker -o ../../FNIRSI-1013D/Scope_emulator/scope_test_code.bin -i dist/Debug/GNU_ARM-Linux/fnirsi_1013d_scope.bin -l 0x27000
 
 # clean
 clean: .clean-post

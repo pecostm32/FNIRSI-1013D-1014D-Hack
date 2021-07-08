@@ -19,11 +19,10 @@
 //Within the font info needs to be set about the type and use different handling if needed
 
 //Needed functions
-//set_fg_color
-//set_bg_color
-//set_font
+//display_draw_rect
+//display_draw_rounded_rect
+//display_fill_rounded_rect
 
-//fill_rect
 
 
 //Need a display struct to hold information

@@ -15,6 +15,7 @@ SECTIONS
   .data :
   {
     *(.data);
+    *(.rodata);
   } >ram
 
   BSS_START = .;
