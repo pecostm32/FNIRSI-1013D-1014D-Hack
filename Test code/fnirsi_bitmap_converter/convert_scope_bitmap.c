@@ -28,12 +28,25 @@ int main(int argc, char** argv)
   unsigned int address;
 
   FILE *fi = fopen("W25Q32_scope.bin", "rb");
+
   
-//Still to do
-//8004301c
-//80041654
+//612 pixels
+#define AddressOfBitmap   0x8003a8ec
+//#define AddressOfBitmap   0x8003adb4     //STOP
+#define NofPixels         34
+#define NofLines          18
+  
+//#define AddressOfBitmap   0x8003b27c   //MOVE FAST
+//#define AddressOfBitmap   0x8003bdbc   //MOVE SLOW
+//#define NofPixels         40
+//#define NofLines          36
   
   
+//#define AddressOfBitmap   0x8003C8FC    //RUN/STOP
+//#define AddressOfBitmap   0x8003E2C4    //AUTO SET
+//#define AddressOfBitmap   0x8003FC8C    //50% TRIG
+//#define AddressOfBitmap   0x80041654    //T CURSOR 
+//#define AddressOfBitmap   0x8004301c    //V CURSOR 
 //#define AddressOfBitmap   0x80047d74    //SAVE PIC
 //#define AddressOfBitmap   0x8004973c    //SAVE WAVE
 //#define AddressOfBitmap   0x800449e4    //CTRL
@@ -78,9 +91,35 @@ int main(int argc, char** argv)
 //#define NofPixels         244
 //#define NofLines          294
   
-#define AddressOfBitmap   0x800EC998
-#define NofPixels         244
-#define NofLines          294
+//#define AddressOfBitmap   0x800EC998      //arrow return symbol
+//#define NofPixels         160
+//#define NofLines          40
+
+//#define AddressOfBitmap   0x800efb98      //page up button text
+//#define AddressOfBitmap   0x800f2f28      //page down button text
+//#define AddressOfBitmap   0x800F62B8      //delete wave button text
+//#define AddressOfBitmap   0x800F9648      //show grid button text
+//#define NofPixels         120
+//#define NofLines          55
+  
+//#define AddressOfBitmap   0x800FC9D8       //Confirm delete menu
+//#define NofPixels         360
+//#define NofLines          97
+  
+//#define AddressOfBitmap   0x8010daa8       //Return delete left right select menu
+//#define NofPixels         800
+//#define NofLines          120
+
+//#define AddressOfBitmap   0x8013c8a8       //Selected sign
+//#define NofPixels         60
+//#define NofLines          30
+
+//#define AddressOfBitmap   0x8013d6b8       //File select menu bar
+//#define NofPixels         140
+//#define NofLines          480
+  
+//
+
   
   if(fi)
   {
