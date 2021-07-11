@@ -65,3 +65,6 @@ Found how the scope display's the menus. It uses a lot of bitmaps that are copie
 The recreation of the scope project is setup to create a binary in the emulator project directory and start the emulator for testing.
 Checked a couple of the fill rects from the original scope code to see where they are used for. Found that the original code uses start and end coordinates to define a rectangle were as my code uses positions and dimensions. Not a big deal and might change my setup.
 
+----------------------------------------------------------------------------------------------------------
+11-JULY-2021
+Finished the largest part of the display library. The recreation of the scope code can begin. Started with the structures to hold the scope settings. Next up is making the functions to display things on the screen. Also need to write the touchscreen code to be able to control the scope.
