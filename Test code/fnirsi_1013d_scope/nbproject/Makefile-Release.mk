@@ -43,6 +43,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/font_2.o \
 	${OBJECTDIR}/fpga_control.o \
 	${OBJECTDIR}/port_a_control.o \
+	${OBJECTDIR}/sin_cos_math.o \
 	${OBJECTDIR}/spi_control.o \
 	${OBJECTDIR}/start.o
 
@@ -110,6 +111,11 @@ ${OBJECTDIR}/port_a_control.o: port_a_control.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/port_a_control.o port_a_control.c
+
+${OBJECTDIR}/sin_cos_math.o: sin_cos_math.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/sin_cos_math.o sin_cos_math.c
 
 ${OBJECTDIR}/spi_control.o: spi_control.c
 	${MKDIR} -p ${OBJECTDIR}

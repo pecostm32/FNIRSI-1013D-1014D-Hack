@@ -43,6 +43,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/font_2.o \
 	${OBJECTDIR}/fpga_control.o \
 	${OBJECTDIR}/port_a_control.o \
+	${OBJECTDIR}/sin_cos_math.o \
 	${OBJECTDIR}/spi_control.o \
 	${OBJECTDIR}/start.o
 
@@ -69,7 +70,7 @@ LDLIBSOPTIONS=
 
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/fnirsi_1013d_scope.elf: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	arm-none-eabi-gcc -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/fnirsi_1013d_scope.elf ${OBJECTFILES} ${LDLIBSOPTIONS} -T./fnirsi_1013d.ld -nostdlib
+	arm-none-eabi-gcc -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/fnirsi_1013d_scope.elf ${OBJECTFILES} ${LDLIBSOPTIONS} -T./fnirsi_1013d.ld -nostdlib -lgcc
 
 ${OBJECTDIR}/ccu_control.o: ccu_control.c
 	${MKDIR} -p ${OBJECTDIR}
@@ -110,6 +111,11 @@ ${OBJECTDIR}/port_a_control.o: port_a_control.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/port_a_control.o port_a_control.c
+
+${OBJECTDIR}/sin_cos_math.o: sin_cos_math.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/sin_cos_math.o sin_cos_math.c
 
 ${OBJECTDIR}/spi_control.o: spi_control.c
 	${MKDIR} -p ${OBJECTDIR}

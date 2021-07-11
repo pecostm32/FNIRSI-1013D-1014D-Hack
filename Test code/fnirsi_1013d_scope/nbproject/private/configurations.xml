@@ -25,10 +25,6 @@
       </nativedebugger>
       <runprofile version="9">
         <runcommandpicklist>
-          <runcommandpicklistitem>/usr/bin/arm-none-eabi-objcopy -S -O binary ${OUTPUT_PATH} 
-
-</runcommandpicklistitem>
-          <runcommandpicklistitem>/usr/bin/arm-none-eabi-objcopy -S -O binary ${OUTPUT_PATH} </runcommandpicklistitem>
           <runcommandpicklistitem>/usr/bin/arm-none-eabi-objcopy -S -O binary ${OUTPUT_PATH} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/helloworld.bin</runcommandpicklistitem>
           <runcommandpicklistitem>/usr/bin/arm-none-eabi-objcopy -S -O binary ${OUTPUT_PATH} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/helloworld.bin
 
@@ -40,9 +36,11 @@
           <runcommandpicklistitem>openocd -f STM32F103C8T6.cfg -c init -c targets -c halt -c "flash write_image erase ${OUTPUT_PATH}" -c "verify_image ${OUTPUT_PATH}" -c "reset run" -c shutdown</runcommandpicklistitem>
           <runcommandpicklistitem>openocd -f STM32F103C8T6.cfg -c init -c targets -c halt -c "flash write_image erase ${OUTPUT_PATH}" -c "verify_image ${OUTPUT_PATH}" -c "reset run"</runcommandpicklistitem>
           <runcommandpicklistitem></runcommandpicklistitem>
+          <runcommandpicklistitem>dist/Debug/GNU-Linux/scope_emulator</runcommandpicklistitem>
+          <runcommandpicklistitem>../../FNIRSI-1013D/Scope_emulator/dist/Debug/GNU-Linux/scope_emulator</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand></runcommand>
-        <rundir></rundir>
+        <runcommand>../../FNIRSI-1013D/Scope_emulator/dist/Debug/GNU-Linux/scope_emulator</runcommand>
+        <rundir>../../FNIRSI-1013D/Scope_emulator/.</rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>
         <remove-instrumentation>0</remove-instrumentation>
