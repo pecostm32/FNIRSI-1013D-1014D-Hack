@@ -1,0 +1,169 @@
+
+
+
+      //Get the x points for drawing range
+      sx = getxpos(sa, xpos, radius);
+      ex = getxpos(ea, xpos, radius);
+
+      //Check if anything to print    
+      if(sx != ex)
+      {
+        //Calculate the angle step
+        step = ((int16)(ea - sa)) / (ex - sx);
+        
+        //This plots a sine wave and not a circle
+        //Can't do stepping like this. Per x the correct angle needs to be calculated
+        //So might be better to just step through the angle per degree and calculate x and y
+        
+        //Plot all the dots
+        for(x=sx;x<=ex;x++)
+        {
+          y = getypos(sa, ypos, radius);
+          
+          //Point to the pixel in the screen buffer
+          ptr = display->screenbuffer + ((y * 800) + x);
+          
+          //Fill the dot
+          *ptr = display->fg_color;
+          
+          //Calculate the next angle
+          sa += step;
+        }
+      }
+      else
+      {
+        //Do single dot on start angle
+      }
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+  uint8   startquadrant = (startangle / 900) % 4;
+  uint8   endquadrant   = (endangle / 900) % 4;
+  uint8   quadrants[4]  = { 0, 0, 0, 0 };
+  uint8   quadrant = startquadrant;
+  uint16 *ptr;
+  uint16  x, y;
+  uint16  sa, sx;
+  uint16  ea, ex;
+  uint16  a;
+
+
+
+  //Flag the first quadrants that need to be drawn
+  while(quadrant != endquadrant)
+  {
+    quadrants[quadrant] = 1;
+    
+    if(direction == DISPLAY_DRAW_CLOCK_WISE)
+      quadrant = (quadrant + 1) % 4;
+    else
+      quadrant = (quadrant - 1) % 4;
+  }
+  
+  //Flag the end quadrant as well
+  quadrants[endquadrant] = 1;
+  
+  //Draw the pixels for each quadrant
+  for(quadrant=0;quadrant<4;quadrant++)
+  {
+    //Check if anything needs to be drawn in this quadrant
+    if(quadrants[quadrant])
+    {
+      //Determine the angles to use based on the quadrant
+      if(quadrant == startquadrant)
+      {
+        if(quadrant <= 1)
+        {
+          sa = angles[quadrant][1];
+          ea = startangle;
+        }
+        else
+        {
+          sa = startangle;
+          ea = angles[quadrant][1];
+        }
+      }
+      else if(quadrant == endquadrant)
+      {
+        if(quadrant <= 1)
+        {
+          sa = endangle;
+          ea = angles[quadrant][0];
+        }
+        else
+        {
+          sa = angles[quadrant][0];
+          ea = endangle;
+        }
+      }
+      else
+      {
+        if(quadrant <= 1)
+        {
+          sa = angles[quadrant][1];      
+          ea = angles[quadrant][0];
+        }
+        else
+        {
+          sa = angles[quadrant][0];      
+          ea = angles[quadrant][1];
+        }
+      }
+
+
+      
+    }
+  }
+
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+  uint16 *ptr;
+  uint16  x, y;
+  uint16  a;
+
+  startangle %= 3600;
+  endangle   %= 3600;
+  
+  if(startangle > endangle)
+  {
+    if(direction == DISPLAY_DRAW_CLOCK_WISE)
+      direction = DISPLAY_DRAW_COUNTER_CLOCK_WISE;
+    else
+      direction = DISPLAY_DRAW_CLOCK_WISE;
+  }
+  
+  if(direction == DISPLAY_DRAW_CLOCK_WISE)
+  {
+    for(a=startangle;a<endangle;)
+    {
+      x = getxpos(a, xpos, radius);
+      y = getypos(a, ypos, radius);
+
+      //Point to the pixel in the screen buffer
+      ptr = display->screenbuffer + ((y * 800) + x);
+
+      //Fill the dot
+      *ptr = display->fg_color;
+      
+      a = (a + 10) % 3600;
+    }
+  }
+  else
+  {
+    for(a=endangle;a<startangle;)
+    {
+      x = getxpos(a, xpos, radius);
+      y = getypos(a, ypos, radius);
+
+      //Point to the pixel in the screen buffer
+      ptr = display->screenbuffer + ((y * 800) + x);
+
+      //Fill the dot
+      *ptr = display->fg_color;
+      
+      a = (a - 10) % 3600;
+    }
+  }
+  
+//----------------------------------------------------------------------------------------------------------------------------------
