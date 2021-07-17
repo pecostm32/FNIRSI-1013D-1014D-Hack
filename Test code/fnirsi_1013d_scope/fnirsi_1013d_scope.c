@@ -1,29 +1,25 @@
 //----------------------------------------------------------------------------------------------------------------------------------
 
+#include "types.h"
+
 #include "ccu_control.h"
 #include "spi_control.h"
 #include "display_control.h"
 #include "fpga_control.h"
 
-#include "types.h"
 #include "fnirsi_1013d_scope.h"
 #include "font_structs.h"
 #include "display_lib.h"
+#include "scope_functions.h"
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-extern FONTDATA font_0;
-extern FONTDATA font_2;
+extern uint16 maindisplaybuffer[];
 
-SCOPESETTINGS scopesettings;
-DISPLAYDATA   displaydata;
+extern SCOPESETTINGS scopesettings;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-//Need a scope data structure holding the settings
-
-
-//Need to trace more of the startup code
 
 int main(void)
 {
@@ -40,7 +36,27 @@ int main(void)
   set_backlight_brightness(0x0000);
   
   //Initialize display (PORT D + DEBE)
-  sys_init_display(800, 480, 0x803849A0);
+  sys_init_display(SCREEN_WIDTH, SCREEN_HEIGHT, maindisplaybuffer);
+  
+  //Setup the display library for the scope hardware
+  setup_display_lib();
+  
+//  scopesettings.rightmenustate = 1;
+//  scopesettings.waveviewmode = 1;
+
+//  scopesettings.runstate = 1;
+
+  scopesettings.movespeed = 1;
+
+  scopesettings.channel1.enable = 1;
+  scopesettings.channel1.coupling = 0;
+  scopesettings.channel1.magnification = 1;
+  scopesettings.channel1.voltperdiv = 5;
+  
+  scopesettings.channel2.enable = 1;
+  scopesettings.channel2.coupling = 1;
+  scopesettings.channel2.magnification = 0;
+  scopesettings.channel2.voltperdiv = 2;
   
   //Analyze the original code to find the screen build up and other display functions
   
@@ -51,19 +67,16 @@ int main(void)
   //CH2 menu header  off color 0x00444444
   
   
-  display_set_bg_color(0x00000000);
-  display_set_screen_buffer((uint16 *)0x803849A0);
-  display_set_dimensions(800, 480);
   
 //  display_set_font(&font_0);
 //  display_set_fg_color(0x00942367);
 //  display_text(150, 70, "This is font_0 which is fixed width");
 
-  display_set_fg_color(0x00333333);
-  display_fill_rounded_rect(30, 30, 80, 80, 2);
+//  display_set_fg_color(0x00333333);
+//  display_fill_rounded_rect(30, 30, 80, 80, 2);
   
-  display_set_fg_color(0x00444444);
-  display_draw_rounded_rect(30, 30, 80, 80, 2);
+//  display_set_fg_color(0x00444444);
+//  display_draw_rounded_rect(30, 30, 80, 80, 2);
   
  
 
@@ -80,6 +93,9 @@ int main(void)
   
 //  display_set_fg_color(0x00D3374A);
 //  display_fill_rect(320, 270, 160, 60);
+  
+  //Setup the main parts of the screen
+  setup_main_screen();
   
   //Set default brightness
   set_backlight_brightness(0xEA60);

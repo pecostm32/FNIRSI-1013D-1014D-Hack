@@ -41,8 +41,12 @@ OBJECTFILES= \
 	${OBJECTDIR}/fnirsi_1013d_scope.o \
 	${OBJECTDIR}/font_0.o \
 	${OBJECTDIR}/font_2.o \
+	${OBJECTDIR}/font_3.o \
+	${OBJECTDIR}/font_4.o \
+	${OBJECTDIR}/font_5.o \
 	${OBJECTDIR}/fpga_control.o \
 	${OBJECTDIR}/port_a_control.o \
+	${OBJECTDIR}/scope_functions.o \
 	${OBJECTDIR}/sin_cos_math.o \
 	${OBJECTDIR}/spi_control.o \
 	${OBJECTDIR}/start.o
@@ -102,6 +106,21 @@ ${OBJECTDIR}/font_2.o: font_2.c
 	${RM} "$@.d"
 	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/font_2.o font_2.c
 
+${OBJECTDIR}/font_3.o: font_3.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/font_3.o font_3.c
+
+${OBJECTDIR}/font_4.o: font_4.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/font_4.o font_4.c
+
+${OBJECTDIR}/font_5.o: font_5.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/font_5.o font_5.c
+
 ${OBJECTDIR}/fpga_control.o: fpga_control.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
@@ -111,6 +130,11 @@ ${OBJECTDIR}/port_a_control.o: port_a_control.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/port_a_control.o port_a_control.c
+
+${OBJECTDIR}/scope_functions.o: scope_functions.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/scope_functions.o scope_functions.c
 
 ${OBJECTDIR}/sin_cos_math.o: sin_cos_math.c
 	${MKDIR} -p ${OBJECTDIR}

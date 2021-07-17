@@ -12,6 +12,7 @@
       <itemPath>fpga_control.h</itemPath>
       <itemPath>gpio_control.h</itemPath>
       <itemPath>port_a_control.h</itemPath>
+      <itemPath>scope_functions.h</itemPath>
       <itemPath>sin_cos_math.h</itemPath>
       <itemPath>spi_control.h</itemPath>
       <itemPath>types.h</itemPath>
@@ -29,8 +30,12 @@
       <itemPath>fnirsi_1013d_scope.c</itemPath>
       <itemPath>font_0.c</itemPath>
       <itemPath>font_2.c</itemPath>
+      <itemPath>font_3.c</itemPath>
+      <itemPath>font_4.c</itemPath>
+      <itemPath>font_5.c</itemPath>
       <itemPath>fpga_control.c</itemPath>
       <itemPath>port_a_control.c</itemPath>
+      <itemPath>scope_functions.c</itemPath>
       <itemPath>sin_cos_math.c</itemPath>
       <itemPath>spi_control.c</itemPath>
       <itemPath>start.s</itemPath>
@@ -94,6 +99,12 @@
       </item>
       <item path="font_2.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="font_3.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="font_4.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="font_5.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="font_structs.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="fpga_control.c" ex="false" tool="0" flavor2="0">
@@ -105,6 +116,10 @@
       <item path="port_a_control.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="port_a_control.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="scope_functions.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="scope_functions.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="sin_cos_math.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -165,6 +180,12 @@
       </item>
       <item path="font_2.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="font_3.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="font_4.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="font_5.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="font_structs.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="fpga_control.c" ex="false" tool="0" flavor2="0">
@@ -176,6 +197,10 @@
       <item path="port_a_control.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="port_a_control.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="scope_functions.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="scope_functions.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="sin_cos_math.c" ex="false" tool="0" flavor2="0">
       </item>

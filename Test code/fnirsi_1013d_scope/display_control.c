@@ -1,14 +1,19 @@
+//----------------------------------------------------------------------------------------------------------------------------------
+
+#include "types.h"
 #include "display_control.h"
 #include "ccu_control.h"
 #include "gpio_control.h"
 
-void sys_init_display(unsigned short xsize, unsigned short ysize, unsigned int address)
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void sys_init_display(uint16 xsize, uint16 ysize, uint16 *address)
 {
-  volatile unsigned int *ptr;
-  int time;
-  unsigned short *mptr = (unsigned short *)address;
-  unsigned short x;
-  unsigned short y;
+  volatile uint32 *ptr;
+  int32   time;
+  uint16 *mptr = address;
+  uint16  x;
+  uint16  y;
   
   //Setup the used port D pins for LCD
   *PORTD_CFG0_REG = 0x22222227;   //PD00 is not used for the display
@@ -59,10 +64,10 @@ void sys_init_display(unsigned short xsize, unsigned short ysize, unsigned int a
   *DEBE_LAY0_LINEWIDTH = xsize * 16;
   
   //Set layer0 frame buffer address in bits. (8 bits per byte) With a 32 bit address the top 3 bits get lost. The manual is not clear about this.
-  *DEBE_LAY0_FB_ADDR1 = address << 3;
+  *DEBE_LAY0_FB_ADDR1 = (uint32)address << 3;
   
   //But in the scope there is a write to an un-described register
-  *DEBE_LAY0_FB_ADDR2 = address >> 29;
+  *DEBE_LAY0_FB_ADDR2 = (uint32)address >> 29;
   
   //Set the layer 0 attributes to 565 RGB
   *DEBE_LAY0_ATT_CTRL1 = DEBE_LAY0_ATT_CTRL1_RGB565;
@@ -133,13 +138,14 @@ void sys_init_display(unsigned short xsize, unsigned short ysize, unsigned int a
   *TCON_CTRL |= TCON_CTRL_MODULE_EN;
 }
 
+//----------------------------------------------------------------------------------------------------------------------------------
 
-void display_bitmap(unsigned short xpos, unsigned short ypos, unsigned short xsize, unsigned short ysize, unsigned short *source, unsigned short *dest)
+void display_bitmap(uint16 xpos, uint16 ypos, uint16 xsize, uint16 ysize, uint16 *source, uint16 *dest)
 {
-  unsigned short y;
-  unsigned short x;
+  uint16 y;
+  uint16 x;
   
-  unsigned short *ptr;
+  uint16 *ptr;
   
   for(y=0;y<ysize;y++)
   {
@@ -150,5 +156,6 @@ void display_bitmap(unsigned short xpos, unsigned short ypos, unsigned short xsi
       *ptr++ = *source++;
     }
   }
-  
 }
+
+//----------------------------------------------------------------------------------------------------------------------------------

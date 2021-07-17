@@ -16,14 +16,16 @@ typedef struct tagDisplayData   DISPLAYDATA,  *PDISPLAYDATA;
 
 struct tagDisplayData
 {
+  PFONTDATA  font;
   uint16     fg_color;
   uint16     bg_color;
   uint16    *screenbuffer;
-  PFONTDATA  font;
+  uint16    *linepointer;
   uint16     xpos;
   uint16     ypos;
   uint16     width;
   uint16     height;
+  uint16     pixelsperline;
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------

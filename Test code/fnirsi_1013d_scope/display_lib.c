@@ -21,7 +21,7 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-extern DISPLAYDATA displaydata;
+DISPLAYDATA displaydata;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -38,6 +38,7 @@ void display_set_dimensions(uint16 width, uint16 height)
   //Adjust for zero being part of the display
   displaydata.width  = width - 1;
   displaydata.height = height - 1;
+  displaydata.pixelsperline = width;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -130,7 +131,7 @@ void display_draw_line(uint16 xstart, uint16 ystart, uint16 xend, uint16 yend )
         if((x >= 0) && (x < displaydata.width) && (y >= 0) && (y < displaydata.height))
         {
           //Point to the pixel in the screen buffer
-          ptr = displaydata.screenbuffer + ((y * 800) + x);
+          ptr = displaydata.screenbuffer + ((y * displaydata.pixelsperline) + x);
 
           //Fill the dot
           *ptr = displaydata.fg_color;
@@ -146,7 +147,7 @@ void display_draw_line(uint16 xstart, uint16 ystart, uint16 xend, uint16 yend )
         if((x >= 0) && (x < displaydata.width) && (y >= 0) && (y < displaydata.height))
         {
           //Point to the pixel in the screen buffer
-          ptr = displaydata.screenbuffer + ((y * 800) + x);
+          ptr = displaydata.screenbuffer + ((y * displaydata.pixelsperline) + x);
 
           //Fill the dot
           *ptr = displaydata.fg_color;
@@ -195,7 +196,7 @@ void display_draw_horz_line(uint16 ypos, uint16 xstart, uint16 xend)
   }
 
   //Point to where the line needs to be drawn
-  ptr = displaydata.screenbuffer + ((ypos * 800) + xs);
+  ptr = displaydata.screenbuffer + ((ypos * displaydata.pixelsperline) + xs);
   
   //Draw the dots
   for(x=xs;x<=xe;x++)
@@ -241,7 +242,7 @@ void display_draw_vert_line(uint16 xpos, uint16 ystart, uint16 yend)
   }
 
   //Point to where the line needs to be drawn
-  ptr = displaydata.screenbuffer + ((ys * 800) + xpos);
+  ptr = displaydata.screenbuffer + ((ys * displaydata.pixelsperline) + xpos);
   
   //Draw the dots
   for(y=ys;y<=ye;y++)
@@ -250,7 +251,7 @@ void display_draw_vert_line(uint16 xpos, uint16 ystart, uint16 yend)
     *ptr = displaydata.fg_color;
     
     //Point to the next dot
-    ptr += 800;
+    ptr += displaydata.pixelsperline;
   }
 }
 
@@ -385,7 +386,7 @@ void display_draw_arc(uint16 xpos, uint16 ypos, uint16 radius, uint16 startangle
         if((x >= 0) && (x <= displaydata.width) && (y >= 0) && (y <= displaydata.height))
         {
           //Point to the pixel in the screen buffer
-          ptr = displaydata.screenbuffer + ((y * 800) + x);
+          ptr = displaydata.screenbuffer + ((y * displaydata.pixelsperline) + x);
 
           //Fill the dot
           *ptr = displaydata.fg_color;
@@ -426,7 +427,7 @@ void display_fill_rect(uint16 xpos, uint16 ypos, uint16 width, uint16 height)
   for(y=ypos;y<height;y++)
   {
     //Point to the first pixel of this line in the screen buffer
-    ptr = displaydata.screenbuffer + ((y * 800) + xpos);
+    ptr = displaydata.screenbuffer + ((y * displaydata.pixelsperline) + xpos);
 
     //Draw the pixels on the line
     for(x=xpos;x<width;x++)
@@ -501,8 +502,8 @@ void display_fill_rounded_rect(uint16 xpos, uint16 ypos, uint16 width, uint16 he
       }
       
       //Point to the start of the top and the bottom section line
-      ptr1 = displaydata.screenbuffer + ((y * 800) + xs);
-      ptr2 = displaydata.screenbuffer + ((ys * 800) + xs);
+      ptr1 = displaydata.screenbuffer + ((y * displaydata.pixelsperline) + xs);
+      ptr2 = displaydata.screenbuffer + ((ys * displaydata.pixelsperline) + xs);
       
       //Draw the pixels on the lines
       for(x=xs;x<xe;x++)
@@ -544,7 +545,7 @@ void display_fill_rounded_rect(uint16 xpos, uint16 ypos, uint16 width, uint16 he
   for(y=ys;y<=ye;y++)
   {
     //Point to the first pixel of this line in the screen buffer
-    ptr1 = displaydata.screenbuffer + ((y * 800) + xpos);
+    ptr1 = displaydata.screenbuffer + ((y * displaydata.pixelsperline) + xpos);
 
     //Draw the pixels on the line
     for(x=xpos;x<width;x++)
@@ -624,7 +625,7 @@ void draw_vw_character(uint16 character)
       pixeldata = metrics->data[idx];
 
       //Point to the first pixel on this line in the screen buffer
-      ptr = displaydata.screenbuffer + (((displaydata.ypos + y) * 800) + displaydata.xpos);
+      ptr = displaydata.screenbuffer + (((displaydata.ypos + y) * displaydata.pixelsperline) + displaydata.xpos);
 
       for(pixel=0;pixel<metrics->pixels;)
       {
@@ -771,7 +772,7 @@ void render_fw_character(uint16 character)
     pixeldata = data[idx];
 
     //Point to the first pixel on this line in the screen buffer
-    ptr = displaydata.screenbuffer + (((displaydata.ypos + y) * 800) + displaydata.xpos);
+    ptr = displaydata.screenbuffer + (((displaydata.ypos + y) * displaydata.pixelsperline) + displaydata.xpos);
 
     for(pixel=0;pixel<info->pixels;)
     {

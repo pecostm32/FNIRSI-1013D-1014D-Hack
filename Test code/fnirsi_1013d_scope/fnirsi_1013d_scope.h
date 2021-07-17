@@ -26,6 +26,15 @@ struct tagScopeSettings
 {
   CHANNELSETTINGS channel1;
   CHANNELSETTINGS channel2;
+  
+  uint8 timeperdiv;
+  
+  uint8 movespeed;
+  
+  uint8 rightmenustate;
+  uint8 waveviewmode;
+  
+  uint8 runstate;
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
