@@ -80,15 +80,15 @@ void setup_main_screen(void)
   
   //Display the trigger menu select button and the settings
   display_trigger_settings(0);
+  
+  //Show the battery charge level and charging indicator
+  display_battery_status();
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void display_right_control_menu(void)
 {
-  //Prepare the right menu in a working buffer
-//  display_set_screen_buffer(displaybuffer1);
-
   //Setup for clearing right menu bar
   display_set_fg_color(0x00000000);
   
@@ -141,8 +141,6 @@ void display_right_control_menu(void)
       display_show_grid_button(0);
     }
   }
-  
-  //Copy to screen
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -856,7 +854,7 @@ void display_ch2_sensitivity_control(int type,int mode)
   //Display the channel identifier in black
   display_set_fg_color(0x00000000);
   display_set_font(&font_2);
-  display_text(756, 344, "CH2");
+  display_text(756, 324, "CH2");
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -1327,7 +1325,7 @@ void display_move_speed(int mode)
 
 void display_trigger_settings(int mode)
 {
-  int8 **vdtext;
+  int8 *modetext = 0;
   
   //Clear the area first
   display_set_fg_color(0x00000000);
@@ -1346,7 +1344,7 @@ void display_trigger_settings(int mode)
   }
   
   //Fill the button
-  display_fill_rect(570, 5, 30, 35);
+  display_fill_rect(570, 5, 31, 35);
 
   //Select the font for the text
   display_set_font(&font_4);
@@ -1363,13 +1361,12 @@ void display_trigger_settings(int mode)
     display_set_fg_color(0x00FFFFFF);
     
     //Fill the settings background
-    display_fill_rect(601, 5, 99, 35);
+    display_fill_rect(601, 5, 88, 35);
   }
   
   //Display the channel identifier text
   display_text(582, 15, "T");
 
-/*  
   //Check if inactive or active
   if(mode == 0)
   {
@@ -1382,52 +1379,172 @@ void display_trigger_settings(int mode)
     display_set_fg_color(0x00000000);
   }
   
-  //Check on which coupling is set
-  if(scopesettings.channel2.coupling == 0)
+  //Check on which trigger mode is set
+  switch(scopesettings.triggermode)
   {
-    //DC coupling
-    display_text(326, 8, "DC");
+    case 0:
+      modetext = "Auto";
+      break;
+
+    case 1:
+      modetext = "Single";
+      break;
+
+    case 2:
+      modetext = "Normal";
+      break;
+  }
+
+  //Select the font for the texts
+  display_set_font(&font_2);
+  
+  //Check if valid setting
+  if(modetext)
+  {
+    //Display the selected text if so
+    display_text(606, 7, modetext);
+  }
+
+  //Draw the trigger edge symbol
+  display_draw_horz_line(27, 642, 645);
+  display_draw_vert_line(642, 27, 38);
+  display_draw_horz_line(38, 639, 642);
+  
+  //Draw the arrow based on the selected edge
+  if(scopesettings.triggeredge == 0)
+  {
+    //rising edge
+    display_draw_horz_line(32, 641, 643);
+    display_draw_horz_line(33, 640, 644);
   }
   else
   {
-    //AC coupling
-    display_text(326, 8, "AC");
+    //falling edge
+    display_draw_horz_line(32, 640, 644);
+    display_draw_horz_line(33, 641, 643);
   }
   
-  //Print the probe magnification factor
-  switch(scopesettings.channel2.magnification)
+  //Check on which channel is used for triggering
+  switch(scopesettings.triggerchannel)
   {
+    //Channel 1
     case 0:
-      //Times 1 magnification
-      display_text(351, 8, "1X");
+      //Check if inactive or active
+      if(mode == 0)
+      {
+        //Inactive, dark yellow box
+        display_set_fg_color(0x00CCCC00);
+      }
+      else
+      {
+        //Active, some blue box
+        display_set_fg_color(0x003333FF);
+      }
       
-      //Set the volts per div text range to be used for this magnification
-      vdtext = (int8 **)volt_div_texts[0];
+      //Fill the channel background
+      display_fill_rect(605, 25, 28, 15);
+      
+      //Check if inactive or active
+      if(mode == 0)
+      {
+        //Inactive, black text
+        display_set_fg_color(0x00000000);
+      }
+      else
+      {
+        //Active, white text
+        display_set_fg_color(0x00FFFFFF);
+      }
+      
+      //Display the text
+      display_text(608, 26, "CH1");
       break;
-      
+    
+    //Channel 2
     case 1:
-      //Times 10 magnification
-      display_text(349, 8, "10X");
+      //Check if inactive or active
+      if(mode == 0)
+      {
+        //Inactive, dark cyan box
+        display_set_fg_color(0x0000CCCC);
+      }
+      else
+      {
+        //Active, some red box
+        display_set_fg_color(0x00FF3333);
+      }
       
-      //Set the volts per div text range to be used for this magnification
-      vdtext = (int8 **)volt_div_texts[1];
-      break;
+      //Fill the channel background
+      display_fill_rect(605, 25, 28, 15);
       
-    default:
-      //Times 10 magnification
-      display_text(347, 8, "100X");
+      //Check if inactive or active
+      if(mode == 0)
+      {
+        //Inactive, black text
+        display_set_fg_color(0x00000000);
+      }
+      else
+      {
+        //Active, white text
+        display_set_fg_color(0x00FFFFFF);
+      }
       
-      //Set the volts per div text range to be used for this magnification
-      vdtext = (int8 **)volt_div_texts[2];
+      //Display the text
+      display_text(608, 26, "CH2");
       break;
   }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_battery_status(void)
+{
+  //Draw an empty battery symbol in white
+  display_set_fg_color(0x00FFFFFF);
+  display_fill_rect(701, 9, 3, 5);
+  display_fill_rect(703, 5, 23, 13);
   
-  //Display the sensitivity when in range
-  if(scopesettings.channel2.voltperdiv < 7)
+  //Check if there is any charge
+  if(scopesettings.batterychargelevel)
   {
-    display_text(326, 24, vdtext[scopesettings.channel2.voltperdiv]);
+    //Keep charge level on max if above
+    if(scopesettings.batterychargelevel > 20)
+    {
+      //Max for displaying the level
+      scopesettings.batterychargelevel = 20;
+    }
+
+    //Check if charge level is low
+    if(scopesettings.batterychargelevel < 4)
+    {
+      //Draw the level indicator in red
+      display_set_fg_color(0x00FF0000);
+    }
+    else
+    {
+      //Draw the level indicator in dark green
+      display_set_fg_color(0x0000BB00);
+    }
+    
+    //Draw the indicator based on the level
+    display_fill_rect(724 - scopesettings.batterychargelevel, 6, scopesettings.batterychargelevel + 1, 11);
+  }  
+  
+  //Draw the battery charging indicator when plugged in
+  if(scopesettings.batterycharging)
+  {
+    //Some light blue color
+    display_set_fg_color(0x002222FF);
+
+    //Draw an arrow when charging
+    display_draw_horz_line(10, 708, 718);
+    display_draw_horz_line(11, 708, 718);
+    display_draw_horz_line(12, 708, 718);
+    display_draw_vert_line(719, 8, 14);
+    display_draw_vert_line(720, 9, 13);
+    display_draw_vert_line(721, 10, 12);
+    display_draw_vert_line(722, 11, 11);
   }
-*/ 
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

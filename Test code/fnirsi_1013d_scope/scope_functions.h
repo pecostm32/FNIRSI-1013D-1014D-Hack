@@ -50,6 +50,7 @@ void display_channel2_settings(int mode);
 void display_time_div_setting(void);
 void display_move_speed(int mode);
 void display_trigger_settings(int mode);
+void display_battery_status(void);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

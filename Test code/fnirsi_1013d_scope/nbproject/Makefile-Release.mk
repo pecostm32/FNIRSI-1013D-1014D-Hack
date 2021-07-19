@@ -45,11 +45,11 @@ OBJECTFILES= \
 	${OBJECTDIR}/font_4.o \
 	${OBJECTDIR}/font_5.o \
 	${OBJECTDIR}/fpga_control.o \
-	${OBJECTDIR}/port_a_control.o \
 	${OBJECTDIR}/scope_functions.o \
 	${OBJECTDIR}/sin_cos_math.o \
 	${OBJECTDIR}/spi_control.o \
-	${OBJECTDIR}/start.o
+	${OBJECTDIR}/start.o \
+	${OBJECTDIR}/touchpanel.o
 
 
 # C Compiler Flags
@@ -126,11 +126,6 @@ ${OBJECTDIR}/fpga_control.o: fpga_control.c
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/fpga_control.o fpga_control.c
 
-${OBJECTDIR}/port_a_control.o: port_a_control.c
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/port_a_control.o port_a_control.c
-
 ${OBJECTDIR}/scope_functions.o: scope_functions.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
@@ -149,6 +144,11 @@ ${OBJECTDIR}/spi_control.o: spi_control.c
 ${OBJECTDIR}/start.o: start.s
 	${MKDIR} -p ${OBJECTDIR}
 	$(AS) $(ASFLAGS) -o ${OBJECTDIR}/start.o start.s
+
+${OBJECTDIR}/touchpanel.o: touchpanel.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/touchpanel.o touchpanel.c
 
 # Subprojects
 .build-subprojects:

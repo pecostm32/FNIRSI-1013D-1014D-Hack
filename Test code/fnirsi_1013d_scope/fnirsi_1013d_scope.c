@@ -6,6 +6,7 @@
 #include "spi_control.h"
 #include "display_control.h"
 #include "fpga_control.h"
+#include "touchpanel.h"
 
 #include "fnirsi_1013d_scope.h"
 #include "font_structs.h"
@@ -18,8 +19,16 @@ extern uint16 maindisplaybuffer[];
 
 extern SCOPESETTINGS scopesettings;
 
-//----------------------------------------------------------------------------------------------------------------------------------
+extern uint8 havetouch;
+extern uint16 xtouch;
+extern uint16 ytouch;
 
+extern FONTDATA font_0;
+
+
+int8 printhexnibble(uint8 nibble);
+
+//----------------------------------------------------------------------------------------------------------------------------------
 
 int main(void)
 {
@@ -41,7 +50,10 @@ int main(void)
   //Setup the display library for the scope hardware
   setup_display_lib();
   
-//  scopesettings.rightmenustate = 1;
+  //Setup the touch panel interface
+  tp_i2c_setup();
+  
+  scopesettings.rightmenustate = 0;
 //  scopesettings.waveviewmode = 1;
 
 //  scopesettings.runstate = 1;
@@ -58,41 +70,15 @@ int main(void)
   scopesettings.channel2.magnification = 0;
   scopesettings.channel2.voltperdiv = 2;
   
+  scopesettings.triggermode = 1;
+  scopesettings.triggeredge = 1;
+  scopesettings.triggerchannel = 1;
+  
+  scopesettings.batterychargelevel = 20;
+  scopesettings.batterycharging = 1;
+  
   //Analyze the original code to find the screen build up and other display functions
   
-  //CH1 menu header  on color  0x00FFFF00
-  //CH1 menu header  off color 0x00444444
-  
-  //CH2 menu header  on color  0x0000FFFF
-  //CH2 menu header  off color 0x00444444
-  
-  
-  
-//  display_set_font(&font_0);
-//  display_set_fg_color(0x00942367);
-//  display_text(150, 70, "This is font_0 which is fixed width");
-
-//  display_set_fg_color(0x00333333);
-//  display_fill_rounded_rect(30, 30, 80, 80, 2);
-  
-//  display_set_fg_color(0x00444444);
-//  display_draw_rounded_rect(30, 30, 80, 80, 2);
-  
- 
-
-//  display_fill_rect(0, 0, 800, 46);
-//  display_fill_rect(0, 478, 800, 2);
-
-  
-//  display_fill_rect(0, 0, 1, 480);
-//  display_fill_rect(727, 0, 73, 480);
-
-//  display_set_font(&font_2);
-//  display_set_fg_color(0x00B4FFFE);
-//  display_text(20, 20, "This is a test with font_2");
-  
-//  display_set_fg_color(0x00D3374A);
-//  display_fill_rect(320, 270, 160, 60);
   
   //Setup the main parts of the screen
   setup_main_screen();
@@ -100,7 +86,59 @@ int main(void)
   //Set default brightness
   set_backlight_brightness(0xEA60);
   
-  while(1);
+  
+  int8 buffer[20];
+  
+  while(1)
+  {
+    //Check the touch panel status
+    tp_i2c_read_status();
+    
+    display_set_fg_color(0x00000000);
+
+    display_fill_rect(10, 50, 100, 60);
+
+    display_set_fg_color(0x00FFFFFF);
+
+    buffer[0] = '0';
+    buffer[1] = 'x';
+    buffer[2] = printhexnibble((xtouch >> 12) & 0x0F);
+    buffer[3] = printhexnibble((xtouch >>  8) & 0x0F);
+    buffer[4] = printhexnibble((xtouch >>  4) & 0x0F);
+    buffer[5] = printhexnibble( xtouch        & 0x0F);
+    buffer[6] = 0;
+      
+    display_set_font(&font_0);
+    display_text(10, 50, buffer);
+    
+    buffer[2] = printhexnibble((ytouch >> 12) & 0x0F);
+    buffer[3] = printhexnibble((ytouch >>  8) & 0x0F);
+    buffer[4] = printhexnibble((ytouch >>  4) & 0x0F);
+    buffer[5] = printhexnibble( ytouch        & 0x0F);
+    
+    display_text(10, 70, buffer);
+    
+    
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+int8 printhexnibble(uint8 nibble)
+{
+  //Check if needs to be converted to A-F character
+  if(nibble > 9)
+  {
+    //To make alpha add 55. (55 = 'A' - 10)
+    nibble += 55;
+  }
+  else
+  {
+    //To make digit add '0'
+    nibble += '0';
+  }
+
+  return(nibble);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

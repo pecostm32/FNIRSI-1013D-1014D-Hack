@@ -28,12 +28,17 @@ struct tagScopeSettings
   CHANNELSETTINGS channel2;
   
   uint8 timeperdiv;
+  uint8 triggermode;
+  uint8 triggeredge;
+  uint8 triggerchannel;
   
   uint8 movespeed;
   
   uint8 rightmenustate;
   uint8 waveviewmode;
   
+  uint8 batterychargelevel;
+  uint8 batterycharging;
   uint8 runstate;
 };
 
