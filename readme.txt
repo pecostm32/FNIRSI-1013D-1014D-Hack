@@ -68,3 +68,7 @@ Checked a couple of the fill rects from the original scope code to see where the
 ----------------------------------------------------------------------------------------------------------
 11-JULY-2021
 Finished the largest part of the display library. The recreation of the scope code can begin. Started with the structures to hold the scope settings. Next up is making the functions to display things on the screen. Also need to write the touchscreen code to be able to control the scope.
+
+----------------------------------------------------------------------------------------------------------
+20-JULY-2021
+Wrote a lot of the display functions and the touchpanel interface functions. Now I found a lot of the variables used in the scope, like time base setting and trigger mode it is becoming more and more clear what the scope is doing. The earlier findings about the working of the FPGA can be seen in the code. The second function in the main while loop seems to be the trace processing. In the first section a check is made on the time base setting and when below 9 (100mS/div to 50S/div) it writes the FPGA command 0x0D with the value 0x000007D0, just as what I found in my explorations:-)
