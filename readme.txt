@@ -42,11 +42,14 @@ The emulator is functional and the working of the system is slowly being reveale
 
 ----------------------------------------------------------------------------------------------------------
 14-JUNE-2021
-Most of the FPGA functions have been discovered and described. With the emulator the sequence of commands have been traced. With this information it should be possible to write new software for the scope.
+Most of the FPGA functions have been discovered and described. With the emulator the sequence of commands have been traced. 
+With this information it should be possible to write new software for the scope.
 
 ----------------------------------------------------------------------------------------------------------
 22-JUNE-2021
-The process of reversing the complete software is still ongoing. Focus at the moment is on the display library. Data structures are being discovered, with which the reversal of the code becomes more and more possible. The font data being used has been found in the flash. There are 8 fonts. The Ghidra archive uploaded today has them labeled and commented.
+The process of reversing the complete software is still ongoing. Focus at the moment is on the display library. 
+Data structures are being discovered, with which the reversal of the code becomes more and more possible.
+The font data being used has been found in the flash. There are 8 fonts. The Ghidra archive uploaded today has them labeled and commented.
 
 ----------------------------------------------------------------------------------------------------------
 26-JUNE-2021
@@ -55,20 +58,30 @@ Also found more about the working of the color handling. Uploaded the Ghidra arc
 
 ----------------------------------------------------------------------------------------------------------
 05-JULY-2021
-Extracted the fonts and tested them with HTML and javascript. Looks like they used two font types. A variable width type like Arial and a fixed with type like courier. Since they use bitmap versions a separate font is needed for each size in use.
+Extracted the fonts and tested them with HTML and javascript. Looks like they used two font types. 
+A variable width type like Arial and a fixed with type like courier. Since they use bitmap versions a separate font is needed for each size in use.
 Started with a new netbeans project for the scope code. Made a simple display library to display text and draw rectangles. Tested the code in the emulator.
-Need to make a code packer to write the separate parts to a binary file. (second program loader, bitmap and main program) Did it by hand for the tests, but is not a great solution:-(
+Need to make a code packer to write the separate parts to a binary file. (second program loader, bitmap and main program)
+Did it by hand for the tests, but is not a great solution:-(
 
 ----------------------------------------------------------------------------------------------------------
 08-JULY-2021
-Found how the scope display's the menus. It uses a lot of bitmaps that are copied to the display instead of printing text. Updated the Ghidra archive with the new findings.
+Found how the scope display's the menus. It uses a lot of bitmaps that are copied to the display instead of printing text. 
+Updated the Ghidra archive with the new findings.
 The recreation of the scope project is setup to create a binary in the emulator project directory and start the emulator for testing.
-Checked a couple of the fill rects from the original scope code to see where they are used for. Found that the original code uses start and end coordinates to define a rectangle were as my code uses positions and dimensions. Not a big deal and might change my setup.
+Checked a couple of the fill rects from the original scope code to see where they are used for. 
+Found that the original code uses start and end coordinates to define a rectangle were as my code uses positions and dimensions. 
+Not a big deal and might change my setup.
 
 ----------------------------------------------------------------------------------------------------------
 11-JULY-2021
-Finished the largest part of the display library. The recreation of the scope code can begin. Started with the structures to hold the scope settings. Next up is making the functions to display things on the screen. Also need to write the touchscreen code to be able to control the scope.
+Finished the largest part of the display library. The recreation of the scope code can begin. Started with the structures to hold the scope settings.
+Next up is making the functions to display things on the screen. Also need to write the touchscreen code to be able to control the scope.
 
 ----------------------------------------------------------------------------------------------------------
 20-JULY-2021
-Wrote a lot of the display functions and the touchpanel interface functions. Now I found a lot of the variables used in the scope, like time base setting and trigger mode it is becoming more and more clear what the scope is doing. The earlier findings about the working of the FPGA can be seen in the code. The second function in the main while loop seems to be the trace processing. In the first section a check is made on the time base setting and when below 9 (100mS/div to 50S/div) it writes the FPGA command 0x0D with the value 0x000007D0, just as what I found in my explorations:-)
+Wrote a lot of the display functions and the touchpanel interface functions. Now I found a lot of the variables used in the scope,
+like time base setting and trigger mode it is becoming more and more clear what the scope is doing. 
+The earlier findings about the working of the FPGA can be seen in the code. The second function in the main while loop seems to be the trace processing.
+In the first section a check is made on the time base setting and when below 9 (100mS/div to 50S/div) 
+it writes the FPGA command 0x0D with the value 0x000007D0, just as what I found in my explorations:-)
