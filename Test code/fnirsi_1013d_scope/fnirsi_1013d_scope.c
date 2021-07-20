@@ -13,20 +13,13 @@
 #include "display_lib.h"
 #include "scope_functions.h"
 
+#include "arm32.h"
+
 //----------------------------------------------------------------------------------------------------------------------------------
 
 extern uint16 maindisplaybuffer[];
 
 extern SCOPESETTINGS scopesettings;
-
-extern uint8 havetouch;
-extern uint16 xtouch;
-extern uint16 ytouch;
-
-extern FONTDATA font_0;
-
-
-int8 printhexnibble(uint8 nibble);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -34,6 +27,9 @@ int main(void)
 {
   //Initialize the clock system
   sys_clock_init();
+  
+	arm32_icache_enable();
+	arm32_dcache_enable();
   
   //Initialize SPI for flash (PORT C + SPI0)
   sys_spi_flash_init();
@@ -43,6 +39,8 @@ int main(void)
   
   //Turn of the display brightness
   set_backlight_brightness(0x0000);
+  
+  //sys_disable_display();
   
   //Initialize display (PORT D + DEBE)
   sys_init_display(SCREEN_WIDTH, SCREEN_HEIGHT, maindisplaybuffer);
@@ -86,59 +84,10 @@ int main(void)
   //Set default brightness
   set_backlight_brightness(0xEA60);
   
-  
-  int8 buffer[20];
-  
   while(1)
   {
-    //Check the touch panel status
-    tp_i2c_read_status();
-    
-    display_set_fg_color(0x00000000);
-
-    display_fill_rect(10, 50, 100, 60);
-
-    display_set_fg_color(0x00FFFFFF);
-
-    buffer[0] = '0';
-    buffer[1] = 'x';
-    buffer[2] = printhexnibble((xtouch >> 12) & 0x0F);
-    buffer[3] = printhexnibble((xtouch >>  8) & 0x0F);
-    buffer[4] = printhexnibble((xtouch >>  4) & 0x0F);
-    buffer[5] = printhexnibble( xtouch        & 0x0F);
-    buffer[6] = 0;
-      
-    display_set_font(&font_0);
-    display_text(10, 50, buffer);
-    
-    buffer[2] = printhexnibble((ytouch >> 12) & 0x0F);
-    buffer[3] = printhexnibble((ytouch >>  8) & 0x0F);
-    buffer[4] = printhexnibble((ytouch >>  4) & 0x0F);
-    buffer[5] = printhexnibble( ytouch        & 0x0F);
-    
-    display_text(10, 70, buffer);
-    
     
   }
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-int8 printhexnibble(uint8 nibble)
-{
-  //Check if needs to be converted to A-F character
-  if(nibble > 9)
-  {
-    //To make alpha add 55. (55 = 'A' - 10)
-    nibble += 55;
-  }
-  else
-  {
-    //To make digit add '0'
-    nibble += '0';
-  }
-
-  return(nibble);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

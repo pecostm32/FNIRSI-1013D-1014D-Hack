@@ -51,7 +51,7 @@ void tp_i2c_setup(void)
   *PORT_A_CFG_REG = 0xFFFF1111;
   
   //Wait for 100uS
-  tp_delay(100);
+  tp_delay(200);
 
   //Set INT high for device address 0x14 select
   *PORT_A_DATA_REG = 0x0000000E;
@@ -62,13 +62,13 @@ void tp_i2c_setup(void)
   //Set RESET high for device activation
   *PORT_A_DATA_REG = 0x0000000F;
 
-  //Wait for 10mS
+  //Wait for ~5mS
   tp_delay(10000);
   
   //Set INT as input and keep the rest as output
   *PORT_A_CFG_REG = 0xFFFF1101;
 
-  //Wait for 100mS
+  //Wait for ~50mS
   tp_delay(100000);
 
   //Start communication by sending 2 to the command register
@@ -93,7 +93,7 @@ void tp_i2c_setup(void)
   //Send the configuration data
   tp_i2c_send_data(TP_CFG_VERSION_REG, tp_config_data, sizeof(tp_config_data));
 
-  //Wait for 200mS
+  //Wait for ~100mS
   tp_delay(200000);
 
   //Start scanning by sending 0 to the command register
@@ -239,26 +239,26 @@ void tp_i2c_send_start(void)
   //Make SDA high
   *PORT_A_DATA_REG |= 0x00000004;
 
-  //Wait for 5uS
-  tp_delay(5);
+  //Wait for a while
+  tp_delay(TP_DATA_DELAY);
   
   //Make SCL high
   *PORT_A_DATA_REG |= 0x00000008;
   
-  //Wait for 5uS
-  tp_delay(5);
+  //Wait for a while
+  tp_delay(TP_CLOCK_DELAY);
   
   //Make SDA low
   *PORT_A_DATA_REG &= 0x0000000B;
   
-  //Wait for 5uS
-  tp_delay(5);
+  //Wait for a while
+  tp_delay(TP_DATA_DELAY);
 
   //Make SCL low
   *PORT_A_DATA_REG &= 0x00000007;
   
-  //Wait for 5uS
-  tp_delay(5);
+  //Wait for a while
+  tp_delay(TP_DATA_DELAY);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -271,20 +271,20 @@ void tp_i2c_send_stop(void)
   //Make SDA low
   *PORT_A_DATA_REG &= 0x0000000B;
 
-  //Wait for 5uS
-  tp_delay(5);
+  //Wait for a while
+  tp_delay(TP_DATA_DELAY);
   
   //Make SCL high
   *PORT_A_DATA_REG |= 0x00000008;
   
-  //Wait for 5uS
-  tp_delay(5);
+  //Wait for a while
+  tp_delay(TP_CLOCK_DELAY);
   
   //Make SDA high
   *PORT_A_DATA_REG |= 0x00000004;
   
-  //Wait for 5uS
-  tp_delay(5);
+  //Wait for a while
+  tp_delay(TP_DATA_DELAY);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -297,20 +297,20 @@ void tp_i2c_clock_ack(void)
   //Make SDA low
   *PORT_A_DATA_REG &= 0x0000000B;
   
-  //Wait for 5uS
-  tp_delay(5);
+  //Wait for a while
+  tp_delay(TP_DATA_DELAY);
 
   //Make SCL high
   *PORT_A_DATA_REG |= 0x00000008;
   
-  //Wait for 5uS
-  tp_delay(5);
+  //Wait for a while
+  tp_delay(TP_CLOCK_DELAY);
 
   //Make SCL low
   *PORT_A_DATA_REG &= 0x00000007;
   
-  //Wait for 5uS
-  tp_delay(5);
+  //Wait for a while
+  tp_delay(TP_DATA_DELAY);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -323,20 +323,20 @@ void tp_i2c_clock_nack(void)
   //Make SDA high
   *PORT_A_DATA_REG |= 0x00000004;
   
-  //Wait for 5uS
-  tp_delay(5);
+  //Wait for a while
+  tp_delay(TP_DATA_DELAY);
 
   //Make SCL high
   *PORT_A_DATA_REG |= 0x00000008;
   
-  //Wait for 5uS
-  tp_delay(5);
+  //Wait for a while
+  tp_delay(TP_CLOCK_DELAY);
 
   //Make SCL low
   *PORT_A_DATA_REG &= 0x00000007;
   
-  //Wait for 5uS
-  tp_delay(5);
+  //Wait for a while
+  tp_delay(TP_DATA_DELAY);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -363,20 +363,20 @@ void tp_i2c_send_byte(uint8 data)
       *PORT_A_DATA_REG &= 0x0000000B;
     }
   
-    //Wait for 5uS
-    tp_delay(5);
+    //Wait for a while
+    tp_delay(TP_DATA_DELAY);
     
     //Make SCL high
     *PORT_A_DATA_REG |= 0x00000008;
 
-    //Wait for 5uS
-    tp_delay(5);
+    //Wait for a while
+    tp_delay(TP_CLOCK_DELAY);
 
     //Make SCL low
     *PORT_A_DATA_REG &= 0x00000007;
 
-    //Wait for 5uS
-    tp_delay(5);
+    //Wait for a while
+    tp_delay(TP_DATA_DELAY);
     
     //Select the next bit to send
     data <<= 1;
@@ -402,34 +402,36 @@ uint8 tp_i2c_read_byte(void)
     //Make SCL high
     *PORT_A_DATA_REG |= 0x00000008;
 
-    //Wait for 5uS
-    tp_delay(5);
+    //Wait for a while
+    tp_delay(TP_DATA_DELAY);
     
     //Shift the bits to make room for the next one
     data <<= 1;
     
     //Put in the new bit
     data |= (*PORT_A_DATA_REG & 0x00000004) >> 2;
+
+    //Wait for a while
+    tp_delay(TP_DATA_DELAY);
     
     //Make SCL low
     *PORT_A_DATA_REG &= 0x00000007;
 
-    //Wait for 5uS
-    tp_delay(5);
+    //Wait for a while
+    tp_delay(TP_CLOCK_DELAY);
   }
  
   return(data);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
+//A count of 4 is approximately 3uS when running on 600MHz with cache enabled
 
 void tp_delay(uint32 usec)
 {
   int i;
 
-  //Assume 3 cycles for a micro second
-  usec *= 3;
-  
+  //Just loop the number of requested cycles  
   for(i=0;i<usec;i++);
 }
 
