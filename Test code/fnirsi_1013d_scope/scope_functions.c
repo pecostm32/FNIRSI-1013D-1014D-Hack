@@ -998,7 +998,7 @@ void display_channel1_settings(int mode)
   //Check if channel is enabled or disabled
   if(scopesettings.channel1.enable == 0)
   {
-    //Disabled so on colors
+    //Disabled so off colors
     //Check if inactive or active
     if(mode == 0)
     {
@@ -1095,7 +1095,7 @@ void display_channel1_settings(int mode)
       break;
       
     default:
-      //Times 10 magnification
+      //Times 100 magnification
       display_text(220, 8, "100X");
       
       //Set the volts per div text range to be used for this magnification
@@ -1548,3 +1548,293 @@ void display_battery_status(void)
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
+// Menu functions
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_open_channel1_menu(void)
+{
+  //Setup the menu in a separate buffer to be able to slide it onto the screen
+//  display_set_screen_buffer(displaybuffer1);
+  
+  //Draw the background in dark grey
+  display_set_fg_color(0x00181818);
+  
+  //Fill the background
+  display_fill_rect(161, 46, 183, 252);
+
+  //Draw the edge in a lighter grey
+  display_set_fg_color(0x00333333);
+  
+  //Draw the edge
+  display_draw_rect(161, 46, 183, 252);
+  
+  //Three black lines between the settings
+  display_set_fg_color(0x00000000);
+  display_draw_horz_line(108, 175, 330);
+  display_draw_horz_line(170, 175, 330);
+  display_draw_horz_line(234, 175, 330);
+  
+  //Main texts in white  
+  display_set_fg_color(0x00FFFFFF);
+  
+  //Select the font for the texts
+  display_set_font(&font_3);
+  
+  //Display the texts
+  display_text(176,  56, "open");
+  display_text(183,  75, "CH");
+  display_text(176, 118, "open");
+  display_text(180, 137, "FFT");
+  display_text(176, 182, "coup");
+  display_text(179, 200, "ling");
+  display_text(176, 247, "probe");
+  display_text(176, 265, "mode");
+
+  //Display the actual settings
+  display_channel1_enable_select();
+  display_channel1_fft_show();
+  display_channel1_coupling_select();
+  display_channel1_probe_magnification_select();
+  
+  //Slide the image onto the actual screen
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_channel1_enable_select(void)
+{
+  //Select the font for the texts
+  display_set_font(&font_3);
+
+  //Set yellow color for the box behind the selected text
+  display_set_fg_color(0x00FFFF00);
+  
+  //Check if channel is disabled or enabled
+  if(scopesettings.channel1.enable == 0)
+  {
+    //Disabled so yellow box behind off
+    display_fill_rect(291, 62, 32, 22);
+  }
+  else
+  {
+    //Disabled so yellow box behind on
+    display_fill_rect(239, 62, 32, 22);
+  }
+
+  //Check if channel is disabled or enabled
+  if(scopesettings.channel1.enable == 0)
+  {
+    //Disabled so white on text
+    display_set_fg_color(0x00FFFFFF);
+  }
+  else
+  {
+    //Enabled so black on text
+    display_set_fg_color(0x00000000);
+  }
+
+  //Display the on text
+  display_text(245, 65, "ON");
+
+  //Check if channel is disabled or enabled
+  if(scopesettings.channel1.enable == 0)
+  {
+    //Disabled so black off text
+    display_set_fg_color(0x00000000);
+  }
+  else
+  {
+    //Enabled so white off text
+    display_set_fg_color(0x00FFFFFF);
+  }
+
+  //Display the off text
+  display_text(294, 65, "OFF");
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_channel1_fft_show(void)
+{
+  //Select the font for the texts
+  display_set_font(&font_3);
+
+  //Set yellow color for the box behind the selected text
+  display_set_fg_color(0x00FFFF00);
+  
+  //Check if fft is disabled or enabled
+  if(scopesettings.channel1.fftenable == 0)
+  {
+    //Disabled so yellow box behind off
+    display_fill_rect(291, 124, 32, 22);
+  }
+  else
+  {
+    //Disabled so yellow box behind on
+    display_fill_rect(239, 124, 32, 22);
+  }
+
+  //Check if fft is disabled or enabled
+  if(scopesettings.channel1.fftenable == 0)
+  {
+    //Disabled so white on text
+    display_set_fg_color(0x00FFFFFF);
+  }
+  else
+  {
+    //Enabled so black on text
+    display_set_fg_color(0x00000000);
+  }
+
+  //Display the on text
+  display_text(245, 127, "ON");
+
+  //Check if fft is disabled or enabled
+  if(scopesettings.channel1.fftenable == 0)
+  {
+    //Disabled so black off text
+    display_set_fg_color(0x00000000);
+  }
+  else
+  {
+    //Enabled so white off text
+    display_set_fg_color(0x00FFFFFF);
+  }
+
+  //Display the off text
+  display_text(294, 127, "OFF");
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_channel1_coupling_select(void)
+{
+  //Select the font for the texts
+  display_set_font(&font_3);
+
+  //Set yellow color for the box behind the selected text
+  display_set_fg_color(0x00FFFF00);
+  
+  //Check if coupling is dc or ac
+  if(scopesettings.channel1.coupling == 0)
+  {
+    //DC so yellow box behind dc text
+    display_fill_rect(239, 188, 32, 22);
+  }
+  else
+  {
+    //AC so yellow box behind ac text
+    display_fill_rect(291, 188, 32, 22);
+  }
+
+  //Check if coupling is dc or ac
+  if(scopesettings.channel1.coupling == 0)
+  {
+    //DC so black dc text
+    display_set_fg_color(0x00000000);
+  }
+  else
+  {
+    //AC so white dc text
+    display_set_fg_color(0x00FFFFFF);
+  }
+
+  //Display the dc text
+  display_text(245, 191, "DC");
+
+  //Check if coupling is dc or ac
+  if(scopesettings.channel1.coupling == 0)
+  {
+    //DC so white ac text
+    display_set_fg_color(0x00FFFFFF);
+  }
+  else
+  {
+    //AC so black ac text
+    display_set_fg_color(0x00000000);
+  }
+
+  //Display the off text
+  display_text(296, 191, "AC");
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_channel1_probe_magnification_select(void)
+{
+  //Select the font for the texts
+  display_set_font(&font_3);
+
+  //Set yellow color for the box behind the selected text
+  display_set_fg_color(0x00FFFF00);
+  
+  //Check if coupling is dc or ac
+  switch(scopesettings.channel1.magnification)
+  {
+    case 0:
+      //Highlight times 1 magnification
+      display_fill_rect(239, 245, 20, 38);
+      break;
+      
+    case 1:
+      //Highlight times 10 magnification
+      display_fill_rect(270, 245, 23, 38);
+      break;
+      
+    default:
+      //Highlight times 100 magnification
+      display_fill_rect(299, 245, 30, 38);
+      break;
+  }
+
+  //Check if magnification is 1x
+  if(scopesettings.channel1.magnification == 0)
+  {
+    //Yes so black 1X text
+    display_set_fg_color(0x00000000);
+  }
+  else
+  {
+    //No so white 1X text
+    display_set_fg_color(0x00FFFFFF);
+  }
+
+  //Display the 1X text
+  display_text(245, 247, "1");
+  display_text(244, 265, "X");
+
+  //Check if magnification is 10x
+  if(scopesettings.channel1.magnification == 1)
+  {
+    //Yes so black 10X text
+    display_set_fg_color(0x00000000);
+  }
+  else
+  {
+    //No so white 10X text
+    display_set_fg_color(0x00FFFFFF);
+  }
+
+  //Display the 10X text
+  display_text(274, 247, "10");
+  display_text(276, 265, "X");
+
+  //Check if magnification is 100x
+  if(scopesettings.channel1.magnification > 1)
+  {
+    //Yes so black 100X text
+    display_set_fg_color(0x00000000);
+  }
+  else
+  {
+    //No so white 100X text
+    display_set_fg_color(0x00FFFFFF);
+  }
+
+  //Display the 100X text
+  display_text(303, 247, "100");
+  display_text(310, 265, "X");
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+

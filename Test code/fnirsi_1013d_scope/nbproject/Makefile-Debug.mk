@@ -49,6 +49,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/sin_cos_math.o \
 	${OBJECTDIR}/spi_control.o \
 	${OBJECTDIR}/start.o \
+	${OBJECTDIR}/statemachine.o \
 	${OBJECTDIR}/touchpanel.o
 
 
@@ -144,6 +145,11 @@ ${OBJECTDIR}/spi_control.o: spi_control.c
 ${OBJECTDIR}/start.o: start.s
 	${MKDIR} -p ${OBJECTDIR}
 	$(AS) $(ASFLAGS) -g -o ${OBJECTDIR}/start.o start.s
+
+${OBJECTDIR}/statemachine.o: statemachine.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/statemachine.o statemachine.c
 
 ${OBJECTDIR}/touchpanel.o: touchpanel.c
 	${MKDIR} -p ${OBJECTDIR}

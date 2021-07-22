@@ -20,6 +20,7 @@ struct tagChannelSettings
   uint8 coupling;
   uint8 magnification;
   uint8 voltperdiv;
+  uint8 fftenable;
 };
 
 struct tagScopeSettings

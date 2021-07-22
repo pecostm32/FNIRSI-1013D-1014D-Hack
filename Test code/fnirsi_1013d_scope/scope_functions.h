@@ -39,7 +39,7 @@ void display_ch1_sensitivity_control(int type,int mode);
 void display_ch2_sensitivity_control(int type,int mode);
 
 //----------------------------------------------------------------------------------------------------------------------------------
-// Top bar function
+// Top bar functions
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void display_menu_button(int mode);
@@ -51,6 +51,18 @@ void display_time_div_setting(void);
 void display_move_speed(int mode);
 void display_trigger_settings(int mode);
 void display_battery_status(void);
+
+//----------------------------------------------------------------------------------------------------------------------------------
+// Menu functions
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_open_channel1_menu(void);
+void display_channel1_enable_select(void);
+void display_channel1_fft_show(void);
+void display_channel1_coupling_select(void);
+void display_channel1_probe_magnification_select(void);
+
+
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

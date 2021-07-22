@@ -28,6 +28,7 @@ int main(void)
   //Initialize the clock system
   sys_clock_init();
   
+  //Instead of full memory management just the caches enabled
 	arm32_icache_enable();
 	arm32_dcache_enable();
   
@@ -39,8 +40,6 @@ int main(void)
   
   //Turn of the display brightness
   set_backlight_brightness(0x0000);
-  
-  //sys_disable_display();
   
   //Initialize display (PORT D + DEBE)
   sys_init_display(SCREEN_WIDTH, SCREEN_HEIGHT, maindisplaybuffer);
@@ -60,8 +59,9 @@ int main(void)
 
   scopesettings.channel1.enable = 1;
   scopesettings.channel1.coupling = 0;
-  scopesettings.channel1.magnification = 1;
+  scopesettings.channel1.magnification = 0;
   scopesettings.channel1.voltperdiv = 5;
+  scopesettings.channel1.fftenable = 0;
   
   scopesettings.channel2.enable = 1;
   scopesettings.channel2.coupling = 1;
@@ -81,6 +81,8 @@ int main(void)
   //Setup the main parts of the screen
   setup_main_screen();
   
+  display_open_channel1_menu();
+    
   //Set default brightness
   set_backlight_brightness(0xEA60);
   

@@ -135,6 +135,7 @@ void tp_i2c_read_status(void)
     }
     else
     {
+      //Original code checks on a second touch point active, but not sure if it does anything with it.
       //No or to many points so set out of range touch
       xtouch = 800;
       ytouch = 480;

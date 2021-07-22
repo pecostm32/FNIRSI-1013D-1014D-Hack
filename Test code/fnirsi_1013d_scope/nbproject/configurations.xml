@@ -14,6 +14,7 @@
       <itemPath>scope_functions.h</itemPath>
       <itemPath>sin_cos_math.h</itemPath>
       <itemPath>spi_control.h</itemPath>
+      <itemPath>statemachine.h</itemPath>
       <itemPath>touchpanel.h</itemPath>
       <itemPath>types.h</itemPath>
     </logicalFolder>
@@ -38,6 +39,7 @@
       <itemPath>sin_cos_math.c</itemPath>
       <itemPath>spi_control.c</itemPath>
       <itemPath>start.s</itemPath>
+      <itemPath>statemachine.c</itemPath>
       <itemPath>touchpanel.c</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
@@ -128,6 +130,10 @@
       </item>
       <item path="start.s" ex="false" tool="4" flavor2="0">
       </item>
+      <item path="statemachine.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="statemachine.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="touchpanel.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="touchpanel.h" ex="false" tool="3" flavor2="0">
@@ -208,6 +214,10 @@
       <item path="spi_control.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="start.s" ex="false" tool="4" flavor2="0">
+      </item>
+      <item path="statemachine.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="statemachine.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="touchpanel.c" ex="false" tool="0" flavor2="0">
       </item>
