@@ -9,9 +9,9 @@
 #include "touchpanel.h"
 
 #include "fnirsi_1013d_scope.h"
-#include "font_structs.h"
 #include "display_lib.h"
 #include "scope_functions.h"
+#include "statemachine.h"
 
 #include "arm32.h"
 
@@ -59,7 +59,7 @@ int main(void)
 
   scopesettings.channel1.enable = 1;
   scopesettings.channel1.coupling = 0;
-  scopesettings.channel1.magnification = 0;
+  scopesettings.channel1.magnification = 2;
   scopesettings.channel1.voltperdiv = 5;
   scopesettings.channel1.fftenable = 0;
   
@@ -80,8 +80,6 @@ int main(void)
   
   //Setup the main parts of the screen
   setup_main_screen();
-  
-  display_open_channel1_menu();
     
   //Set default brightness
   set_backlight_brightness(0xEA60);
@@ -89,6 +87,7 @@ int main(void)
   while(1)
   {
     
+    touch_handler();
   }
 }
 

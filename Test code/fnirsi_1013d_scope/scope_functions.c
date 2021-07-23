@@ -20,7 +20,7 @@ SCOPESETTINGS scopesettings;
 
 uint16 maindisplaybuffer[SCREEN_WIDTH * SCREEN_HEIGHT];
 uint16 displaybuffer1[SCREEN_WIDTH * SCREEN_HEIGHT];
-
+uint16 displaybuffer2[SCREEN_WIDTH * SCREEN_HEIGHT];
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -31,7 +31,6 @@ void setup_display_lib(void)
   display_set_screen_buffer(maindisplaybuffer);
   
   display_set_dimensions(SCREEN_WIDTH, SCREEN_HEIGHT);
-  
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -1554,7 +1553,7 @@ void display_battery_status(void)
 void display_open_channel1_menu(void)
 {
   //Setup the menu in a separate buffer to be able to slide it onto the screen
-//  display_set_screen_buffer(displaybuffer1);
+  display_set_screen_buffer(displaybuffer1);
   
   //Draw the background in dark grey
   display_set_fg_color(0x00181818);
@@ -1596,7 +1595,12 @@ void display_open_channel1_menu(void)
   display_channel1_coupling_select();
   display_channel1_probe_magnification_select();
   
-  //Slide the image onto the actual screen
+  //Set source and target for getting it on the actual screen
+  display_set_source_buffer(displaybuffer1);
+  display_set_screen_buffer(maindisplaybuffer);
+
+  //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
+  display_slide_top_rect_onto_screen(161, 46, 184, 253, 4369);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -1606,6 +1610,21 @@ void display_channel1_enable_select(void)
   //Select the font for the texts
   display_set_font(&font_3);
 
+  //Set dark grey color for the box behind the not selected text
+  display_set_fg_color(0x00181818);
+  
+  //Check if channel is disabled or enabled
+  if(scopesettings.channel1.enable == 0)
+  {
+    //Disabled so dark grey box behind on
+    display_fill_rect(239, 62, 32, 22);
+  }
+  else
+  {
+    //Enabled so dark grey box behind off
+    display_fill_rect(291, 62, 32, 22);
+  }
+  
   //Set yellow color for the box behind the selected text
   display_set_fg_color(0x00FFFF00);
   
@@ -1617,7 +1636,7 @@ void display_channel1_enable_select(void)
   }
   else
   {
-    //Disabled so yellow box behind on
+    //Enabled so yellow box behind on
     display_fill_rect(239, 62, 32, 22);
   }
 
@@ -1659,6 +1678,21 @@ void display_channel1_fft_show(void)
   //Select the font for the texts
   display_set_font(&font_3);
 
+  //Set dark grey color for the box behind the not selected text
+  display_set_fg_color(0x00181818);
+  
+  //Check if fft is disabled or enabled
+  if(scopesettings.channel1.fftenable == 0)
+  {
+    //Disabled so dark grey box behind on
+    display_fill_rect(239, 124, 32, 22);
+  }
+  else
+  {
+    //Enabled so dark grey box behind off
+    display_fill_rect(291, 124, 32, 22);
+  }
+  
   //Set yellow color for the box behind the selected text
   display_set_fg_color(0x00FFFF00);
   
@@ -1670,7 +1704,7 @@ void display_channel1_fft_show(void)
   }
   else
   {
-    //Disabled so yellow box behind on
+    //Enabled so yellow box behind on
     display_fill_rect(239, 124, 32, 22);
   }
 
@@ -1711,6 +1745,21 @@ void display_channel1_coupling_select(void)
 {
   //Select the font for the texts
   display_set_font(&font_3);
+
+  //Set dark grey color for the box behind the not selected text
+  display_set_fg_color(0x00181818);
+  
+  //Check if coupling is dc or ac
+  if(scopesettings.channel1.coupling == 0)
+  {
+    //DC so dark grey box behind ac text
+    display_fill_rect(291, 188, 32, 22);
+  }
+  else
+  {
+    //AC so dark grey box behind dc text
+    display_fill_rect(239, 188, 32, 22);
+  }
 
   //Set yellow color for the box behind the selected text
   display_set_fg_color(0x00FFFF00);
@@ -1765,10 +1814,35 @@ void display_channel1_probe_magnification_select(void)
   //Select the font for the texts
   display_set_font(&font_3);
 
+  //Set dark grey color for the boxes behind the not selected texts
+  display_set_fg_color(0x00181818);
+  
+  //Check if coupling is dc or ac
+  switch(scopesettings.channel1.magnification)
+  {
+    case 0:
+      //dark grey times 10 and 100 magnification
+      display_fill_rect(270, 245, 23, 38);
+      display_fill_rect(299, 245, 30, 38);
+      break;
+      
+    case 1:
+      //dark grey times 1 and 100 magnification
+      display_fill_rect(239, 245, 20, 38);
+      display_fill_rect(299, 245, 30, 38);
+      break;
+      
+    default:
+      //dark grey times 1 and 10 magnification
+      display_fill_rect(239, 245, 20, 38);
+      display_fill_rect(270, 245, 23, 38);
+      break;
+  }
+  
   //Set yellow color for the box behind the selected text
   display_set_fg_color(0x00FFFF00);
   
-  //Check if coupling is dc or ac
+  //Check if which magnification to highlight
   switch(scopesettings.channel1.magnification)
   {
     case 0:

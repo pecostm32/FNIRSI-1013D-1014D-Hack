@@ -64,9 +64,23 @@ void display_set_bg_color(uint32 color)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_set_screen_buffer(uint16 *screen)
+void display_set_screen_buffer(uint16 *buffer)
 {
-  displaydata.screenbuffer = screen;
+  displaydata.screenbuffer = buffer;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_set_source_buffer(uint16 *buffer)
+{
+  displaydata.sourcebuffer = buffer;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_set_destination_buffer(uint16 *buffer)
+{
+  displaydata.destbuffer = buffer;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -553,6 +567,115 @@ void display_fill_rounded_rect(uint16 xpos, uint16 ypos, uint16 width, uint16 he
       //Set the current screen buffer pixel with the requested color
       *ptr1++ = displaydata.fg_color;
     }
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_slide_top_rect_onto_screen(uint16 xpos, uint16 ypos, uint16 width, uint16 height, uint32 speed)
+{
+  uint16 *ptr1, *ptr2;
+  int16   startline;
+  uint16  line;
+  uint16  startpixel;
+  uint16  pixel;
+
+  //Starting line of the rectangle to display first
+  startline = height - ((height * speed) >> 16) - 1;
+  
+  //Start pixel for source and destination calculation
+  startpixel = xpos + (ypos * displaydata.pixelsperline);
+  
+  //Draw lines as long as is needed to get the whole rectangle on screen
+  while(startline >= 0)
+  {
+    //Source pointer is based on the current line
+    ptr2 = displaydata.sourcebuffer + startpixel + (startline * displaydata.pixelsperline);
+    
+    //Destination pointer is always the first line
+    ptr1 = displaydata.screenbuffer + startpixel;
+    
+    //Handle the needed number of lines for this loop
+    for(line=startline;line<height;line++)
+    {
+      //Copy a single line to the screen buffer
+      for(pixel=0;pixel<width;pixel++)
+      {
+        //Copy one pixel at a time
+        ptr1[pixel] = ptr2[pixel];
+      }
+      
+      //Point to the next line of pixels in both destination and source
+      ptr1 += displaydata.pixelsperline;
+      ptr2 += displaydata.pixelsperline;
+    }
+    
+    //Calculate the new starting line
+    startline = startline - 1 - ((startline * speed) >> 16);
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_copy_rect_from_screen(uint16 xpos, uint16 ypos, uint16 width, uint16 height)
+{
+  uint16 *ptr1, *ptr2;
+  uint16  line;
+  uint16  pixel;
+  uint16  startpixel;
+
+  //Start pixel for source and destination calculation
+  startpixel = xpos + (ypos * displaydata.pixelsperline);
+
+  //Setup destination and source pointers
+  ptr1 = displaydata.destbuffer + startpixel;
+  ptr2 = displaydata.screenbuffer + startpixel;
+  
+  //Copy the needed lines
+  for(line=0;line<height;line++)
+  {
+    //Copy a single line to the destination buffer
+    for(pixel=0;pixel<width;pixel++)
+    {
+      //Copy one pixel at a time
+      ptr1[pixel] = ptr2[pixel];
+    }
+
+    //Point to the next line of pixels in both destination and source
+    ptr1 += displaydata.pixelsperline;
+    ptr2 += displaydata.pixelsperline;
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_copy_rect_to_screen(uint16 xpos, uint16 ypos, uint16 width, uint16 height)
+{
+  uint16 *ptr1, *ptr2;
+  uint16  line;
+  uint16  pixel;
+  uint16  startpixel;
+
+  //Start pixel for source and destination calculation
+  startpixel = xpos + (ypos * displaydata.pixelsperline);
+
+  //Setup destination and source pointers
+  ptr1 = displaydata.screenbuffer + startpixel;
+  ptr2 = displaydata.sourcebuffer + startpixel;
+  
+  //Copy the needed lines
+  for(line=0;line<height;line++)
+  {
+    //Copy a single line to the destination buffer
+    for(pixel=0;pixel<width;pixel++)
+    {
+      //Copy one pixel at a time
+      ptr1[pixel] = ptr2[pixel];
+    }
+
+    //Point to the next line of pixels in both destination and source
+    ptr1 += displaydata.pixelsperline;
+    ptr2 += displaydata.pixelsperline;
   }
 }
 
