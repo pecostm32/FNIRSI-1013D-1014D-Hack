@@ -85,3 +85,11 @@ like time base setting and trigger mode it is becoming more and more clear what 
 The earlier findings about the working of the FPGA can be seen in the code. The second function in the main while loop seems to be the trace processing.
 In the first section a check is made on the time base setting and when below 9 (100mS/div to 50S/div) 
 it writes the FPGA command 0x0D with the value 0x000007D0, just as what I found in my explorations:-)
+
+----------------------------------------------------------------------------------------------------------
+23-JULY-2021
+Implemented channel 1 menu handling and are now able to change the settings for it. Found functions that control the FPGA based on the settings
+again confirming the earlier findings. Writing the emulator was worth it. Without it I would not have gotten this far. It also allows for testing the code
+I'm writing, without the need for loading it to the actual scope.
+
+
