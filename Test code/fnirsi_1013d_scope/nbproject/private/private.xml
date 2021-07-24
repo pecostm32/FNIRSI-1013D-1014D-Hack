@@ -7,17 +7,14 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/touchpanel.h</file>
+            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/display_lib.h</file>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/touchpanel.c</file>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/display_control.h</file>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/scope_functions.h</file>
+            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/display_lib.c</file>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/fnirsi_1013d_scope.c</file>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/statemachine.c</file>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/ccu_control.h</file>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/scope_functions.c</file>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/display_control.c</file>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/statemachine.h</file>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/ccu_control.c</file>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/todo.txt</file>
         </group>
     </open-files>

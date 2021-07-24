@@ -596,10 +596,10 @@ void display_slide_top_rect_onto_screen(uint16 xpos, uint16 ypos, uint16 width, 
     ptr1 = displaydata.screenbuffer + startpixel;
     
     //Handle the needed number of lines for this loop
-    for(line=startline;line<height;line++)
+    for(line=startline;line<=height;line++)
     {
       //Copy a single line to the screen buffer
-      for(pixel=0;pixel<width;pixel++)
+      for(pixel=0;pixel<=width;pixel++)
       {
         //Copy one pixel at a time
         ptr1[pixel] = ptr2[pixel];
@@ -632,10 +632,10 @@ void display_copy_rect_from_screen(uint16 xpos, uint16 ypos, uint16 width, uint1
   ptr2 = displaydata.screenbuffer + startpixel;
   
   //Copy the needed lines
-  for(line=0;line<height;line++)
+  for(line=0;line<=height;line++)
   {
     //Copy a single line to the destination buffer
-    for(pixel=0;pixel<width;pixel++)
+    for(pixel=0;pixel<=width;pixel++)
     {
       //Copy one pixel at a time
       ptr1[pixel] = ptr2[pixel];
@@ -664,10 +664,10 @@ void display_copy_rect_to_screen(uint16 xpos, uint16 ypos, uint16 width, uint16 
   ptr2 = displaydata.sourcebuffer + startpixel;
   
   //Copy the needed lines
-  for(line=0;line<height;line++)
+  for(line=0;line<=height;line++)
   {
     //Copy a single line to the destination buffer
-    for(pixel=0;pixel<width;pixel++)
+    for(pixel=0;pixel<=width;pixel++)
     {
       //Copy one pixel at a time
       ptr1[pixel] = ptr2[pixel];
@@ -676,6 +676,33 @@ void display_copy_rect_to_screen(uint16 xpos, uint16 ypos, uint16 width, uint16 
     //Point to the next line of pixels in both destination and source
     ptr1 += displaydata.pixelsperline;
     ptr2 += displaydata.pixelsperline;
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_copy_icon(const uint16 *icon, uint16 xpos, uint16 ypos, uint16 width, uint16 height)
+{
+  uint16 *ptr;
+  uint16  line;
+  uint16  pixel;
+
+  //Setup destination pointer
+  ptr = displaydata.screenbuffer + xpos + (ypos * displaydata.pixelsperline);
+  
+  //Copy the needed lines
+  for(line=0;line<height;line++)
+  {
+    //Copy a single line to the destination buffer
+    for(pixel=0;pixel<width;pixel++)
+    {
+      //Copy one pixel at a time
+      ptr[pixel] = icon[pixel];
+    }
+
+    //Point to the next line of pixels in both destination and source
+    ptr  += displaydata.pixelsperline;
+    icon += width;
   }
 }
 

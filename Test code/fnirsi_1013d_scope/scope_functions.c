@@ -8,11 +8,27 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+#define CHANNEL1_COLOR         0x00FFFF00
+#define CHANNEL2_COLOR         0x0000FFFF
+#define TRIGGER_COLOR          0x0000FF00
+
+#define CHANNEL1_TRIG_COLOR    0x00CCCC00
+#define CHANNEL2_TRIG_COLOR    0x0000CCCC
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 extern FONTDATA font_0;
 extern FONTDATA font_2;
 extern FONTDATA font_3;
 extern FONTDATA font_4;
 extern FONTDATA font_5;
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+extern const uint16 system_settings_icon[];
+extern const uint16 picture_view_icon[];
+extern const uint16 waveform_view_icon[];
+extern const uint16 usb_icon[];
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -24,7 +40,7 @@ uint16 displaybuffer2[SCREEN_WIDTH * SCREEN_HEIGHT];
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void setup_display_lib(void)
+void scope_setup_display_lib(void)
 {
   display_set_bg_color(0x00000000);
   
@@ -35,7 +51,7 @@ void setup_display_lib(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void setup_main_screen(void)
+void scope_setup_main_screen(void)
 {
   //Prepare the screen in a working buffer
 //  display_set_screen_buffer(displaybuffer1);
@@ -50,43 +66,43 @@ void setup_main_screen(void)
   display_fill_rect(730, 0, 70, 480);
   
   //Setup the menu bar on the right side
-  display_right_control_menu();
+  scope_right_control_menu();
   
   //Check if normal or wave view mode
   if(scopesettings.waveviewmode == 0)
   {
     //Normal mode so show menu button
-    display_menu_button(0);
+    scope_menu_button(0);
   }
   else
   {
     //Wave view mode so show return button
-    display_main_return_button(0);
+    scope_main_return_button(0);
   }
  
   //Show the user if the acquisition is running or stopped
-  display_run_stop_text(scopesettings.runstate);
+  scope_run_stop_text(scopesettings.runstate);
   
   //Display the channel menu select buttons and their settings
-  display_channel1_settings(0);
-  display_channel2_settings(0);
+  scope_channel1_settings(0);
+  scope_channel2_settings(0);
   
   //Display the current time per div setting
-  display_time_div_setting();
+  scope_time_div_setting();
   
   //Show the user selected move speed
-  display_move_speed(0);
+  scope_move_speed(0);
   
   //Display the trigger menu select button and the settings
-  display_trigger_settings(0);
+  scope_trigger_settings(0);
   
   //Show the battery charge level and charging indicator
-  display_battery_status();
+  scope_battery_status();
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_right_control_menu(void)
+void scope_right_control_menu(void)
 {
   //Setup for clearing right menu bar
   display_set_fg_color(0x00000000);
@@ -95,49 +111,49 @@ void display_right_control_menu(void)
   display_fill_rect(730, 0, 70, 480);
   
   //Display the control button
-  display_control_button(0);
+  scope_control_button(0);
   
   //Check in which state the right menu is in
   if(scopesettings.rightmenustate == 0)
   {
     //Main control state so draw the always used buttons
-    display_t_cursor_button(0);
-    display_v_cursor_button(0);
-    display_measures_button(0);
-    display_save_picture_button(0);
+    scope_t_cursor_button(0);
+    scope_v_cursor_button(0);
+    scope_measures_button(0);
+    scope_save_picture_button(0);
     
     //Check if in wave view mode
     if(scopesettings.waveviewmode == 0)
     {
       //Main control mode buttons
-      display_run_stop_button(0);
-      display_auto_set_button(0);
-      display_save_wave_button(0);
+      scope_run_stop_button(0);
+      scope_auto_set_button(0);
+      scope_save_wave_button(0);
     }
     else
     {
       //Wave view mode buttons
-      display_page_up_button(0);
-      display_page_down_button(0);
-      display_delete_wave_button(0);
+      scope_page_up_button(0);
+      scope_page_down_button(0);
+      scope_delete_wave_button(0);
     }
   }
   else
   {
     //Channel sensitivity state
-    display_ch1_sensitivity_control(0,0);
-    display_ch2_sensitivity_control(0,0);
+    scope_ch1_sensitivity_control(0,0);
+    scope_ch2_sensitivity_control(0,0);
     
     //Check if in wave view mode
     if(scopesettings.waveviewmode == 0)
     {
       //Main control mode
-      display_50_percent_trigger_button(0);
+      scope_50_percent_trigger_button(0);
     }
     else
     {
       //Wave view mode
-      display_show_grid_button(0);
+      scope_show_grid_button(0);
     }
   }
 }
@@ -146,7 +162,7 @@ void display_right_control_menu(void)
 // Right side bar functions
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_control_button(int mode)
+void scope_control_button(int mode)
 {
   //Check if inactive or active mode
   if(mode == 0)
@@ -192,7 +208,7 @@ void display_control_button(int mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_run_stop_button(int mode)
+void scope_run_stop_button(int mode)
 {
   //Check if inactive or active mode
   if(mode == 0)
@@ -239,7 +255,7 @@ void display_run_stop_button(int mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_auto_set_button(int mode)
+void scope_auto_set_button(int mode)
 {
   //Check if inactive or active mode
   if(mode == 0)
@@ -286,7 +302,7 @@ void display_auto_set_button(int mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_page_up_button(int mode)
+void scope_page_up_button(int mode)
 {
   //Check if inactive or active mode
   if(mode == 0)
@@ -333,7 +349,7 @@ void display_page_up_button(int mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_page_down_button(int mode)
+void scope_page_down_button(int mode)
 {
   //Check if inactive or active mode
   if(mode == 0)
@@ -380,7 +396,7 @@ void display_page_down_button(int mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_t_cursor_button(int mode)
+void scope_t_cursor_button(int mode)
 {
   //Check if inactive or active mode
   if(mode == 0)
@@ -428,7 +444,7 @@ void display_t_cursor_button(int mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_v_cursor_button(int mode)
+void scope_v_cursor_button(int mode)
 {
   //Check if inactive or active mode
   if(mode == 0)
@@ -476,7 +492,7 @@ void display_v_cursor_button(int mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_measures_button(int mode)
+void scope_measures_button(int mode)
 {
   //Check if inactive or active mode
   if(mode == 0)
@@ -523,7 +539,7 @@ void display_measures_button(int mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_save_picture_button(int mode)
+void scope_save_picture_button(int mode)
 {
   //Check if inactive or active mode
   if(mode == 0)
@@ -570,7 +586,7 @@ void display_save_picture_button(int mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_save_wave_button(int mode)
+void scope_save_wave_button(int mode)
 {
   //Check if inactive or active mode
   if(mode == 0)
@@ -617,7 +633,7 @@ void display_save_wave_button(int mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_delete_wave_button(int mode)
+void scope_delete_wave_button(int mode)
 {
   //Check if inactive or active mode
   if(mode == 0)
@@ -664,7 +680,7 @@ void display_delete_wave_button(int mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_50_percent_trigger_button(int mode)
+void scope_50_percent_trigger_button(int mode)
 {
   //Check if inactive or active mode
   if(mode == 0)
@@ -711,7 +727,7 @@ void display_50_percent_trigger_button(int mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_show_grid_button(int mode)
+void scope_show_grid_button(int mode)
 {
   //Check if inactive or active mode
   if(mode == 0)
@@ -758,7 +774,7 @@ void display_show_grid_button(int mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_ch1_sensitivity_control(int type,int mode)
+void scope_ch1_sensitivity_control(int type,int mode)
 {
   //Check if V+ is active or inactive
   if((type == 0) && (mode != 0))
@@ -808,7 +824,7 @@ void display_ch1_sensitivity_control(int type,int mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_ch2_sensitivity_control(int type,int mode)
+void scope_ch2_sensitivity_control(int type,int mode)
 {
   //Check if V+ is active or inactive
   if((type == 0) && (mode != 0))
@@ -860,7 +876,7 @@ void display_ch2_sensitivity_control(int type,int mode)
 // Top bar function
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_menu_button(int mode)
+void scope_menu_button(int mode)
 {
   //Check if inactive or active
   if(mode == 0)
@@ -902,7 +918,7 @@ void display_menu_button(int mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_main_return_button(int mode)
+void scope_main_return_button(int mode)
 {
   //Check if inactive or active
   if(mode == 0)
@@ -940,7 +956,7 @@ void display_main_return_button(int mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_run_stop_text(int mode)
+void scope_run_stop_text(int mode)
 {
   //Check if run or stop mode
   if(mode == 0)
@@ -986,7 +1002,7 @@ const int8 *volt_div_texts[3][7] =
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_channel1_settings(int mode)
+void scope_channel1_settings(int mode)
 {
   int8 **vdtext;
   
@@ -1016,8 +1032,8 @@ void display_channel1_settings(int mode)
     //Check if inactive or active
     if(mode == 0)
     {
-      //Inactive, yellow menu button
-      display_set_fg_color(0x00FFFF00);
+      //Inactive, channel 1 color menu button
+      display_set_fg_color(CHANNEL1_COLOR);
     }
     else
     {
@@ -1111,7 +1127,7 @@ void display_channel1_settings(int mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_channel2_settings(int mode)
+void scope_channel2_settings(int mode)
 {
   int8 **vdtext;
   
@@ -1142,7 +1158,7 @@ void display_channel2_settings(int mode)
     if(mode == 0)
     {
       //Inactive, cyan menu button
-      display_set_fg_color(0x0000FFFF);
+      display_set_fg_color(CHANNEL2_COLOR);
     }
     else
     {
@@ -1252,7 +1268,7 @@ const int8 *time_div_texts[30] =
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_time_div_setting(void)
+void scope_time_div_setting(void)
 {
   //Clear the area first
   display_set_fg_color(0x00000000);
@@ -1274,7 +1290,7 @@ void display_time_div_setting(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_move_speed(int mode)
+void scope_move_speed(int mode)
 {
   //Check if inactive or active
   if(mode == 0)
@@ -1322,7 +1338,7 @@ void display_move_speed(int mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_trigger_settings(int mode)
+void scope_trigger_settings(int mode)
 {
   int8 *modetext = 0;
   
@@ -1334,7 +1350,7 @@ void display_trigger_settings(int mode)
   if(mode == 0)
   {
     //Inactive, green menu button
-    display_set_fg_color(0x0000FF00);
+    display_set_fg_color(TRIGGER_COLOR);
   }
   else
   {
@@ -1405,20 +1421,22 @@ void display_trigger_settings(int mode)
   }
 
   //Draw the trigger edge symbol
-  display_draw_horz_line(27, 642, 645);
   display_draw_vert_line(642, 27, 38);
-  display_draw_horz_line(38, 639, 642);
   
   //Draw the arrow based on the selected edge
   if(scopesettings.triggeredge == 0)
   {
     //rising edge
+    display_draw_horz_line(27, 642, 645);
+    display_draw_horz_line(38, 639, 642);
     display_draw_horz_line(32, 641, 643);
     display_draw_horz_line(33, 640, 644);
   }
   else
   {
     //falling edge
+    display_draw_horz_line(27, 639, 642);
+    display_draw_horz_line(38, 642, 645);
     display_draw_horz_line(32, 640, 644);
     display_draw_horz_line(33, 641, 643);
   }
@@ -1431,8 +1449,8 @@ void display_trigger_settings(int mode)
       //Check if inactive or active
       if(mode == 0)
       {
-        //Inactive, dark yellow box
-        display_set_fg_color(0x00CCCC00);
+        //Inactive, dark channel 1 trigger color box
+        display_set_fg_color(CHANNEL1_TRIG_COLOR);
       }
       else
       {
@@ -1465,7 +1483,7 @@ void display_trigger_settings(int mode)
       if(mode == 0)
       {
         //Inactive, dark cyan box
-        display_set_fg_color(0x0000CCCC);
+        display_set_fg_color(CHANNEL2_TRIG_COLOR);
       }
       else
       {
@@ -1496,7 +1514,7 @@ void display_trigger_settings(int mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_battery_status(void)
+void scope_battery_status(void)
 {
   //Draw an empty battery symbol in white
   display_set_fg_color(0x00FFFFFF);
@@ -1550,7 +1568,68 @@ void display_battery_status(void)
 // Menu functions
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_open_channel1_menu(void)
+void scope_open_main_menu(void)
+{
+  //Setup the menu in a separate buffer to be able to slide it onto the screen
+  display_set_screen_buffer(displaybuffer1);
+  
+  //Draw the background in dark grey
+  display_set_fg_color(0x00181818);
+  
+  //Fill the background
+  display_fill_rect(0, 46, 149, 233);
+
+  //Draw the edge in a lighter grey
+  display_set_fg_color(0x00333333);
+  
+  //Draw the edge
+  display_draw_rect(0, 46, 149, 233);
+  
+  //Three black lines between the settings
+  display_set_fg_color(0x00000000);
+  display_draw_horz_line(104, 8, 141);
+  display_draw_horz_line(163, 8, 141);
+  display_draw_horz_line(222, 8, 141);
+  
+  //Copy the icons to the buffer
+  display_copy_icon(system_settings_icon, 21,  63, 15, 25);
+  display_copy_icon(picture_view_icon,    17, 122, 24, 24);
+  display_copy_icon(waveform_view_icon,   17, 181, 24, 24);
+  display_copy_icon(usb_icon,             20, 239, 18, 24);
+  
+  //Main texts in white  
+  display_set_fg_color(0x00FFFFFF);
+  
+  //Select the font for the texts
+  display_set_font(&font_3);
+  
+  //Display the texts
+  display_text(69,  60, "System");
+  display_text(68,  78, "settings");
+  display_text(73, 119, "Picture");
+  display_text(79, 136, "view");
+  display_text(62, 178, "Waveform");
+  display_text(79, 195, "view");
+  display_text(80, 237, "USB");
+  display_text(58, 254, "connection");
+
+  //Display the actual settings
+//  display_channel1_enable_select();
+//  display_channel1_fft_show();
+//  display_channel1_coupling_select();
+//  display_channel1_probe_magnification_select();
+  
+  //Set source and target for getting it on the actual screen
+  display_set_source_buffer(displaybuffer1);
+  display_set_screen_buffer(maindisplaybuffer);
+
+  //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
+  display_slide_top_rect_onto_screen(0, 46, 149, 233, 3938);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_open_channel1_menu(void)
 {
   //Setup the menu in a separate buffer to be able to slide it onto the screen
   display_set_screen_buffer(displaybuffer1);
@@ -1590,22 +1669,22 @@ void display_open_channel1_menu(void)
   display_text(176, 265, "mode");
 
   //Display the actual settings
-  display_channel1_enable_select();
-  display_channel1_fft_show();
-  display_channel1_coupling_select();
-  display_channel1_probe_magnification_select();
+  scope_channel1_enable_select();
+  scope_channel1_fft_show();
+  scope_channel1_coupling_select();
+  scope_channel1_probe_magnification_select();
   
   //Set source and target for getting it on the actual screen
   display_set_source_buffer(displaybuffer1);
   display_set_screen_buffer(maindisplaybuffer);
 
   //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
-  display_slide_top_rect_onto_screen(161, 46, 184, 253, 4369);
+  display_slide_top_rect_onto_screen(161, 46, 183, 252, 4369);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_channel1_enable_select(void)
+void scope_channel1_enable_select(void)
 {
   //Select the font for the texts
   display_set_font(&font_3);
@@ -1625,18 +1704,18 @@ void display_channel1_enable_select(void)
     display_fill_rect(291, 62, 32, 22);
   }
   
-  //Set yellow color for the box behind the selected text
-  display_set_fg_color(0x00FFFF00);
+  //Set channel 1 color for the box behind the selected text
+  display_set_fg_color(CHANNEL1_COLOR);
   
   //Check if channel is disabled or enabled
   if(scopesettings.channel1.enable == 0)
   {
-    //Disabled so yellow box behind off
+    //Disabled so channel 1 color box behind off
     display_fill_rect(291, 62, 32, 22);
   }
   else
   {
-    //Enabled so yellow box behind on
+    //Enabled so channel 1 color box behind on
     display_fill_rect(239, 62, 32, 22);
   }
 
@@ -1673,7 +1752,7 @@ void display_channel1_enable_select(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_channel1_fft_show(void)
+void scope_channel1_fft_show(void)
 {
   //Select the font for the texts
   display_set_font(&font_3);
@@ -1693,18 +1772,18 @@ void display_channel1_fft_show(void)
     display_fill_rect(291, 124, 32, 22);
   }
   
-  //Set yellow color for the box behind the selected text
-  display_set_fg_color(0x00FFFF00);
+  //Set channel 1 color for the box behind the selected text
+  display_set_fg_color(CHANNEL1_COLOR);
   
   //Check if fft is disabled or enabled
   if(scopesettings.channel1.fftenable == 0)
   {
-    //Disabled so yellow box behind off
+    //Disabled so channel 1 color box behind off
     display_fill_rect(291, 124, 32, 22);
   }
   else
   {
-    //Enabled so yellow box behind on
+    //Enabled so channel 1 color box behind on
     display_fill_rect(239, 124, 32, 22);
   }
 
@@ -1741,7 +1820,7 @@ void display_channel1_fft_show(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_channel1_coupling_select(void)
+void scope_channel1_coupling_select(void)
 {
   //Select the font for the texts
   display_set_font(&font_3);
@@ -1761,18 +1840,18 @@ void display_channel1_coupling_select(void)
     display_fill_rect(239, 188, 32, 22);
   }
 
-  //Set yellow color for the box behind the selected text
-  display_set_fg_color(0x00FFFF00);
+  //Set channel 1 color for the box behind the selected text
+  display_set_fg_color(CHANNEL1_COLOR);
   
   //Check if coupling is dc or ac
   if(scopesettings.channel1.coupling == 0)
   {
-    //DC so yellow box behind dc text
+    //DC so channel 1 color box behind dc text
     display_fill_rect(239, 188, 32, 22);
   }
   else
   {
-    //AC so yellow box behind ac text
+    //AC so channel 1 color box behind ac text
     display_fill_rect(291, 188, 32, 22);
   }
 
@@ -1809,7 +1888,7 @@ void display_channel1_coupling_select(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_channel1_probe_magnification_select(void)
+void scope_channel1_probe_magnification_select(void)
 {
   //Select the font for the texts
   display_set_font(&font_3);
@@ -1839,8 +1918,8 @@ void display_channel1_probe_magnification_select(void)
       break;
   }
   
-  //Set yellow color for the box behind the selected text
-  display_set_fg_color(0x00FFFF00);
+  //Set channel 1 color for the box behind the selected text
+  display_set_fg_color(CHANNEL1_COLOR);
   
   //Check if which magnification to highlight
   switch(scopesettings.channel1.magnification)
@@ -1911,4 +1990,656 @@ void display_channel1_probe_magnification_select(void)
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
+void scope_open_channel2_menu(void)
+{
+  //Setup the menu in a separate buffer to be able to slide it onto the screen
+  display_set_screen_buffer(displaybuffer1);
+  
+  //Draw the background in dark grey
+  display_set_fg_color(0x00181818);
+  
+  //Fill the background
+  display_fill_rect(288, 46, 183, 252);
 
+  //Draw the edge in a lighter grey
+  display_set_fg_color(0x00333333);
+  
+  //Draw the edge
+  display_draw_rect(288, 46, 183, 252);
+  
+  //Three black lines between the settings
+  display_set_fg_color(0x00000000);
+  display_draw_horz_line(108, 302, 457);
+  display_draw_horz_line(170, 302, 457);
+  display_draw_horz_line(234, 302, 457);
+  
+  //Main texts in white  
+  display_set_fg_color(0x00FFFFFF);
+  
+  //Select the font for the texts
+  display_set_font(&font_3);
+  
+  //Display the texts
+  display_text(303,  56, "open");
+  display_text(310,  75, "CH");
+  display_text(303, 118, "open");
+  display_text(307, 137, "FFT");
+  display_text(303, 182, "coup");
+  display_text(306, 200, "ling");
+  display_text(303, 247, "probe");
+  display_text(303, 265, "mode");
+
+  //Display the actual settings
+  scope_channel2_enable_select();
+  scope_channel2_fft_show();
+  scope_channel2_coupling_select();
+  scope_channel2_probe_magnification_select();
+  
+  //Set source and target for getting it on the actual screen
+  display_set_source_buffer(displaybuffer1);
+  display_set_screen_buffer(maindisplaybuffer);
+
+  //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
+  display_slide_top_rect_onto_screen(288, 46, 183, 252, 4369);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_channel2_enable_select(void)
+{
+  //Select the font for the texts
+  display_set_font(&font_3);
+
+  //Set dark grey color for the box behind the not selected text
+  display_set_fg_color(0x00181818);
+  
+  //Check if channel is disabled or enabled
+  if(scopesettings.channel2.enable == 0)
+  {
+    //Disabled so dark grey box behind on
+    display_fill_rect(366, 62, 32, 22);
+  }
+  else
+  {
+    //Enabled so dark grey box behind off
+    display_fill_rect(418, 62, 32, 22);
+  }
+  
+  //Set channel 2 color for the box behind the selected text
+  display_set_fg_color(CHANNEL2_COLOR);
+  
+  //Check if channel is disabled or enabled
+  if(scopesettings.channel2.enable == 0)
+  {
+    //Disabled so channel 2 color box behind off
+    display_fill_rect(418, 62, 32, 22);
+  }
+  else
+  {
+    //Enabled so channel 2 color box behind on
+    display_fill_rect(366, 62, 32, 22);
+  }
+
+  //Check if channel is disabled or enabled
+  if(scopesettings.channel2.enable == 0)
+  {
+    //Disabled so white on text
+    display_set_fg_color(0x00FFFFFF);
+  }
+  else
+  {
+    //Enabled so black on text
+    display_set_fg_color(0x00000000);
+  }
+
+  //Display the on text
+  display_text(372, 65, "ON");
+
+  //Check if channel is disabled or enabled
+  if(scopesettings.channel2.enable == 0)
+  {
+    //Disabled so black off text
+    display_set_fg_color(0x00000000);
+  }
+  else
+  {
+    //Enabled so white off text
+    display_set_fg_color(0x00FFFFFF);
+  }
+
+  //Display the off text
+  display_text(421, 65, "OFF");
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_channel2_fft_show(void)
+{
+  //Select the font for the texts
+  display_set_font(&font_3);
+
+  //Set dark grey color for the box behind the not selected text
+  display_set_fg_color(0x00181818);
+  
+  //Check if fft is disabled or enabled
+  if(scopesettings.channel2.fftenable == 0)
+  {
+    //Disabled so dark grey box behind on
+    display_fill_rect(366, 124, 32, 22);
+  }
+  else
+  {
+    //Enabled so dark grey box behind off
+    display_fill_rect(418, 124, 32, 22);
+  }
+  
+  //Set channel 2 color for the box behind the selected text
+  display_set_fg_color(CHANNEL2_COLOR);
+  
+  //Check if fft is disabled or enabled
+  if(scopesettings.channel2.fftenable == 0)
+  {
+    //Disabled so channel 2 color box behind off
+    display_fill_rect(418, 124, 32, 22);
+  }
+  else
+  {
+    //Enabled so channel 2 color box behind on
+    display_fill_rect(366, 124, 32, 22);
+  }
+
+  //Check if fft is disabled or enabled
+  if(scopesettings.channel2.fftenable == 0)
+  {
+    //Disabled so white on text
+    display_set_fg_color(0x00FFFFFF);
+  }
+  else
+  {
+    //Enabled so black on text
+    display_set_fg_color(0x00000000);
+  }
+
+  //Display the on text
+  display_text(372, 127, "ON");
+
+  //Check if fft is disabled or enabled
+  if(scopesettings.channel2.fftenable == 0)
+  {
+    //Disabled so black off text
+    display_set_fg_color(0x00000000);
+  }
+  else
+  {
+    //Enabled so white off text
+    display_set_fg_color(0x00FFFFFF);
+  }
+
+  //Display the off text
+  display_text(421, 127, "OFF");
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_channel2_coupling_select(void)
+{
+  //Select the font for the texts
+  display_set_font(&font_3);
+
+  //Set dark grey color for the box behind the not selected text
+  display_set_fg_color(0x00181818);
+  
+  //Check if coupling is dc or ac
+  if(scopesettings.channel2.coupling == 0)
+  {
+    //DC so dark grey box behind ac text
+    display_fill_rect(418, 188, 32, 22);
+  }
+  else
+  {
+    //AC so dark grey box behind dc text
+    display_fill_rect(366, 188, 32, 22);
+  }
+
+  //Set channel 2 color for the box behind the selected text
+  display_set_fg_color(CHANNEL2_COLOR);
+  
+  //Check if coupling is dc or ac
+  if(scopesettings.channel2.coupling == 0)
+  {
+    //DC so channel 2 color box behind dc text
+    display_fill_rect(366, 188, 32, 22);
+  }
+  else
+  {
+    //AC so channel 2 color box behind ac text
+    display_fill_rect(418, 188, 32, 22);
+  }
+
+  //Check if coupling is dc or ac
+  if(scopesettings.channel2.coupling == 0)
+  {
+    //DC so black dc text
+    display_set_fg_color(0x00000000);
+  }
+  else
+  {
+    //AC so white dc text
+    display_set_fg_color(0x00FFFFFF);
+  }
+
+  //Display the dc text
+  display_text(372, 191, "DC");
+
+  //Check if coupling is dc or ac
+  if(scopesettings.channel2.coupling == 0)
+  {
+    //DC so white ac text
+    display_set_fg_color(0x00FFFFFF);
+  }
+  else
+  {
+    //AC so black ac text
+    display_set_fg_color(0x00000000);
+  }
+
+  //Display the off text
+  display_text(423, 191, "AC");
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_channel2_probe_magnification_select(void)
+{
+  //Select the font for the texts
+  display_set_font(&font_3);
+
+  //Set dark grey color for the boxes behind the not selected texts
+  display_set_fg_color(0x00181818);
+  
+  //Check if coupling is dc or ac
+  switch(scopesettings.channel2.magnification)
+  {
+    case 0:
+      //dark grey times 10 and 100 magnification
+      display_fill_rect(397, 245, 23, 38);
+      display_fill_rect(426, 245, 30, 38);
+      break;
+      
+    case 1:
+      //dark grey times 1 and 100 magnification
+      display_fill_rect(366, 245, 20, 38);
+      display_fill_rect(426, 245, 30, 38);
+      break;
+      
+    default:
+      //dark grey times 1 and 10 magnification
+      display_fill_rect(366, 245, 20, 38);
+      display_fill_rect(397, 245, 23, 38);
+      break;
+  }
+  
+  //Set channel 2 color for the box behind the selected text
+  display_set_fg_color(CHANNEL2_COLOR);
+  
+  //Check if which magnification to highlight
+  switch(scopesettings.channel2.magnification)
+  {
+    case 0:
+      //Highlight times 1 magnification
+      display_fill_rect(366, 245, 20, 38);
+      break;
+      
+    case 1:
+      //Highlight times 10 magnification
+      display_fill_rect(397, 245, 23, 38);
+      break;
+      
+    default:
+      //Highlight times 100 magnification
+      display_fill_rect(426, 245, 30, 38);
+      break;
+  }
+
+  //Check if magnification is 1x
+  if(scopesettings.channel2.magnification == 0)
+  {
+    //Yes so black 1X text
+    display_set_fg_color(0x00000000);
+  }
+  else
+  {
+    //No so white 1X text
+    display_set_fg_color(0x00FFFFFF);
+  }
+
+  //Display the 1X text
+  display_text(372, 247, "1");
+  display_text(371, 265, "X");
+
+  //Check if magnification is 10x
+  if(scopesettings.channel2.magnification == 1)
+  {
+    //Yes so black 10X text
+    display_set_fg_color(0x00000000);
+  }
+  else
+  {
+    //No so white 10X text
+    display_set_fg_color(0x00FFFFFF);
+  }
+
+  //Display the 10X text
+  display_text(401, 247, "10");
+  display_text(403, 265, "X");
+
+  //Check if magnification is 100x
+  if(scopesettings.channel2.magnification > 1)
+  {
+    //Yes so black 100X text
+    display_set_fg_color(0x00000000);
+  }
+  else
+  {
+    //No so white 100X text
+    display_set_fg_color(0x00FFFFFF);
+  }
+
+  //Display the 100X text
+  display_text(430, 247, "100");
+  display_text(437, 265, "X");
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_open_trigger_menu(void)
+{
+  //Setup the menu in a separate buffer to be able to slide it onto the screen
+  display_set_screen_buffer(displaybuffer1);
+  
+  //Draw the background in dark grey
+  display_set_fg_color(0x00181818);
+  
+  //Fill the background
+  display_fill_rect(560, 46, 172, 186);
+
+  //Draw the edge in a lighter grey
+  display_set_fg_color(0x00333333);
+  
+  //Draw the edge
+  display_draw_rect(560, 46, 172, 186);
+  
+  //Three black lines between the settings
+  display_set_fg_color(0x00000000);
+  display_draw_horz_line(107, 570, 722);
+  display_draw_horz_line(168, 570, 722);
+  
+  //Main texts in white  
+  display_set_fg_color(0x00FFFFFF);
+  
+  //Select the font for the texts
+  display_set_font(&font_3);
+  
+  //Display the texts
+  display_text(571,  56, "trig");
+  display_text(571,  75, "mode");
+  display_text(571, 118, "trig");
+  display_text(571, 137, "edge");
+  display_text(571, 182, "trig");
+  display_text(573, 200, "CH");
+
+  //Display the actual settings
+  scope_trigger_mode_select();
+  scope_trigger_edge_select();
+  scope_trigger_channel_select();
+  
+  //Set source and target for getting it on the actual screen
+  display_set_source_buffer(displaybuffer1);
+  display_set_screen_buffer(maindisplaybuffer);
+
+  //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
+  display_slide_top_rect_onto_screen(560, 46, 172, 186, 3524);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_trigger_mode_select(void)
+{
+  //Select the font for the texts
+  display_set_font(&font_3);
+
+  //Set dark grey color for the boxes behind the not selected texts
+  display_set_fg_color(0x00181818);
+  
+  //Check which trigger mode is selected
+  switch(scopesettings.triggermode)
+  {
+    case 0:
+      //dark grey single and normal
+      display_fill_rect(661, 57, 20, 38);
+      display_fill_rect(692, 57, 21, 38);
+      break;
+      
+    case 1:
+      //dark grey auto and normal
+      display_fill_rect(629, 57, 20, 38);
+      display_fill_rect(692, 57, 21, 38);
+      break;
+      
+    default:
+      //dark grey auto and single
+      display_fill_rect(629, 57, 20, 38);
+      display_fill_rect(661, 57, 20, 38);
+      break;
+  }
+  
+  //Set trigger color for the box behind the selected text
+  display_set_fg_color(TRIGGER_COLOR);
+  
+  //Check if which trigger mode to highlight
+  switch(scopesettings.triggermode)
+  {
+    case 0:
+      //Highlight auto mode
+      display_fill_rect(629, 57, 20, 38);
+      break;
+      
+    case 1:
+      //Highlight single mode
+      display_fill_rect(661, 57, 20, 38);
+      break;
+      
+    default:
+      //Highlight normal mode
+      display_fill_rect(692, 57, 21, 38);
+      break;
+  }
+
+  //Check if trigger mode is auto
+  if(scopesettings.triggermode == 0)
+  {
+    //Yes so black auto text
+    display_set_fg_color(0x00000000);
+  }
+  else
+  {
+    //No so white auto text
+    display_set_fg_color(0x00FFFFFF);
+  }
+
+  //Display the auto text
+  display_text(631, 58, "au");
+  display_text(633, 75, "to");
+
+  //Check if trigger mode is single
+  if(scopesettings.triggermode == 1)
+  {
+    //Yes so black single text
+    display_set_fg_color(0x00000000);
+  }
+  else
+  {
+    //No so white single text
+    display_set_fg_color(0x00FFFFFF);
+  }
+
+  //Display the single text
+  display_text(666, 56, "si");
+  display_text(663, 66, "ng");
+  display_text(665, 79, "le");
+
+  //Check if trigger mode is normal
+  if(scopesettings.triggermode > 1)
+  {
+    //Yes so black normal text
+    display_set_fg_color(0x00000000);
+  }
+  else
+  {
+    //No so white normal text
+    display_set_fg_color(0x00FFFFFF);
+  }
+
+  //Display the normal text
+  display_text(695, 56, "no");
+  display_text(694, 66, "rm");
+  display_text(696, 79, "al");
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_trigger_edge_select(void)
+{
+  //Select the font for the texts
+  display_set_font(&font_3);
+
+  //Set dark grey color for the box behind the not selected text
+  display_set_fg_color(0x00181818);
+  
+  //Check which trigger edge is selected
+  if(scopesettings.triggeredge == 0)
+  {
+    //Rising so dark grey box behind falling
+    display_fill_rect(671, 125, 45, 22);
+  }
+  else
+  {
+    //Falling so dark grey box behind rising
+    display_fill_rect(626, 125, 40, 22);
+  }
+  
+  //Set trigger color for the box behind the selected text
+  display_set_fg_color(TRIGGER_COLOR);
+  
+  //Check which trigger edge is selected
+  if(scopesettings.triggeredge == 0)
+  {
+    //Rising so trigger color box behind rising
+    display_fill_rect(626, 125, 40, 22);
+  }
+  else
+  {
+    //Falling so trigger color box behind falling
+    display_fill_rect(671, 125, 45, 22);
+  }
+
+  //Check which trigger edge is selected
+  if(scopesettings.triggeredge == 0)
+  {
+    //Rising so black rising text
+    display_set_fg_color(0x00000000);
+  }
+  else
+  {
+    //Falling so white rising text
+    display_set_fg_color(0x00FFFFFF);
+  }
+
+  //Display the rising text
+  display_text(629, 127, "rising");
+
+  //Check which trigger edge is selected
+  if(scopesettings.triggeredge == 0)
+  {
+    //Rising so white falling text
+    display_set_fg_color(0x00FFFFFF);
+  }
+  else
+  {
+    //Falling so black falling text
+    display_set_fg_color(0x00000000);
+  }
+
+  //Display the falling text
+  display_text(674, 127, "falling");
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_trigger_channel_select(void)
+{
+  //Select the font for the texts
+  display_set_font(&font_3);
+
+  //Set dark grey color for the box behind the not selected text
+  display_set_fg_color(0x00181818);
+  
+  //Check if channel is 1 or 2
+  if(scopesettings.triggerchannel == 0)
+  {
+    //1 so dark grey box behind CH2 text
+    display_fill_rect(680, 188, 32, 22);
+  }
+  else
+  {
+    //2 so dark grey box behind CH1 text
+    display_fill_rect(632, 188, 32, 22);
+  }
+
+  //Set trigger color for the box behind the selected text
+  display_set_fg_color(TRIGGER_COLOR);
+  
+  //Check if channel is 1 or 2
+  if(scopesettings.triggerchannel == 0)
+  {
+    //1 so trigger color box behind CH1 text
+    display_fill_rect(632, 188, 32, 22);
+  }
+  else
+  {
+    //2 so trigger color box behind CH2 text
+    display_fill_rect(680, 188, 32, 22);
+  }
+
+  //Check if channel is 1 or 2
+  if(scopesettings.triggerchannel == 0)
+  {
+    //1 so black CH1 text
+    display_set_fg_color(0x00000000);
+  }
+  else
+  {
+    //2 so white CH1 text
+    display_set_fg_color(0x00FFFFFF);
+  }
+
+  //Display the CH1 text
+  display_text(635, 191, "CH1");
+
+  //Check if channel is 1 or 2
+  if(scopesettings.triggerchannel == 0)
+  {
+    //1 so white CH2 text
+    display_set_fg_color(0x00FFFFFF);
+  }
+  else
+  {
+    //2 so black CH2 text
+    display_set_fg_color(0x00000000);
+  }
+
+  //Display the CH2 text
+  display_text(683, 191, "CH2");
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------

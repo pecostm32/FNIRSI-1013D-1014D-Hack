@@ -45,7 +45,7 @@ int main(void)
   sys_init_display(SCREEN_WIDTH, SCREEN_HEIGHT, maindisplaybuffer);
   
   //Setup the display library for the scope hardware
-  setup_display_lib();
+  scope_setup_display_lib();
   
   //Setup the touch panel interface
   tp_i2c_setup();
@@ -79,7 +79,7 @@ int main(void)
   
   
   //Setup the main parts of the screen
-  setup_main_screen();
+  scope_setup_main_screen();
     
   //Set default brightness
   set_backlight_brightness(0xEA60);
