@@ -25,10 +25,15 @@ extern FONTDATA font_5;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-extern const uint16 system_settings_icon[];
-extern const uint16 picture_view_icon[];
-extern const uint16 waveform_view_icon[];
-extern const uint16 usb_icon[];
+extern const uint8 system_settings_icon[];
+extern const uint8 picture_view_icon[];
+extern const uint8 waveform_view_icon[];
+extern const uint8 usb_icon[];
+extern const uint8 screen_brightness_icon[];
+extern const uint8 grid_brightness_icon[];
+extern const uint8 trigger_50_percent_icon[];
+extern const uint8 baseline_calibration_icon[];
+extern const uint8 x_y_mode_display_icon[];
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -66,7 +71,7 @@ void scope_setup_main_screen(void)
   display_fill_rect(730, 0, 70, 480);
   
   //Setup the menu bar on the right side
-  scope_right_control_menu();
+  scope_setup_right_control_menu();
   
   //Check if normal or wave view mode
   if(scopesettings.waveviewmode == 0)
@@ -102,7 +107,7 @@ void scope_setup_main_screen(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_right_control_menu(void)
+void scope_setup_right_control_menu(void)
 {
   //Setup for clearing right menu bar
   display_set_fg_color(0x00000000);
@@ -1587,37 +1592,15 @@ void scope_open_main_menu(void)
   
   //Three black lines between the settings
   display_set_fg_color(0x00000000);
-  display_draw_horz_line(104, 8, 141);
-  display_draw_horz_line(163, 8, 141);
-  display_draw_horz_line(222, 8, 141);
-  
-  //Copy the icons to the buffer
-  display_copy_icon(system_settings_icon, 21,  63, 15, 25);
-  display_copy_icon(picture_view_icon,    17, 122, 24, 24);
-  display_copy_icon(waveform_view_icon,   17, 181, 24, 24);
-  display_copy_icon(usb_icon,             20, 239, 18, 24);
-  
-  //Main texts in white  
-  display_set_fg_color(0x00FFFFFF);
-  
-  //Select the font for the texts
-  display_set_font(&font_3);
-  
-  //Display the texts
-  display_text(69,  60, "System");
-  display_text(68,  78, "settings");
-  display_text(73, 119, "Picture");
-  display_text(79, 136, "view");
-  display_text(62, 178, "Waveform");
-  display_text(79, 195, "view");
-  display_text(80, 237, "USB");
-  display_text(58, 254, "connection");
+  display_draw_horz_line(104, 9, 140);
+  display_draw_horz_line(163, 9, 140);
+  display_draw_horz_line(222, 9, 140);
 
-  //Display the actual settings
-//  display_channel1_enable_select();
-//  display_channel1_fft_show();
-//  display_channel1_coupling_select();
-//  display_channel1_probe_magnification_select();
+  //Display the menu items  
+  scope_main_menu_system_settings(0);
+  scope_main_menu_picture_view(0);
+  scope_main_menu_waveform_view(0);
+  scope_main_menu_usb_connection(0);
   
   //Set source and target for getting it on the actual screen
   display_set_source_buffer(displaybuffer1);
@@ -1625,6 +1608,174 @@ void scope_open_main_menu(void)
 
   //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
   display_slide_top_rect_onto_screen(0, 46, 149, 233, 3938);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_main_menu_system_settings(int mode)
+{
+  //Check if inactive or active
+  if(mode == 0)
+  {
+    //Inactive so dark grey background
+    display_set_fg_color(0x00181818);
+  }
+  else
+  {
+    //Active so yellow background
+    display_set_fg_color(0x00FFFF00);
+  }
+  
+  //Draw the background
+  display_fill_rect(9, 59, 131, 35);
+
+  //Check if inactive or active
+  if(mode == 0)
+  {
+    //Inactive so white foreground and grey background
+    display_set_fg_color(0x00FFFFFF);
+    display_set_bg_color(0x00181818);
+  }
+  else
+  {
+    //Active so black foreground and yellow background
+    display_set_fg_color(0x00000000);
+    display_set_bg_color(0x00FFFF00);
+  }
+
+  //Display the icon with the set colors
+  display_copy_icon_use_colors(system_settings_icon, 21, 63, 15, 25);
+  
+  //Display the text
+  display_set_font(&font_3);
+  display_text(69, 60, "System");
+  display_text(68, 76, "settings");
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_main_menu_picture_view(int mode)
+{
+  //Check if inactive or active
+  if(mode == 0)
+  {
+    //Inactive so dark grey background
+    display_set_fg_color(0x00181818);
+  }
+  else
+  {
+    //Active so white background
+    display_set_fg_color(0x00CCCCCC);
+  }
+  
+  //Draw the background
+  display_fill_rect(9, 116, 131, 35);
+
+  //Check if inactive or active
+  if(mode == 0)
+  {
+    //Inactive so white foreground and grey background
+    display_set_fg_color(0x00FFFFFF);
+    display_set_bg_color(0x00181818);
+  }
+  else
+  {
+    //Active so black foreground and white background
+    display_set_fg_color(0x00000000);
+    display_set_bg_color(0x00CCCCCC);
+  }
+
+  //Display the icon with the set colors
+  display_copy_icon_use_colors(picture_view_icon, 17, 122, 24, 24);
+  
+  //Display the text
+  display_set_font(&font_3);
+  display_text(73, 119, "Picture");
+  display_text(79, 135, "view");
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_main_menu_waveform_view(int mode)
+{
+  //Check if inactive or active
+  if(mode == 0)
+  {
+    //Inactive so dark grey background
+    display_set_fg_color(0x00181818);
+  }
+  else
+  {
+    //Active so white background
+    display_set_fg_color(0x00CCCCCC);
+  }
+  
+  //Draw the background
+  display_fill_rect(9, 175, 131, 35);
+
+  //Check if inactive or active
+  if(mode == 0)
+  {
+    //Inactive so white foreground and grey background
+    display_set_fg_color(0x00FFFFFF);
+    display_set_bg_color(0x00181818);
+  }
+  else
+  {
+    //Active so black foreground and white background
+    display_set_fg_color(0x00000000);
+    display_set_bg_color(0x00CCCCCC);
+  }
+
+  //Display the icon with the set colors
+  display_copy_icon_use_colors(waveform_view_icon, 17, 181, 24, 24);
+  
+  //Display the text
+  display_set_font(&font_3);
+  display_text(62, 178, "Waveform");
+  display_text(79, 194, "view");
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_main_menu_usb_connection(int mode)
+{
+  //Check if inactive or active
+  if(mode == 0)
+  {
+    //Inactive so dark grey background
+    display_set_fg_color(0x00181818);
+  }
+  else
+  {
+    //Active so white background
+    display_set_fg_color(0x00CCCCCC);
+  }
+  
+  //Draw the background
+  display_fill_rect(9, 235, 131, 35);
+
+  //Check if inactive or active
+  if(mode == 0)
+  {
+    //Inactive so white foreground and grey background
+    display_set_fg_color(0x00FFFFFF);
+    display_set_bg_color(0x00181818);
+  }
+  else
+  {
+    //Active so black foreground and white background
+    display_set_fg_color(0x00000000);
+    display_set_bg_color(0x00CCCCCC);
+  }
+
+  //Display the icon with the set colors
+  display_copy_icon_use_colors(usb_icon, 20, 239, 18, 25);
+  
+  //Display the text
+  display_set_font(&font_3);
+  display_text(80, 237, "USB");
+  display_text(60, 253, "connection");
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -2640,6 +2791,335 @@ void scope_trigger_channel_select(void)
 
   //Display the CH2 text
   display_text(683, 191, "CH2");
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_open_system_settings_menu(void)
+{
+  //Setup the menu in a separate buffer to be able to slide it onto the screen
+  display_set_screen_buffer(displaybuffer1);
+  
+  //Draw the background in dark grey
+  display_set_fg_color(0x00181818);
+  
+  //Fill the background
+  display_fill_rect(150, 46, 244, 294);
+
+  //Draw the edge in a lighter grey
+  display_set_fg_color(0x00333333);
+  
+  //Draw the edge
+  display_draw_rect(150, 46, 244, 294);
+  
+  //Four black lines between the settings
+  display_set_fg_color(0x00000000);
+  display_draw_horz_line(104, 159, 385);
+  display_draw_horz_line(163, 159, 385);
+  display_draw_horz_line(222, 159, 385);
+  display_draw_horz_line(281, 159, 385);
+
+  //Display the menu items  
+  scope_system_settings_screen_brightness_item(0);
+  scope_system_settings_grid_brightness_item(0);
+  scope_system_settings_trigger_50_item();
+  scope_system_settings_calibration_item(0);
+  scope_system_settings_x_y_mode_item();
+  
+  //Set source and target for getting it on the actual screen
+  display_set_source_buffer(displaybuffer1);
+  display_set_screen_buffer(maindisplaybuffer);
+
+  //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
+  display_slide_left_rect_onto_screen(150, 46, 244, 294, 3938);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_system_settings_screen_brightness_item(int mode)
+{
+  //Check if inactive or active
+  if(mode == 0)
+  {
+    //Inactive so dark grey background
+    display_set_fg_color(0x00181818);
+  }
+  else
+  {
+    //Active so yellow background
+    display_set_fg_color(0x00FFFF00);
+  }
+  
+  //Draw the background
+  display_fill_rect(159, 59, 226, 35);
+
+  //Check if inactive or active
+  if(mode == 0)
+  {
+    //Inactive so white foreground and grey background
+    display_set_fg_color(0x00FFFFFF);
+    display_set_bg_color(0x00181818);
+  }
+  else
+  {
+    //Active so black foreground and yellow background
+    display_set_fg_color(0x00000000);
+    display_set_bg_color(0x00FFFF00);
+  }
+
+  //Display the icon with the set colors
+  display_copy_icon_use_colors(screen_brightness_icon, 171, 63, 24, 24);
+  
+  //Display the text
+  display_set_font(&font_3);
+  display_text(231, 60, "Screen");
+  display_text(220, 76, "brightness");
+  
+  //Show the actual setting
+  scope_system_settings_screen_brightness_value();
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_system_settings_screen_brightness_value(void)
+{
+  //Draw the yellow background
+  display_set_fg_color(0x00FFFF00);
+  display_fill_rect(332, 67, 32, 15);
+  
+  //Display the number with fixed width font and black color
+  display_set_font(&font_0);
+  display_set_fg_color(0x00000000);
+  display_decimal(337, 68, scopesettings.screenbrightness);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_system_settings_grid_brightness_item(int mode)
+{
+  //Check if inactive or active
+  if(mode == 0)
+  {
+    //Inactive so dark grey background
+    display_set_fg_color(0x00181818);
+  }
+  else
+  {
+    //Active so yellow background
+    display_set_fg_color(0x00FFFF00);
+  }
+  
+  //Draw the background
+  display_fill_rect(159, 116, 226, 35);
+
+  //Check if inactive or active
+  if(mode == 0)
+  {
+    //Inactive so white foreground and grey background
+    display_set_fg_color(0x00FFFFFF);
+    display_set_bg_color(0x00181818);
+  }
+  else
+  {
+    //Active so black foreground and yellow background
+    display_set_fg_color(0x00000000);
+    display_set_bg_color(0x00FFFF00);
+  }
+
+  //Display the icon with the set colors
+  display_copy_icon_use_colors(grid_brightness_icon, 171, 122, 24, 24);
+  
+  //Display the text
+  display_set_font(&font_3);
+  display_text(240, 119, "Grid");
+  display_text(220, 135, "brightness");
+  
+  //Show the actual setting
+  scope_system_settings_grid_brightness_value();
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_system_settings_grid_brightness_value(void)
+{
+  //Draw the yellow background
+  display_set_fg_color(0x00FFFF00);
+  display_fill_rect(332, 124, 32, 15);
+  
+  //Display the number with fixed width font and black color
+  display_set_font(&font_0);
+  display_set_fg_color(0x00000000);
+  display_decimal(337, 125, scopesettings.gridbrightness);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_system_settings_trigger_50_item(void)
+{
+  //Set the colors for white foreground and grey background
+  display_set_fg_color(0x00FFFFFF);
+  display_set_bg_color(0x00181818);
+
+  //Display the icon with the set colors
+  display_copy_icon_use_colors(trigger_50_percent_icon, 171, 181, 24, 24);
+  
+  //Display the text
+  display_set_font(&font_3);
+  display_text(229, 178, "Always");
+  display_text(217, 194, "trigger 50%");
+  
+  //Show the state
+  scope_display_slide_button(326, 183, scopesettings.alwaystrigger50);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_system_settings_calibration_item(int mode)
+{
+  //Check if inactive or active
+  if(mode == 0)
+  {
+    //Inactive so dark grey background
+    display_set_fg_color(0x00181818);
+  }
+  else
+  {
+    //Active so yellow background
+    display_set_fg_color(0x00FFFF00);
+  }
+  
+  //Draw the background
+  display_fill_rect(159, 235, 226, 35);
+
+  //Check if inactive or active
+  if(mode == 0)
+  {
+    //Inactive so white foreground and grey background
+    display_set_fg_color(0x00FFFFFF);
+    display_set_bg_color(0x00181818);
+  }
+  else
+  {
+    //Active so black foreground and yellow background
+    display_set_fg_color(0x00000000);
+    display_set_bg_color(0x00FFFF00);
+  }
+
+  //Display the icon with the set colors
+  display_copy_icon_use_colors(baseline_calibration_icon, 171, 239, 24, 25);
+  
+  //Display the text
+  display_set_font(&font_3);
+  display_text(225, 237, "Baseline");
+  display_text(219, 253, "calibration");
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_system_settings_x_y_mode_item(void)
+{
+  //Set the colors for white foreground and grey background
+  display_set_fg_color(0x00FFFFFF);
+  display_set_bg_color(0x00181818);
+
+  //Display the icon with the set colors
+  display_copy_icon_use_colors(x_y_mode_display_icon, 171, 297, 24, 24);
+  
+  //Display the text
+  display_set_font(&font_3);
+  display_text(223, 295, "X-Y mode");
+  display_text(231, 311, "display");
+  
+  //Show the state
+  scope_display_slide_button(326, 299, scopesettings.xymodedisplay);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_open_slider(uint16 xpos, uint16 ypos, uint8 position)
+{
+  //Save the screen under the screen brightness slider
+  display_set_destination_buffer(displaybuffer2);
+  display_copy_rect_from_screen(xpos, ypos, 331, 58);
+
+  //Setup the slider menu in a separate buffer to be able to slide it onto the screen
+  display_set_screen_buffer(displaybuffer1);
+
+  //Draw the background in dark grey
+  display_set_fg_color(0x00181818);
+  
+  //Fill the background
+  display_fill_rect(xpos, ypos, 331, 58);
+
+  //Draw the edge in a lighter grey
+  display_set_fg_color(0x00333333);
+  
+  //Draw the edge
+  display_draw_rect(xpos, ypos, 331, 58);
+  
+  //Display the actual slider
+  scope_display_slider(xpos, ypos, position);
+  
+  //Set source and target for getting it on the actual screen
+  display_set_source_buffer(displaybuffer1);
+  display_set_screen_buffer(maindisplaybuffer);
+
+  //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
+  display_slide_left_rect_onto_screen(xpos, ypos, 331, 58, 3938);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_display_slider(uint16 xpos, uint16 ypos, uint8 position)
+{
+  //Draw the slider bar in a light grey color
+  display_set_fg_color(0x00666666);
+  display_fill_rounded_rect(xpos + 20, ypos + 24, 291, 10, 2);
+    
+    
+  //331 long
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_display_slide_button(uint16 xpos, uint16 ypos, uint8 state)
+{
+  uint16 linex      = xpos + 8;
+  uint16 lineystart = ypos + 6;
+  uint16 lineyend   = ypos + 15;
+  uint16 buttonx    = xpos + 4;
+  uint32 edgecolor  = 0x00444444;
+  uint32 fillcolor  = 0x00888888;
+  
+  if(state == 1)
+  {
+    //Displace the lines and button by 19 pixels
+    linex   += 19;
+    buttonx += 19;
+
+    //Set the enabled colors
+    edgecolor  = 0x00008800;
+    fillcolor  = 0x0000FF00;
+  }
+  
+  //Draw the background
+  display_set_fg_color(fillcolor);
+  display_fill_rounded_rect(xpos, ypos, 45, 20, 2);
+
+  //Draw the edge
+  display_set_fg_color(edgecolor);
+  display_draw_rounded_rect(xpos, ypos, 45, 20, 2);
+
+  //Draw button in dark grey
+  display_set_fg_color(0x00444444);
+  display_fill_rect(buttonx, ypos + 4, 19, 13);
+  
+  //Draw lines in black
+  display_set_fg_color(0x00000000);  
+  display_draw_vert_line(linex,     lineystart, lineyend);
+  display_draw_vert_line(linex + 3, lineystart, lineyend);
+  display_draw_vert_line(linex + 6, lineystart, lineyend);
+  display_draw_vert_line(linex + 9, lineystart, lineyend);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

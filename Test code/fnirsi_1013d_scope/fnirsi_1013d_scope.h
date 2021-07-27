@@ -41,6 +41,11 @@ struct tagScopeSettings
   uint8 batterychargelevel;
   uint8 batterycharging;
   uint8 runstate;
+  
+  uint8 screenbrightness;
+  uint8 gridbrightness;
+  uint8 alwaystrigger50;
+  uint8 xymodedisplay;
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------

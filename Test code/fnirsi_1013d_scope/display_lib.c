@@ -575,25 +575,25 @@ void display_fill_rounded_rect(uint16 xpos, uint16 ypos, uint16 width, uint16 he
 void display_slide_top_rect_onto_screen(uint16 xpos, uint16 ypos, uint16 width, uint16 height, uint32 speed)
 {
   uint16 *ptr1, *ptr2;
-  int16   startline;
+  int16   startline;     //Needs to be an int because it has to become negative to stop
   uint16  line;
-  uint16  startpixel;
+  uint16  startxy;
   uint16  pixel;
 
   //Starting line of the rectangle to display first
   startline = height - ((height * speed) >> 16) - 1;
   
-  //Start pixel for source and destination calculation
-  startpixel = xpos + (ypos * displaydata.pixelsperline);
+  //Start x,y offset for source and destination calculation
+  startxy = xpos + (ypos * displaydata.pixelsperline);
   
   //Draw lines as long as is needed to get the whole rectangle on screen
   while(startline >= 0)
   {
     //Source pointer is based on the current line
-    ptr2 = displaydata.sourcebuffer + startpixel + (startline * displaydata.pixelsperline);
+    ptr2 = displaydata.sourcebuffer + startxy + (startline * displaydata.pixelsperline);
     
     //Destination pointer is always the first line
-    ptr1 = displaydata.screenbuffer + startpixel;
+    ptr1 = displaydata.screenbuffer + startxy;
     
     //Handle the needed number of lines for this loop
     for(line=startline;line<=height;line++)
@@ -612,6 +612,55 @@ void display_slide_top_rect_onto_screen(uint16 xpos, uint16 ypos, uint16 width, 
     
     //Calculate the new starting line
     startline = startline - 1 - ((startline * speed) >> 16);
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_slide_left_rect_onto_screen(uint16 xpos, uint16 ypos, uint16 width, uint16 height, uint32 speed)
+{
+  uint16 *ptr1, *ptr2;
+  uint16  line;
+  int16   startpixel;     //Needs to be an int because it has to become negative to stop
+  uint16  endpixel;
+  uint16  startxy;
+  uint16  pixel;
+
+  //Starting pixel of the rectangle to display first
+  startpixel = width - ((width * speed) >> 16) - 1;
+  
+  //Start x,y offset for source and destination calculation
+  startxy = xpos + (ypos * displaydata.pixelsperline);
+  
+  //Draw sections as long as is needed to get the whole rectangle on screen
+  while(startpixel >= 0)
+  {
+    //Source pointer is based on the current start pixel
+    ptr2 = displaydata.sourcebuffer + startxy + startpixel;
+    
+    //Destination pointer is always the first x,y offset
+    ptr1 = displaydata.screenbuffer + startxy;
+    
+    //Determine the number of pixels to do per loop. Increasing number as start pixel shifts to the left of the bitmap.
+    endpixel = width - startpixel;
+    
+    //Handle the lines
+    for(line=0;line<=height;line++)
+    {
+      //Copy the needed pixels for this loop to the screen buffer
+      for(pixel=0;pixel<=endpixel;pixel++)
+      {
+        //Copy one pixel at a time
+        ptr1[pixel] = ptr2[pixel];
+      }
+      
+      //Point to the next line of pixels in both destination and source
+      ptr1 += displaydata.pixelsperline;
+      ptr2 += displaydata.pixelsperline;
+    }
+    
+    //Calculate the new starting pixel
+    startpixel = startpixel - 1 - ((startpixel * speed) >> 16);
   }
 }
 
@@ -681,11 +730,14 @@ void display_copy_rect_to_screen(uint16 xpos, uint16 ypos, uint16 width, uint16 
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_copy_icon(const uint16 *icon, uint16 xpos, uint16 ypos, uint16 width, uint16 height)
+void display_copy_icon_use_colors(const uint8 *icon, uint16 xpos, uint16 ypos, uint16 width, uint16 height)
 {
   uint16 *ptr;
   uint16  line;
   uint16  pixel;
+  uint16  idx;
+  uint16  pixeldata;
+  uint8   bytesperrow = (width + 7) / 8;
 
   //Setup destination pointer
   ptr = displaydata.screenbuffer + xpos + (ypos * displaydata.pixelsperline);
@@ -693,16 +745,92 @@ void display_copy_icon(const uint16 *icon, uint16 xpos, uint16 ypos, uint16 widt
   //Copy the needed lines
   for(line=0;line<height;line++)
   {
+    //Point the icon start byte for this line
+    idx = line * bytesperrow;
+    
+    //Get the data for per bit handling
+    pixeldata = icon[idx];
+    
     //Copy a single line to the destination buffer
-    for(pixel=0;pixel<width;pixel++)
+    for(pixel=0;pixel<width;)
     {
-      //Copy one pixel at a time
-      ptr[pixel] = icon[pixel];
+      //Select the pixel to check
+      pixeldata <<= 1;
+      
+      //Copy one pixel at a time with a check on being on
+      if(pixeldata & 0x0100)
+      {
+        //When on use the foreground color
+        ptr[pixel] = displaydata.fg_color;
+      }
+      else
+      {
+        //When off use the background color
+        ptr[pixel] = displaydata.bg_color;
+      }
+      
+      //Select next pixel
+      pixel++;
+      
+      //Check if pixel on multiple of 8 for next byte select
+      if((pixel & 0x07) == 0)
+      {
+        //Point to the next byte
+        idx++;
+    
+        //And get the data for it
+        pixeldata = icon[idx];
+      }
     }
 
-    //Point to the next line of pixels in both destination and source
-    ptr  += displaydata.pixelsperline;
-    icon += width;
+    //Point to the next line of pixels in the destination
+    ptr += displaydata.pixelsperline;
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_decimal(uint16 xpos, uint16 ypos, int32 value)
+{
+  char   b[13];
+  uint32 u = value;
+  uint8  i = 12;
+
+  if(value == 0)
+  {
+    //Value is zero so just display a 0 character
+    display_text(xpos, ypos, "0");
+  }
+  else
+  {
+    //Terminate the string for displaying
+    b[12] = 0;
+
+    //Check if negative value
+    if(value < 0)
+    {
+      //Negate if so
+      u = -value;
+    }
+
+    //Process the digits
+    while(u)
+    {
+      //Set current digit to decreased index
+      b[--i] = (u % 10) + '0';
+
+      //Take of the current digit
+      u /= 10;
+    }
+
+    //Check if negative value for adding the sign
+    if(value < 0)
+    {
+      //If so put minus character in the buffer
+      b[--i] = '-';
+    }
+    
+    display_text(xpos, ypos, &b[i]);
   }
 }
 

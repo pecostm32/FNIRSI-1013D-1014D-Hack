@@ -35,7 +35,7 @@ extern uint16 displaybuffer2[];
 
 void touch_handler(void)
 {
-  //CHeck on touch state
+  //Check on touch state
   if(touchstate == 0)
   {
     //No touch yet so scan for it
@@ -71,32 +71,54 @@ void scan_for_touch(void)
     //Check if in main menu button range
     if(xtouch <= 80)
     {
-      //Set the button active
-      scope_menu_button(1);
-      
-      //Wait until touch is released
-      while(havetouch)
+      //Check if in normal state
+      if(scopesettings.waveviewmode == 0)
       {
-        //Read the touch panel status
-        tp_i2c_read_status();
+        //Set the button active
+        scope_menu_button(1);
+
+        //Wait until touch is released
+        while(havetouch)
+        {
+          //Read the touch panel status
+          tp_i2c_read_status();
+        }
+
+        //Set the button inactive
+        scope_menu_button(0);
+
+        //Save the screen rectangle where the menu will be displayed
+        display_set_destination_buffer(displaybuffer2);
+        display_copy_rect_from_screen(0, 46, 149, 233);
+
+        //Go and setup the channel 1 menu
+        scope_open_main_menu();
+
+        //Go and handle the menu touch
+        handle_main_menu_touch();
+
+        //Restore the screen when done
+        display_set_source_buffer(displaybuffer2);
+        display_copy_rect_to_screen(0, 46, 149, 233);
       }
-      
-      //Set the button inactive
-      scope_menu_button(0);
-      
-      //Save the screen rectangle where the menu will be displayed
-      display_set_destination_buffer(displaybuffer2);
-      display_copy_rect_from_screen(0, 45, 150, 235);
-      
-      //Go and setup the channel 1 menu
-      scope_open_main_menu();
-      
-      //Go and handle the menu touch
-      handle_main_menu_touch();
-      
-      //Restore the screen when done
-      display_set_source_buffer(displaybuffer2);
-      display_copy_rect_to_screen(0, 45, 150, 235);
+      else
+      {
+        //Set the button active
+        scope_main_return_button(1);
+
+        //Wait until touch is released
+        while(havetouch)
+        {
+          //Read the touch panel status
+          tp_i2c_read_status();
+        }
+
+        //Set the button inactive
+        scope_main_return_button(0);
+
+        //Reset the wave view mode back to normal state
+        scopesettings.waveviewmode = 0;
+      }
     }
     //Check if in channel 1 settings button range
     else if((xtouch >= 161) && (xtouch <= 260))
@@ -116,7 +138,7 @@ void scan_for_touch(void)
       
       //Save the screen rectangle where the menu will be displayed
       display_set_destination_buffer(displaybuffer2);
-      display_copy_rect_from_screen(160, 45, 185, 254);
+      display_copy_rect_from_screen(161, 46, 183, 252);
       
       //Go and setup the channel 1 menu
       scope_open_channel1_menu();
@@ -126,7 +148,7 @@ void scan_for_touch(void)
       
       //Restore the screen when done
       display_set_source_buffer(displaybuffer2);
-      display_copy_rect_to_screen(160, 45, 185, 254);
+      display_copy_rect_to_screen(161, 46, 183, 252);
     }
     //Check if in channel 2 settings button range
     else if((xtouch >= 288) && (xtouch <= 387))
@@ -146,7 +168,7 @@ void scan_for_touch(void)
       
       //Save the screen rectangle where the menu will be displayed
       display_set_destination_buffer(displaybuffer2);
-      display_copy_rect_from_screen(287, 45, 185, 254);
+      display_copy_rect_from_screen(288, 46, 183, 252);
       
       //Go and setup the channel 1 menu
       scope_open_channel2_menu();
@@ -156,7 +178,7 @@ void scan_for_touch(void)
       
       //Restore the screen when done
       display_set_source_buffer(displaybuffer2);
-      display_copy_rect_to_screen(287, 45, 185, 254);
+      display_copy_rect_to_screen(288, 46, 183, 252);
     }
     //Check if in move speed button range
     else if((xtouch >= 493) && (xtouch <= 533))
@@ -195,7 +217,7 @@ void scan_for_touch(void)
       
       //Save the screen rectangle where the menu will be displayed
       display_set_destination_buffer(displaybuffer2);
-      display_copy_rect_from_screen(559, 45, 174, 188);
+      display_copy_rect_from_screen(560, 46, 172, 186);
       
       //Go and setup the channel 1 menu
       scope_open_trigger_menu();
@@ -205,7 +227,7 @@ void scan_for_touch(void)
       
       //Restore the screen when done
       display_set_source_buffer(displaybuffer2);
-      display_copy_rect_to_screen(559, 45, 174, 188);
+      display_copy_rect_to_screen(560, 46, 172, 186);
     }
   }
   else if(xtouch > 730)
@@ -223,6 +245,11 @@ void scan_for_touch(void)
 
 void handle_main_menu_touch(void)
 {
+  int systemsettingsmenuopen = 0;
+  int screenbrightnessopen = 0;
+  int gridbrightnessopen = 0;
+  int calibrationopen = 0;
+  
   //Stay in the menu as long as there is no touch outside the menu  
   while(1)
   {
@@ -233,20 +260,163 @@ void handle_main_menu_touch(void)
     if(havetouch)
     {
       //Check if touch within the menu field
-      if((xtouch >= 0) && (xtouch <= 149) && (ytouch >= 46) && (ytouch <= 279))
+      if((xtouch >= 2) && (xtouch <= 149) && (ytouch >= 46) && (ytouch <= 279))
       {
-
-
-        
-        //Wait until touch is released before checking on a new position
-        while(havetouch)
+        //Check if on system settings
+        if((ytouch >= 46) && (ytouch <= 105))
         {
-          //Scan the touch panel for touch
-          tp_i2c_read_status();
+          //Check if already open
+          if(systemsettingsmenuopen == 0)
+          {
+            //Set the button active
+            scope_main_menu_system_settings(1);
+
+            //Wait until touch is released
+            while(havetouch)
+            {
+              //Read the touch panel status
+              tp_i2c_read_status();
+            }
+
+            //Save the screen under the menu
+            display_set_destination_buffer(displaybuffer2);
+            display_copy_rect_from_screen(150, 46, 244, 294);
+            
+            //Show the system settings menu
+            scope_open_system_settings_menu();
+            
+            //Signal the system settings menu is opened
+            systemsettingsmenuopen = 1;
+          }
+        }
+        //Check if on picture view
+        else if((ytouch >= 107) && (ytouch <= 164))
+        {
+          //Set the button active
+          scope_main_menu_picture_view(1);
+
+          //Wait until touch is released
+          while(havetouch)
+          {
+            //Read the touch panel status
+            tp_i2c_read_status();
+          }
+
+          //Show and handle the picture view here
+          
+          //Set the button inactive
+          scope_main_menu_picture_view(0);
+        }
+        //Check if on waveform view
+        else if((ytouch >= 166) && (ytouch <= 223))
+        {
+          //Set the button active
+          scope_main_menu_waveform_view(1);
+
+          //Wait until touch is released
+          while(havetouch)
+          {
+            //Read the touch panel status
+            tp_i2c_read_status();
+          }
+
+          //Show and handle the waveform view here
+          
+          //Set the button inactive
+          scope_main_menu_waveform_view(0);
+        }
+        //Check if on USB connection
+        else if((ytouch >= 225) && (ytouch <= 278))
+        {
+          //Set the button active
+          scope_main_menu_usb_connection(1);
+
+          //Wait until touch is released
+          while(havetouch)
+          {
+            //Read the touch panel status
+            tp_i2c_read_status();
+          }
+
+          //Show and handle the usb connection here
+          
+          //Set the button inactive
+          scope_main_menu_usb_connection(0);
         }
       }
+      //Check on system settings menu opened and being touched
+      else if(systemsettingsmenuopen && (xtouch >= 150) && (xtouch <= 394) && (ytouch >= 46) && (ytouch <= 340))
+      {
+        //Check if on screen brightness
+        if((ytouch >= 46) && (ytouch <= 105))
+        {
+          //Check if already open
+          if(screenbrightnessopen == 0)
+          {
+            //Set the button active
+            scope_system_settings_screen_brightness_item(1);
+
+            //Wait until touch is released
+            while(havetouch)
+            {
+              //Read the touch panel status
+              tp_i2c_read_status();
+            }
+
+            //Check if the grid brightness slider is open
+            if(gridbrightnessopen)
+            {
+              //Restore the screen under the grid brightness slider
+              display_set_source_buffer(displaybuffer2);
+              display_copy_rect_to_screen(394, 105, 331, 58);  //!!!!!!!!!!!! mod coords here
+              
+              //Signal it is closed
+              gridbrightnessopen = 0;
+            }
+            //Check if the calibration text is open
+            else if(calibrationopen)
+            {
+              //Restore the screen under the calibration text
+              display_set_source_buffer(displaybuffer2);
+              display_copy_rect_to_screen(394, 46, 244, 294);  //!!!!!!!!!!!! mod coords here
+              
+              //Signal it is closed
+              calibrationopen = 0;
+            }
+            
+            //Show the screen brightness slider
+            scope_open_slider(394, 46, scopesettings.screenbrightness);
+            
+            //Signal the screen brightness slider is opened
+            screenbrightnessopen = 1;
+          }
+        }
+        
+        
+        
+        
+        
+        
+        
+        
+      }
+      //Add handling for the brightness here
+      
+      
       else
       {
+        //Check if system settings menu has been opened
+        if(systemsettingsmenuopen)
+        {
+          //Restore the screen under the system settings menu when done
+          display_set_source_buffer(displaybuffer2);
+          display_copy_rect_to_screen(150, 46, 244, 294);
+        }
+        
+        //!!!!!!!!!!!!!!!!!!!!!! ADD the screen restore code here when the coords are known!!!!!!!!!!!!!!!!
+        
+        
+        
         //Touch outside the menu so quit
         return;
       }
@@ -679,6 +849,13 @@ void handle_trigger_menu_touch(void)
             scope_trigger_channel_select();
             scope_trigger_settings(0);
           }
+        }
+        
+        //Wait until touch is released before checking on a new position
+        while(havetouch)
+        {
+          //Scan the touch panel for touch
+          tp_i2c_read_status();
         }
       }
       else

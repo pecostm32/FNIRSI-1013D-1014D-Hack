@@ -63,6 +63,7 @@ void display_fill_rounded_rect(uint16 xpos, uint16 ypos, uint16 width, uint16 he
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void display_slide_top_rect_onto_screen(uint16 xpos, uint16 ypos, uint16 width, uint16 height, uint32 speed);
+void display_slide_left_rect_onto_screen(uint16 xpos, uint16 ypos, uint16 width, uint16 height, uint32 speed);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -71,10 +72,11 @@ void display_copy_rect_to_screen(uint16 xpos, uint16 ypos, uint16 width, uint16 
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_copy_icon(const uint16 *icon, uint16 xpos, uint16 ypos, uint16 width, uint16 height);
+void display_copy_icon_use_colors(const uint8 *icon, uint16 xpos, uint16 ypos, uint16 width, uint16 height);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+void display_decimal(uint16 xpos, uint16 ypos, int32 value);
 void display_text(uint16 xpos, uint16 ypos, int8 *text);
 
 //----------------------------------------------------------------------------------------------------------------------------------

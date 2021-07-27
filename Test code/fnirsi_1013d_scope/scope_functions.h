@@ -16,7 +16,7 @@ void scope_setup_main_screen(void);
   
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_right_control_menu(void);
+void scope_setup_right_control_menu(void);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 // Right side bar functions
@@ -57,6 +57,10 @@ void scope_battery_status(void);
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void scope_open_main_menu(void);
+void scope_main_menu_system_settings(int mode);
+void scope_main_menu_picture_view(int mode);
+void scope_main_menu_waveform_view(int mode);
+void scope_main_menu_usb_connection(int mode);
 
 void scope_open_channel1_menu(void);
 void scope_channel1_enable_select(void);
@@ -75,7 +79,22 @@ void scope_trigger_mode_select(void);
 void scope_trigger_edge_select(void);
 void scope_trigger_channel_select(void);
 
+void scope_open_system_settings_menu(void);
+void scope_system_settings_screen_brightness_item(int mode);
+void scope_system_settings_screen_brightness_value(void);
+void scope_system_settings_grid_brightness_item(int mode);
+void scope_system_settings_grid_brightness_value(void);
+void scope_system_settings_trigger_50_item(void);
+void scope_system_settings_calibration_item(int mode);
+void scope_system_settings_x_y_mode_item(void);
+
 //----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_open_slider(uint16 xpos, uint16 ypos, uint8 position);
+
+void scope_display_slider(uint16 xpos, uint16 ypos, uint8 position);
+
+void scope_display_slide_button(uint16 xpos, uint16 ypos, uint8 state);
 
 
 //----------------------------------------------------------------------------------------------------------------------------------
