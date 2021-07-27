@@ -92,4 +92,11 @@ Implemented channel 1 menu handling and are now able to change the settings for 
 again confirming the earlier findings. Writing the emulator was worth it. Without it I would not have gotten this far. It also allows for testing the code
 I'm writing, without the need for loading it to the actual scope.
 
+----------------------------------------------------------------------------------------------------------
+27-JULY-2021
+All the top menus are implemented and except for the main manu functional. The main menu allows for opening the system settings menu.
+The other options are not yet implemented. The system settings menu is displayed and the screen brightnes setting can be opened.
+The base of the slider is shown, but the rest still needs to be implemented.
+The latest Ghidra archive has more and more of the functions identified. The C implementation being made is not a one to one
+copy, but the functionality is the same.
 
