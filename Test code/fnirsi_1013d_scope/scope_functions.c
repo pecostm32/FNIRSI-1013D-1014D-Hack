@@ -37,11 +37,22 @@ extern const uint8 x_y_mode_display_icon[];
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+extern uint8  havetouch;
+extern uint16 xtouch;
+extern uint16 ytouch;
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 SCOPESETTINGS scopesettings;
 
 uint16 maindisplaybuffer[SCREEN_WIDTH * SCREEN_HEIGHT];
 uint16 displaybuffer1[SCREEN_WIDTH * SCREEN_HEIGHT];
 uint16 displaybuffer2[SCREEN_WIDTH * SCREEN_HEIGHT];
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//For touch filtering on slider movement
+
+uint16 prevxtouch = 0;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -2851,7 +2862,7 @@ void scope_system_settings_screen_brightness_item(int mode)
   }
   
   //Draw the background
-  display_fill_rect(159, 59, 226, 35);
+  display_fill_rect(159, 59, 226, 36);
 
   //Check if inactive or active
   if(mode == 0)
@@ -2910,7 +2921,7 @@ void scope_system_settings_grid_brightness_item(int mode)
   }
   
   //Draw the background
-  display_fill_rect(159, 116, 226, 35);
+  display_fill_rect(159, 116, 226, 36);
 
   //Check if inactive or active
   if(mode == 0)
@@ -2989,7 +3000,7 @@ void scope_system_settings_calibration_item(int mode)
   }
   
   //Draw the background
-  display_fill_rect(159, 235, 226, 35);
+  display_fill_rect(159, 235, 226, 36);
 
   //Check if inactive or active
   if(mode == 0)
@@ -3036,6 +3047,84 @@ void scope_system_settings_x_y_mode_item(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+void scope_open_calibration_start_text(void)
+{
+  //Save the screen under the baseline calibration start text
+  display_set_destination_buffer(displaybuffer2);
+  display_copy_rect_from_screen(395, 222, 199, 59);
+
+  //Setup the text in a separate buffer to be able to slide it onto the screen
+  display_set_screen_buffer(displaybuffer1);
+
+  //Draw the background in dark grey
+  display_set_fg_color(0x00181818);
+  display_fill_rect(395, 222, 199, 59);
+
+  //Draw the edge in a lighter grey
+  display_set_fg_color(0x00333333);
+  display_draw_rect(395, 222, 199, 59);
+
+  //Display the text in white
+  display_set_fg_color(0x00FFFFFF);
+  display_set_font(&font_3);
+  display_text(409, 227, "Please unplug");
+  display_text(409, 243, "the probe and");
+  display_text(409, 259, "USB first !");
+
+  //Add the ok button
+  scope_display_ok_button(517, 230, 0);
+  
+  //Set source and target for getting it on the actual screen
+  display_set_source_buffer(displaybuffer1);
+  display_set_screen_buffer(maindisplaybuffer);
+
+  //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
+  display_slide_left_rect_onto_screen(395, 222, 199, 59, 3938);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_show_calibrating_text(void)
+{
+  //Restore the screen from under the calibration start text to get rid of it
+  display_set_source_buffer(displaybuffer2);
+  display_copy_rect_to_screen(395, 222, 199, 59);
+  
+  //Draw the background in dark grey
+  display_set_fg_color(0x00181818);
+  display_fill_rect(395, 222, 110, 59);
+
+  //Draw the edge in a lighter grey
+  display_set_fg_color(0x00333333);
+  display_draw_rect(395, 222, 110, 59);
+
+  //Display the text in white
+  display_set_fg_color(0x00FFFFFF);
+  display_set_font(&font_3);
+  display_text(409, 243, "Calibrating...");
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_show_calibration_done_text(void)
+{
+  //Draw the background in dark grey
+  display_set_fg_color(0x00181818);
+  display_fill_rect(395, 222, 110, 59);
+
+  //Draw the edge in a lighter grey
+  display_set_fg_color(0x00333333);
+  display_draw_rect(395, 222, 110, 59);
+
+  //Display the text in white
+  display_set_fg_color(0x00FFFFFF);
+  display_set_font(&font_3);
+  display_text(414, 235, "Calibration");
+  display_text(416, 251, "successful");
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 void scope_open_slider(uint16 xpos, uint16 ypos, uint8 position)
 {
   //Save the screen under the screen brightness slider
@@ -3072,12 +3161,86 @@ void scope_open_slider(uint16 xpos, uint16 ypos, uint8 position)
 
 void scope_display_slider(uint16 xpos, uint16 ypos, uint8 position)
 {
-  //Draw the slider bar in a light grey color
+  uint16 x = xpos + 20;
+  uint16 y = ypos + 24;
+  uint16 w = (291 * position) / 100;
+  uint16 ys = ypos + 23;
+  uint16 ye = ypos + 35;
+
+  //Clear the background first
+  display_set_fg_color(0x00181818);
+  display_fill_rect(xpos + 8, ypos + 17, 315, 24);
+  
+  //Draw the first part of the slider bar in a yellow color
+  display_set_fg_color(0x00FFFF00);
+  display_fill_rounded_rect(x, y, w, 10, 2);
+  
+  //Adjust positions for the grey part
+  x += w;
+  w  = 291 - w;
+  
+  //Draw the last part of the slider bar in a light grey color
   display_set_fg_color(0x00666666);
-  display_fill_rounded_rect(xpos + 20, ypos + 24, 291, 10, 2);
-    
-    
-  //331 long
+  display_fill_rounded_rect(x, y, w, 10, 2);
+  
+  //Adjust positions for drawing the knob
+  x -= 11;
+  y -= 6;
+  
+  //Draw the knob
+  display_set_fg_color(0x00AAAAAA);
+  display_fill_rounded_rect(x, y, 22, 22, 2);
+  
+  //Draw the black lines on the knob
+  display_set_fg_color(0x00000000);
+  display_draw_vert_line(x +  6, ys, ye);
+  display_draw_vert_line(x + 11, ys, ye);
+  display_draw_vert_line(x + 16, ys, ye);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+int32 scope_move_slider(uint16 xpos, uint16 ypos, uint8 *position)
+{
+  uint16 xs = xpos + 20;
+  uint16 value;
+  int16 filter = xtouch - prevxtouch;
+  
+  //Check if update needed
+  if((filter > -3) && (filter < 3))
+  {
+    //When change in movement less the absolute 3 don't process
+    return(0);
+  }
+  
+  //Save for next filter check
+  prevxtouch = xtouch;
+  
+  //Make sure it stays in allowed range
+  if(xtouch <= xs)
+  {
+    //Below slider keep it on 0
+    value = 0;
+  }
+  else if(xtouch >= (xpos + 311))
+  {
+    //Above slider keep it on max
+    value = 100;
+  }
+  else
+  {
+    //Based on xtouch position calculate a new position from 0 to 100
+    value = ((xtouch - xs) * 100) / 291;
+  }
+  
+  //Update the position variable
+  *position = value;
+  
+  //Show the new position on screen
+  scope_display_slider(xpos, ypos, value);
+  
+  //Signal there is change
+  return(1);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -3120,6 +3283,42 @@ void scope_display_slide_button(uint16 xpos, uint16 ypos, uint8 state)
   display_draw_vert_line(linex + 3, lineystart, lineyend);
   display_draw_vert_line(linex + 6, lineystart, lineyend);
   display_draw_vert_line(linex + 9, lineystart, lineyend);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_display_ok_button(uint16 xpos, uint16 ypos, uint8 mode)
+{
+  //Check if inactive or active
+  if(mode == 0)
+  {
+    //Inactive so dark grey background
+    display_set_fg_color(0x00333333);
+  }
+  else
+  {
+    //Active so light grey background
+    display_set_fg_color(0x00CCCCCC);
+  }
+  
+  //Draw the background
+  display_fill_rect(xpos, ypos, 66, 44);
+
+  //Check if inactive or active
+  if(mode == 0)
+  {
+    //Inactive so white foreground
+    display_set_fg_color(0x00FFFFFF);
+  }
+  else
+  {
+    //Active so black foreground
+    display_set_fg_color(0x00000000);
+  }
+  
+  //Display the text
+  display_set_font(&font_3);
+  display_text(xpos + 24, ypos + 14, "OK");
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

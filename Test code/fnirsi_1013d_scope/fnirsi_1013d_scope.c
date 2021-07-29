@@ -23,6 +23,11 @@ extern uint16 ytouch;
 
 extern uint8 touchstate;
 
+extern uint8 systemsettingsmenuopen;
+extern uint8 screenbrightnessopen;
+extern uint8 gridbrightnessopen;
+extern uint8 calibrationopen;
+
 extern uint16 maindisplaybuffer[];
 
 extern SCOPESETTINGS scopesettings;
@@ -73,6 +78,12 @@ int main(void)
   
   //Setup the display library for the scope hardware
   scope_setup_display_lib();
+  
+  //Initialize some variables for now
+  systemsettingsmenuopen = 0;
+  screenbrightnessopen = 0;
+  gridbrightnessopen = 0;
+  calibrationopen = 0;
   
   touchstate = 0;
   havetouch = 0;

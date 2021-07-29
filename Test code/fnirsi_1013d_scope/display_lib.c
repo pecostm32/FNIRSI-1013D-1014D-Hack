@@ -577,7 +577,7 @@ void display_slide_top_rect_onto_screen(uint16 xpos, uint16 ypos, uint16 width, 
   uint16 *ptr1, *ptr2;
   int16   startline;     //Needs to be an int because it has to become negative to stop
   uint16  line;
-  uint16  startxy;
+  uint32  startxy;
   uint16  pixel;
 
   //Starting line of the rectangle to display first
@@ -623,7 +623,7 @@ void display_slide_left_rect_onto_screen(uint16 xpos, uint16 ypos, uint16 width,
   uint16  line;
   int16   startpixel;     //Needs to be an int because it has to become negative to stop
   uint16  endpixel;
-  uint16  startxy;
+  uint32  startxy;
   uint16  pixel;
 
   //Starting pixel of the rectangle to display first
@@ -671,7 +671,7 @@ void display_copy_rect_from_screen(uint16 xpos, uint16 ypos, uint16 width, uint1
   uint16 *ptr1, *ptr2;
   uint16  line;
   uint16  pixel;
-  uint16  startpixel;
+  uint32  startpixel;
 
   //Start pixel for source and destination calculation
   startpixel = xpos + (ypos * displaydata.pixelsperline);
@@ -703,7 +703,7 @@ void display_copy_rect_to_screen(uint16 xpos, uint16 ypos, uint16 width, uint16 
   uint16 *ptr1, *ptr2;
   uint16  line;
   uint16  pixel;
-  uint16  startpixel;
+  uint32  startpixel;
 
   //Start pixel for source and destination calculation
   startpixel = xpos + (ypos * displaydata.pixelsperline);

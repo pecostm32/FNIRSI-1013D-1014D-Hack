@@ -88,13 +88,19 @@ void scope_system_settings_trigger_50_item(void);
 void scope_system_settings_calibration_item(int mode);
 void scope_system_settings_x_y_mode_item(void);
 
+void scope_open_calibration_start_text(void);
+void scope_show_calibrating_text(void);
+void scope_show_calibration_done_text(void);
+
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void scope_open_slider(uint16 xpos, uint16 ypos, uint8 position);
-
 void scope_display_slider(uint16 xpos, uint16 ypos, uint8 position);
+int scope_move_slider(uint16 xpos, uint16 ypos, uint8 *position);
 
 void scope_display_slide_button(uint16 xpos, uint16 ypos, uint8 state);
+
+void scope_display_ok_button(uint16 xpos, uint16 ypos, uint8 mode);
 
 
 //----------------------------------------------------------------------------------------------------------------------------------

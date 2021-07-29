@@ -17,8 +17,6 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-uint8 touchstate;
-
 extern SCOPESETTINGS scopesettings;
 
 extern uint8  havetouch;
@@ -31,6 +29,14 @@ extern uint16 displaybuffer2[];
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+uint8 touchstate = 0;
+
+uint8 systemsettingsmenuopen = 0;
+uint8 screenbrightnessopen = 0;
+uint8 gridbrightnessopen = 0;
+uint8 calibrationopen = 0;
+
+//----------------------------------------------------------------------------------------------------------------------------------
 //touch handler
 
 void touch_handler(void)
@@ -245,11 +251,6 @@ void scan_for_touch(void)
 
 void handle_main_menu_touch(void)
 {
-  int systemsettingsmenuopen = 0;
-  int screenbrightnessopen = 0;
-  int gridbrightnessopen = 0;
-  int calibrationopen = 0;
-  
   //Stay in the menu as long as there is no touch outside the menu  
   while(1)
   {
@@ -304,8 +305,8 @@ void handle_main_menu_touch(void)
 
           //Show and handle the picture view here
           
-          //Set the button inactive
-          scope_main_menu_picture_view(0);
+          //Close menu and switch to picture view screen
+          
         }
         //Check if on waveform view
         else if((ytouch >= 166) && (ytouch <= 223))
@@ -321,9 +322,8 @@ void handle_main_menu_touch(void)
           }
 
           //Show and handle the waveform view here
-          
-          //Set the button inactive
-          scope_main_menu_waveform_view(0);
+
+          //Close menu and switch to waveform view screen
         }
         //Check if on USB connection
         else if((ytouch >= 225) && (ytouch <= 278))
@@ -339,21 +339,23 @@ void handle_main_menu_touch(void)
           }
 
           //Show and handle the usb connection here
-          
-          //Set the button inactive
-          scope_main_menu_usb_connection(0);
+
+          //Close menu and switch to usb connection screen
         }
       }
       //Check on system settings menu opened and being touched
       else if(systemsettingsmenuopen && (xtouch >= 150) && (xtouch <= 394) && (ytouch >= 46) && (ytouch <= 340))
       {
         //Check if on screen brightness
-        if((ytouch >= 46) && (ytouch <= 105))
+        if((ytouch >= 47) && (ytouch <= 103))
         {
           //Check if already open
           if(screenbrightnessopen == 0)
           {
-            //Set the button active
+            //Close any of the sub menus if open
+            close_open_sub_menus();
+
+            //Set this item active
             scope_system_settings_screen_brightness_item(1);
 
             //Wait until touch is released
@@ -363,46 +365,166 @@ void handle_main_menu_touch(void)
               tp_i2c_read_status();
             }
 
-            //Check if the grid brightness slider is open
-            if(gridbrightnessopen)
-            {
-              //Restore the screen under the grid brightness slider
-              display_set_source_buffer(displaybuffer2);
-              display_copy_rect_to_screen(394, 105, 331, 58);  //!!!!!!!!!!!! mod coords here
-              
-              //Signal it is closed
-              gridbrightnessopen = 0;
-            }
-            //Check if the calibration text is open
-            else if(calibrationopen)
-            {
-              //Restore the screen under the calibration text
-              display_set_source_buffer(displaybuffer2);
-              display_copy_rect_to_screen(394, 46, 244, 294);  //!!!!!!!!!!!! mod coords here
-              
-              //Signal it is closed
-              calibrationopen = 0;
-            }
-            
             //Show the screen brightness slider
-            scope_open_slider(394, 46, scopesettings.screenbrightness);
+            scope_open_slider(395, 46, scopesettings.screenbrightness);
             
             //Signal the screen brightness slider is opened
             screenbrightnessopen = 1;
           }
         }
-        
-        
-        
-        
-        
-        
-        
-        
+        //Check if on grid brightness
+        else if((ytouch >= 105) && (ytouch <= 162))
+        {
+          //Check if already open
+          if(gridbrightnessopen == 0)
+          {
+            //Close any of the sub menus if open
+            close_open_sub_menus();
+            
+            //Set this item active
+            scope_system_settings_grid_brightness_item(1);
+
+            //Wait until touch is released
+            while(havetouch)
+            {
+              //Read the touch panel status
+              tp_i2c_read_status();
+            }
+
+            //Show the screen brightness slider
+            scope_open_slider(395, 104, scopesettings.gridbrightness);
+            
+            //Signal the screen brightness slider is opened
+            gridbrightnessopen = 1;
+          }
+        }
+        //Check if on always trigger 50%
+        else if((ytouch >= 164) && (ytouch <= 221))
+        {
+          //Close any of the sub menus if open
+          close_open_sub_menus();
+          
+          //Wait until touch is released
+          while(havetouch)
+          {
+            //Read the touch panel status
+            tp_i2c_read_status();
+          }
+
+          //Toggle the always trigger 50% state
+          scopesettings.alwaystrigger50 ^= 1;
+  
+          //Show the state
+          scope_display_slide_button(326, 183, scopesettings.alwaystrigger50);
+        }
+        //Check if on baseline calibration
+        else if((ytouch >= 223) && (ytouch <= 280))
+        {
+          //Check if already open
+          if(calibrationopen == 0)
+          {
+            //Close any of the sub menus if open
+            close_open_sub_menus();
+
+            //Set this item active
+            scope_system_settings_calibration_item(1);
+
+            //Wait until touch is released
+            while(havetouch)
+            {
+              //Read the touch panel status
+              tp_i2c_read_status();
+            }
+
+            //Show the start text
+            scope_open_calibration_start_text();
+            
+            //Signal the calibration text is opened
+            calibrationopen = 1;
+          }
+        }
+        //Check if on x-y mode display
+        else if((ytouch >= 282) && (ytouch <= 339))
+        {
+          //Close any of the sub menus if open
+          close_open_sub_menus();
+          
+          //Wait until touch is released
+          while(havetouch)
+          {
+            //Read the touch panel status
+            tp_i2c_read_status();
+          }
+
+          //Toggle the x-y mode display state
+          scopesettings.xymodedisplay ^= 1;
+  
+          //Show the state
+          scope_display_slide_button(326, 299, scopesettings.xymodedisplay);
+        }
       }
-      //Add handling for the brightness here
-      
-      
+      //Check on screen brightness slider opened and being touched
+      else if(screenbrightnessopen && (xtouch >= 395) && (xtouch <= 726) && (ytouch >= 46) && (ytouch <= 104))
+      {
+        //Move the slider to a new position and check if there was a change in position
+        if(scope_move_slider(395, 46, &scopesettings.screenbrightness))
+        {
+          //Update the setting in the system settings menu
+          scope_system_settings_screen_brightness_value();
+          
+          //Update the actual screen brightness
+        }       
+      }
+      //Check on grid brightness slider opened and being touched
+      else if(gridbrightnessopen && (xtouch >= 395) && (xtouch <= 726) && (ytouch >= 105) && (ytouch <= 163))
+      {
+        //Move the slider to a new position and check if there was a change in position
+        if(scope_move_slider(395, 105, &scopesettings.gridbrightness))
+        {
+          //Update the setting in the system settings menu
+          scope_system_settings_grid_brightness_value();
+          
+          //Update the actual grid brightness if needed. There is no direct update of the background!
+        }       
+      }
+      //Check on calibration start text opened and being touched
+      else if((calibrationopen == 1) && (xtouch >= 395) && (xtouch <= 594) && (ytouch >= 223) && (ytouch <= 280))
+      {
+        //Check if touch is on the button
+        if((xtouch >= 517) && (xtouch <= 583) && (ytouch >= 230) && (ytouch <= 272))
+        {
+          //Highlight the button
+          scope_display_ok_button(517, 230, 1);
+          
+          //Wait until touch is released
+          while(havetouch)
+          {
+            //Read the touch panel status
+            tp_i2c_read_status();
+          }
+          
+          //Show the baseline calibration active text
+          scope_show_calibrating_text();
+          
+          //Start the calibration process
+          
+          //Show the calibration successful text if all went well
+          scope_show_calibration_done_text();
+          
+          //Signal calibration has been done
+          calibrationopen = 2;
+        }
+      }
+      //Check on calibration done text opened and being touched
+      else if((calibrationopen == 2) && (xtouch >= 395) && (xtouch <= 505) && (ytouch >= 223) && (ytouch <= 280))
+      {
+        //Nothing to do here so wait until touch is released
+        while(havetouch)
+        {
+          //Read the touch panel status
+          tp_i2c_read_status();
+        }
+      }
       else
       {
         //Check if system settings menu has been opened
@@ -411,13 +533,15 @@ void handle_main_menu_touch(void)
           //Restore the screen under the system settings menu when done
           display_set_source_buffer(displaybuffer2);
           display_copy_rect_to_screen(150, 46, 244, 294);
+          
+          //Clear the flag so it will be opened next time
+          systemsettingsmenuopen = 0;
         }
         
-        //!!!!!!!!!!!!!!!!!!!!!! ADD the screen restore code here when the coords are known!!!!!!!!!!!!!!!!
+        //Close any of the sub menus if open
+        close_open_sub_menus();
         
-        
-        
-        //Touch outside the menu so quit
+        //Touch outside the menu's so quit
         return;
       }
     }
@@ -868,3 +992,45 @@ void handle_trigger_menu_touch(void)
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
+
+void close_open_sub_menus(void)
+{
+  //Only one of these menu's will be opened at any time
+  
+  //Check if the screen brightness slider is open
+  if(screenbrightnessopen)
+  {
+    //Set the button active
+    scope_system_settings_screen_brightness_item(0);
+
+    //Restore the screen under the grid brightness slider
+    display_set_source_buffer(displaybuffer2);
+    display_copy_rect_to_screen(395, 46, 331, 58);
+
+    //Signal it is closed
+    screenbrightnessopen = 0;
+  }
+  //Check if the grid brightness slider is open
+  else if(gridbrightnessopen)
+  {
+    //Set the button in active
+    scope_system_settings_grid_brightness_item(0);
+
+    //Restore the screen under the grid brightness slider
+    display_set_source_buffer(displaybuffer2);
+    display_copy_rect_to_screen(395, 104, 331, 58);
+
+    //Signal it is closed
+    gridbrightnessopen = 0;
+  }
+  //Check if the calibration text is open
+  else if(calibrationopen)
+  {
+    //Restore the screen under the calibration text
+    display_set_source_buffer(displaybuffer2);
+    display_copy_rect_to_screen(395, 222, 199, 59);
+
+    //Signal it is closed
+    calibrationopen = 0;
+  }
+}
