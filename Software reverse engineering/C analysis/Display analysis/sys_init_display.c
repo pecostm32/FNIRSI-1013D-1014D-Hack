@@ -3,6 +3,10 @@
 //0x8019CF60 ==> 0x803849A0 == video memory. Write here to display stuff. Two bytes per pixel, 800 pixels per row. 5 bits red, 6 bits green, 5 bits blue.
 //0x8019CF64 ==> 0x805B71B8 == display info structure. Holds settings for the display.
 
+//0x803847A0 ?? Address used for data concerning the video system
+
+//0x8036B7A0 ?? also for the video system
+
 //0x804FB9B4 seems also te be used for screen memory. Might be that it is used to setup a screen and that with a single function it is copied to the actual screen
 
 //0x805B7228 yet another screen buffer?? Looks like the screen is copied to this location

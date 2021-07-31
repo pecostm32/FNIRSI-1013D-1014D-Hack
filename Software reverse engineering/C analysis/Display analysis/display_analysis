@@ -1,3 +1,94 @@
+Address used as pointer to most likely font data
+
+Pointer to a structure with function pointers and all sorts of data
+0x8019D470  For channel menu it holds 0x80857D4C. Have to look in the display setup code to see if fonts are being copied or loaded to this memory region.
+
+In some of the display functions there seem to be arrays of data of 120 bytes long. By the looks of it there are 5 sets (0 - 4) of this data and I wonder if
+it concerns font data like maybe the metrics
+
+!!!This seems to be the select font function!!!
+The pointers are pointing to the font structure holding several functions for processing the font data
+FUN_80019730  This one is also called but with some function pointer pointer (Different address set with either of the two functions below)
+  Several functions are used here
+  FUN_80018090   (Display text??)
+  FUN_80017e20   (??)
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+FONT addresses
+0x8018A380
+0x8018A3A4
+0x8018AC58       (Used for the channel menus)
+0x8018B738       (Used for error messages)
+0x8018C1C0
+0x8018D558
+0x8018F508
+0x801913B0
+
+It looks like FONT_0 and FONT_1 are fixed width fonts. They use different functions in the first data in the font, where the function pointers are.
+The data pointed to from struct start plus 0x1C
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+There are two sets of font handling functions.
+The first two use
+FUN_80017e20
+FUN_80017ffc
+FUN_80018024
+FUN_80018030
+
+The other five use
+FUN_80018090
+FUN_800181c4                                     get width in pixels for characters
+FUN_80018230
+FUN_8001823c
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+!!!This is not for selecting the fonts, but more likely which screen buffer is being used
+!!!It actualy is for selecting a render mode. 0x02 seems to be for painting the characters with the color set in displaydata->backgroundcolor
+                                              0x00 seems to be for painting the characters with the color set in displaydata->foregroundcolor and the background with displaydata->backgroundcolor
+                                              0x01 and 0x03 get a value through a function pointer and use that to exor the current pixel data in the buffer if a font dot is on
+
+0x04 set here causes a color swap
+
+FUN_800197c8  This one is called before display text with a single input. Called from 17 locations. (Input 0x00 or 0x02) Looks like a select font function
+  This function sets its input value at address 0x2A within the structure pointed to by 0x8019D470. A half word is stored. The previous value is returned by the function
+  Stored at address 0x80857D76
+
+Input 0x00
+   main           (0x800353c0)    "SD ERROR"
+   FUN_8000a024   (0x8000a4d4)    "System file damaged!!!"
+   check_hardware (0x8001c1cc)    "FPGA"
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Font data is in the flash
+For font 2 there is data at address 0x8018AC4C -> there is a struct with (short first_char, short last_char, void *data, void *next_font)
+  It is a linked list system where the code looks if a character is within the range of first - last, and if not it checks the next font if set
+  The data pointer points to an array of character struct (byte, byte width, byte, byte, byte *data)
+  The first_char value is subtracted to get the index in the array
+
+Need to find how the metrics and pixel data work
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+DISPLAYDATA -> font holds the following addresses
+
+For font 0 the address set is 0x8018B738
+
+For font 2 the address set is 0x8018AC58
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+The display system seems to work in a separate buffer to make up a full screen and then copy it to the actual screen
+
+The first display text calls setup the CH1 menu selector at location 0xA6,0x10 followed by either AC or DC at location 0xC7,0x08
+
+FUN_8000d9bc is called from 9 different locations and seems to be a setup function for channel 1 (On input either 0 or 1)
+FUN_8000ddb8 is called from 9 different locations and seems to be a setup function for channel 2
+
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 The total code holds some 754 functions.
 
@@ -36,7 +127,20 @@ Memory used for the display system
 0x8019D47C               is display system initialized flag
 0x8019D480               A function pointer set to point to FUN_8002fdd4
 
+
+0x8019D490               A function pointer ??
+
+0x8019D4CC               A function pointer set to point to FUN_8002FD68
+
 0x8019D4E8               A function pointer set to point to FUN_8002fe14
+
+0x8019D488               Pointer to a structure??  Set with 0x803845A0 at some point in the code (FUN_800306e0)
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Einde van flash geheugen is 0x801939de
+
+
+0x80191814               Also a function pointer ==> 0x8002F5EC Loaded from flash as part of program
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 The actual screen memory set in DEBE (Used either directly or via the global pointer)
@@ -46,7 +150,7 @@ The actual screen memory set in DEBE (Used either directly or via the global poi
 This is used in 7 functions:
 FUN_80017778             void set_screen_to_global_pointer(void);
 FUN_8001c6f0
-FUN_8001cccc
+FUN_8001cccc             void copy_rect_to_screen(ushort xpos,ushort ypos,ushort xsize,ushort ysize);
 FUN_8001cd34             void copy_frame_to_screen(void);    (0x804FB9B4 ==> 0x803849A0)
 FUN_8001d230
 FUN_8001d5d4             void sys_init_display(void);        (used twice. A. Load 0x8019CF60 with 0x803849A0.  B. input for init_debe)
@@ -168,7 +272,7 @@ FUN_80031238
 Support functions
 
 FUN_80019704                          void set_display_color(uint color)
-FUN_80018f6c                          void display_clear_rect(ushort xpos,ushort ypos,ushort xsize,ushort ysize)
+FUN_80018f6c                          void display_fill_rect(ushort xpos,ushort ypos,ushort xsize,ushort ysize)
 FUN_80018bf8                          void display_text(char *text,ushort xpos,ushort ypos)
 
 
@@ -180,6 +284,12 @@ FUN_80018a74
 
 
 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+unsigned char char_20_data[] = { 0x00, 0x01, 0x02, 0x03 };
+
+
+FONTMETRICS char_0x20 = { 0x07, 0x07, 0x01, 0x00, &char_0x20_data };
 
 
 

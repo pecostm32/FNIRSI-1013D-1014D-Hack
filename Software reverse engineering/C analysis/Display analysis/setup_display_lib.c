@@ -17,6 +17,8 @@ int setup_display_lib(void)
 
   FUN_8002faa8(DAT_80019368);       //0x80857D4C
 
+
+  //Display goes black in this function and it does not return from it
   iVar1 = FUN_8001d018();
 
   FUN_80019764(0);
@@ -41,7 +43,7 @@ void FUN_80019c78(void)
   {
     *(undefined4 *)(DAT_80019cc0 + 0x18) = 1;         //Make it one to indicate initialization has been done
 
-    FUN_80019a88();                                   //Setup a function poiter (pointer) in 0x8019d46c
+    FUN_80019a88();                                   //Setup a function poiter (pointer) in 0x8019D46C and some other settings
 
     FUN_800182fc();                                   //Setup more function pointers
 
@@ -63,11 +65,12 @@ void FUN_80019c78(void)
 void FUN_80019a88(void)
 
 {
-  FUN_800183d0(DAT_80019aac,0x19000);                              //0x8036B7A0
+  FUN_800183d0(DAT_80019aac,0x19000);                              //0x8036B7A0, 0x19000 stored into 0x80857D40 and 0x80857D44
 
-  FUN_800185a4(0x80);
+  FUN_800185a4(0x80);                                              //0x80 stored into 0x80857D48
 
-  *(undefined **)(DAT_8001972c + 8) = PTR_PTR_FUN_80019ab0;        //0x8019D464 + 0x08 ==> *0x8019d46c = 0x80189750 ==> FUN_80017e20
+
+  *(undefined **)(DAT_8001972c + 8) = PTR_PTR_FUN_80019ab0;        //0x8019D464 + 0x08 ==> *0x8019D46C = 0x80189750 ==> FUN_80017e20
 
   return;
 }
@@ -88,15 +91,15 @@ int FUN_800182fc(void)
   
   puVar1 = DAT_80018354;                            //0x8019D4E8
 
-  *DAT_80018354 = PTR_LAB_80018350;                 //*0x8019D4E8 = 0x8002fe14. Function pointer FUN_8002fe14
+  *DAT_80018354 = PTR_LAB_80018350;                 //*0x8019D4E8 = 0x8002FE14. Function pointer FUN_8002FE14
 
-  FUN_8001a19c(puVar1);                             //*0x8019D4E8 = 0x8019D480; *0x8019d478 = 0x8019D4E8;
+  FUN_8001a19c(puVar1);                             //*0x8019D4EC = 0x00000000; *0x8019D478 = 0x8019D4E8;
 
   puVar1 = DAT_80018358;                            //0x8019D4D4
 
-  iVar2 = DAT_80018358[2];                          //iVar2 = *0x8019D4DC ==> 0x80189750
+  iVar2 = DAT_80018358[2];                          //iVar2 = *0x8019D4DC = 0x00000004
 
-  uVar3 = FUN_80018464(iVar2 * 0x78);
+  uVar3 = FUN_80018464(iVar2 * 0x78);               //
 
   puVar1[4] = uVar3;
 
@@ -175,7 +178,13 @@ void FUN_8001d660(void)
 }
 
 //---------------------------------------------------------------------------------------
-// Called from 5 other functions
+//Called from 5 other functions
+//FUN_800182fc  ==> param_1  0x8019D4E8        | *0x8019D4EC = 0x00000000 | *0x8019D478 = 0x8019D4E8
+
+//FUN_8002FB5C  ==> param_1  0x8019D45C        | *0x8019D460 = 0x8019D4E8 | *0x8019D478 = 0x8019D45C
+
+
+//Is a kind of pointer swap function
 //param_1 is a pointer to a pointer
 
 void FUN_8001a19c(int param_1)
@@ -185,51 +194,59 @@ void FUN_8001a19c(int param_1)
   
   iVar1 = DAT_8001a1b0;                                                    //0x8019D464
 
-  *(undefined4 *)(param_1 + 4) = *(undefined4 *)(DAT_8001a1b0 + 0x14);     //*0x8019D480 = *0x8019d478  (when called from FUN_80019c78)
+  *(undefined4 *)(param_1 + 4) = *(undefined4 *)(DAT_8001a1b0 + 0x14);     //*0x8019D4EC = *0x8019D478 = 0x00000000   (when called from FUN_80019c78)
 
-  *(int *)(iVar1 + 0x14) = param_1;                                        //*0x8019d478 = 0x8019D480   (when called from FUN_80019c78)
+  *(int *)(iVar1 + 0x14) = param_1;                                        //*0x8019D478 = 0x8019D4E8   (when called from FUN_80019c78)
 
   return;
 }
 
 //---------------------------------------------------------------------------------------
-
+//Only called once from FUN_80019a88
+//Input 0x8036B7A0, 0x19000
 void FUN_800183d0(undefined4 param_1,uint param_2)
 
 {
   undefined4 *puVar1;
   
-  puVar1 = DAT_800183e4;
+  puVar1 = DAT_800183e4;             //0x80857D40
 
-  *DAT_800183e4 = param_1;
+  *DAT_800183e4 = param_1;           //*0x80857D40 = 0x8036B7A0
 
-  puVar1[1] = param_2 & 0xfffffffc;
+  puVar1[1] = param_2 & 0xfffffffc;  //*0x80857D44 = 0x00019000
   return;
 }
 
 //---------------------------------------------------------------------------------------
-
+//Only called once from FUN_80019a88
+//input 0x80
 void FUN_800185a4(uint param_1)
 
 {
-  if (param_1 < 0x11)
+  if (param_1 < 0x11)              //0x80 not less then 0x11
   {
     param_1 = 0x10;
   }
   else
   {
-    if (*(uint *)(DAT_800185c8 + 4) >> 1 <= param_1)
+    if ((*(uint *)(DAT_800185c8 + 4) >> 1) <= param_1)     //*0x80857D44 = 0x00019000 ==> 0x0000C800
     {
       param_1 = *(uint *)(DAT_800185c8 + 4) >> 1;
     }
   }
 
-  *(uint *)(DAT_800185c8 + 8) = param_1;
+  *(uint *)(DAT_800185c8 + 8) = param_1;                   //*0x80857D48 = 0x80
   return;
 }
 
 
 //---------------------------------------------------------------------------------------
+//Called from 7 other functions
+//FUN_800182FC ==> param_1  480
+
+
+
+//Here it goes sour
 
 uint ** FUN_80018464(int param_1)
 
@@ -241,7 +258,11 @@ uint ** FUN_80018464(int param_1)
   int *piVar5;
   int iVar6;
   
-  FUN_8002fb5c();
+  FUN_8002fb5c();    //Already called from
+
+
+//After this point!!!!
+
 
   iVar1 = DAT_80018578;
 
@@ -559,6 +580,9 @@ undefined4 FUN_80019828(int param_1,int param_2,int param_3,int param_4,int para
 }
 
 //---------------------------------------------------------------------------------------
+//Called from 2 functions
+//FUN_80018464
+//FUN_8002CF28
 
 void FUN_8002fb5c(void)
 
@@ -570,60 +594,64 @@ void FUN_8002fb5c(void)
   uint uVar5;
   int *piVar6;
   
-  iVar2 = DAT_8002fc58;
+  iVar2 = DAT_8002fc58;                                  //*0x8002FC58 = 0x80857C80
 
-  if (*(char *)(DAT_8002fc58 + 0x28) == '\0')
+  if (*(char *)(DAT_8002fc58 + 0x28) == '\0')            //*0x80857CA8 = 0
   {
-    piVar6 = (int *)(DAT_8002fc58 + 0xc0);
-    *(undefined *)(DAT_8002fc58 + 0x28) = 1;
-    uVar5 = *(uint *)(iVar2 + 0xc4);
+    piVar6 = (int *)(DAT_8002fc58 + 0xc0);               //pivar6 = r5 = 0x80857D40 (*0x80857D40 = 0x8036B7A0 Set in FUN_800183d0)
+    *(undefined *)(DAT_8002fc58 + 0x28) = 1;             //*0x80857CA8 = 1  (flag to signal init done??)
+    uVar5 = *(uint *)(iVar2 + 0xc4);                     //uvar5 = r1 = 0x00019000  (*0x80857D44 = 0x00019000 Set in FUN_800183d0)
 
-    if (0x2800 < uVar5)
+    if (0x2800 < uVar5)                                  //True
     {
-      uVar5 = 0x2800;
+      uVar5 = 0x2800;                                    //r1 = 0x00002800
     }
 
-    FUN_80030564(*piVar6,uVar5);
+    FUN_80030564(*piVar6,uVar5);                         //Initialize data??? It runs for a lot of instruction. Starts in trace_0 and ends in trace_87 (So more than 2150000 instructions)
+                                                         //Looks more like a memory test, but does not signal a failure.
 
-    puVar3 = DAT_8002fc60;
+    puVar3 = DAT_8002fc60;                               //*0x8002FC60 = 0x8019D45C
 
-    if (*(int *)(iVar2 + 200) == 0)
+    if (*(int *)(iVar2 + 200) == 0)                      //*0x80857D48 = 0x00000080, so not true
     {
       *(uint *)(iVar2 + 200) = *(uint *)(iVar2 + 0xc4) >> 2;
     }
 
-    *puVar3 = PTR_LAB_8002fc5c;
+    *puVar3 = PTR_LAB_8002fc5c;                          //*0x8019D45C = 0x8002FD8C
 
-    FUN_8001a19c(puVar3);
+    FUN_8001a19c(puVar3);                                //*0x8019D460 = 0x8019D4E8 | *0x8019D478 = 0x8019D45C
 
-    *(undefined4 *)(iVar2 + 0x20) = 0x5a;
+    *(undefined4 *)(iVar2 + 0x20) = 0x5a;                //*0x80857CA0 = 0x0000005A
     uVar5 = 0;
 
     do
     {
       uVar1 = uVar5 & 0xff;
-      iVar4 = uVar5 * 8;
-      uVar5 = uVar5 + 1;
-      *(int *)(iVar2 + iVar4 + 0x40) = 0x10 << uVar1;
+      iVar4 = uVar5 * 8;                                 //r3 = r4 + (r0 * 8)
+      uVar5 = uVar5 + 1;                                 //r0 = r0 + 1
+      *(int *)(iVar2 + iVar4 + 0x40) = 0x10 << uVar1;    //r2 = r1 << r0 | str r2, [r3, #64]  | first write *0x80857CC0 = 0x00000010 | last write *0x80857D38 = 0x00080000
     } while (uVar5 < 0x10);
 
+
     iVar4 = *piVar6;
-    *(int *)(iVar2 + 0x38) = iVar4;
-    *(int *)(iVar2 + 0xc) = *(int *)(iVar2 + 0xc4);
-    *(undefined4 *)(iVar2 + 0x10) = 2;
-    *(int *)(iVar2 + 0x34) = iVar4 + *(int *)(iVar2 + 0xc4) + -0x14;
+    *(int *)(iVar2 + 0x38) = iVar4;                                      //*0x80857CB8 = 0x8036B7A0
+    *(int *)(iVar2 + 0xc) = *(int *)(iVar2 + 0xc4);                      //*0x80857C8C = 0x00019000
+    *(undefined4 *)(iVar2 + 0x10) = 2;                                   //*0x80857C90 = 0x00000002
+    *(int *)(iVar2 + 0x34) = iVar4 + *(int *)(iVar2 + 0xc4) + -0x14;     //*0x80857CB4 = 0x8038478C
     uVar5 = 0;
 
     while (uVar5 < *(int *)(iVar2 + 0x10) - 1U)
     {
-      *(uint *)(*(int *)(iVar2 + 0x34) + uVar5 * 8 + 4) = uVar5 + 1;
+      *(uint *)(*(int *)(iVar2 + 0x34) + uVar5 * 8 + 4) = uVar5 + 1;     //*0x80384790 = 0x00000001
       uVar5 = uVar5 + 1;
     }
 
-    *(undefined4 *)(iVar2 + 0x24) = 1;
-    *(int *)(iVar2 + 4) = *(int *)(iVar2 + 0x10) + -1;
+    *(undefined4 *)(iVar2 + 0x24) = 1;                                   //*0x80857CA4 = 0x00000001
+    *(int *)(iVar2 + 4) = *(int *)(iVar2 + 0x10) + -1;                   //*0x80857C84 = 0x00000001
 
-    FUN_8002ce34(*(undefined4 *)(iVar2 + 0xc),*(undefined4 *)(iVar2 + 0x38));
+
+    FUN_8002ce34(*(undefined4 *)(iVar2 + 0xc),*(undefined4 *)(iVar2 + 0x38));  //p1 = 0x00019000, p2 = 0x8036B7A0
+
 
     FUN_8002ee40();
 
@@ -736,6 +764,8 @@ void FUN_8002ff50(int param_1)
 }
 
 //---------------------------------------------------------------------------------------
+//Called from 5 functions
+//From FUN_8002fb5c | p1 = 0x00019000, p2 = 0x8036B7A0
 
 int FUN_8002ce34(int param_1,int *param_2)
 
@@ -760,21 +790,24 @@ int FUN_8002ce34(int param_1,int *param_2)
 
   if (bVar7)
   {
-    param_1 = param_1 + piVar2[1];
+    param_1 = param_1 + piVar2[1];   //skipped
 
     FUN_8002ff50();
   }
 
   if (((int *)piVar1[0xe] < param_2) && (piVar2 = (int *)((int)param_2 - param_2[-1]), *piVar2 == 0))
   {
-    param_1 = param_1 + piVar2[1];
+    param_1 = param_1 + piVar2[1];   //skipped
 
     FUN_8002ff50(piVar2);
 
     param_2 = piVar2;
   }
 
-  uVar3 = FUN_8002f838(param_1);
+
+  uVar3 = FUN_8002f838(param_1);      //Called with 0x00019000
+
+
 
   if (uVar3 < 0x10)
   {
@@ -1085,6 +1118,10 @@ void FUN_800302b8(void)
 
 
 //---------------------------------------------------------------------------------------
+//Only called from FUN_8002FB5C
+//First round param_1 = 0x8036B7A0, param_2 = 0x00002800
+
+//Some sort of memory test. At least the first while loop
 
 void FUN_80030564(int *param_1,uint param_2)
 
@@ -1097,33 +1134,36 @@ void FUN_80030564(int *param_1,uint param_2)
   int extraout_r1_02;
   uint extraout_r1_03;
   uint extraout_r1_04;
-  uint uVar3;
+  uint uVar3 = 0;    //r6
   uint uVar4;
   int *piVar5;
   int iVar6;
   
   uVar3 = 0;
 
+  //Word wide test
   do
   {
     uVar4 = 0;
     piVar5 = param_1;
 
-    while (uVar4 < param_2 >> 2)
+    //Fill a memory array with values ranging from 0 to 254
+    while (uVar4 < param_2 >> 2)     //while uvar4 (r7 = 0---2560) < 0xA00 (r9 = 2560)
     {
-      divide(uVar4 + uVar3,0xff);
+      divide(uVar4 + uVar3,0xff);    //r7 + r6  ((r7 + r6) % 255)
       uVar4 = uVar4 + 1;
-      *piVar5 = extraout_r1_01;
-      piVar5 = piVar5 + 1;
+      *piVar5 = extraout_r1_01;      //pivar5 = r8. (r8 = 0x8036B7A0 --- ) Store the remainder?? Looks like the modulo This array is filled with 0x00 -- 0xFE repeatedly 
+      piVar5 = piVar5 + 1;           //+4 since it is an int pointer
     }
 
     uVar4 = 0;
     piVar5 = param_1;
 
-    while (uVar4 < param_2 >> 2)
+    //Check the memory array on being filed correctly
+    while (uVar4 < param_2 >> 2)     //while uvar4 (r7 = 0---2560) < 0xA00 (r9 = 2560)
     {
-      iVar6 = *piVar5;
-      divide(uVar4 + uVar3,0xff);
+      iVar6 = *piVar5;               //ivar6 = 0
+      divide(uVar4 + uVar3,0xff);    //Get the same modulo (r7 + r6) % 255
 
       if (extraout_r1_02 != iVar6)
       {
@@ -1134,12 +1174,15 @@ void FUN_80030564(int *param_1,uint param_2)
       piVar5 = piVar5 + 1;
     }
 
+    //Some offset to the data
     uVar3 = uVar3 + 1;
 
+  //Do the check again
   } while (uVar3 < 2);
 
   uVar3 = 0;
 
+  //Short wide test
   do
   {
     uVar4 = 0;
@@ -1176,6 +1219,7 @@ void FUN_80030564(int *param_1,uint param_2)
 
   uVar3 = 0;
 
+  //Byte wide test
   do
   {
     uVar4 = 0;
@@ -1211,6 +1255,7 @@ void FUN_80030564(int *param_1,uint param_2)
 
   uVar3 = 0;
 
+  //Leave the memory cleared
   while (uVar3 < param_2)
   {
     uVar3 = uVar3 + 1;
@@ -1222,9 +1267,10 @@ void FUN_80030564(int *param_1,uint param_2)
 }
 
 //---------------------------------------------------------------------------------------
+//Called from 2 functions
+//FUN_8002FB5C
 
 undefined4 FUN_8002ee40(void)
-
 {
   int iVar1;
   int iVar2;
@@ -1234,7 +1280,7 @@ undefined4 FUN_8002ee40(void)
   int iVar6;
   int iVar7;
   
-  iVar1 = DAT_8002ef24;
+  iVar1 = DAT_8002ef24;     //0x80857C80
 
   if (*(int *)(DAT_8002ef24 + 0x2c) == 0)
   {
@@ -1246,7 +1292,7 @@ undefined4 FUN_8002ee40(void)
     iVar5 = *(uint *)(DAT_8002ef24 + 0x10) + (*(uint *)(DAT_8002ef24 + 0x10) >> 3) + 4;
   }
 
-  iVar2 = FUN_8002cf28(iVar5 << 3);
+  iVar2 = FUN_8002cf28(iVar5 << 3);  //p1 = 0x00001790
 
   if (iVar2 == 0)
   {
@@ -1329,6 +1375,9 @@ void FUN_8003072c(undefined4 *param_1,undefined4 param_2,int param_3,undefined4 
 }
 
 //---------------------------------------------------------------------------------------
+//Called from 2 functions
+
+//FUN_8002EE40  param_1 = 0x00001790
 
 int FUN_8002cf28(uint param_1)
 
@@ -1341,19 +1390,29 @@ int FUN_8002cf28(uint param_1)
   uint uVar6;
   int unaff_r5;
   
-  FUN_8002fb5c();
+  FUN_8002fb5c();                  //Already called from FUN_80018464 and therefore does nothing
 
-  puVar1 = DAT_8002d040;
-  uVar5 = DAT_8002d040[0x10];
 
-  if (uVar5 <= param_1)
+//pa:0x8002CF34  0xE59F6104  YES       ldr         r6, [pc, #260]   r0:0x00000001  r1:0x00000080  r2:0x00000178  r3:0xFFFFFFB8  r4:0x00001790  r5:0x80857C8C  r6:0x80857C80  r7:0x80192E6B  cpsr:0x20000053
+//pa:0x8002CF38  0xE5961040  YES       ldr         r1, [r6, #64]    r0:0x00000001  r1:0x00000010  r2:0x00000178  r3:0xFFFFFFB8  r4:0x00001790  r5:0x80857C8C  r6:0x80857C80  r7:0x80192E6B  cpsr:0x20000053
+//pa:0x8002CF3C  0xE1510004  YES       cmp         r1, r4           r0:0x00000001  r1:0x00000010  r2:0x00000178  r3:0xFFFFFFB8  r4:0x00001790  r5:0x80857C8C  r6:0x80857C80  r7:0x80192E6B  cpsr:0x80000053
+//pa:0x8002CF40  0x92840003  NO        addls       r0, r4, #3       r0:0x00000001  r1:0x00000010  r2:0x00000178  r3:0xFFFFFFB8  r4:0x00001790  r5:0x80857C8C  r6:0x80857C80  r7:0x80192E6B  cpsr:0x80000053
+//pa:0x8002CF44  0x93C01003  NO        bicls       r1, r0, #3       r0:0x00000001  r1:0x00000010  r2:0x00000178  r3:0xFFFFFFB8  r4:0x00001790  r5:0x80857C8C  r6:0x80857C80  r7:0x80192E6B  cpsr:0x80000053
+//pa:0x8002CF48  0xE5960000  YES       ldr         r0, [r6, #0]     r0:0x00000000  r1:0x00000010  r2:0x00000178  r3:0xFFFFFFB8  r4:0x00001790  r5:0x80857C8C  r6:0x80857C80  r7:0x80192E6B  cpsr:0x80000053
+//pa:0x8002CF4C  0xE281400C  YES       add         r4, r1, #12      r0:0x00000000  r1:0x00000010  r2:0x00000178  r3:0xFFFFFFB8  r4:0x0000001C  r5:0x80857C8C  r6:0x80857C80  r7:0x80192E6B  cpsr:0x80000053
+
+
+  puVar1 = DAT_8002d040;           //0x80857C80
+  uVar5 = DAT_8002d040[0x10];      //*0x80857CC0 = 0x00000010
+
+  if (uVar5 <= param_1)            //16 <= 6032 ??  cmp r1,r4  | r1 = 0x00000010, r4 = 0x00001790 | carry not set ???
   {
-    uVar5 = param_1 + 3 & 0xfffffffc;
+    uVar5 = param_1 + 3 & 0xfffffffc;  //Make it on a word boundary. 
   }
 
-  uVar5 = uVar5 + 0xc;
+  uVar5 = uVar5 + 0xc;             //uvar5 = 0x1C
 
-  if (uVar5 <= *DAT_8002d040)
+  if (uVar5 <= *DAT_8002d040)      //0x1C <= 0x00
   {
     iVar2 = FUN_8002fea8();
 
@@ -1980,5 +2039,194 @@ undefined8 FUN_80000804(undefined4 *param_1,undefined4 *param_2,uint param_3,und
 }
 
 //---------------------------------------------------------------------------------------
+
+void FUN_8002faa8(int param_1)
+
+{
+  int iVar1;
+  int iVar2;
+  undefined4 uVar3;
+  
+  iVar1 = DAT_8002fb50;
+
+  iVar2 = *(int *)(DAT_8002fb50 + 0xc);
+
+  *(int *)(iVar2 + 0x38) = iVar2;
+
+  *(int *)(iVar2 + 0x3c) = iVar2 + 4;
+
+  *(int *)(iVar2 + 0x40) = iVar2;
+
+  *(int *)(param_1 + 0x14) = iVar2 + 8;
+
+  iVar2 = *(int *)(iVar1 + 0x24 + (uint)*(byte *)(iVar2 + 0x11) * 4);
+
+  (**(code **)(*(int *)(iVar2 + 0xc) + 0x30))(iVar2,param_1 + 8);  //Function call to some unkown address
+
+
+  *(undefined **)(param_1 + 100) = PTR_PTR_FUN_8002fb54;
+  *(undefined4 *)(param_1 + 0x1c) = *(undefined4 *)(iVar1 + 8);
+  *(int *)(param_1 + 0x14) = *(int *)(iVar1 + 0xc) + 8;
+  *(undefined *)(param_1 + 0x18) = 1;
+
+  uVar3 = FUN_8002a5e4();
+  *(undefined4 *)(param_1 + 0x48) = uVar3;
+  *(undefined *)(param_1 + 0x68) = 3;
+  *(undefined4 *)(param_1 + 0x30) = 0xfffffff;
+  *(undefined4 *)(param_1 + 0x34) = 0xfffffff;
+  FUN_8001d348(0);
+  FUN_8001d43c(0xffffff);
+  *(undefined **)(iVar1 + 0x10) = PTR_PTR_LAB_8002fb58;
+  return;
+}
+
+//---------------------------------------------------------------------------------------
+
+uint FUN_8001d018(void)
+
+{
+  uint uVar1;
+  code *UNRECOVERED_JUMPTABLE;
+  uint uVar2;
+  int in_r3;
+  int iVar3;
+  int local_18;
+  
+  local_18 = in_r3;
+
+  FUN_8001d410();
+
+  uVar1 = FUN_8001d118();
+
+  if (uVar1 == 0)
+  {
+    iVar3 = 0;
+
+    do
+    {
+      local_18 = FUN_800189d0(iVar3);
+
+      if (local_18 != 0)
+      {
+        UNRECOVERED_JUMPTABLE = (code *)(**(code **)(*(int *)(local_18 + 0xc) + 0x24))(&local_18,0xc);
+
+        if (UNRECOVERED_JUMPTABLE == (code *)0x0)
+        {
+          return 1;
+        }
+
+        uVar2 = (*UNRECOVERED_JUMPTABLE)(local_18);
+
+        uVar1 = uVar1 | uVar2;
+      }
+
+      iVar3 = iVar3 + 1;
+    } while (iVar3 < 2);
+
+    if (uVar1 == 0)
+    {
+      FUN_8001d174();
+
+      iVar3 = 1;
+      do
+      {
+        local_18 = FUN_800189d0(iVar3);
+
+        if (local_18 != 0)
+        {
+          FUN_8001968c(iVar3);
+
+          FUN_8001d474(4);
+
+          //In this function the screen goes black and after that vertical lines are drawn and the system fails on the jump
+          FUN_8001cd50(0,0,0x3fff,0x3fff);
+
+          FUN_8001d474(0);
+
+          UNRECOVERED_JUMPTABLE = (code *)(**(code **)(*(int *)(local_18 + 0xc) + 0x24))(&local_18,0xe);
+
+          if (UNRECOVERED_JUMPTABLE != (code *)0x0)
+          {
+                    // WARNING: Could not recover jumptable at 0x8001d100. Too many branches
+                    // WARNING: Treating indirect jump as call
+            uVar1 = (*UNRECOVERED_JUMPTABLE)(local_18);
+            return uVar1;
+          }
+        }
+
+        iVar3 = iVar3 + -1;
+      } while (-1 < iVar3);
+    }
+  }
+  return uVar1;
+}
+
+//---------------------------------------------------------------------------------------
+
+
+void FUN_8001cd50(int param_1,int param_2,int param_3,int param_4)
+
+{
+  int iVar1;
+  
+  iVar1 = *DAT_8001cdd4;
+
+  if (param_1 < *(short *)(iVar1 + 8))
+  {
+    param_1 = (int)*(short *)(iVar1 + 8);
+  }
+
+  if (*(short *)(iVar1 + 0xc) < param_3)
+  {
+    param_3 = (int)*(short *)(iVar1 + 0xc);
+  }
+
+  if (param_1 <= param_3)
+  {
+    if (param_2 < *(short *)(iVar1 + 10))
+    {
+      param_2 = (int)*(short *)(iVar1 + 10);
+    }
+
+    if (*(short *)(iVar1 + 0xe) < param_4)
+    {
+      param_4 = (int)*(short *)(iVar1 + 0xe);
+    }
+
+    if (param_2 <= param_4)
+    {
+      iVar1 = *(int *)(DAT_8001cdd8 + (uint)*(byte *)(iVar1 + 0x11) * 4);
+
+      (**(code **)(*(int *)(iVar1 + 0xc) + 0x10))(iVar1,param_1,param_2,param_3,param_4);  //Function call!!!!!!!!!
+    }
+  }
+  return;
+}
+
+
+//---------------------------------------------------------------------------------------
+//Some frame buffer handling function in which it fails so tracing is needed
+
+void FUN_8001cddc(int param_1,int param_2,int param_3,int param_4,uint param_5)
+
+{
+  int *piVar1;
+  uint uVar2;
+  uint uVar3;
+  
+  piVar1 = Global_Frame_Buffer_Pointer;
+  uVar2 = param_4 - 1;
+  param_2 = param_2 * 800;
+  if (param_4 == 0) {
+    return;
+  }
+  do {
+    uVar3 = uVar2 & 0xffff;
+    memset((void *)(*piVar1 + param_2 * 2 + param_1 * 2),param_5,param_3);
+    uVar2 = uVar3 - 1;
+    param_2 = param_2 + 800;
+  } while (uVar3 != 0);
+  return;
+}
 
 
