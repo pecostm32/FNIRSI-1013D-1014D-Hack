@@ -1605,6 +1605,9 @@ void handle_measures_menu_touch(void)
 
               //Draw the changed item
               scope_measures_menu_item(channel, item);
+              
+              //Signal item found
+              found = 1;
             }
             
             //Next item
