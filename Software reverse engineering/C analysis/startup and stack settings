@@ -1,0 +1,86 @@
+
+//------------------------------------------------------------------------------------------------------------------------------------------------
+
+Initial stack setup
+
+undefined instruction stack
+  0x81FB5000
+
+abort stack
+  0x81FC1800
+
+irq stack
+  0x81FDA800
+
+fast interrupt stack
+  0x81FE7000
+
+system stack
+  0x82000000             //End of 32MB memory
+
+supervisor stack
+  0x81FF3800
+
+//------------------------------------------------------------------------------------------------------------------------------------------------
+
+vector setup
+
+
+reset      //Deze klopt niet. Had een ldr pc, moeten zijn om het echt te kunnen laten werken
+  b,#      //0xEAFFFC81. E = unconditional
+                         A = branch
+                         S = 0xFFFFFC81
+
+undefined instruction  (not used)
+  ldr pc,[80000e34] ==> branch instruction on address 80000e34 which branches onto itself
+
+software interrupt  (not used)
+  ldr pc,[80000e38] ==> branch instruction on address 80000e38 which branches onto itself (indirect)
+  
+prefetch abort  (not used)
+  ldr pc,[80000e3C] ==> branch instruction on address 80000e3C which branches onto itself
+
+data abort  (not used)
+  ldr pc,[80000e40] ==> branch instruction on address 80000e40 which branches onto itself
+
+not used
+  mov r0,r0
+
+irq  (used)
+  ldr pc,[80000e48] ==> branch instruction on address 80000e48 which branches to 0x80000e50 (interrupt service routine)
+
+fiq  (not used)
+  ldr  pc,[80000e4c] ==> branch instruction on address 80000e4c which branches onto itself
+
+//------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Some interrupt pre handling stack maintenance
+
+                             LAB_80000e50                                    XREF[1]:     80000e48(j)  
+        80000e50 38 d0 9f e5     ldr        sp,[DAT_80000e90]                                = 81F83000h
+        80000e54 48 d0 4d e2     sub        sp,sp,#0x48
+        80000e58 ff 1f 8d e8     stmia      sp,{ r0 r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 r11 r12
+        80000e5c 3c 80 8d e2     add        r8,sp,#0x3c
+        80000e60 00 60 48 e9     stmdb      r8,{sp lr}^=>DAT_81f82ff0
+        80000e64 00 e0 88 e5     str        lr,[r8,#0x0]=>DAT_81f82ff4
+        80000e68 00 60 4f e1     mrs        r6,spsr
+        80000e6c 04 60 88 e5     str        r6,[r8,#0x4]=>DAT_81f82ff8
+        80000e70 08 00 88 e5     str        r0,[r8,#0x8]=>DAT_81f82ffc
+        80000e74 0d 00 a0 e1     mov        r0=>DAT_81f82fb8,sp
+        80000e78 ac 6d 00 eb     bl         FUN_8001c530                                     undefined FUN_8001c530()
+        80000e7c ff 7f dd e8     ldmia      sp,{r0 r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 r11 r12 
+        80000e80 00 00 a0 e1     mov        r0,r0
+        80000e84 3c e0 9d e5     ldr        lr,[sp,#0x3c]=>DAT_81f82ff4
+        80000e88 48 d0 8d e2     add        sp,sp,#0x48
+        80000e8c 04 f0 5e e2     subs       pc,lr,#0x4
+                             DAT_80000e90                                    XREF[1]:     80000e50(R)  
+        80000e90 00 30 f8 81     undefined4 81F83000h
+
+
+//------------------------------------------------------------------------------------------------------------------------------------------------
+
+Startup section will be for initializing BSS globals and some momory init.
+
+
+

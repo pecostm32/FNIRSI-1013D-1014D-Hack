@@ -1,3 +1,5 @@
+//Output a string to UART0
+
 void FUN_800376f8(byte *param_1,byte *param_2,undefined4 param_3,undefined4 param_4)
 
 {

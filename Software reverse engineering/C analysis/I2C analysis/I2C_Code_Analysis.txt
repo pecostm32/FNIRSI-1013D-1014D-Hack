@@ -3,39 +3,53 @@
 
 //It starts with an initialization function
 
-void FUN_8001794C(void)                                        //Did not find where it is being called from yet. Patching of the binary proofed it is being called though
+void FUN_8001794C(void)                                        //(tp_i2c_setup) Did not find where it is being called from yet. Patching of the binary proofed it is being called though
 
 //It makes use of several sub functions described here:
 
 //========================================================================================================================================================================================================================================================
 //Setup and delay functions
-void FUN_8001764c(void *addr, uint pin, uint config)           //Function to setup port pin configuration. On entry pointer to the port configuration register, pin number, pin configuration. (0 = input, 1 = output, etc. See F1c600s manual)
-void FUN_8001774c(void *addr, uint pin)                        //Function to set pin output state high. On entry pointer to the port configuration register, pin number.
-void FUN_80017738(void *addr, uint pin)                        //Function to set pin output state low. On entry pointer to the port configuration register, pin number.
-void FUN_8000bc34(int delay)                                   //Function for creating a delay. Looks like 1,25uS per tick
-void FUN_80009a6c(void)                                        //Function to send a start condition
+void FUN_8001764c(void *addr, uint pin, uint config)           //(gpio_config_pin)   Function to setup port pin configuration. On entry pointer to the port configuration register, pin number, pin configuration. (0 = input, 1 = output, etc. See F1c600s manual)
+void FUN_8001774c(void *addr, uint pin)                        //(set_gpio_pin_high) Function to set pin output state high. On entry pointer to the port configuration register, pin number.
+void FUN_80017738(void *addr, uint pin)                        //(set_gpio_pin_low)  Function to set pin output state low. On entry pointer to the port configuration register, pin number.
+void FUN_8000bc34(int delay)                                   //(delay)             Function for creating a delay. Looks like 1,25uS per tick
+void FUN_80009a6c(void)                                        //(tp_send_i2c_start) Function to send a start condition
 
 //Data handling functions
-int FUN_80017d2c(uint reg_addr, byte *buffer, uint size)       //Function to send data to a touch panel register. On entry the address of the touch panel register, pointer to a byte buffer, number of bytes to send
-void FUN_80039144(uint data)                                   //Function to send a byte to the I2C bus
-void FUN_800099e4(void)                                        //Function to send a clock puls for the acknowledge bit. Does not read the bit though.
+int FUN_80017d2c(uint reg_addr, byte *buffer, uint size)       //(tp_send_i2c_data)  Function to send data to a touch panel register. On entry the address of the touch panel register, pointer to a byte buffer, number of bytes to send
+void FUN_80039144(uint data)                                   //(tp_i2c_send_byte)  Function to send a byte to the I2C bus
+void FUN_800099e4(void)                                        //(tp_i2c_clock_ack)  Function to send a clock puls for the acknowledge bit. Does not read the bit though.
 
 //========================================================================================================================================================================================================================================================
 //The touch panel is scanned by polling. The following function is probably used for that. It is called from 228 locations in the code.
 //It makes calls to functions that do something with the FPGA
 //It also uses the sub functions mentioned above
 
-void FUN_800177c4(void)                                        //This function reads the 0x814E status register of the GT911 and when needed it reads a single set of coordinates. (limited to 800x480)
+void FUN_800177c4(void)                                        //(tp_i2c_read_status) This function reads the 0x814E status register of the GT911 and when needed it reads a single set of coordinates. (limited to 800x480)
                                                                //The GT911 register address for reading the coordinates from is read from the FPGA at some 0x41 register. (Write 0x41 to the FPGA and read two bytes after that)
+                                                               //void tp_i2c_read_status(void)
 
 
 
 //========================================================================================================================================================================================================================================================
 //Data handling functions
-void FUN_80017ad4(uint reg_addr, byte *buffer, uint size)      //Function to read data from a touch panel register. On entry the address of the touch panel register, pointer to a byte buffer, number of bytes to read
+void FUN_80017ad4(uint reg_addr, byte *buffer, uint size)      //(tp_i2c_read_data) Function to read data from a touch panel register. On entry the address of the touch panel register, pointer to a byte buffer, number of bytes to read
 
 //Setup and fpga functions
 uint FUN_80016850(void)                                        //Read something from the FPGA
 void FUN_800167a0(void)                                        //Set port E pins 0:7 as input
 void FUN_800169f8(uint data)                                   //Write a byte to the FPGA
 
+
+
+//========================================================================================================================================================================================================================================================
+//06-06-2021
+//After a touch coordinate read the scope writes to fpga 0x0F and then reads from 0x14 two bytes.
+
+FUN_8001BEC4 is where this is done (0x14)
+
+At address 800253D8 the 0x0F command is written Data is 0x01 (FUN_80026728)
+
+Also at address 802555C but this is followed by data 0x00
+
+Also at 8002566C followed by 0x01 data.

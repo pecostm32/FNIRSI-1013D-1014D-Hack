@@ -1,3 +1,5 @@
+//sys_sd_card_init. This original one is longer????
+
 undefined4 FUN_80023ee0(int param_1)
 
 {

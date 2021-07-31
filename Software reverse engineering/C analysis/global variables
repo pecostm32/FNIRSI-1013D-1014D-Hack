@@ -1,0 +1,80 @@
+
+
+
+
+
+
+
+
+0x8019d5a0   channel1 enable
+0x8019d5a1   channel1 coupling
+0x8019d5a2   channel1 magnification
+0x8019d5a3   channel1 volts/div
+0x8019d5a4   channel1 fft enable
+
+
+
+0x8019d5aa   timebase time/div
+
+
+0x8019d5ac   channel2 enable
+0x8019d5ad   channel1 coupling
+0x8019d5ae   channel2 magnification
+0x8019d5af   channel2 volts/div
+0x8019d5b0   channel2 fft enable
+
+
+0x8019d5b6   move speed
+
+
+
+0x8019d5c1   trigger mode
+0x8019d5c2   trigger edge
+0x8019d5c3   trigger channel
+
+
+
+
+0x8019d5d8   battery charge level
+0x8019d5d9   charging indicator
+0x8019d5da   scope run mode state
+
+
+
+
+0x8019d5e2   right menu mode state
+0x8019d5e3   wave view mode state
+
+
+//Measurement settings base address
+0x801FA24C
++0x100  Channel1 Vmax    ??
++0x112  Channel1 Vmin
++0x122  Channel1 Vavg
++0x132  Channel1 Vrms
+  |
++0x1A2  Channel1 Duty+
++0x1B2  Channel1 Duty-
+
+
+
++0x1C2  Channel2 Vmax
++0x1D2  Channel2 Vmin
++0x1E2  Channel2 Vavg
++0x1F2  Channel2 Vrms
+  |
++0x272  Channel2 Duty+
++0x282  Channel2 Duty-
+
+
+
+
+
+0x80361378  some state variable for menu handling
+0x80361379  some state variable for system settings menu item highlighting
+0x8036137a  screen brightness
+0x8036137b  grid brightness
+0x8036137c  always trigger 50%
+
+
+0x8036137f  x-y mode display
