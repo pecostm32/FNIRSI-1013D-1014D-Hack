@@ -6,6 +6,9 @@
 
 //For brightness this function is called with 0x10 and data from memory location 0x8036137A. Most likely the current value of the brightness
 
+//param_1 ==> ID of parameter
+//param_2 ==> Value of parameter
+
 uint FUN_800248f8(undefined4 param_1,undefined4 param_2)
 {
   bool bVar1;

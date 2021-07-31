@@ -60,6 +60,7 @@ void FUN_80024ee0(int param_1,uint param_2)
   }
 
   pcVar4[1] = bVar5 | pcVar4[1];               //Mix the number of bytes with the parameter id
+
   FUN_80024c7c();                              //Do something with data in 0x8035EC04 (pcVar4) buffer in DRAM
 
   //Calculate some checksum????

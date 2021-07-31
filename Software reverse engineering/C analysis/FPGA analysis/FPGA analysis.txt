@@ -11,38 +11,77 @@
 //What they actually do needs to be investigated further
 
 //List of commands
-//0x01
+//0x01    Write a data byte (0x00 or 0x01)
 //0x02    Write a data byte (0x00 or 0x01)
 //0x03    Write a data byte (0x00 or 0x01)
-//0x04
-//0x05
-//0x06    Check on FPGA version????
-//0x0A
-//0x0D
-//0x0E    Write 4 bytes to fpga via data register
-//0x0F
-//0x14
-//0x15    Write a data byte
-//0x16
-//0x17
-//0x1A
-//0x1F
-//0x20
-//0x21    Return bytes for storing into DRAM (signal data?? channel 1??)
-//0x23    Return bytes for storing into DRAM (signal data?? channel 2??)
-//0x24    Return bytes for summation
-//0x26    Return bytes for summation
+//0x04    Write a data byte (0x00 or 0x01)
+
+//0x05    Read two bytes
+
+//0x06    Check on FPGA version???? Needs to return 0x1432
+
+//0x0A    Read a byte. In FUN_80025468 at address 0x80025630 it is written and read and when 0 the scope waits for touch to continue. Also called in FUN_80025b0c where it returns either 0 or 1 to the caller. When it returns 0 the code waits for it to become 1.
+          Could it be a triggered signal?? Probably not since it possibly completly blocks the code.
+
+//0x0D    Write 4 bytes to fpga via data register. (0x00 0x00 0x00 0x27 or 0x00 0x00 0x07 0xD0) Is used for the higher time / div settings
+
+
+//0x0E    Write 4 bytes to fpga via data register. Trigger time / div setting. Does not change for every setting since some of it is done in software.
+
+
+
+//0x0F    Write a data byte (0x00 or 0x01)
+
+
+
+//0x14    Read two bytes of data. Send to parameter chip via id 0x11.
+
+
+
+//0x15    Write a data byte. Select trigger channel. 0x00 ==> channel 1, 0x01 ==> channel 2
+
+//0x16    Write a data byte. Select trigger edge. 0x00 ==> rising, 0x01 ==> falling.
+
+
+//0x17    Write a data byte. Something to do with trigger???
+
+
+//0x1A    Write a data byte. Select trigger mode. 0x00 ==> auto + single, 0x01 == normal.
+
+
+//0x1F    Write two bytes of data
+
+//0x20    Possibly the same as 21. (Channel 1??) This command number is returned when reading from the special chip with parameter id 0x0C.
+
+//0x21    Return bytes for storing into DRAM (signal data?? channel 1??)  When t/div is lowered these are also read. This command number is hard coded.
+
+//0x22    Possibly the same as 23. (Channel 2??) This command number is returned when reading from the special chip with parameter id 0x0D.
+
+//0x23    Return bytes for storing into DRAM (signal data?? channel 2??)  When t/div is lowered these are also read. This command number is hard coded.
+
+
+//0x24    Return bytes for summation. Used for the higher time / div settings
+//0x26    Return bytes for summation. Used for the higher time / div settings
+
 //0x28    Write a byte to data register
-//0x32    Write two bytes to data register
-//0x33    Write a byte to data register  (0x05 or 0x06)
-//0x34    Write a data byte (0x00 or 0x01)
-//0x35    Write two bytes to data register
-//0x36    Write a byte to data register  (0x05 or 0x06)
-//0x37
+
+//0x32    Write two bytes to data register               (Ch1 v/div setting, some screen offset. Value is lower near the top of the screen)
+//0x33    Write a byte to data register   (0x00 - 0x05)  (Ch1 v/div setting, actual scale select, most likeley controlling the relais)
+//0x34    Write a data byte (0x00 or 0x01)               (Ch1 ac / dc coupling. 0x00 ==> ac)
+
+//0x35    Write two bytes to data register               (Ch2 v/div setting, some screen offset. Value is lower near the top of the screen)
+//0x36    Write a byte to data register   (0x00 - 0x05)  (Ch2 v/div setting, actual scale select, most likeley controlling the relais)
+//0x37    Write a data byte (0x00 or 0x01)               (Ch1 ac / dc coupling. 0x00 ==> ac)
+
+
 //0x38    Set display brightness. Two bytes. Set in FUN_8001d380 (User based control of brightness) and FUN_8001c138 (Default setting 0xEA60 for error message)
-//0x3C
+
+
+//0x3C    Write two bytes gotten from parameter id 0x16
+
 
 //0x41    Return touch panel coordinates register address. Always 0x8150 ?? (GT911 point 1 lsb X coordinate). There is a check in te software to see if this number is returned from the FPGA. It falls into an endless loop if this is not the case.
+
 
 //Commands to interface with the I2C chip connected to the FPGA
 //0x64    Some sort of reset? Is send twice in a row. Send before reading configuration parameters. Prepare I2C bus for reading  
@@ -106,7 +145,23 @@ void FUN_80025468(void)
 //FPGA I2C chip parameter storage functions
 uint FUN_800248f8(undefined4 param_1,undefined4 param_2)   //Write to the I2C parameter storage, read from the I2C parameter storage and do some processing on it. Called from among others FUN_8001af9c and FUN_8001b1a4
 void FUN_80024ee0(int param_1,uint param_2)                //Write to the I2C parameter storage. Called from FUN_800248F8
-void FUN_80024e18(void)                                    //Read from the I2C parameter storage. Called on startup. Needed to set the global variable used for next 0x68 command.
+void FUN_80024e18(void)                                    //Read from the I2C parameter storage. Called on startup. Needed to set the global variable used for next 0x68 command. Is an exor crypt byte
+
+//FUN_800248f8 is called with the following param_1 values:
+//0x0A   Used for getting a 4 byte value to send to command read from parameter 0x14
+//0x0B   Used frequently. Read right after 0x0C and 0x0D
+//0x0C   Used for getting the channel 1 signal read command
+//0X0D   Used for getting the channel 2 signal read command
+//0x0E
+//0x0F
+//0x10   Used for the brightness
+//0x11   Used continuously.
+//0x12
+//0x14   Used for getting a command byte to send to the FPGA. Input always 0xED
+//0x15
+//0x16   Get some 16 bit data. Result is written to FPGA command 0x3C
+
+
 
 //========================================================================================================================================================================================================================================================
 //Data process functions
@@ -118,6 +173,82 @@ longlong FUN_8000090c(uint param_1,uint param_2)
 
 
 
+//========================================================================================================================================================================================================================================================
+For the signal data the scope does a software multiply when the 500mV/div is selected. So the sensitivity does not increase any further than 1V/div.
 
 
+//========================================================================================================================================================================================================================================================
+
+Channel 1 settings
+0x32  Is some sort of offset. Changes when the trace on the screen is moved up or down.
+0x33  Select the input scaling. See table below
+0x34  Select ac or dc coupling. 0x00 is ac coupling. 0x01 is dc coupling.
+
+         Scale        Screen offset
+V/div    0x33         0x32
+500mV    0x05         0x02 0xE0    //Uses the same setting as 1V/div. Scaling is done in software
+1V       0x05         0x02 0xE0
+2V       0x04         0x02 0xE7
+5V       0x03         0x02 0xD3
+10V      0x02         0x02 0xDA
+25V      0x01         0x02 0xB9
+50V      0x00         0x02 0xB9
+
+Channel 2 settings
+0x35  Is some sort of offset. Changes when the trace on the screen is moved up or down.
+0x36  Select the input scaling (V/div). See table below
+0x37  Select ac or dc coupling. 0x00 is ac coupling. 0x01 is dc coupling.
+
+The offset is also changed when the V/div is changed.
+
+V/div    0x36         0x35
+500mV    0x05         0x04 0x99    //Uses the same setting as 1V/div. Scaling is done in software
+1V       0x05         0x04 0x99
+2V       0x04         0x04 0x9F
+5V       0x03         0x04 0x96
+10V      0x02         0x04 0x9C
+25V      0x01         0x04 0x8B
+50V      0x00         0x04 0x8D
+
+//========================================================================================================================================================================================================================================================
+
+Trigger time / div settings
+0x0E  is written with four data bytes
+
+time / div
+10nS           0x00 0x06 0x45 0xDC     (Read data from 0x21 and 0x23)
+25nS           0x00 0x06 0x45 0xDC     (Read data from 0x21 and 0x23)
+50nS           0x00 0x06 0x45 0xDC
+100nS          0x00 0x06 0x45 0xDC
+250nS          0x00 0x06 0x45 0xDC
+500nS          0x00 0x06 0x45 0xDC
+1uS            0x00 0x03 0x25 0xDC
+2uS            0x00 0x01 0x45 0xDC
+5uS            0x00 0x00 0x55 0xDC
+10uS           0x00 0x00 0x55 0xDC
+20uS           0x00 0x00 0x25 0xDC
+50uS           0x00 0x00 0x15 0xDC
+100uS          0x00 0x00 0x0B 0xB8
+200uS          0x00 0x00 0x09 0xC4
+500uS          0x00 0x00 0x09 0xC4
+1mS            0x00 0x00 0x09 0xC4
+2mS            0x00 0x00 0x09 0xC4
+5mS            0x00 0x00 0x09 0xC4
+10mS           0x00 0x00 0x07 0x08
+20mS           0x00 0x00 0x03 0x20
+50mS           0x00 0x00 0x03 0x20
+
+From here on it seems that the FPGA switches to 0x0D for time base setting and the data is read with 0x24 and 0x26, 10 bytes per read. 0x28 is written 1 after or before every read sequence. 0x0D is also written
+100mS                                 0x00 0x00 0x07 0xD0
+200mS
+500mS
+1S
+2S
+5S
+10S
+20S
+50S
+
+
+There is some sequence on the 0x0D command. It first writes 0x00 0x00 0x00 0x27 and then 0x00 0x00 0x07 0xD0. This is not all the time, but after touch has been done???
 
