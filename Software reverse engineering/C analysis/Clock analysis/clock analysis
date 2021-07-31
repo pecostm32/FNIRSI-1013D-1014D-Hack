@@ -1,0 +1,4 @@
+//The CPU clock is configured in FUN_80028028
+//It is set to 600MHz (0x80001800)
+
+
