@@ -126,6 +126,24 @@ int main(void)
   scopesettings.alwaystrigger50 = 1;
   scopesettings.xymodedisplay = 0;
   
+  int channel;
+  int item;
+  
+  for(channel=0;channel<2;channel++)
+  {
+    //For each channel 12 items
+    for(item=0;item<12;item++)
+    {
+      scopesettings.measuresstate[channel][item] = 0;
+    }
+  }
+  
+  scopesettings.measuresstate[0][4] = 1;
+  scopesettings.measuresstate[0][7] = 1;
+
+  scopesettings.measuresstate[1][2] = 1;
+  scopesettings.measuresstate[1][10] = 1;
+  
   //Analyze the original code to find the screen build up and other display functions
   
   

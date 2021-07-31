@@ -15,6 +15,8 @@
 #define CHANNEL1_TRIG_COLOR    0x00CCCC00
 #define CHANNEL2_TRIG_COLOR    0x0000CCCC
 
+#define ITEM_ACTIVE_COLOR      0x00EF9311
+
 //----------------------------------------------------------------------------------------------------------------------------------
 
 extern FONTDATA font_0;
@@ -189,7 +191,7 @@ void scope_control_button(int mode)
   else
   {
     //Orange color for activated button
-    display_set_fg_color(0x00EF9311);
+    display_set_fg_color(ITEM_ACTIVE_COLOR);
   }
 
   //Draw the body of the button
@@ -235,7 +237,7 @@ void scope_run_stop_button(int mode)
   else
   {
     //Orange color for activated button
-    display_set_fg_color(0x00EF9311);
+    display_set_fg_color(ITEM_ACTIVE_COLOR);
   }
 
   //Draw the body of the button
@@ -282,7 +284,7 @@ void scope_auto_set_button(int mode)
   else
   {
     //Orange color for activated button
-    display_set_fg_color(0x00EF9311);
+    display_set_fg_color(ITEM_ACTIVE_COLOR);
   }
 
   //Draw the body of the button
@@ -329,7 +331,7 @@ void scope_page_up_button(int mode)
   else
   {
     //Orange color for activated button
-    display_set_fg_color(0x00EF9311);
+    display_set_fg_color(ITEM_ACTIVE_COLOR);
   }
 
   //Draw the body of the button
@@ -376,7 +378,7 @@ void scope_page_down_button(int mode)
   else
   {
     //Orange color for activated button
-    display_set_fg_color(0x00EF9311);
+    display_set_fg_color(ITEM_ACTIVE_COLOR);
   }
 
   //Draw the body of the button
@@ -423,7 +425,7 @@ void scope_t_cursor_button(int mode)
   else
   {
     //Orange color for activated button
-    display_set_fg_color(0x00EF9311);
+    display_set_fg_color(ITEM_ACTIVE_COLOR);
   }
 
   //Draw the body of the button
@@ -471,7 +473,7 @@ void scope_v_cursor_button(int mode)
   else
   {
     //Orange color for activated button
-    display_set_fg_color(0x00EF9311);
+    display_set_fg_color(ITEM_ACTIVE_COLOR);
   }
 
   //Draw the body of the button
@@ -519,7 +521,7 @@ void scope_measures_button(int mode)
   else
   {
     //Orange color for activated button
-    display_set_fg_color(0x00EF9311);
+    display_set_fg_color(ITEM_ACTIVE_COLOR);
   }
 
   //Draw the body of the button
@@ -566,7 +568,7 @@ void scope_save_picture_button(int mode)
   else
   {
     //Orange color for activated button
-    display_set_fg_color(0x00EF9311);
+    display_set_fg_color(ITEM_ACTIVE_COLOR);
   }
 
   //Draw the body of the button
@@ -613,7 +615,7 @@ void scope_save_wave_button(int mode)
   else
   {
     //Orange color for activated button
-    display_set_fg_color(0x00EF9311);
+    display_set_fg_color(ITEM_ACTIVE_COLOR);
   }
 
   //Draw the body of the button
@@ -660,7 +662,7 @@ void scope_delete_wave_button(int mode)
   else
   {
     //Orange color for activated button
-    display_set_fg_color(0x00EF9311);
+    display_set_fg_color(ITEM_ACTIVE_COLOR);
   }
 
   //Draw the body of the button
@@ -707,7 +709,7 @@ void scope_50_percent_trigger_button(int mode)
   else
   {
     //Orange color for activated button
-    display_set_fg_color(0x00EF9311);
+    display_set_fg_color(ITEM_ACTIVE_COLOR);
   }
 
   //Draw the body of the button
@@ -754,7 +756,7 @@ void scope_show_grid_button(int mode)
   else
   {
     //Orange color for activated button
-    display_set_fg_color(0x00EF9311);
+    display_set_fg_color(ITEM_ACTIVE_COLOR);
   }
 
   //Draw the body of the button
@@ -796,7 +798,7 @@ void scope_ch1_sensitivity_control(int type,int mode)
   if((type == 0) && (mode != 0))
   {
     //Orange color for activated button
-    display_set_fg_color(0x00EF9311);
+    display_set_fg_color(ITEM_ACTIVE_COLOR);
   }
   else
   {
@@ -811,7 +813,7 @@ void scope_ch1_sensitivity_control(int type,int mode)
   if((type != 0) && (mode != 0))
   {
     //Orange color for activated button
-    display_set_fg_color(0x00EF9311);
+    display_set_fg_color(ITEM_ACTIVE_COLOR);
   }
   else
   {
@@ -846,7 +848,7 @@ void scope_ch2_sensitivity_control(int type,int mode)
   if((type == 0) && (mode != 0))
   {
     //Orange color for activated button
-    display_set_fg_color(0x00EF9311);
+    display_set_fg_color(ITEM_ACTIVE_COLOR);
   }
   else
   {
@@ -861,7 +863,7 @@ void scope_ch2_sensitivity_control(int type,int mode)
   if((type != 0) && (mode != 0))
   {
     //Orange color for activated button
-    display_set_fg_color(0x00EF9311);
+    display_set_fg_color(ITEM_ACTIVE_COLOR);
   }
   else
   {
@@ -1618,7 +1620,7 @@ void scope_open_main_menu(void)
   display_set_screen_buffer(maindisplaybuffer);
 
   //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
-  display_slide_top_rect_onto_screen(0, 46, 149, 233, 3938);
+  display_slide_top_rect_onto_screen(0, 46, 149, 233, 63039);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -1841,7 +1843,7 @@ void scope_open_channel1_menu(void)
   display_set_screen_buffer(maindisplaybuffer);
 
   //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
-  display_slide_top_rect_onto_screen(161, 46, 183, 252, 4369);
+  display_slide_top_rect_onto_screen(161, 46, 183, 252, 69906);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -2202,7 +2204,7 @@ void scope_open_channel2_menu(void)
   display_set_screen_buffer(maindisplaybuffer);
 
   //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
-  display_slide_top_rect_onto_screen(288, 46, 183, 252, 4369);
+  display_slide_top_rect_onto_screen(288, 46, 183, 252, 69906);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -2560,7 +2562,7 @@ void scope_open_trigger_menu(void)
   display_set_screen_buffer(maindisplaybuffer);
 
   //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
-  display_slide_top_rect_onto_screen(560, 46, 172, 186, 3524);
+  display_slide_top_rect_onto_screen(560, 46, 172, 186, 56415);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -2842,7 +2844,7 @@ void scope_open_system_settings_menu(void)
   display_set_screen_buffer(maindisplaybuffer);
 
   //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
-  display_slide_left_rect_onto_screen(150, 46, 244, 294, 3938);
+  display_slide_left_rect_onto_screen(150, 46, 244, 294, 63039);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -3079,7 +3081,7 @@ void scope_open_calibration_start_text(void)
   display_set_screen_buffer(maindisplaybuffer);
 
   //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
-  display_slide_left_rect_onto_screen(395, 222, 199, 59, 3938);
+  display_slide_left_rect_onto_screen(395, 222, 199, 59, 63039);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -3125,6 +3127,186 @@ void scope_show_calibration_done_text(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+void scope_open_measures_menu(void)
+{
+  int item;
+  int channel;
+  
+  //Setup the menu in a separate buffer to be able to slide it onto the screen
+  display_set_screen_buffer(displaybuffer1);
+  
+  //Draw the background in dark grey
+  display_set_fg_color(0x00181818);
+  display_fill_rect(231, 263, 499, 214);
+
+  //Draw the edge in black
+  display_set_fg_color(0x00000000);
+  display_draw_rect(231, 263, 499, 214);
+  
+  //Three horizontal black lines between the settings
+  display_draw_horz_line(288, 232, 729);
+  display_draw_horz_line(350, 232, 729);
+  display_draw_horz_line(412, 232, 729);
+
+  //Vertical separator between the channel sections
+  display_draw_vert_line(481, 264, 476);
+  
+  //Vertical separators between the items
+  display_draw_vert_line(294, 289, 476);
+  display_draw_vert_line(356, 289, 476);
+  display_draw_vert_line(418, 289, 476);
+  display_draw_vert_line(544, 289, 476);
+  display_draw_vert_line(606, 289, 476);
+  display_draw_vert_line(668, 289, 476);
+  
+  //Channel 1 top bar
+  display_set_fg_color(CHANNEL1_COLOR);
+  display_fill_rect(482, 264, 247, 23);
+  
+  //Channel 2 top bar
+  display_set_fg_color(CHANNEL2_COLOR);
+  display_fill_rect(232, 264, 248, 23);
+
+  //Display the channel identifier text in black
+  display_set_fg_color(0x00000000);
+  display_set_font(&font_2);
+  display_text(490, 269, "CH1");
+  display_text(240, 269, "CH2");
+  
+  //Display the menu items
+  for(channel=0;channel<2;channel++)
+  {
+    //For each channel 12 items
+    for(item=0;item<12;item++)
+    {
+      //Draw the separate items
+      scope_measures_menu_item(channel, item);
+    }
+  }
+  
+  //Set source and target for getting it on the actual screen
+  display_set_source_buffer(displaybuffer1);
+  display_set_screen_buffer(maindisplaybuffer);
+
+  //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
+  display_slide_right_rect_onto_screen(231, 263, 499, 214, 63039);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_measures_menu_item(int channel, int item)
+{
+  uint16  xpos;
+  uint16  ypos;
+  char   *text;
+  
+  //Set the x position offset for the given channel
+  if(channel == 0)
+  {
+    //Channel 1 is on the right side
+    xpos = 482;
+  }
+  else
+  {
+    //Channel 2 is on the left side
+    xpos = 232;
+  }
+  
+  //Set the text and the position for the given item 
+  switch(item)
+  {
+    case 0:
+      text  = "Vmax";
+      xpos += 15;
+      ypos  = 312;
+      break;
+
+    case 1:
+      text  = "Vmin";
+      xpos += 79;
+      ypos  = 312;
+      break;
+
+    case 2:
+      text  = "Vavg";
+      xpos += 141;
+      ypos  = 312;
+      break;
+
+    case 3:
+      text  = "Vrms";
+      xpos += 203;
+      ypos  = 312;
+      break;
+
+    case 4:
+      text  = "VPP";
+      xpos += 19;
+      ypos  = 376;
+      break;
+
+    case 5:
+      text  = "VP";
+      xpos += 86;
+      ypos  = 376;
+      break;
+
+    case 6:
+      text  = "Freq";
+      xpos += 143;
+      ypos  = 376;
+      break;
+
+    case 7:
+      text  = "Cycle";
+      xpos += 201;
+      ypos  = 376;
+      break;
+
+    case 8:
+      text  = "Tim+";
+      xpos += 17;
+      ypos  = 437;
+      break;
+
+    case 9:
+      text  = "Tim-";
+      xpos += 80;
+      ypos  = 437;
+      break;
+
+    case 10:
+      text  = "Duty+";
+      xpos += 138;
+      ypos  = 437;
+      break;
+
+    case 11:
+      text  = "Duty-";
+      xpos += 202;
+      ypos  = 437;
+      break;
+  }
+  
+  //Check if item is on or off
+  if(scopesettings.measuresstate[channel][item] == 0)
+  {
+    //Off so some dark grey text
+    display_set_fg_color(0x00444444);
+  }
+  else
+  {
+    //On so white text
+    display_set_fg_color(0x00FFFFFF);
+  }
+  
+  //Display the text
+  display_set_font(&font_3);
+  display_text(xpos, ypos, text);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 void scope_open_slider(uint16 xpos, uint16 ypos, uint8 position)
 {
   //Save the screen under the screen brightness slider
@@ -3154,7 +3336,7 @@ void scope_open_slider(uint16 xpos, uint16 ypos, uint8 position)
   display_set_screen_buffer(maindisplaybuffer);
 
   //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
-  display_slide_left_rect_onto_screen(xpos, ypos, 331, 58, 3938);
+  display_slide_left_rect_onto_screen(xpos, ypos, 331, 58, 63039);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

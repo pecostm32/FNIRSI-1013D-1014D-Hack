@@ -64,6 +64,7 @@ void display_fill_rounded_rect(uint16 xpos, uint16 ypos, uint16 width, uint16 he
 
 void display_slide_top_rect_onto_screen(uint16 xpos, uint16 ypos, uint16 width, uint16 height, uint32 speed);
 void display_slide_left_rect_onto_screen(uint16 xpos, uint16 ypos, uint16 width, uint16 height, uint32 speed);
+void display_slide_right_rect_onto_screen(uint16 xpos, uint16 ypos, uint16 width, uint16 height, uint32 speed);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

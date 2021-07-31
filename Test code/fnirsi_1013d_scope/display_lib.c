@@ -581,7 +581,7 @@ void display_slide_top_rect_onto_screen(uint16 xpos, uint16 ypos, uint16 width, 
   uint16  pixel;
 
   //Starting line of the rectangle to display first
-  startline = height - ((height * speed) >> 16) - 1;
+  startline = height - ((height * speed) >> 20) - 1;
   
   //Start x,y offset for source and destination calculation
   startxy = xpos + (ypos * displaydata.pixelsperline);
@@ -611,7 +611,7 @@ void display_slide_top_rect_onto_screen(uint16 xpos, uint16 ypos, uint16 width, 
     }
     
     //Calculate the new starting line
-    startline = startline - 1 - ((startline * speed) >> 16);
+    startline = startline - 1 - ((startline * speed) >> 20);
   }
 }
 
@@ -627,7 +627,7 @@ void display_slide_left_rect_onto_screen(uint16 xpos, uint16 ypos, uint16 width,
   uint16  pixel;
 
   //Starting pixel of the rectangle to display first
-  startpixel = width - ((width * speed) >> 16) - 1;
+  startpixel = width - ((width * speed) >> 20) - 1;
   
   //Start x,y offset for source and destination calculation
   startxy = xpos + (ypos * displaydata.pixelsperline);
@@ -660,7 +660,56 @@ void display_slide_left_rect_onto_screen(uint16 xpos, uint16 ypos, uint16 width,
     }
     
     //Calculate the new starting pixel
-    startpixel = startpixel - 1 - ((startpixel * speed) >> 16);
+    startpixel = startpixel - 1 - ((startpixel * speed) >> 20);
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_slide_right_rect_onto_screen(uint16 xpos, uint16 ypos, uint16 width, uint16 height, uint32 speed)
+{
+  uint16 *ptr1, *ptr2;
+  uint16  line;
+  int16   startpixel;     //Needs to be an int because it has to become negative to stop
+  uint16  endpixel;
+  uint32  startxy;
+  uint16  pixel;
+
+  //Starting pixel of the rectangle where to display first
+  startpixel = width - ((width * speed) >> 20) - 1;
+  
+  //Start x,y offset for source and destination calculation
+  startxy = xpos + (ypos * displaydata.pixelsperline);
+  
+  //Draw sections as long as is needed to get the whole rectangle on screen
+  while(startpixel >= 0)
+  {
+    //Source pointer is always the first x,y offset
+    ptr2 = displaydata.sourcebuffer + startxy;
+    
+    //Destination pointer is based on the current start pixel
+    ptr1 = displaydata.screenbuffer + startxy + startpixel;
+    
+    //Determine the number of pixels to do per loop. Increasing number as start pixel shifts to the right of the destination bitmap.
+    endpixel = width - startpixel;
+    
+    //Handle the lines
+    for(line=0;line<=height;line++)
+    {
+      //Copy the needed pixels for this loop to the screen buffer
+      for(pixel=0;pixel<=endpixel;pixel++)
+      {
+        //Copy one pixel at a time
+        ptr1[pixel] = ptr2[pixel];
+      }
+      
+      //Point to the next line of pixels in both destination and source
+      ptr1 += displaydata.pixelsperline;
+      ptr2 += displaydata.pixelsperline;
+    }
+    
+    //Calculate the new starting pixel
+    startpixel = startpixel - 1 - ((startpixel * speed) >> 20);
   }
 }
 

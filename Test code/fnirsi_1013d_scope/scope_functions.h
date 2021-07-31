@@ -35,8 +35,8 @@ void scope_save_wave_button(int mode);
 void scope_delete_wave_button(int mode);
 void scope_50_percent_trigger_button(int mode);
 void scope_show_grid_button(int mode);
-void scope_ch1_sensitivity_control(int type,int mode);
-void scope_ch2_sensitivity_control(int type,int mode);
+void scope_ch1_sensitivity_control(int type, int mode);
+void scope_ch2_sensitivity_control(int type, int mode);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 // Top bar functions
@@ -91,6 +91,9 @@ void scope_system_settings_x_y_mode_item(void);
 void scope_open_calibration_start_text(void);
 void scope_show_calibrating_text(void);
 void scope_show_calibration_done_text(void);
+
+void scope_open_measures_menu(void);
+void scope_measures_menu_item(int channel, int item);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

@@ -238,8 +238,43 @@ void scan_for_touch(void)
   }
   else if(xtouch > 730)
   {
-    //Right menu bar, so handle that
-    
+    //Check if control button is touched
+    if((ytouch >= 3) && (ytouch <= 57))
+    {
+      //Highlight the button if touched
+      scope_control_button(1);
+      
+      //Wait until touch is released
+      while(havetouch)
+      {
+        //Read the touch panel status
+        tp_i2c_read_status();
+      }
+
+      //Button back to inactive state
+      scope_control_button(0);
+      
+      //Toggle the right menu state
+      scopesettings.rightmenustate ^= 1;
+      
+      //Display the changed state
+      scope_setup_right_control_menu();
+    }
+    //Not then handle the menus based on the selected menu state
+    else
+    {
+      //Right menu bar, so handle it according to the menu state
+      if(scopesettings.rightmenustate == 0)
+      {
+        //Basic control state
+        handle_right_basic_menu_touch();
+      }
+      else
+      {
+        //Volts per div adjust state
+        handle_right_volts_div_menu_touch();      
+      }
+    }
   }
   else
   {
@@ -973,6 +1008,611 @@ void handle_trigger_menu_touch(void)
             scope_trigger_channel_select();
             scope_trigger_settings(0);
           }
+        }
+        
+        //Wait until touch is released before checking on a new position
+        while(havetouch)
+        {
+          //Scan the touch panel for touch
+          tp_i2c_read_status();
+        }
+      }
+      else
+      {
+        //Touch outside the menu so quit
+        return;
+      }
+    }
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void handle_right_basic_menu_touch(void)
+{
+  //Check if run/stop or page up button is touched
+  if((ytouch >= 63) && (ytouch <= 117))
+  {
+    //Check on wave view state for which button is shown
+    if(scopesettings.waveviewmode == 0)
+    {
+      //Run/stop so highlight that button if touched
+      scope_run_stop_button(1);
+
+      //Wait until touch is released
+      while(havetouch)
+      {
+        //Read the touch panel status
+        tp_i2c_read_status();
+      }
+
+      //Button back to inactive state
+      scope_run_stop_button(0);
+
+      //Toggle the right menu state
+      scopesettings.runstate ^= 1;
+/*
+      if (pcVar5[0x3a] == '\0')  //scopesettings.runstate
+      {
+        pcVar5[0x3a] = '\x01';
+        *(ushort *)puVar19 = (ushort)(byte)pcVar5[3];
+        *(ushort *)puVar7 = (ushort)(byte)pcVar5[0xf];
+      }
+      else
+      {
+        pcVar5[0x3a] = '\0';
+        *(undefined2 *)PTR_DAT_800202ec = 0;
+        *(undefined2 *)PTR_DAT_800202f0 = 400;
+        *(undefined2 *)PTR_DAT_800202f4 = 0;
+        *(undefined2 *)PTR_DAT_800202f8 = 400;
+      }
+
+         //Trigger mode              run state
+      if ((pcVar5[0x21] == '\0') || (pcVar5[0x3a] != '\0'))
+      {
+        pcVar5[0x18] = '\x01';
+        pcVar5[0x17] = '\x01';
+      }
+      else
+      {
+        pcVar5[0x36] = '\0';
+        pcVar5[0x37] = '\x01';
+      }
+*/      
+      //Display the changed state
+      scope_run_stop_text(scopesettings.runstate);
+    }
+    else
+    {
+      //Page up so highlight that button if touched
+      scope_page_up_button(1);
+
+      //Wait until touch is released
+      while(havetouch)
+      {
+        //Read the touch panel status
+        tp_i2c_read_status();
+      }
+
+      //Button back to inactive state
+      scope_page_up_button(0);
+
+      //Some waveform counter needs to be checked and decremented
+      //Previous waveform needs to be displayed
+      //waveform_select_file
+    }
+  }
+  //Check if auto set or page down button is touched
+  else if((ytouch >= 123) && (ytouch <= 177))
+  {
+    //Check on wave view state for which button is shown
+    if(scopesettings.waveviewmode == 0)
+    {
+      //Auto set so highlight that button if touched
+      scope_auto_set_button(1);
+
+      //Wait until touch is released
+      while(havetouch)
+      {
+        //Read the touch panel status
+        tp_i2c_read_status();
+      }
+
+      //Button back to inactive state
+      scope_auto_set_button(0);
+
+/*
+      pcVar5[0x21] = '\0';            //Trigger mode
+      FUN_80026828();                 //Set trigger mode in the FPGA
+      display_trigger_settings(0);
+      FUN_80002050();                 //Perform the actual auto set action?? (perform_auto_set)
+      display_ch1_settings(0);
+      display_ch2_settings(0);
+*/      
+    }
+    else
+    {
+      //Page down so highlight that button if touched
+      scope_page_down_button(1);
+
+      //Wait until touch is released
+      while(havetouch)
+      {
+        //Read the touch panel status
+        tp_i2c_read_status();
+      }
+
+      //Button back to inactive state
+      scope_page_down_button(0);
+
+      //Some waveform counter needs to be checked and incremented
+      //Next waveforms needs to be displayed
+      //waveform_select_file
+    }
+  }
+  //Check if time cursor button is touched
+  else if((ytouch >= 183) && (ytouch <= 237))
+  {
+    //Highlight the button if touched
+    scope_t_cursor_button(1);
+
+    //Wait until touch is released
+    while(havetouch)
+    {
+      //Read the touch panel status
+      tp_i2c_read_status();
+    }
+
+    //Button back to inactive state
+    scope_t_cursor_button(0);
+/*
+    //Check on some setting    
+    if (8 < (byte)pcVar5[10])
+    {
+      if (*(char *)(iVar25 + 0x292) == '\0')
+      {
+        *(undefined *)(iVar25 + 0x292) = 1;
+      }
+      else
+      {
+        *(undefined *)(iVar25 + 0x292) = 0;
+      }
+    }
+*/
+  }
+  //Check if volt cursor button is touched
+  else if((ytouch >= 243) && (ytouch <= 297))
+  {
+    //Highlight the button if touched
+    scope_v_cursor_button(1);
+
+    //Wait until touch is released
+    while(havetouch)
+    {
+      //Read the touch panel status
+      tp_i2c_read_status();
+    }
+
+    //Button back to inactive state
+    scope_v_cursor_button(0);
+/*
+    //Check on some setting    
+    if (8 < (byte)pcVar5[10])
+    {
+      if (*(char *)(iVar25 + 0x29a) == '\0')
+      {
+        *(undefined *)(iVar25 + 0x29a) = 1;
+      }
+      else
+      {
+        *(undefined *)(iVar25 + 0x29a) = 0;
+      }
+    }
+*/    
+  }
+  //Check if measures button is touched
+  else if((ytouch >= 303) && (ytouch <= 357))
+  {
+    //Highlight the button if touched
+    scope_measures_button(1);
+
+    //Wait until touch is released
+    while(havetouch)
+    {
+      //Read the touch panel status
+      tp_i2c_read_status();
+    }
+
+    //Button back to inactive state
+    scope_measures_button(0);
+    
+    //Save the screen rectangle where the menu will be displayed
+    display_set_destination_buffer(displaybuffer2);
+    display_copy_rect_from_screen(231, 263, 499, 214);
+
+    //Go and setup the channel 1 menu
+    scope_open_measures_menu();
+
+    //Go and handle the menu touch
+    handle_measures_menu_touch();
+
+    //Restore the screen when done
+    display_set_source_buffer(displaybuffer2);
+    display_copy_rect_to_screen(231, 263, 499, 214);
+  }
+  //Check if save picture button is touched
+  else if((ytouch >= 363) && (ytouch <= 417))
+  {
+    //Highlight the button if touched
+    scope_save_picture_button(1);
+
+    //Wait until touch is released
+    while(havetouch)
+    {
+      //Read the touch panel status
+      tp_i2c_read_status();
+    }
+
+    //Button back to inactive state
+    scope_save_picture_button(0);
+/*    
+    //This needs to be done for save picture
+    FUN_80025f2c();
+    if ((pcVar5[0x43] != '\0') && (*PTR_DAT_80020300 == '\x01'))
+    {
+      FUN_8002c8e4();
+      some_sd_card_stuff_3();
+    }
+*/
+  }
+  //Check if save or delete wave button is touched
+  else if((ytouch >= 423) && (ytouch <= 477))
+  {
+    //Check on wave view state for which button is shown
+    if(scopesettings.waveviewmode == 0)
+    {
+      //Save wave so highlight that button if touched
+      scope_save_wave_button(1);
+
+      //Wait until touch is released
+      while(havetouch)
+      {
+        //Read the touch panel status
+        tp_i2c_read_status();
+      }
+
+      //Button back to inactive state
+      scope_save_wave_button(0);
+/*
+      //This needs to be done for save wave
+      FUN_80025c38();
+*/
+    }
+    else
+    {
+      //Delete wave so highlight that button if touched
+      scope_delete_wave_button(1);
+
+      //Wait until touch is released
+      while(havetouch)
+      {
+        //Read the touch panel status
+        tp_i2c_read_status();
+      }
+
+      //Button back to inactive state
+      scope_delete_wave_button(0);
+/*
+      //This needs to be done for delete wave      
+      iVar25 = FUN_8002b8e8();
+      if(iVar25 == 0)
+      {
+        FUN_8002ca8c();
+      }
+      else
+      {
+        FUN_8002ca34();
+        iVar25 = FUN_8002ca8c();
+        
+        if (iVar25 != 0)  //Last wave deleted then back to normal view mode
+        {
+          pcVar5[0x43] = '\0';
+        }
+      }
+*/
+    }
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void handle_right_volts_div_menu_touch(void)
+{
+  //Check if channel 1 V+ button is touched
+  if((ytouch >= 78) && (ytouch <= 140))
+  {
+    //Highlight the button if touched
+    scope_ch1_sensitivity_control(0,1);
+
+    //Wait until touch is released
+    while(havetouch)
+    {
+      //Read the touch panel status
+      tp_i2c_read_status();
+    }
+
+    //Button back to inactive state
+    scope_ch1_sensitivity_control(0,0);
+/*
+    if (*pcVar5 != '\0') //Channel enable
+    {
+      bVar2 = pcVar5[0x3a];   //Scope run mode
+      bVar26 = bVar2 != 0;
+
+      if (bVar26)
+      {
+        bVar2 = pcVar5[10];   //Time base
+      }
+
+      if (((!bVar26 || 8 < bVar2) && ((byte)pcVar5[3] < 6)) && ((pcVar5[0x3a] == '\0' || (((ushort)(byte)pcVar5[3] <= *(ushort *)puVar19 || (((ushort)(byte)pcVar5[3] - *(ushort *)puVar19 & 0xff) < 2))))))
+      {
+        pcVar5[3] = pcVar5[3] + '\x01';  //Add one to the volt/div setting
+        display_ch1_settings(0);         //Display the result
+
+        if (pcVar5[0x43] == '\0')        //View mode normal
+        {
+          FUN_8000689c();                //Set volts div in FPGA
+          FUN_8000696c();                //Also some FPGA control (0x32, so the offset??)
+          delay_2(0x3c);                 //Give it some time to settle
+        }
+      }
+    }
+*/
+  }
+  //Check if channel 1 V- button is touched
+  else if((ytouch >= 163) && (ytouch <= 223))
+  {
+    //Highlight the button if touched
+    scope_ch1_sensitivity_control(1,1);
+
+    //Wait until touch is released
+    while(havetouch)
+    {
+      //Read the touch panel status
+      tp_i2c_read_status();
+    }
+
+    //Button back to inactive state
+    scope_ch1_sensitivity_control(1,0);
+/*
+    if (*pcVar5 != '\0') //Channel enable
+    {
+      bVar2 = pcVar5[0x3a];   //Scope run mode
+      bVar26 = bVar2 != 0;
+
+      if (bVar26)
+      {
+        bVar2 = pcVar5[10];   //Time base
+      }
+
+      if (((!bVar26 || 8 < bVar2) && (pcVar5[3] != '\0')) && ((pcVar5[0x3a] == '\0' || ((*(ushort *)puVar19 <= (ushort)(byte)pcVar5[3] || ((*(ushort *)puVar19 - (ushort)(byte)pcVar5[3] & 0xff) < 2))))))
+      {
+        pcVar5[3] = pcVar5[3] - '\x01';  //Take one of the volt/div setting
+        display_ch1_settings(0);         //Display the result
+
+        if (pcVar5[0x43] == '\0')        //View mode normal
+        {
+          FUN_8000689c();                //Set volts div in FPGA
+          FUN_8000696c();                //Also some FPGA control (0x32, so the offset??)
+          delay_2(0x3c);                 //Give it some time to settle
+        }
+      }
+    }
+*/
+  }
+  //Check if channel 2 V+ button is touched
+  else if((ytouch >= 258) && (ytouch <= 320))
+  {
+    //Highlight the button if touched
+    scope_ch2_sensitivity_control(0,1);
+
+    //Wait until touch is released
+    while(havetouch)
+    {
+      //Read the touch panel status
+      tp_i2c_read_status();
+    }
+
+    //Button back to inactive state
+    scope_ch2_sensitivity_control(0,0);
+/*
+    if (*pcVar5[0x0C] != '\0') //Channel enable
+    {
+      bVar2 = pcVar5[0x3a];   //Scope run mode
+      bVar26 = bVar2 != 0;
+
+      if (bVar26)
+      {
+        bVar2 = pcVar5[10];   //Time base
+      }
+
+      if (((!bVar26 || 8 < bVar2) && ((byte)pcVar5[0xf] < 6)) && ((pcVar5[0x3a] == '\0' || (((ushort)(byte)pcVar5[0xf] <= *(ushort *)puVar7 || (((ushort)(byte)pcVar5[0xf] - *(ushort *)puVar7 & 0xff) < 2))))))
+      {
+        pcVar5[0x0F] = pcVar5[0x0F] + '\x01';  //Add one to the volt/div setting
+        display_ch2_settings(0);         //Display the result
+
+        if (pcVar5[0x43] == '\0')        //View mode normal
+        {
+          FUN_800095e8();                //Set volts div in FPGA
+          FUN_800096b8();                //Also some FPGA control (0x32, so the offset??)
+          delay_2(0x3c);                 //Give it some time to settle
+        }
+      }
+    }
+*/
+  }
+  //Check if channel 2 V- button is touched
+  else if((ytouch >= 343) && (ytouch <= 403))
+  {
+    //Highlight the button if touched
+    scope_ch2_sensitivity_control(1,1);
+
+    //Wait until touch is released
+    while(havetouch)
+    {
+      //Read the touch panel status
+      tp_i2c_read_status();
+    }
+
+    //Button back to inactive state
+    scope_ch2_sensitivity_control(1,0);
+/*
+    if (*pcVar5[0x0C] != '\0') //Channel enable
+    {
+      bVar2 = pcVar5[0x3a];   //Scope run mode
+      bVar26 = bVar2 != 0;
+
+      if (bVar26)
+      {
+        bVar2 = pcVar5[10];   //Time base
+      }
+
+      if (((!bVar26 || 8 < bVar2) && (pcVar5[0xf] != '\0')) && ((pcVar5[0x3a] == '\0' || ((*(ushort *)puVar7 <= (ushort)(byte)pcVar5[0xf] || ((*(ushort *)puVar7 - (ushort)(byte)pcVar5[0xf] & 0xff) < 2))))))
+      {
+        pcVar5[0xF] = pcVar5[0x0F] - '\x01';  //Take one of the volt/div setting
+        display_ch1_settings(0);         //Display the result
+
+        if (pcVar5[0x43] == '\0')        //View mode normal
+        {
+          FUN_800095e8();                //Set volts div in FPGA
+          FUN_800096b8();                //Also some FPGA control (0x32, so the offset??)
+          delay_2(0x3c);                 //Give it some time to settle
+        }
+      }
+    }
+*/
+  }
+  //Check if 50% trigger of show grid button is touched
+  else if((ytouch >= 423) && (ytouch <= 477))
+  {
+    //Check on wave view state for which button is shown
+    if(scopesettings.waveviewmode == 0)
+    {
+      //50% trigger so highlight that button if touched
+      scope_50_percent_trigger_button(1);
+
+      //Wait until touch is released
+      while(havetouch)
+      {
+        //Read the touch panel status
+        tp_i2c_read_status();
+      }
+
+      //Button back to inactive state
+      scope_50_percent_trigger_button(0);
+/*
+      //This needs to be done for 50% trigger
+      if (pcVar5[0x3a] == '\0')  //Run mode
+      {
+        FUN_80029314();
+      }
+*/
+    }
+    else
+    {
+      //Show grid so highlight that button if touched
+      scope_show_grid_button(1);
+
+      //Wait until touch is released
+      while(havetouch)
+      {
+        //Read the touch panel status
+        tp_i2c_read_status();
+      }
+
+      //Button back to inactive state
+      scope_show_grid_button(0);
+/*
+      //This needs to be done for show grid    
+      if (*(char *)(DAT_8002030c + 3) == '\x14')
+      {
+        *(undefined *)(DAT_8002030c + 3) = 0;
+      }
+      else
+      {
+        *(undefined *)(DAT_8002030c + 3) = 0x14;
+      }
+*/
+    }
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+const TOUCHCOORDS measures_item_touch_coords[2][12] =
+{
+  {
+    //Channel 1 coordinates are on the right
+    {482, 543, 289, 349}, {545, 605, 289, 349}, {607, 667, 289, 349}, {669, 729, 289, 349},
+    {482, 543, 351, 411}, {545, 605, 351, 411}, {607, 667, 351, 411}, {669, 729, 351, 411},
+    {482, 543, 413, 476}, {545, 605, 413, 476}, {607, 667, 413, 476}, {669, 729, 413, 476},
+  },
+  {
+    //CHhannel 2 coordinates are on the left
+    {232, 293, 289, 349}, {295, 355, 289, 349}, {357, 417, 289, 349}, {418, 480, 289, 349},
+    {232, 293, 351, 411}, {295, 355, 351, 411}, {357, 417, 351, 411}, {418, 480, 351, 411},
+    {232, 293, 413, 476}, {295, 355, 413, 476}, {357, 417, 413, 476}, {418, 480, 413, 476},
+  }
+};
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void handle_measures_menu_touch(void)
+{
+  int channel;
+  int item;
+  int found;
+  
+  //Stay in the menu as long as there is no touch outside the menu  
+  while(1)
+  {
+    //Scan the touch panel for touch
+    tp_i2c_read_status();
+    
+    //Check if there is touch
+    if(havetouch)
+    {
+      //Check if touch within the menu field
+      if((xtouch >= 231) && (xtouch <= 730) && (ytouch >= 264) && (ytouch <= 477))
+      {
+        found = 0;
+        channel = 0;
+
+        //Check the touch positions for the separate items until one is found
+        while((found == 0) && (channel < 2))
+        {
+          item = 0;
+          
+          //For each channel 12 items
+          while((found == 0) && (item<12))
+          {
+            //Check if touch is on this item
+            if((xtouch >= measures_item_touch_coords[channel][item].x1) && (xtouch <= measures_item_touch_coords[channel][item].x2) &&
+               (ytouch >= measures_item_touch_coords[channel][item].y1) && (ytouch <= measures_item_touch_coords[channel][item].y2))
+            {
+              //Toggle the item
+              scopesettings.measuresstate[channel][item] ^= 1;
+
+              //Draw the changed item
+              scope_measures_menu_item(channel, item);
+            }
+            
+            //Next item
+            item++;
+          }
+          
+          //Next channel
+          channel++;
         }
         
         //Wait until touch is released before checking on a new position

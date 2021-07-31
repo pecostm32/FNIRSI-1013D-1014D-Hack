@@ -9,10 +9,19 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+typedef struct tagTouchCoords         TOUCHCOORDS,        *PTOUCHCOORDS;
 typedef struct tagScopeSettings       SCOPESETTINGS,      *PSCOPESETTINGS;
 typedef struct tagChannelSettings     CHANNELSETTINGS,    *PCHANNELSETTINGS;
 
 //----------------------------------------------------------------------------------------------------------------------------------
+
+struct tagTouchCoords
+{
+  uint16 x1;
+  uint16 x2;
+  uint16 y1;
+  uint16 y2;
+};
 
 struct tagChannelSettings
 {
@@ -46,6 +55,8 @@ struct tagScopeSettings
   uint8 gridbrightness;
   uint8 alwaystrigger50;
   uint8 xymodedisplay;
+  
+  uint8 measuresstate[2][12];
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
