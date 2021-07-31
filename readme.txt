@@ -100,3 +100,11 @@ The base of the slider is shown, but the rest still needs to be implemented.
 The latest Ghidra archive has more and more of the functions identified. The C implementation being made is not a one to one
 copy, but the functionality is the same.
 
+----------------------------------------------------------------------------------------------------------
+31-JULY-2021
+Finished the user interface framework.
+Also made a new bootloader that allows loading of the new scope code through FEL for easy testing.
+
+With this bootloader it is possible to start the scope in FEL mode with the DRAM enabled. The FNIRSI startup image is displayed.
+"sudo ./sunxi-fel -p spl fnirsi_1013d_startup_with_fel.bin" starts the system and returns to FEL. After this DRAM is enabled and FEL is active.
+"sudo ./sunxi-fel -p write 0x7FFFFFE0 fnirsi_1013d_scope.bin exe 0x80000000" then loads and executes the output of the scope project
