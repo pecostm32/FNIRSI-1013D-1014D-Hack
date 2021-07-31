@@ -562,6 +562,9 @@ void handle_main_menu_touch(void)
       }
       else
       {
+        //Close any of the sub menus if open
+        close_open_sub_menus();
+        
         //Check if system settings menu has been opened
         if(systemsettingsmenuopen)
         {
@@ -572,9 +575,6 @@ void handle_main_menu_touch(void)
           //Clear the flag so it will be opened next time
           systemsettingsmenuopen = 0;
         }
-        
-        //Close any of the sub menus if open
-        close_open_sub_menus();
         
         //Touch outside the menu's so quit
         return;
@@ -1643,10 +1643,10 @@ void close_open_sub_menus(void)
   //Check if the screen brightness slider is open
   if(screenbrightnessopen)
   {
-    //Set the button active
+    //Set the button inactive
     scope_system_settings_screen_brightness_item(0);
 
-    //Restore the screen under the grid brightness slider
+    //Restore the screen under the screen brightness slider
     display_set_source_buffer(displaybuffer2);
     display_copy_rect_to_screen(395, 46, 331, 58);
 
@@ -1656,7 +1656,7 @@ void close_open_sub_menus(void)
   //Check if the grid brightness slider is open
   else if(gridbrightnessopen)
   {
-    //Set the button in active
+    //Set the button inactive
     scope_system_settings_grid_brightness_item(0);
 
     //Restore the screen under the grid brightness slider
