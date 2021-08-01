@@ -46,6 +46,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/font_5.o \
 	${OBJECTDIR}/fpga_control.o \
 	${OBJECTDIR}/icons.o \
+	${OBJECTDIR}/memcpy.o \
 	${OBJECTDIR}/scope_functions.o \
 	${OBJECTDIR}/sin_cos_math.o \
 	${OBJECTDIR}/spi_control.o \
@@ -132,6 +133,10 @@ ${OBJECTDIR}/icons.o: icons.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/icons.o icons.c
+
+${OBJECTDIR}/memcpy.o: memcpy.s
+	${MKDIR} -p ${OBJECTDIR}
+	$(AS) $(ASFLAGS) -g -o ${OBJECTDIR}/memcpy.o memcpy.s
 
 ${OBJECTDIR}/scope_functions.o: scope_functions.c
 	${MKDIR} -p ${OBJECTDIR}

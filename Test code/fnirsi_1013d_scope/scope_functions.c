@@ -3286,6 +3286,9 @@ void scope_measures_menu_item(int channel, int item)
       xpos += 202;
       ypos  = 437;
       break;
+      
+    default:
+      return;
   }
   
   //Check if item is on or off

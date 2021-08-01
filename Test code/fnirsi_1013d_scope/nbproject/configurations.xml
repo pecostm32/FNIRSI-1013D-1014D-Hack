@@ -36,6 +36,7 @@
       <itemPath>font_5.c</itemPath>
       <itemPath>fpga_control.c</itemPath>
       <itemPath>icons.c</itemPath>
+      <itemPath>memcpy.s</itemPath>
       <itemPath>scope_functions.c</itemPath>
       <itemPath>sin_cos_math.c</itemPath>
       <itemPath>spi_control.c</itemPath>
@@ -118,6 +119,8 @@
       <item path="gpio_control.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="icons.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="memcpy.s" ex="false" tool="4" flavor2="0">
       </item>
       <item path="scope_functions.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -205,6 +208,8 @@
       <item path="gpio_control.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="icons.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="memcpy.s" ex="false" tool="4" flavor2="0">
       </item>
       <item path="scope_functions.c" ex="false" tool="0" flavor2="0">
       </item>

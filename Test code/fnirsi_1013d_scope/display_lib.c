@@ -19,13 +19,15 @@
 #include "display_lib.h"
 #include "sin_cos_math.h"
 
+#include <string.h>
+
 //----------------------------------------------------------------------------------------------------------------------------------
 
 DISPLAYDATA displaydata;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_set_position(uint16 xpos, uint16 ypos)
+void display_set_position(uint32 xpos, uint32 ypos)
 {
   displaydata.xpos = xpos;
   displaydata.ypos = ypos;
@@ -33,7 +35,7 @@ void display_set_position(uint16 xpos, uint16 ypos)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_set_dimensions(uint16 width, uint16 height)
+void display_set_dimensions(uint32 width, uint32 height)
 {
   //Adjust for zero being part of the display
   displaydata.width  = width - 1;
@@ -85,10 +87,10 @@ void display_set_destination_buffer(uint16 *buffer)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_draw_line(uint16 xstart, uint16 ystart, uint16 xend, uint16 yend )
+void display_draw_line(uint32 xstart, uint32 ystart, uint32 xend, uint32 yend )
 {
   uint16 *ptr;
-  uint16 x, xs, xe, y, ys, ye, dx;
+  uint32 x, xs, xe, y, ys, ye, dx;
   uint32 yacc;
   int32  ystep;
   
@@ -176,10 +178,10 @@ void display_draw_line(uint16 xstart, uint16 ystart, uint16 xend, uint16 yend )
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_draw_horz_line(uint16 ypos, uint16 xstart, uint16 xend)
+void display_draw_horz_line(uint32 ypos, uint32 xstart, uint32 xend)
 {
   uint16 *ptr;
-  uint16 x, xs, xe;
+  uint32 x, xs, xe;
   
   //Check if the line is on the screen
   if(ypos > displaydata.height)
@@ -222,10 +224,10 @@ void display_draw_horz_line(uint16 ypos, uint16 xstart, uint16 xend)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_draw_vert_line(uint16 xpos, uint16 ystart, uint16 yend)
+void display_draw_vert_line(uint32 xpos, uint32 ystart, uint32 yend)
 {
   uint16 *ptr;
-  uint16 y, ys, ye;
+  uint32 y, ys, ye;
   
   //Check if the line is on the screen
   if(xpos > displaydata.width)
@@ -271,10 +273,10 @@ void display_draw_vert_line(uint16 xpos, uint16 ystart, uint16 yend)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_draw_rect(uint16 xpos, uint16 ypos, uint16 width, uint16 height)
+void display_draw_rect(uint32 xpos, uint32 ypos, uint32 width, uint32 height)
 {
-  uint16 xe = xpos + width;
-  uint16 ye = ypos + height;
+  uint32 xe = xpos + width;
+  uint32 ye = ypos + height;
   
   //Just draw the needed lines
   display_draw_horz_line(ypos, xpos, xe);
@@ -285,12 +287,12 @@ void display_draw_rect(uint16 xpos, uint16 ypos, uint16 width, uint16 height)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_draw_rounded_rect(uint16 xpos, uint16 ypos, uint16 width, uint16 height, uint16 radius)
+void display_draw_rounded_rect(uint32 xpos, uint32 ypos, uint32 width, uint32 height, uint32 radius)
 {
-  uint16 xs = xpos + radius;
-  uint16 ys = ypos + radius;
-  uint16 xe = xpos + width - radius;
-  uint16 ye = ypos + height - radius;
+  uint32 xs = xpos + radius;
+  uint32 ys = ypos + radius;
+  uint32 xe = xpos + width - radius;
+  uint32 ye = ypos + height - radius;
   
   //Just draw the needed lines
   display_draw_horz_line(ypos, xs, xe);
@@ -307,21 +309,21 @@ void display_draw_rounded_rect(uint16 xpos, uint16 ypos, uint16 width, uint16 he
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-const uint16 angles[4][2] = { { 0, 900 }, { 900, 1800 }, { 1800, 2700 }, { 2700, 3600 } };
+const uint32 angles[4][2] = { { 0, 900 }, { 900, 1800 }, { 1800, 2700 }, { 2700, 3600 } };
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_draw_arc(uint16 xpos, uint16 ypos, uint16 radius, uint16 startangle, uint16 endangle, uint16 direction)
+void display_draw_arc(uint32 xpos, uint32 ypos, uint32 radius, uint32 startangle, uint32 endangle, uint32 direction)
 {
-  uint8   startquadrant = (startangle / 900) % 4;
-  uint8   endquadrant   = (endangle / 900) % 4;
-  uint8   quadrants[4]  = { 0, 0, 0, 0 };
-  uint8   quadrant = startquadrant;
+  uint32  startquadrant = (startangle / 900) % 4;
+  uint32  endquadrant   = (endangle / 900) % 4;
+  uint32  quadrants[4]  = { 0, 0, 0, 0 };
+  uint32  quadrant = startquadrant;
   uint16 *ptr;
-  int16   x, y;
-  uint16  sa;
-  uint16  ea;
-  uint16  a, step;
+  uint32   x, y;
+  uint32  sa;
+  uint32  ea;
+  uint32  a, step;
 
   //Determine the angles step fit for the given radius  
   if(radius > 450)
@@ -415,11 +417,11 @@ void display_draw_arc(uint16 xpos, uint16 ypos, uint16 radius, uint16 startangle
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_fill_rect(uint16 xpos, uint16 ypos, uint16 width, uint16 height)
+void display_fill_rect(uint32 xpos, uint32 ypos, uint32 width, uint32 height)
 {
   uint16 *ptr;
-  uint16  y;
-  uint16  x;
+  uint32  y;
+  uint32  x;
 
   //Calculate the last x and y position to compare against
   width += xpos;
@@ -454,11 +456,11 @@ void display_fill_rect(uint16 xpos, uint16 ypos, uint16 width, uint16 height)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_fill_rounded_rect(uint16 xpos, uint16 ypos, uint16 width, uint16 height, uint16 radius)
+void display_fill_rounded_rect(uint32 xpos, uint32 ypos, uint32 width, uint32 height, uint32 radius)
 {
   uint16 *ptr1, *ptr2;
-  uint16  x, xc, xs, xe, xt, y, yc, ys, ye;
-  uint16  a, step, r;
+  uint32  x, xc, xs, xe, xt, y, yc, ys, ye;
+  uint32  a, step, r;
 
   //Calculate the max radius for the given width and height
   if(width < height)
@@ -572,13 +574,13 @@ void display_fill_rounded_rect(uint16 xpos, uint16 ypos, uint16 width, uint16 he
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_slide_top_rect_onto_screen(uint16 xpos, uint16 ypos, uint16 width, uint16 height, uint32 speed)
+void display_slide_top_rect_onto_screen(uint32 xpos, uint32 ypos, uint32 width, uint32 height, uint32 speed)
 {
-  uint16 *ptr1, *ptr2;
-  int16   startline;     //Needs to be an int because it has to become negative to stop
-  uint16  line;
-  uint32  startxy;
-  uint16  pixel;
+  register uint16 *ptr1, *ptr2;
+  register int32   startline;     //Needs to be an int because it has to become negative to stop
+  register uint32  line;
+  register uint32  startxy;
+  register uint32  pixels = displaydata.pixelsperline;
 
   //Starting line of the rectangle to display first
   startline = height - ((height * speed) >> 20) - 1;
@@ -586,11 +588,14 @@ void display_slide_top_rect_onto_screen(uint16 xpos, uint16 ypos, uint16 width, 
   //Start x,y offset for source and destination calculation
   startxy = xpos + (ypos * displaydata.pixelsperline);
   
+  //For copying bytes instead of shorts the width doubles
+  width <<=1;
+  
   //Draw lines as long as is needed to get the whole rectangle on screen
   while(startline >= 0)
   {
     //Source pointer is based on the current line
-    ptr2 = displaydata.sourcebuffer + startxy + (startline * displaydata.pixelsperline);
+    ptr2 = displaydata.sourcebuffer + startxy + (startline * pixels);
     
     //Destination pointer is always the first line
     ptr1 = displaydata.screenbuffer + startxy;
@@ -599,15 +604,11 @@ void display_slide_top_rect_onto_screen(uint16 xpos, uint16 ypos, uint16 width, 
     for(line=startline;line<=height;line++)
     {
       //Copy a single line to the screen buffer
-      for(pixel=0;pixel<=width;pixel++)
-      {
-        //Copy one pixel at a time
-        ptr1[pixel] = ptr2[pixel];
-      }
+      memcpy(ptr1, ptr2, width);
       
       //Point to the next line of pixels in both destination and source
-      ptr1 += displaydata.pixelsperline;
-      ptr2 += displaydata.pixelsperline;
+      ptr1 += pixels;
+      ptr2 += pixels;
     }
     
     //Calculate the new starting line
@@ -617,20 +618,20 @@ void display_slide_top_rect_onto_screen(uint16 xpos, uint16 ypos, uint16 width, 
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_slide_left_rect_onto_screen(uint16 xpos, uint16 ypos, uint16 width, uint16 height, uint32 speed)
+void display_slide_left_rect_onto_screen(uint32 xpos, uint32 ypos, uint32 width, uint32 height, uint32 speed)
 {
-  uint16 *ptr1, *ptr2;
-  uint16  line;
-  int16   startpixel;     //Needs to be an int because it has to become negative to stop
-  uint16  endpixel;
-  uint32  startxy;
-  uint16  pixel;
+  register uint16 *ptr1, *ptr2;
+  register uint32  line;
+  register int32   startpixel;     //Needs to be an int because it has to become negative to stop
+  register uint32  bytecount;
+  register uint32  startxy;
+  register uint32  pixels = displaydata.pixelsperline;
 
   //Starting pixel of the rectangle to display first
   startpixel = width - ((width * speed) >> 20) - 1;
   
   //Start x,y offset for source and destination calculation
-  startxy = xpos + (ypos * displaydata.pixelsperline);
+  startxy = xpos + (ypos * pixels);
   
   //Draw sections as long as is needed to get the whole rectangle on screen
   while(startpixel >= 0)
@@ -642,21 +643,18 @@ void display_slide_left_rect_onto_screen(uint16 xpos, uint16 ypos, uint16 width,
     ptr1 = displaydata.screenbuffer + startxy;
     
     //Determine the number of pixels to do per loop. Increasing number as start pixel shifts to the left of the bitmap.
-    endpixel = width - startpixel;
+    //Need the number in bytes so times two
+    bytecount = (width - startpixel) << 1;
     
     //Handle the lines
     for(line=0;line<=height;line++)
     {
       //Copy the needed pixels for this loop to the screen buffer
-      for(pixel=0;pixel<=endpixel;pixel++)
-      {
-        //Copy one pixel at a time
-        ptr1[pixel] = ptr2[pixel];
-      }
+      memcpy(ptr1, ptr2, bytecount);
       
       //Point to the next line of pixels in both destination and source
-      ptr1 += displaydata.pixelsperline;
-      ptr2 += displaydata.pixelsperline;
+      ptr1 += pixels;
+      ptr2 += pixels;
     }
     
     //Calculate the new starting pixel
@@ -666,20 +664,20 @@ void display_slide_left_rect_onto_screen(uint16 xpos, uint16 ypos, uint16 width,
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_slide_right_rect_onto_screen(uint16 xpos, uint16 ypos, uint16 width, uint16 height, uint32 speed)
+void display_slide_right_rect_onto_screen(uint32 xpos, uint32 ypos, uint32 width, uint32 height, uint32 speed)
 {
-  uint16 *ptr1, *ptr2;
-  uint16  line;
-  int16   startpixel;     //Needs to be an int because it has to become negative to stop
-  uint16  endpixel;
-  uint32  startxy;
-  uint16  pixel;
+  register uint16 *ptr1, *ptr2;
+  register uint32  line;
+  register int32   startpixel;     //Needs to be an int because it has to become negative to stop
+  register uint32  bytecount;
+  register uint32  startxy;
+  register uint32  pixels = displaydata.pixelsperline;
 
   //Starting pixel of the rectangle where to display first
   startpixel = width - ((width * speed) >> 20) - 1;
   
   //Start x,y offset for source and destination calculation
-  startxy = xpos + (ypos * displaydata.pixelsperline);
+  startxy = xpos + (ypos * pixels);
   
   //Draw sections as long as is needed to get the whole rectangle on screen
   while(startpixel >= 0)
@@ -691,21 +689,18 @@ void display_slide_right_rect_onto_screen(uint16 xpos, uint16 ypos, uint16 width
     ptr1 = displaydata.screenbuffer + startxy + startpixel;
     
     //Determine the number of pixels to do per loop. Increasing number as start pixel shifts to the right of the destination bitmap.
-    endpixel = width - startpixel;
+    //Need the number in bytes so times two
+    bytecount = (width - startpixel) << 1;
     
     //Handle the lines
     for(line=0;line<=height;line++)
     {
       //Copy the needed pixels for this loop to the screen buffer
-      for(pixel=0;pixel<=endpixel;pixel++)
-      {
-        //Copy one pixel at a time
-        ptr1[pixel] = ptr2[pixel];
-      }
+      memcpy(ptr1, ptr2, bytecount);
       
       //Point to the next line of pixels in both destination and source
-      ptr1 += displaydata.pixelsperline;
-      ptr2 += displaydata.pixelsperline;
+      ptr1 += pixels;
+      ptr2 += pixels;
     }
     
     //Calculate the new starting pixel
@@ -715,81 +710,80 @@ void display_slide_right_rect_onto_screen(uint16 xpos, uint16 ypos, uint16 width
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_copy_rect_from_screen(uint16 xpos, uint16 ypos, uint16 width, uint16 height)
+void display_copy_rect_from_screen(uint32 xpos, uint32 ypos, uint32 width, uint32 height)
 {
-  uint16 *ptr1, *ptr2;
-  uint16  line;
-  uint16  pixel;
-  uint32  startpixel;
+  register uint16 *ptr1, *ptr2;
+  register uint32  line;
+  register uint32  startpixel;
+  register uint32  pixels = displaydata.pixelsperline;
 
   //Start pixel for source and destination calculation
-  startpixel = xpos + (ypos * displaydata.pixelsperline);
+  startpixel = xpos + (ypos * pixels);
 
   //Setup destination and source pointers
   ptr1 = displaydata.destbuffer + startpixel;
   ptr2 = displaydata.screenbuffer + startpixel;
   
-  //Copy the needed lines
-  for(line=0;line<=height;line++)
-  {
-    //Copy a single line to the destination buffer
-    for(pixel=0;pixel<=width;pixel++)
-    {
-      //Copy one pixel at a time
-      ptr1[pixel] = ptr2[pixel];
-    }
-
-    //Point to the next line of pixels in both destination and source
-    ptr1 += displaydata.pixelsperline;
-    ptr2 += displaydata.pixelsperline;
-  }
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-void display_copy_rect_to_screen(uint16 xpos, uint16 ypos, uint16 width, uint16 height)
-{
-  uint16 *ptr1, *ptr2;
-  uint16  line;
-  uint16  pixel;
-  uint32  startpixel;
-
-  //Start pixel for source and destination calculation
-  startpixel = xpos + (ypos * displaydata.pixelsperline);
-
-  //Setup destination and source pointers
-  ptr1 = displaydata.screenbuffer + startpixel;
-  ptr2 = displaydata.sourcebuffer + startpixel;
+  //For copying bytes instead of shorts the width doubles
+  width <<=1;
   
   //Copy the needed lines
   for(line=0;line<=height;line++)
   {
     //Copy a single line to the destination buffer
-    for(pixel=0;pixel<=width;pixel++)
-    {
-      //Copy one pixel at a time
-      ptr1[pixel] = ptr2[pixel];
-    }
+    memcpy(ptr1, ptr2, width);
 
     //Point to the next line of pixels in both destination and source
-    ptr1 += displaydata.pixelsperline;
-    ptr2 += displaydata.pixelsperline;
+    ptr1 += pixels;
+    ptr2 += pixels;
   }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_copy_icon_use_colors(const uint8 *icon, uint16 xpos, uint16 ypos, uint16 width, uint16 height)
+void display_copy_rect_to_screen(uint32 xpos, uint32 ypos, uint32 width, uint32 height)
 {
-  uint16 *ptr;
-  uint16  line;
-  uint16  pixel;
-  uint16  idx;
-  uint16  pixeldata;
-  uint8   bytesperrow = (width + 7) / 8;
+  register uint16 *ptr1, *ptr2;
+  register uint32  line;
+  register uint32  startpixel;
+  register uint32  pixels = displaydata.pixelsperline;
+
+  //Start pixel for source and destination calculation
+  startpixel = xpos + (ypos * pixels);
+
+  //Setup destination and source pointers
+  ptr1 = displaydata.screenbuffer + startpixel;
+  ptr2 = displaydata.sourcebuffer + startpixel;
+  
+  //For copying bytes instead of shorts the width doubles
+  width <<=1;
+  
+  //Copy the needed lines
+  for(line=0;line<=height;line++)
+  {
+    //Copy a single line to the destination buffer
+    memcpy(ptr1, ptr2, width);
+
+    //Point to the next line of pixels in both destination and source
+    ptr1 += pixels;
+    ptr2 += pixels;
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_copy_icon_use_colors(const uint8 *icon, uint32 xpos, uint32 ypos, uint32 width, uint32 height)
+{
+  register uint16 *ptr;
+  register uint32  line;
+  register uint32  pixel;
+  register uint32  idx;
+  register uint32  pixeldata;
+  register uint32  bytesperrow = (width + 7) / 8;
+  register uint32  pixels = displaydata.pixelsperline;
 
   //Setup destination pointer
-  ptr = displaydata.screenbuffer + xpos + (ypos * displaydata.pixelsperline);
+  ptr = displaydata.screenbuffer + xpos + (ypos * pixels);
   
   //Copy the needed lines
   for(line=0;line<height;line++)
@@ -833,17 +827,17 @@ void display_copy_icon_use_colors(const uint8 *icon, uint16 xpos, uint16 ypos, u
     }
 
     //Point to the next line of pixels in the destination
-    ptr += displaydata.pixelsperline;
+    ptr += pixels;
   }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_decimal(uint16 xpos, uint16 ypos, int32 value)
+void display_decimal(uint32 xpos, uint32 ypos, int32 value)
 {
   char   b[13];
   uint32 u = value;
-  uint8  i = 12;
+  uint32 i = 12;
 
   if(value == 0)
   {
@@ -885,7 +879,7 @@ void display_decimal(uint16 xpos, uint16 ypos, int32 value)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_text(uint16 xpos, uint16 ypos, int8 *text)
+void display_text(uint32 xpos, uint32 ypos, int8 *text)
 {
   //Set the positions for drawing
   displaydata.xpos = xpos;
@@ -928,11 +922,11 @@ void draw_vw_character(uint16 character)
   PFONTMETRICS     metrics;
   
   uint16 *ptr;
-  int16   idx;
-  uint8   height;
-  uint8   y;
-  uint8   pixel;
-  uint16  pixeldata;
+  int32   idx;
+  uint32  height;
+  uint32  y;
+  uint32  pixel;
+  uint32  pixeldata;
   
   //Check if character is valid
   if(info)
@@ -1018,7 +1012,7 @@ void draw_fw_character(uint16 character)
   
   uint16 char1 = 0xFFFF;
   uint16 char2 = 0xFFFF;
-  uint16 idx;
+  uint32 idx;
   
   //Check if the character is in the main information set
   if((character >= info->first_char) && (character <= info->last_char))
@@ -1077,11 +1071,11 @@ void render_fw_character(uint16 character)
   
   uint8  *data;
   uint16 *ptr;
-  int16   idx;
-  uint8   height;
-  uint8   y;
-  uint8   pixel;
-  uint16  pixeldata;
+  int32   idx;
+  uint32  height;
+  uint32  y;
+  uint32  pixel;
+  uint32  pixeldata;
   
   //Get the actual metrics for drawing the character
   height = font->height;
