@@ -33,11 +33,11 @@ void touch_handler(void)
   puVar4 = PTR_DAT_8001a5b4;       //0x80192f08
 
   //Check if no previous touch??
-  if (*PTR_DAT_8001a5b4 == '\0')   //0x80192f08
+  if (*PTR_DAT_8001a5b4 == '\0')   //0x80192f08 In the last part of the scan for touch this is set.
   {
     //Call this function in that case
     //In my version of the code this is "void scan_for_touch(void);"
-    FUN_8001b674();                //Returns directly if there is no touch
+    FUN_8001b674();                //Returns directly if there is no touch. !!!This function is almost implemented (scan_for_touch)!!!
 
 
     iVar9 = DAT_8001a5c8;          //0x801FA44C
@@ -67,7 +67,7 @@ void touch_handler(void)
     //Previous run gave touch so check again
     tp_i2c_read_status();              //Check the touch panel on touch
 
-    puVar5 = PTR_DAT_8001a5bc;         //0x80192f02
+    puVar5 = PTR_DAT_8001a5bc;         //0x80192f02. Touch data
 
     if (*PTR_DAT_8001a5bc == '\0')     //Check if there is touch or not
     {
@@ -81,7 +81,7 @@ void touch_handler(void)
     *(undefined2 *)(puVar4 + 0x30) = *(undefined2 *)(puVar5 + 4);               //0x80192f08 + 0x30 (0x80192f38) = 0x80192f06  (y coord)
 
 LAB_8001a410:
-    if (*puVar4 == '\x01')   //Check if there was touch before. SOme state machine setup?? (0x80192f08)
+    if (*puVar4 == '\x01')   //Check if there was touch before. Some state machine setup?? (0x80192f08)
     {
       if ((10 < *(byte *)(iVar8 + 0xb)) || (*(char *)(iVar8 + 0x3a) == '\0'))  //Some not yet known setting and scope run mode
       {
@@ -636,11 +636,11 @@ void FUN_8001b674(void)
 
     tp_i2c_read_status();                      //Scan the touch panel again
 
-    uVar12 = DAT_8001e9c0;
-    pcVar5 = DAT_8001e9bc;                     //0x8019D5A0
-    iVar25 = DAT_8001e9b8;
-    puVar4 = PTR_DAT_8001e9b4;
-    uVar11 = (uint)*(ushort *)(PTR_DAT_8001e9b4 + 2);
+    uVar12 = DAT_8001e9c0;                     //0x0000012A Some coordinate
+    pcVar5 = DAT_8001e9bc;                     //0x8019D5A0 Scope settings
+    iVar25 = DAT_8001e9b8;                     //0x801FA24C Measures settings
+    puVar4 = PTR_DAT_8001e9b4;                 //0x80192f02 Touch data
+    uVar11 = (uint)*(ushort *)(PTR_DAT_8001e9b4 + 2);  //Y touch
 
     //X coord less then 80 and y coord less then 42
     if ((uVar11 - 1 < 0x4f) && (*(ushort *)(PTR_DAT_8001e9b4 + 4) != 0 && *(ushort *)(PTR_DAT_8001e9b4 + 4) < 0x2a))
@@ -661,7 +661,7 @@ void FUN_8001b674(void)
         display_menu_button(0);
 
         //go display the menu???
-        FUN_80029158();             //Setup main menu
+        FUN_80029158();             //Setup main menu (slide open)
 
         tp_i2c_read_status();
 
@@ -1117,7 +1117,7 @@ LAB_8001dfb0:
 
                 display_trigger_settings(0);
 
-                FUN_80021e1c();   //Setup_trigger_menu
+                FUN_80021e1c();   //Setup_trigger_menu (slide open)
 
                 do
                 {
@@ -1132,8 +1132,8 @@ LAB_8001dfb0:
                     {
                       if (*puVar4 != '\0')
                       {
-                        pcVar5[0x21] = '\0';    //Trigger mode
-                        FUN_80026828();
+                        pcVar5[0x21] = '\0';    //Trigger mode auto
+                        FUN_80026828();         //Set FPGA trigger mode
                         display_trigger_menu();
 
                         pcVar5[0x3a] = '\0';    //Scope run state
@@ -1153,7 +1153,7 @@ LAB_8001dfb0:
                     else {
                       if (((uVar12 - 0x28e < 0x2a) && (0x30 < uVar10)) && (uVar10 < 0x6a)) {
                         if (*puVar4 != '\0') {
-                          pcVar5[0x21] = '\x01';
+                          pcVar5[0x21] = '\x01';  //Single
 
                           pcVar5[0x3a] = '\0';
                           pcVar5[0x36] = '\0';
@@ -1164,9 +1164,9 @@ LAB_8001dfb0:
 
                           display_run_stop_text((uint)(byte)pcVar5[0x3a]);
 
-                          if ((byte)pcVar5[10] < 0xb) {
-                            pcVar5[10] = '\v';
-                            FUN_800266c4();
+                          if ((byte)pcVar5[10] < 0xb) {     //Time base change when less then 11 (below 5ms/div ??)
+                            pcVar5[10] = '\v';  //Make it 11
+                            FUN_800266c4();       //Translate a parameter and write to fpga
                             display_time_div_setting();
                           }
                           tp_i2c_read_status();
@@ -1181,7 +1181,7 @@ LAB_8001dfb0:
                         if (((uVar12 - 0x2b9 < 0x1f) && (0x30 < uVar10)) && (uVar10 < 0x6a)) {
                           if (*puVar4 != '\0')
                           {
-                            pcVar5[0x21] = '\x02';
+                            pcVar5[0x21] = '\x02';   //Normal
 
                             FUN_80026828();
 
@@ -1193,7 +1193,8 @@ LAB_8001dfb0:
                             pcVar5[0x36] = '\0';
                             pcVar5[0x37] = '\x01';
 
-                            if ((byte)pcVar5[10] < 0xb) {
+                            if ((byte)pcVar5[10] < 0xb)
+                            {
                               pcVar5[10] = '\v';
                               FUN_800266c4();
                               display_time_div_setting();
@@ -1284,7 +1285,8 @@ LAB_8001dfb0:
                 }
               }
             }
-            else {
+            else 
+            {
               if ((uVar11 - 0x2e5 < 0x3a) &&
                  (uVar10 = *(ushort *)(PTR_DAT_8001e9b4 + 4), 0x12f < uVar10)) {
                 bVar26 = uVar10 == 0x164;
@@ -1325,7 +1327,7 @@ LAB_8001e7b0:
                               uVar16 = 0;
                               *(undefined *)(iVar25 + 0x100) = 1;
 
-                              do
+                              do  //Find an empty slot to be displayed on the screen
                               {
                                 uVar17 = (uint)*(byte *)(iVar6 + uVar16);
 
@@ -2116,17 +2118,20 @@ LAB_8001e7b0:
 
 
 
-    puVar8 = PTR_DAT_8001f998;
-    puVar7 = PTR_DAT_8001f994;
-    puVar19 = PTR_DAT_8001f990;
-    if (pcVar5[0x42] == '\0')    ////0x8019D5A0 + 0x42 = right menu mode state
+
+
+    puVar8 = PTR_DAT_8001f998;     //0x80192ee4
+    puVar7 = PTR_DAT_8001f994;     //0x80192ec8
+    puVar19 = PTR_DAT_8001f990;    //0x80192ec6
+
+    if (pcVar5[0x42] == '\0')      //0x8019D5A0 + 0x42 = right menu mode state = normal mode so not the volts/div adjustment
     {
-      if (0x39 < *(ushort *)(puVar4 + 2) - 0x2e5) //Touch not in right menu range then return
+      if (0x39 < *(ushort *)(puVar4 + 2) - 0x2e5) //Touch not in right menu range then return ((puVar4 + 2) = xtouch)
       {
         return;
       }
 
-      uVar10 = *(ushort *)(puVar4 + 4);
+      uVar10 = *(ushort *)(puVar4 + 4);  //Get Y touch
 
       if ((3 < uVar10) && (uVar10 < 0x39))
       {
@@ -2181,8 +2186,8 @@ LAB_8001e7b0:
           if (pcVar5[0x3a] == '\0')
           {
             pcVar5[0x3a] = '\x01';
-            *(ushort *)puVar19 = (ushort)(byte)pcVar5[3];
-            *(ushort *)puVar7 = (ushort)(byte)pcVar5[0xf];
+            *(ushort *)puVar19 = (ushort)(byte)pcVar5[3];   //Channel1 volts per div
+            *(ushort *)puVar7 = (ushort)(byte)pcVar5[0xf];  //Channel2 volts per div
           }
           else
           {
@@ -2459,6 +2464,9 @@ LAB_8001e7b0:
           bVar2 = pcVar5[10];
         }
 
+        //At some points in the code it saves the settings and forces a limit on it??
+
+        //puVar19 = 0x80192ec6
         if (((!bVar26 || 8 < bVar2) && ((byte)pcVar5[3] < 6)) && ((pcVar5[0x3a] == '\0' || (((ushort)(byte)pcVar5[3] <= *(ushort *)puVar19 || (((ushort)(byte)pcVar5[3] - *(ushort *)puVar19 & 0xff) < 2))))))
         {
           pcVar5[3] = pcVar5[3] + '\x01';
@@ -2537,6 +2545,7 @@ LAB_8001e7b0:
           bVar2 = pcVar5[10];
         }
 
+        //puVar7 = 0x80192ec8. Some previous save of the volts div setting
         if (((!bVar26 || 8 < bVar2) && ((byte)pcVar5[0xf] < 6)) && ((pcVar5[0x3a] == '\0' || (((ushort)(byte)pcVar5[0xf] <= *(ushort *)puVar7 || (((ushort)(byte)pcVar5[0xf] - *(ushort *)puVar7 & 0xff) < 2))))))
         {
           pcVar5[0xf] = pcVar5[0xf] + '\x01';
@@ -2663,13 +2672,18 @@ LAB_8001e7b0:
     return;
   }
 
+
+
+
   
 
   //Is this next part the handling of the line positions, trigger time base, cursors etc??????
   //Some waiting loop with a time out??? On touch active????
-  if (*puVar19 == '\0') {
+  if (*puVar19 == '\0')   //This is the state variable (0x80192f08)
+  {
     uVar12 = get_timer_ticks();
-    *(uint *)(puVar19 + 0x38) = uVar12;
+
+    *(uint *)(puVar19 + 0x38) = uVar12;  //Start time saved
     cVar1 = *puVar4;
 
     while( true )
@@ -2677,77 +2691,99 @@ LAB_8001e7b0:
       uVar9 = (undefined)unaff_r6;
       uVar29 = (undefined)unaff_r7;
 
-      if (cVar1 == '\0')
+      if (cVar1 == '\0')                      //No touch than bail
         break;
 
-      uVar10 = *(ushort *)(puVar4 + 2);
-      *(ushort *)(puVar19 + 6) = uVar10;
-      uVar13 = *(ushort *)(puVar4 + 4);
-      *(ushort *)(puVar19 + 8) = uVar13;
+      uVar10 = *(ushort *)(puVar4 + 2);       //X touch
 
-      uVar3 = *(ushort *)(puVar19 + 2);       //X touch??
+      *(ushort *)(puVar19 + 6) = uVar10;      //0x80192f0E  Store it somewhere
 
-      if (uVar10 < uVar3)
+      uVar13 = *(ushort *)(puVar4 + 4);       //Y touch 
+
+      *(ushort *)(puVar19 + 8) = uVar13;      //0x80192f10  Store it somewhere
+
+      uVar3 = *(ushort *)(puVar19 + 2);       //0x80192f0A  previous X touch
+
+      if (uVar10 < uVar3)                     //New touch left of old touch
       {
-        uVar10 = uVar3 - uVar10;
+        uVar10 = uVar3 - uVar10;              //Calculate absolute X displacement
       }
       else
       {
-        uVar10 = uVar10 - uVar3;
+        uVar10 = uVar10 - uVar3;              //Calculate absolute X displacement
       }
 
-      uVar3 = *(ushort *)(puVar19 + 4);      //Y touch????
+      uVar3 = *(ushort *)(puVar19 + 4);       //0x80192f0C  previous Y touch
 
-      if (uVar13 < uVar3)
+      if (uVar13 < uVar3)                     //New touch above old touch
       {
-        uVar13 = uVar3 - uVar13;
+        uVar13 = uVar3 - uVar13;              //Calculate absolute Y displacement
       }
       else
       {
-        uVar13 = uVar13 - uVar3;
+        uVar13 = uVar13 - uVar3;              //Calculate absolute Y displacement
       }
 
-      if (uVar13 < uVar10)
+      if (uVar13 < uVar10)                    //Check which one is bigger
       {
-        *(ushort *)(puVar19 + 0x2c) = uVar10;
+        *(ushort *)(puVar19 + 0x2c) = uVar10; //0x80192f34 Keep the biggest displacement
       }
       else
       {
-        *(ushort *)(puVar19 + 0x2c) = uVar13;
+        *(ushort *)(puVar19 + 0x2c) = uVar13; //0x80192f34 Keep the biggest displacement
       }
 
-      if (2 < *(ushort *)(puVar19 + 0x2c))
+      if (2 < *(ushort *)(puVar19 + 0x2c))    //0x80192f34 Moved more then 2 pixels
       {
-        *puVar19 = 2;                             //Is this the touch state variable???
-        goto LAB_8001b7c8;
+        *puVar19 = 2;                         //0x80192f08  Set first state variable to two
+        goto LAB_8001b7c8;                    //Go and continue with the processing
       }
-      tp_i2c_read_status();
+
+      tp_i2c_read_status();                   //Otherwise wait until touch is done
       cVar1 = *puVar4;
     }
-    if (((*puVar19 == '\0') && (uVar12 = get_timer_ticks(), uVar12 - *(int *)(puVar19 + 0x38) < 200)
-        ) && (FUN_8001bc30(), *(ushort *)(puVar19 + 0x2c) < 3)) {
-      *puVar19 = 1;                             //Is this the touch state variable???
-      return;
+
+    //Touch state needs to be 0 and less then 200ms gone by                                               //This does something with touch data
+//    if (((*puVar19 == '\0') && (uVar12 = get_timer_ticks(), uVar12 - *(int *)(puVar19 + 0x38) < 200)) && (FUN_8001bc30(), *(ushort *)(puVar19 + 0x2c) < 3))
+
+    if(*puVar19 == '\0')
+    {
+      uVar12 = get_timer_ticks() - *(int *)(puVar19 + 0x38);
+
+      if(uVar12 < 200)
+      {
+        FUN_8001bc30();                       //Calculate the absolute displacement
+
+        if(*(ushort *)(puVar19 + 0x2c) < 3))  //Absolute movement less then 3 pixels
+        {
+          //Detect short touch on a single position for changing the time base
+          *puVar19 = 1;                       //0x80192f08  Set first state variable to one
+          return;                             //And quit the show
+        }
+      }
     }
   }
 
-  if (*puVar19 != '\x02')
+  
+  if (*puVar19 != '\x02')                     //Quit if state not is 2
   {
     return;
   }
 
+
+//Had a larger movement here
 LAB_8001b7c8:
   iVar25 = DAT_8001bc14;
   pcVar5 = DAT_8001bc10;
   uVar10 = *(ushort *)(puVar19 + 2);
   uVar12 = (uint)uVar10;
 
-  if (0x2e0 < uVar12 - 3)
+  if (0x2e0 < uVar12 - 3)  //previous x touch in the right menu then return
   {
     return;
   }
 
-  uVar13 = *(ushort *)(puVar19 + 4);
+  uVar13 = *(ushort *)(puVar19 + 4);   //previous y touch
   uVar11 = (uint)uVar13;
   bVar27 = 0x2c < uVar11;
   bVar26 = uVar11 == 0x2d;
@@ -2759,68 +2795,86 @@ LAB_8001b7c8:
   uVar21 = 1;
   uVar20 = 2;
 
-  if (!bVar27 || bVar26) {
-    ppcVar28 = (code **)&stack0xffffffec;
+  if (!bVar27 || bVar26)
+  {
     puVar19 = unaff_r4;
     uVar21 = uVar29;
     uVar20 = uVar9;
   }
 
-  if (!bVar27 || bVar26) {
-    ppcVar28 = (code **)((int)ppcVar28 + 0x10);
-  }
-                    /* WARNING: Could not recover jumptable at 0x8001b7f4. Too many branches */
-                    /* WARNING: Treating indirect jump as call */
-  if (!bVar27 || bVar26) {
-    (**ppcVar28)();
+  if (!bVar27 || bVar26)
+  {
     return;
   }
+
   uVar15 = DAT_8001bc14 - (uint)*(ushort *)(DAT_8001bc10 + 6) & 0xffff;
   sVar14 = (short)uVar15;
-  if (uVar11 < uVar15) {
+
+  if (uVar11 < uVar15)
+  {
     sVar14 = sVar14 - uVar13;
   }
-  else {
+  else
+  {
     sVar14 = uVar13 - sVar14;
   }
+
   *(short *)(puVar19 + 0x1e) = sVar14;
   uVar15 = 1000;
-  if (0x3c < uVar12) {
+
+  if (0x3c < uVar12)
+  {
     *(undefined2 *)(puVar19 + 0x1e) = 1000;
   }
+
   uVar16 = iVar25 - (uint)*(ushort *)(pcVar5 + 0x12) & 0xffff;
   sVar14 = (short)uVar16;
-  if (uVar11 < uVar16) {
+
+  if (uVar11 < uVar16)
+  {
     sVar14 = sVar14 - uVar13;
   }
-  else {
+  else
+  {
     sVar14 = uVar13 - sVar14;
   }
   *(short *)(puVar19 + 0x20) = sVar14;
-  if (0x3c < uVar12) {
+
+  if (0x3c < uVar12)
+  {
     *(undefined2 *)(puVar19 + 0x20) = 1000;
   }
-  if (*(ushort *)(puVar19 + 0x1e) < 0x1e) {
-    if (*(ushort *)(puVar19 + 0x20) < 0x1e &&
-        *(ushort *)(puVar19 + 0x20) < *(ushort *)(puVar19 + 0x1e)) goto LAB_8001b884;
+
+  if (*(ushort *)(puVar19 + 0x1e) < 0x1e)
+  {
+    if (*(ushort *)(puVar19 + 0x20) < 0x1e && *(ushort *)(puVar19 + 0x20) < *(ushort *)(puVar19 + 0x1e))
+      goto LAB_8001b884;
+
     goto LAB_8001b874;
   }
-  if (*(ushort *)(puVar19 + 0x20) < 0x1e) goto LAB_8001b884;
+
+  if (*(ushort *)(puVar19 + 0x20) < 0x1e)
+    goto LAB_8001b884;
+
   uVar16 = iVar25 - (uint)*(ushort *)(pcVar5 + 0x26) & 0xffff;
   sVar14 = (short)uVar16;
-  if (uVar11 < uVar16) {
+
+  if (uVar11 < uVar16)
+  {
     sVar14 = sVar14 - uVar13;
   }
-  else {
+  else
+  {
     sVar14 = uVar13 - sVar14;
   }
+
   *(short *)(puVar19 + 0x22) = sVar14;
-  if (uVar12 - 0x2a2 < 0x47) {
-    if (*(ushort *)(puVar19 + 0x22) < 0x1e) {
+
+  if (uVar12 - 0x2a2 < 0x47)
+  {
+    if (*(ushort *)(puVar19 + 0x22) < 0x1e)
+    {
       puVar19[1] = uVar21;
-                    /* WARNING: Could not recover jumptable at 0x8001b8e8. Too many branches */
-                    /* WARNING: Treating indirect jump as call */
-      (*ppcVar28[9])();
       return;
     }
   }
@@ -2925,23 +2979,20 @@ LAB_8001b7c8:
     }
   }
   else {
-    if (uVar17 < 0x23) {
+    if (uVar17 < 0x23)
+    {
       puVar19[1] = 4;
-                    /* WARNING: Could not recover jumptable at 0x8001b9a4. Too many branches */
-                    /* WARNING: Treating indirect jump as call */
-      (*ppcVar28[9])();
       return;
     }
   }
   if (*(char *)(DAT_8001bc1c + 7) != '\0') {
     uVar9 = 0x17;
+
 LAB_8001ba00:
     puVar19[1] = uVar9;
-                    /* WARNING: Could not recover jumptable at 0x8001ba0c. Too many branches */
-                    /* WARNING: Treating indirect jump as call */
-    (*ppcVar28[9])();
     return;
   }
+
   if (*pcVar5 == '\0') {
     *(short *)(puVar19 + 0x1e) = (short)DAT_8001bc24;
   }
@@ -3023,11 +3074,9 @@ LAB_8001bb8c:
   if (*(ushort *)(puVar19 + 0x1e) < 0x1e) {
     if (0x1d < *(ushort *)(puVar19 + 0x20) ||
         *(ushort *)(puVar19 + 0x1e) <= *(ushort *)(puVar19 + 0x20)) {
+
 LAB_8001b874:
       puVar19[1] = uVar20;
-                    /* WARNING: Could not recover jumptable at 0x8001b880. Too many branches */
-                    /* WARNING: Treating indirect jump as call */
-      (*ppcVar28[9])();
       return;
     }
   }
@@ -3037,18 +3086,12 @@ LAB_8001b874:
       iVar25 = FUN_8001bc80();
       if (iVar25 == 1 || iVar25 == 3) goto LAB_8001b874;
       if (iVar25 != 2) {
-                    /* WARNING: Could not recover jumptable at 0x8001bbe4. Too many branches */
-                    /* WARNING: Treating indirect jump as call */
-        (*ppcVar28[9])();
         return;
       }
     }
   }
 LAB_8001b884:
   puVar19[1] = 3;
-                    /* WARNING: Could not recover jumptable at 0x8001b890. Too many branches */
-                    /* WARNING: Treating indirect jump as call */
-  (*ppcVar28[9])();
   return;
 }
 

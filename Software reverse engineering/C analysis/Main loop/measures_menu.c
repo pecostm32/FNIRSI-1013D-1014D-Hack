@@ -701,6 +701,7 @@ void FUN_80021dec(void)
 
 //----------------------------------------------------------------------------------------------------------------------
 //Some handling based on item id (1 - 24)
+//remove_measures_item_from_list
 
 void FUN_8002177c(uint param_1,undefined4 param_2,uint param_3)
 
@@ -712,31 +713,51 @@ void FUN_8002177c(uint param_1,undefined4 param_2,uint param_3)
   
   iVar1 = DAT_8002180c;  //0x801FA24C
   uVar2 = 0;
-  do {
-    if (*(byte *)(DAT_8002180c + uVar2) == param_1) {
+
+  //Scan the array to find the measures item to remove
+  do
+  {
+    if (*(byte *)(DAT_8002180c + uVar2) == param_1)
+    {
       *(undefined *)(DAT_8002180c + uVar2) = 0;
       param_3 = uVar2;
       break;
     }
+
     uVar2 = uVar2 + 1 & 0xff;
   } while (uVar2 < 0x18);
 
-  if (param_3 < 0x17) {
-    puVar3 = (undefined *)(iVar1 + param_3);
+  //Check if it was not the last that is removed
+  if (param_3 < 0x17) //Possible uninitialized variable!!!!!
+  {
+    //Only need to do this when the item was somewhere in the group
+    puVar3 = (undefined *)(iVar1 + param_3);  //Pointer to the item that is cleared
     puVar4 = puVar3;
-    if ((0x17 - param_3 & 1) != 0) {
+
+    //Check if odd number of parameters to shift
+    if (((0x17 - param_3) & 1) != 0)
+    {
+      //If so shift the first one
       puVar4 = puVar3 + 1;
       *puVar3 = *puVar4;
     }
+
+    //Half the number of items to do
     uVar2 = (int)(0x17 - param_3) >> 1;
-    while ((uVar2 & 0xff) != 0) {
+
+    //And shift the remainder two at a time
+    while ((uVar2 & 0xff) != 0)
+    {
       uVar2 = (uVar2 & 0xff) - 1;
       *puVar4 = puVar4[1];
       puVar4[1] = puVar4[2];
       puVar4 = puVar4 + 2;
     }
   }
-  if (param_1 != 0) {
+
+  //Clear the last one when a valid item was presented
+  if (param_1 != 0)
+  {
     *(undefined *)(iVar1 + 0x17) = 0;
   }
   return;
@@ -744,7 +765,832 @@ void FUN_8002177c(uint param_1,undefined4 param_2,uint param_3)
 
 
 //----------------------------------------------------------------------------------------------------------------------
+//measurement menu touch handling from FUN_8001dabc which is called by FUN_8001b674
+//(top_menu_handler) and (scan_for_first_tocuh)
+            {
+              if ((uVar11 - 0x2e5 < 0x3a) &&
+                 (uVar10 = *(ushort *)(PTR_DAT_8001e9b4 + 4), 0x12f < uVar10)) {
+                bVar26 = uVar10 == 0x164;
+                if (uVar10 < 0x165) {
+                  bVar26 = DAT_8001e9bc[0x42] == '\0';
+                }
+                if (bVar26) {
+                  cVar1 = *PTR_DAT_8001e9b4;
+                  while (cVar1 != '\0') {
+                    display_measures_button(1);
+                    tp_i2c_read_status();
+                    cVar1 = *puVar4;
+                  }
+                  display_measures_button(0);
+                  FUN_80021dec();
+                  uVar12 = DAT_8001e9c4;
+                  uVar15 = DAT_8001e9c4 - 0x15;
+                  uVar11 = DAT_8001e9c4 - 0x92;
+LAB_8001e7b0:
+                  do
+                  {
+                    tp_i2c_read_status();
+                    iVar6 = DAT_8001e9b8;    //0x801FA24C base address of settings
+                    uVar16 = (uint)*(ushort *)(puVar4 + 2);
+                    if (uVar16 - 0xe7 < uVar12) {
+                      uVar18 = (uint)*(ushort *)(puVar4 + 4);
+                      bVar26 = uVar18 == 0x108;
+                      if (0x107 < uVar18) {
+                        bVar26 = uVar15 == uVar18;
+                      }
+                      if ((0x107 < uVar18 && uVar18 <= uVar15) && !bVar26) {
+                        uVar17 = uVar16 - 0x1e2;
+                        if (((uVar17 < 0x3c) && (0x123 < uVar18)) && (uVar18 < 0x160)) {
+                          if (*puVar4 != '\0')
+                          {
+                            if (*(char *)(iVar25 + 0x100) == '\0')
+                            {
+                              uVar16 = 0;
+                              *(undefined *)(iVar25 + 0x100) = 1;
 
+                              do  //Find an empty slot to be displayed on the screen
+                              {
+                                uVar17 = (uint)*(byte *)(iVar6 + uVar16);
+
+                                if (uVar17 == 0)
+                                {
+                                  *(undefined *)(iVar6 + uVar16) = 1;
+                                  break;
+                                }
+
+                                uVar16 = uVar16 + 1 & 0xff;
+                              } while (uVar16 < 0x18);          //24 settings
+                            }
+                            else
+                            {
+                              *(undefined *)(iVar25 + 0x100) = 0;
+                              FUN_8002177c(1);
+                            }
+                          }
+                          highlight_measures_menu_items();
+                          tp_i2c_read_status();
+                          cVar1 = *puVar4;
+                          while (cVar1 != '\0') {
+                            tp_i2c_read_status();
+                            cVar1 = *puVar4;
+                          }
+                        }
+                        else {
+                          uVar17 = uVar16 - 0x220;
+                          if (((uVar17 < 0x3c) && (0x123 < uVar18)) && (uVar18 < 0x160)) {
+                            if (*puVar4 != '\0') {
+                              if (*(char *)(iVar25 + 0x112) == '\0')
+                              {
+                                uVar16 = 0;
+                                *(undefined *)(iVar25 + 0x112) = 1;
+                                do {
+                                  uVar17 = (uint)*(byte *)(iVar6 + uVar16);
+                                  if (uVar17 == 0) {
+                                    *(undefined *)(iVar6 + uVar16) = 2;
+                                    break;
+                                  }
+                                  uVar16 = uVar16 + 1 & 0xff;
+                                } while (uVar16 < 0x18);
+                              }
+                              else
+                              {
+                                *(undefined *)(iVar25 + 0x112) = 0;
+                                FUN_8002177c(2);
+                              }
+                            }
+                            highlight_measures_menu_items();
+                            tp_i2c_read_status();
+                            cVar1 = *puVar4;
+                            while (cVar1 != '\0') {
+                              tp_i2c_read_status();
+                              cVar1 = *puVar4;
+                            }
+                          }
+                          else {
+                            uVar17 = uVar16 - 0x25e;
+                            if (((uVar17 < 0x3c) && (0x123 < uVar18)) && (uVar18 < 0x160)) {
+                              if (*puVar4 != '\0') {
+                                if (*(char *)(iVar25 + 0x122) == '\0') {
+                                  uVar16 = 0;
+                                  *(undefined *)(iVar25 + 0x122) = 1;
+                                  do {
+                                    uVar17 = (uint)*(byte *)(iVar6 + uVar16);
+                                    if (uVar17 == 0) {
+                                      *(undefined *)(iVar6 + uVar16) = 3;
+                                      break;
+                                    }
+                                    uVar16 = uVar16 + 1 & 0xff;
+                                  } while (uVar16 < 0x18);
+                                }
+                                else {
+                                  *(undefined *)(iVar25 + 0x122) = 0;
+                                  FUN_8002177c(3);
+                                }
+                              }
+                              highlight_measures_menu_items();
+                              tp_i2c_read_status();
+                              cVar1 = *puVar4;
+                              while (cVar1 != '\0') {
+                                tp_i2c_read_status();
+                                cVar1 = *puVar4;
+                              }
+                            }
+                            else {
+                              if (((uVar16 - 0x29c < 0x3c) && (0x123 < uVar18)) && (uVar18 < 0x160))
+                              {
+                                if (*puVar4 != '\0') {
+                                  if (*(char *)(iVar25 + 0x132) == '\0') {
+                                    uVar16 = 0;
+                                    *(undefined *)(iVar25 + 0x132) = 1;
+                                    do {
+                                      uVar17 = (uint)*(byte *)(iVar6 + uVar16);
+                                      if (uVar17 == 0) {
+                                        *(undefined *)(iVar6 + uVar16) = 4;
+                                        break;
+                                      }
+                                      uVar16 = uVar16 + 1 & 0xff;
+                                    } while (uVar16 < 0x18);
+                                  }
+                                  else {
+                                    *(undefined *)(iVar25 + 0x132) = 0;
+                                    FUN_8002177c(4);
+                                  }
+                                }
+                                highlight_measures_menu_items();
+                                tp_i2c_read_status();
+                                cVar1 = *puVar4;
+                                while (cVar1 != '\0') {
+                                  tp_i2c_read_status();
+                                  cVar1 = *puVar4;
+                                }
+                              }
+                            }
+                          }
+                        }
+                        iVar6 = DAT_8001e9b8;
+                        uVar18 = (uint)*(ushort *)(puVar4 + 2);
+                        uVar16 = uVar18 - 0x1e2;
+                        bVar26 = 0x3b < uVar16;
+                        if (!bVar26) {
+                          uVar16 = (uint)*(ushort *)(puVar4 + 4);
+                        }
+                        if (!bVar26 && uVar16 > uVar11) {
+                          uVar17 = DAT_8001f98c;
+                        }
+                        if ((bVar26 || uVar16 <= uVar11) || uVar17 <= uVar16) {
+                          uVar16 = uVar18 - 0x220;
+                          bVar26 = 0x3b < uVar16;
+                          if (!bVar26) {
+                            uVar16 = (uint)*(ushort *)(puVar4 + 4);
+                          }
+                          if (!bVar26 && uVar16 > uVar11) {
+                            uVar17 = DAT_8001f98c;
+                          }
+                          if ((bVar26 || uVar16 <= uVar11) || uVar17 <= uVar16) {
+                            uVar16 = uVar18 - 0x25e;
+                            bVar26 = 0x3b < uVar16;
+                            if (!bVar26) {
+                              uVar16 = (uint)*(ushort *)(puVar4 + 4);
+                            }
+                            if (!bVar26 && uVar16 > uVar11) {
+                              uVar17 = DAT_8001f98c;
+                            }
+                            if ((bVar26 || uVar16 <= uVar11) || uVar17 <= uVar16) {
+                              uVar18 = uVar18 - 0x29c;
+                              bVar26 = uVar18 < 0x3c;
+                              if (bVar26) {
+                                uVar18 = (uint)*(ushort *)(puVar4 + 4);
+                              }
+                              if (bVar26 && uVar11 < uVar18) {
+                                uVar16 = DAT_8001f98c;
+                              }
+                              if ((bVar26 && uVar11 < uVar18) && uVar18 < uVar16) {
+                                if (*puVar4 != '\0') {
+                                  if (*(char *)(iVar25 + 0x172) == '\0') {
+                                    uVar16 = 0;
+                                    *(undefined *)(iVar25 + 0x172) = 1;
+                                    do {
+                                      uVar17 = (uint)*(byte *)(iVar6 + uVar16);
+                                      if (uVar17 == 0) {
+                                        *(undefined *)(iVar6 + uVar16) = 8;
+                                        break;
+                                      }
+                                      uVar16 = uVar16 + 1 & 0xff;
+                                    } while (uVar16 < 0x18);
+                                  }
+                                  else {
+                                    *(undefined *)(iVar25 + 0x172) = 0;
+                                    FUN_8002177c(8);
+                                  }
+                                }
+                                highlight_measures_menu_items();
+                                tp_i2c_read_status();
+                                cVar1 = *puVar4;
+                                while (cVar1 != '\0') {
+                                  tp_i2c_read_status();
+                                  cVar1 = *puVar4;
+                                }
+                              }
+                            }
+                            else {
+                              if (*puVar4 != '\0') {
+                                if (*(char *)(iVar25 + 0x162) == '\0') {
+                                  uVar16 = 0;
+                                  *(undefined *)(iVar25 + 0x162) = 1;
+                                  do {
+                                    uVar17 = (uint)*(byte *)(iVar6 + uVar16);
+                                    if (uVar17 == 0) {
+                                      *(undefined *)(iVar6 + uVar16) = 7;
+                                      break;
+                                    }
+                                    uVar16 = uVar16 + 1 & 0xff;
+                                  } while (uVar16 < 0x18);
+                                }
+                                else {
+                                  *(undefined *)(iVar25 + 0x162) = 0;
+                                  FUN_8002177c(7);
+                                }
+                              }
+                              highlight_measures_menu_items();
+                              tp_i2c_read_status();
+                              cVar1 = *puVar4;
+                              while (cVar1 != '\0') {
+                                tp_i2c_read_status();
+                                cVar1 = *puVar4;
+                              }
+                            }
+                          }
+                          else {
+                            if (*puVar4 != '\0') {
+                              if (*(char *)(iVar25 + 0x152) == '\0') {
+                                uVar16 = 0;
+                                *(undefined *)(iVar25 + 0x152) = 1;
+                                do {
+                                  uVar17 = (uint)*(byte *)(iVar6 + uVar16);
+                                  if (uVar17 == 0) {
+                                    *(undefined *)(iVar6 + uVar16) = 6;
+                                    break;
+                                  }
+                                  uVar16 = uVar16 + 1 & 0xff;
+                                } while (uVar16 < 0x18);
+                              }
+                              else {
+                                *(undefined *)(iVar25 + 0x152) = 0;
+                                FUN_8002177c(6);
+                              }
+                            }
+                            highlight_measures_menu_items();
+                            tp_i2c_read_status();
+                            cVar1 = *puVar4;
+                            while (cVar1 != '\0') {
+                              tp_i2c_read_status();
+                              cVar1 = *puVar4;
+                            }
+                          }
+                        }
+                        else {
+                          if (*puVar4 != '\0') {
+                            if (*(char *)(iVar25 + 0x142) == '\0') {
+                              uVar16 = 0;
+                              *(undefined *)(iVar25 + 0x142) = 1;
+                              do {
+                                uVar17 = (uint)*(byte *)(iVar6 + uVar16);
+                                if (uVar17 == 0) {
+                                  *(undefined *)(iVar6 + uVar16) = 5;
+                                  break;
+                                }
+                                uVar16 = uVar16 + 1 & 0xff;
+                              } while (uVar16 < 0x18);
+                            }
+                            else {
+                              *(undefined *)(iVar25 + 0x142) = 0;
+                              FUN_8002177c(5);
+                            }
+                          }
+                          highlight_measures_menu_items();
+                          tp_i2c_read_status();
+                          cVar1 = *puVar4;
+                          while (cVar1 != '\0') {
+                            tp_i2c_read_status();
+                            cVar1 = *puVar4;
+                          }
+                        }
+                        iVar6 = DAT_8001e9b8;
+                        uVar16 = (uint)*(ushort *)(puVar4 + 2);
+                        if (((uVar16 - 0x1e2 < 0x3c) && (0x19f < *(ushort *)(puVar4 + 4))) &&
+                           (*(ushort *)(puVar4 + 4) < 0x1dc)) {
+                          if (*puVar4 != '\0') {
+                            if (*(char *)(iVar25 + 0x182) == '\0') {
+                              uVar16 = 0;
+                              *(undefined *)(iVar25 + 0x182) = 1;
+                              do {
+                                uVar17 = (uint)*(byte *)(iVar6 + uVar16);
+                                if (uVar17 == 0) {
+                                  *(undefined *)(iVar6 + uVar16) = 9;
+                                  break;
+                                }
+                                uVar16 = uVar16 + 1 & 0xff;
+                              } while (uVar16 < 0x18);
+                            }
+                            else {
+                              *(undefined *)(iVar25 + 0x182) = 0;
+                              FUN_8002177c(9);
+                            }
+                          }
+                          highlight_measures_menu_items();
+                          tp_i2c_read_status();
+                          cVar1 = *puVar4;
+                          while (cVar1 != '\0') {
+                            tp_i2c_read_status();
+                            cVar1 = *puVar4;
+                          }
+                        }
+                        else {
+                          if (((uVar16 - 0x220 < 0x3c) && (0x19f < *(ushort *)(puVar4 + 4))) &&
+                             (*(ushort *)(puVar4 + 4) < 0x1dc)) {
+                            if (*puVar4 != '\0') {
+                              if (*(char *)(iVar25 + 0x192) == '\0') {
+                                uVar16 = 0;
+                                *(undefined *)(iVar25 + 0x192) = 1;
+                                do {
+                                  uVar17 = (uint)*(byte *)(iVar6 + uVar16);
+                                  if (uVar17 == 0) {
+                                    *(undefined *)(iVar6 + uVar16) = 10;
+                                    break;
+                                  }
+                                  uVar16 = uVar16 + 1 & 0xff;
+                                } while (uVar16 < 0x18);
+                              }
+                              else {
+                                *(undefined *)(iVar25 + 0x192) = 0;
+                                FUN_8002177c(10);
+                              }
+                            }
+                            highlight_measures_menu_items();
+                            tp_i2c_read_status();
+                            cVar1 = *puVar4;
+                            while (cVar1 != '\0') {
+                              tp_i2c_read_status();
+                              cVar1 = *puVar4;
+                            }
+                          }
+                          else {
+                            if (((uVar16 - 0x25e < 0x3c) && (0x19f < *(ushort *)(puVar4 + 4))) &&
+                               (*(ushort *)(puVar4 + 4) < 0x1dc)) {
+                              if (*puVar4 != '\0') {
+                                if (*(char *)(iVar25 + 0x1a2) == '\0') {
+                                  uVar16 = 0;
+                                  *(undefined *)(iVar25 + 0x1a2) = 1;
+                                  do {
+                                    uVar17 = (uint)*(byte *)(iVar6 + uVar16);
+                                    if (uVar17 == 0) {
+                                      *(undefined *)(iVar6 + uVar16) = 0xb;
+                                      break;
+                                    }
+                                    uVar16 = uVar16 + 1 & 0xff;
+                                  } while (uVar16 < 0x18);
+                                }
+                                else {
+                                  *(undefined *)(iVar25 + 0x1a2) = 0;
+                                  FUN_8002177c(0xb);
+                                }
+                              }
+                              highlight_measures_menu_items();
+                              tp_i2c_read_status();
+                              cVar1 = *puVar4;
+                              while (cVar1 != '\0') {
+                                tp_i2c_read_status();
+                                cVar1 = *puVar4;
+                              }
+                            }
+                            else {
+                              if (((uVar16 - 0x29c < 0x3c) && (0x19f < *(ushort *)(puVar4 + 4))) &&
+                                 (*(ushort *)(puVar4 + 4) < 0x1dc)) {
+                                if (*puVar4 != '\0') {
+                                  if (*(char *)(iVar25 + 0x1b2) == '\0') {
+                                    uVar16 = 0;
+                                    *(undefined *)(iVar25 + 0x1b2) = 1;
+                                    do {
+                                      uVar17 = (uint)*(byte *)(iVar6 + uVar16);
+                                      if (uVar17 == 0) {
+                                        *(undefined *)(iVar6 + uVar16) = 0xc;
+                                        break;
+                                      }
+                                      uVar16 = uVar16 + 1 & 0xff;
+                                    } while (uVar16 < 0x18);
+                                  }
+                                  else {
+                                    *(undefined *)(iVar25 + 0x1b2) = 0;
+                                    FUN_8002177c(0xc);
+                                  }
+                                }
+                                highlight_measures_menu_items();
+                                tp_i2c_read_status();
+                                cVar1 = *puVar4;
+                                while (cVar1 != '\0') {
+                                  tp_i2c_read_status();
+                                  cVar1 = *puVar4;
+                                }
+                              }
+                            }
+                          }
+                        }
+                        iVar6 = DAT_8001e9b8;
+                        uVar16 = (uint)*(ushort *)(puVar4 + 2);
+                        if (((uVar16 - 0xe9 < 0x3c) && (0x123 < *(ushort *)(puVar4 + 4))) &&
+                           (*(ushort *)(puVar4 + 4) < 0x160)) {
+                          if (*puVar4 != '\0') {
+                            if (*(char *)(iVar25 + 0x1c2) == '\0') {
+                              uVar16 = 0;
+                              *(undefined *)(iVar25 + 0x1c2) = 1;
+                              do {
+                                uVar17 = (uint)*(byte *)(iVar6 + uVar16);
+                                if (uVar17 == 0) {
+                                  *(undefined *)(iVar6 + uVar16) = 0xd;
+                                  break;
+                                }
+                                uVar16 = uVar16 + 1 & 0xff;
+                              } while (uVar16 < 0x18);
+                            }
+                            else {
+                              *(undefined *)(iVar25 + 0x1c2) = 0;
+                              FUN_8002177c(0xd);
+                            }
+                          }
+                          highlight_measures_menu_items();
+                          tp_i2c_read_status();
+                          cVar1 = *puVar4;
+                          while (cVar1 != '\0') {
+                            tp_i2c_read_status();
+                            cVar1 = *puVar4;
+                          }
+                        }
+                        else {
+                          if (((uVar16 - 0x127 < 0x3c) && (0x123 < *(ushort *)(puVar4 + 4))) &&
+                             (*(ushort *)(puVar4 + 4) < 0x160)) {
+                            if (*puVar4 != '\0') {
+                              if (*(char *)(iVar25 + 0x1d2) == '\0') {
+                                uVar16 = 0;
+                                *(undefined *)(iVar25 + 0x1d2) = 1;
+                                do {
+                                  uVar17 = (uint)*(byte *)(iVar6 + uVar16);
+                                  if (uVar17 == 0) {
+                                    *(undefined *)(iVar6 + uVar16) = 0xe;
+                                    break;
+                                  }
+                                  uVar16 = uVar16 + 1 & 0xff;
+                                } while (uVar16 < 0x18);
+                              }
+                              else {
+                                *(undefined *)(iVar25 + 0x1d2) = 0;
+                                FUN_8002177c(0xe);
+                              }
+                            }
+                            highlight_measures_menu_items();
+                            tp_i2c_read_status();
+                            cVar1 = *puVar4;
+                            while (cVar1 != '\0') {
+                              tp_i2c_read_status();
+                              cVar1 = *puVar4;
+                            }
+                          }
+                          else {
+                            if (((uVar16 - 0x165 < 0x3c) && (0x123 < *(ushort *)(puVar4 + 4))) &&
+                               (*(ushort *)(puVar4 + 4) < 0x160)) {
+                              if (*puVar4 != '\0') {
+                                if (*(char *)(iVar25 + 0x1e2) == '\0') {
+                                  uVar16 = 0;
+                                  *(undefined *)(iVar25 + 0x1e2) = 1;
+                                  do {
+                                    uVar17 = (uint)*(byte *)(iVar6 + uVar16);
+                                    if (uVar17 == 0) {
+                                      *(undefined *)(iVar6 + uVar16) = 0xf;
+                                      break;
+                                    }
+                                    uVar16 = uVar16 + 1 & 0xff;
+                                  } while (uVar16 < 0x18);
+                                }
+                                else {
+                                  *(undefined *)(iVar25 + 0x1e2) = 0;
+                                  FUN_8002177c(0xf);
+                                }
+                              }
+                              highlight_measures_menu_items();
+                              tp_i2c_read_status();
+                              cVar1 = *puVar4;
+                              while (cVar1 != '\0') {
+                                tp_i2c_read_status();
+                                cVar1 = *puVar4;
+                              }
+                            }
+                            else {
+                              if (((uVar16 - 0x1a3 < 0x3c) && (0x123 < *(ushort *)(puVar4 + 4))) &&
+                                 (*(ushort *)(puVar4 + 4) < 0x160)) {
+                                if (*puVar4 != '\0') {
+                                  if (*(char *)(iVar25 + 0x1f2) == '\0') {
+                                    uVar16 = 0;
+                                    *(undefined *)(iVar25 + 0x1f2) = 1;
+                                    do {
+                                      uVar17 = (uint)*(byte *)(iVar6 + uVar16);
+                                      if (uVar17 == 0) {
+                                        *(undefined *)(iVar6 + uVar16) = 0x10;
+                                        break;
+                                      }
+                                      uVar16 = uVar16 + 1 & 0xff;
+                                    } while (uVar16 < 0x18);
+                                  }
+                                  else {
+                                    *(undefined *)(iVar25 + 0x1f2) = 0;
+                                    FUN_8002177c(0x10);
+                                  }
+                                }
+                                highlight_measures_menu_items();
+                                tp_i2c_read_status();
+                                cVar1 = *puVar4;
+                                while (cVar1 != '\0') {
+                                  tp_i2c_read_status();
+                                  cVar1 = *puVar4;
+                                }
+                              }
+                            }
+                          }
+                        }
+                        iVar6 = DAT_8001e9b8;
+                        uVar18 = (uint)*(ushort *)(puVar4 + 2);
+                        uVar16 = uVar18 - 0xe9;
+                        bVar26 = 0x3b < uVar16;
+                        if (!bVar26) {
+                          uVar16 = (uint)*(ushort *)(puVar4 + 4);
+                        }
+                        if (!bVar26 && uVar16 > uVar11) {
+                          uVar17 = DAT_8001f98c;
+                        }
+                        if ((bVar26 || uVar16 <= uVar11) || uVar17 <= uVar16) {
+                          uVar16 = uVar18 - 0x127;
+                          bVar26 = 0x3b < uVar16;
+                          if (!bVar26) {
+                            uVar16 = (uint)*(ushort *)(puVar4 + 4);
+                          }
+                          if (!bVar26 && uVar16 > uVar11) {
+                            uVar17 = DAT_8001f98c;
+                          }
+                          if ((bVar26 || uVar16 <= uVar11) || uVar17 <= uVar16) {
+                            uVar16 = uVar18 - 0x165;
+                            bVar26 = 0x3b < uVar16;
+                            if (!bVar26) {
+                              uVar16 = (uint)*(ushort *)(puVar4 + 4);
+                            }
+                            if (!bVar26 && uVar16 > uVar11) {
+                              uVar17 = DAT_8001f98c;
+                            }
+                            if ((bVar26 || uVar16 <= uVar11) || uVar17 <= uVar16) {
+                              uVar18 = uVar18 - 0x1a3;
+                              bVar26 = uVar18 < 0x3c;
+                              if (bVar26) {
+                                uVar18 = (uint)*(ushort *)(puVar4 + 4);
+                              }
+                              if (bVar26 && uVar11 < uVar18) {
+                                uVar16 = DAT_8001f98c;
+                              }
+                              if ((bVar26 && uVar11 < uVar18) && uVar18 < uVar16) {
+                                if (*puVar4 != '\0') {
+                                  if (*(char *)(iVar25 + 0x242) == '\0') {
+                                    uVar16 = 0;
+                                    *(undefined *)(iVar25 + 0x242) = 1;
+                                    do {
+                                      if (*(char *)(iVar6 + uVar16) == '\0') {
+                                        *(undefined *)(iVar6 + uVar16) = 0x14;
+                                        break;
+                                      }
+                                      uVar16 = uVar16 + 1 & 0xff;
+                                    } while (uVar16 < 0x18);
+                                  }
+                                  else {
+                                    *(undefined *)(iVar25 + 0x242) = 0;
+                                    FUN_8002177c(0x14);
+                                  }
+                                }
+                                highlight_measures_menu_items();
+                                tp_i2c_read_status();
+                                cVar1 = *puVar4;
+                                while (cVar1 != '\0') {
+                                  tp_i2c_read_status();
+                                  cVar1 = *puVar4;
+                                }
+                              }
+                            }
+                            else {
+                              if (*puVar4 != '\0') {
+                                if (*(char *)(iVar25 + 0x232) == '\0') {
+                                  uVar16 = 0;
+                                  *(undefined *)(iVar25 + 0x232) = 1;
+                                  do {
+                                    if (*(char *)(iVar6 + uVar16) == '\0') {
+                                      *(undefined *)(iVar6 + uVar16) = 0x13;
+                                      break;
+                                    }
+                                    uVar16 = uVar16 + 1 & 0xff;
+                                  } while (uVar16 < 0x18);
+                                }
+                                else {
+                                  *(undefined *)(iVar25 + 0x232) = 0;
+                                  FUN_8002177c(0x13);
+                                }
+                              }
+                              highlight_measures_menu_items();
+                              tp_i2c_read_status();
+                              cVar1 = *puVar4;
+                              while (cVar1 != '\0') {
+                                tp_i2c_read_status();
+                                cVar1 = *puVar4;
+                              }
+                            }
+                          }
+                          else {
+                            if (*puVar4 != '\0') {
+                              if (*(char *)(iVar25 + 0x212) == '\0') {
+                                uVar16 = 0;
+                                *(undefined *)(iVar25 + 0x212) = 1;
+                                do {
+                                  if (*(char *)(iVar6 + uVar16) == '\0') {
+                                    *(undefined *)(iVar6 + uVar16) = 0x12;
+                                    break;
+                                  }
+                                  uVar16 = uVar16 + 1 & 0xff;
+                                } while (uVar16 < 0x18);
+                              }
+                              else {
+                                *(undefined *)(iVar25 + 0x212) = 0;
+                                FUN_8002177c(0x12);
+                              }
+                            }
+                            highlight_measures_menu_items();
+                            tp_i2c_read_status();
+                            cVar1 = *puVar4;
+                            while (cVar1 != '\0') {
+                              tp_i2c_read_status();
+                              cVar1 = *puVar4;
+                            }
+                          }
+                        }
+                        else {
+                          if (*puVar4 != '\0') {
+                            if (*(char *)(iVar25 + 0x202) == '\0') {
+                              uVar16 = 0;
+                              *(undefined *)(iVar25 + 0x202) = 1;
+                              do {
+                                if (*(char *)(iVar6 + uVar16) == '\0') {
+                                  *(undefined *)(iVar6 + uVar16) = 0x11;
+                                  break;
+                                }
+                                uVar16 = uVar16 + 1 & 0xff;
+                              } while (uVar16 < 0x18);
+                            }
+                            else {
+                              *(undefined *)(iVar25 + 0x202) = 0;
+                              FUN_8002177c(0x11);
+                            }
+                          }
+                          highlight_measures_menu_items();
+                          tp_i2c_read_status();
+                          cVar1 = *puVar4;
+                          while (cVar1 != '\0') {
+                            tp_i2c_read_status();
+                            cVar1 = *puVar4;
+                          }
+                        }
+                        iVar6 = DAT_8001e9b8;
+                        uVar16 = (uint)*(ushort *)(puVar4 + 2);
+                        if (((uVar16 - 0xe9 < 0x3c) && (0x19f < *(ushort *)(puVar4 + 4))) &&
+                           (*(ushort *)(puVar4 + 4) < 0x1dc)) {
+                          if (*puVar4 != '\0') {
+                            if (*(char *)(iVar25 + 0x252) == '\0') {
+                              uVar16 = 0;
+                              *(undefined *)(iVar25 + 0x252) = 1;
+                              do {
+                                if (*(char *)(iVar6 + uVar16) == '\0') {
+                                  *(undefined *)(iVar6 + uVar16) = 0x15;
+                                  break;
+                                }
+                                uVar16 = uVar16 + 1 & 0xff;
+                              } while (uVar16 < 0x18);
+                            }
+                            else {
+                              *(undefined *)(iVar25 + 0x252) = 0;
+                              FUN_8002177c(0x15);
+                            }
+                          }
+                          highlight_measures_menu_items();
+                          tp_i2c_read_status();
+                          cVar1 = *puVar4;
+                          while (cVar1 != '\0') {
+                            tp_i2c_read_status();
+                            cVar1 = *puVar4;
+                          }
+                        }
+                        else {
+                          if (((uVar16 - 0x127 < 0x3c) && (0x19f < *(ushort *)(puVar4 + 4))) &&
+                             (*(ushort *)(puVar4 + 4) < 0x1dc)) {
+                            if (*puVar4 != '\0') {
+                              if (*(char *)(iVar25 + 0x262) == '\0') {
+                                uVar16 = 0;
+                                *(undefined *)(iVar25 + 0x262) = 1;
+                                do {
+                                  if (*(char *)(iVar6 + uVar16) == '\0') {
+                                    *(undefined *)(iVar6 + uVar16) = 0x16;
+                                    break;
+                                  }
+                                  uVar16 = uVar16 + 1 & 0xff;
+                                } while (uVar16 < 0x18);
+                              }
+                              else {
+                                *(undefined *)(iVar25 + 0x262) = 0;
+                                FUN_8002177c(0x16);
+                              }
+                            }
+                            highlight_measures_menu_items();
+                            tp_i2c_read_status();
+                            cVar1 = *puVar4;
+                            while (cVar1 != '\0') {
+                              tp_i2c_read_status();
+                              cVar1 = *puVar4;
+                            }
+                          }
+                          else {
+                            if (((uVar16 - 0x165 < 0x3c) && (0x19f < *(ushort *)(puVar4 + 4))) &&
+                               (*(ushort *)(puVar4 + 4) < 0x1dc)) {
+                              if (*puVar4 != '\0') {
+                                if (*(char *)(iVar25 + 0x272) == '\0') {
+                                  uVar16 = 0;
+                                  *(undefined *)(iVar25 + 0x272) = 1;
+                                  do {
+                                    if (*(char *)(iVar6 + uVar16) == '\0') {
+                                      *(undefined *)(iVar6 + uVar16) = 0x17;
+                                      break;
+                                    }
+                                    uVar16 = uVar16 + 1 & 0xff;
+                                  } while (uVar16 < 0x18);
+                                }
+                                else {
+                                  *(undefined *)(iVar25 + 0x272) = 0;
+                                  FUN_8002177c(0x17);
+                                }
+                              }
+                              highlight_measures_menu_items();
+                              tp_i2c_read_status();
+                              cVar1 = *puVar4;
+                              while (cVar1 != '\0') {
+                                tp_i2c_read_status();
+                                cVar1 = *puVar4;
+                              }
+                            }
+                            else {
+                              if (((uVar16 - 0x1a3 < 0x3c) && (0x19f < *(ushort *)(puVar4 + 4))) &&
+                                 (*(ushort *)(puVar4 + 4) < 0x1dc)) {
+                                if (*puVar4 != '\0') {
+                                  if (*(char *)(iVar25 + 0x282) == '\0') {
+                                    uVar16 = 0;
+                                    *(undefined *)(iVar25 + 0x282) = 1;
+                                    do {
+                                      if (*(char *)(iVar6 + uVar16) == '\0') {
+                                        *(undefined *)(iVar6 + uVar16) = 0x18;
+                                        break;
+                                      }
+                                      uVar16 = uVar16 + 1 & 0xff;
+                                    } while (uVar16 < 0x18);
+                                  }
+                                  else {
+                                    *(undefined *)(iVar25 + 0x282) = 0;
+                                    FUN_8002177c(0x18);
+                                  }
+                                }
+                                highlight_measures_menu_items();
+                                tp_i2c_read_status();
+                                cVar1 = *puVar4;
+                                while (cVar1 != '\0') {
+                                  tp_i2c_read_status();
+                                  cVar1 = *puVar4;
+                                }
+                              }
+                            }
+                          }
+                        }
+                        goto LAB_8001e7b0;
+                      }
+                    }
+                  } while (*puVar4 == '\0');
+
+
+                  FUN_8000a710();                  //Restore screen under menu
+                  tp_i2c_read_status();
+                  cVar1 = *puVar4;
+                  while (cVar1 != '\0') {
+                    tp_i2c_read_status();
+                    cVar1 = *puVar4;
+                  }
+                }
+              }
+            }
 
 //----------------------------------------------------------------------------------------------------------------------
 
