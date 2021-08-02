@@ -71,7 +71,7 @@ int main(void)
   fpga_init();
   
   //Turn of the display brightness
-  set_backlight_brightness(0x0000);
+  fpga_set_backlight_brightness(0x0000);
   
   //Initialize display (PORT D + DEBE)
   sys_init_display(SCREEN_WIDTH, SCREEN_HEIGHT, maindisplaybuffer);
@@ -94,7 +94,7 @@ int main(void)
   tp_i2c_setup();
   
   scopesettings.rightmenustate = 0;
-  scopesettings.waveviewmode = 0;
+  scopesettings.waveviewmode = 1;
 
   scopesettings.runstate = 0;
 
@@ -147,11 +147,14 @@ int main(void)
   //Analyze the original code to find the screen build up and other display functions
   
   
+  fpga_init_parameter_ic();
+  
+  
   //Setup the main parts of the screen
   scope_setup_main_screen();
     
-  //Set default brightness
-  set_backlight_brightness(0xEA60);
+  //Set screen brightness
+  fpga_set_translated_brightness(scopesettings.screenbrightness);
   
 //  int8 buffer[20];
   

@@ -5,12 +5,13 @@
 //Main state is displaying the scope data
 
 //On touch the first action is to see where the touch is, so an array of boxes might be needed
-//Difficulty lies in when a trace of cursor is selected.
+//Difficulty lies in when a trace or cursor is selected.
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 #include "statemachine.h"
 #include "touchpanel.h"
+#include "fpga_control.h"
 #include "scope_functions.h"
 #include "display_lib.h"
 #include "fnirsi_1013d_scope.h"
@@ -508,13 +509,14 @@ void handle_main_menu_touch(void)
           scope_system_settings_screen_brightness_value();
           
           //Update the actual screen brightness
-        }       
+          fpga_set_translated_brightness(scopesettings.screenbrightness);
+        }
       }
       //Check on grid brightness slider opened and being touched
       else if(gridbrightnessopen && (xtouch >= 395) && (xtouch <= 726) && (ytouch >= 105) && (ytouch <= 163))
       {
         //Move the slider to a new position and check if there was a change in position
-        if(scope_move_slider(395, 105, &scopesettings.gridbrightness))
+        if(scope_move_slider(395, 104, &scopesettings.gridbrightness))
         {
           //Update the setting in the system settings menu
           scope_system_settings_grid_brightness_value();
@@ -921,7 +923,18 @@ void handle_trigger_menu_touch(void)
             scopesettings.triggermode = 0;
             
             //Need to call some function here
-            
+/*
+            pcVar5[0x21] = '\0';    //Trigger mode auto
+            FUN_80026828();         //Set FPGA trigger mode
+
+            pcVar5[0x3a] = '\0';    //Scope run state
+
+            pcVar5[0x18] = '\x01';
+            pcVar5[0x17] = '\x01';
+
+            display_run_stop_text((uint)(byte)pcVar5[0x3a]);
+*/
+
             //Display this
             scope_trigger_mode_select();
             scope_trigger_settings(0);
@@ -934,7 +947,24 @@ void handle_trigger_menu_touch(void)
 
             //Need to call some function here
             
+            //Limit time base setting to 10ms/div and down
+            //If timebase < 11 make it 11
+/*
+            pcVar5[0x3a] = '\0';
+            pcVar5[0x36] = '\0';
+            pcVar5[0x37] = '\x01';
 
+            FUN_80026828();    //Set change to FPGA
+ 
+            display_run_stop_text((uint)(byte)pcVar5[0x3a]);
+
+            if ((byte)pcVar5[10] < 0xb)
+            {     //Time base change when less then 11 (below 5ms/div ??)
+              pcVar5[10] = '\v';  //Make it 11
+              FUN_800266c4();       //Translate a parameter and write to fpga
+              display_time_div_setting();
+            }
+*/
             
             //Display this
             scope_trigger_mode_select();
@@ -947,7 +977,24 @@ void handle_trigger_menu_touch(void)
             scopesettings.triggermode = 2;
 
             //Need to call some function here
-            
+/*
+            FUN_80026828();
+
+            pcVar5[0x3a] = '\0';
+
+            display_run_stop_text((uint)(byte)pcVar5[0x3a]);
+
+            pcVar5[0x36] = '\0';
+            pcVar5[0x37] = '\x01';
+
+            if ((byte)pcVar5[10] < 0xb)
+            {
+              pcVar5[10] = '\v';
+              FUN_800266c4();
+              display_time_div_setting();
+            }
+*/
+
             //Display this
             scope_trigger_mode_select();
             scope_trigger_settings(0);
@@ -959,11 +1006,13 @@ void handle_trigger_menu_touch(void)
           //Check on rising
           if((xtouch >= 626) && (xtouch <= 666))
           {
-            //Enable the channel
+            //Set the trigger edge to rising
             scopesettings.triggeredge = 0;
             
             //Need to call some function here
-            
+/*
+            FUN_80026808();            //Trigger edge
+*/            
             //Display this
             scope_trigger_edge_select();
             scope_trigger_settings(0);
@@ -971,11 +1020,13 @@ void handle_trigger_menu_touch(void)
           //Check on falling
           else if((xtouch >= 671) && (xtouch <= 716))
           {
-            //Enable the channel
+            //Set the trigger edge to falling
             scopesettings.triggeredge = 1;
             
             //Need to call some function here
-            
+/*
+            FUN_80026808();            //Trigger edge
+*/            
             //Display this
             scope_trigger_edge_select();
             scope_trigger_settings(0);
@@ -984,26 +1035,30 @@ void handle_trigger_menu_touch(void)
         //Check on trigger channel
         else if((ytouch >= 188) && (ytouch <= 210))
         {
-          //Check on DC coupling
+          //Check on channel 1
           if((xtouch >= 632) && (xtouch <= 664))
           {
             //Set the channel 1 as trigger source
             scopesettings.triggerchannel = 0;
             
             //Need to call some function here
-            
+/*
+            FUN_800267e8();            //Trigger channel
+*/            
             //Display this
             scope_trigger_channel_select();
             scope_trigger_settings(0);
           }
-          //Check on AC coupling
+          //Check on channel 2
           else if((xtouch >= 680) && (xtouch <= 712))
           {
             //Set channel 2 as trigger source
             scopesettings.triggerchannel = 1;
 
             //Need to call some function here
-            
+/*
+            FUN_800267e8();            //Trigger channel
+*/            
             //Display this
             scope_trigger_channel_select();
             scope_trigger_settings(0);
@@ -1055,7 +1110,7 @@ void handle_right_basic_menu_touch(void)
       if (pcVar5[0x3a] == '\0')  //scopesettings.runstate
       {
         pcVar5[0x3a] = '\x01';
-        *(ushort *)puVar19 = (ushort)(byte)pcVar5[3];
+        *(ushort *)puVar19 = (ushort)(byte)pcVar5[3];     //Save the volts/div setting for each channel when runstate is enabled
         *(ushort *)puVar7 = (ushort)(byte)pcVar5[0xf];
       }
       else
@@ -1167,7 +1222,7 @@ void handle_right_basic_menu_touch(void)
     scope_t_cursor_button(0);
 /*
     //Check on some setting    
-    if (8 < (byte)pcVar5[10])
+    if (8 < (byte)pcVar5[10])  //Time base setting
     {
       if (*(char *)(iVar25 + 0x292) == '\0')
       {
@@ -1603,6 +1658,15 @@ void handle_measures_menu_touch(void)
               //Toggle the item
               scopesettings.measuresstate[channel][item] ^= 1;
 
+              //There is an array for showing the items on screen. It works on a first come first serve system.
+              //It looks for the first free spot and inserts itself there. This gives a messy image of the two channels interleaving with settings
+              //On disable the list is shifted to fill the gap
+              //For this an items in list counter might be useful
+              
+              //A nicer setup is to reserve separate sections per channel on the screen for the enabled items and always show them in a fixed
+              //order. Makes reading them easier
+              
+              
               //Draw the changed item
               scope_measures_menu_item(channel, item);
               
@@ -1669,6 +1733,9 @@ void close_open_sub_menus(void)
   //Check if the calibration text is open
   else if(calibrationopen)
   {
+    //Set the button inactive
+    scope_system_settings_calibration_item(0);
+    
     //Restore the screen under the calibration text
     display_set_source_buffer(displaybuffer2);
     display_copy_rect_to_screen(395, 222, 199, 59);

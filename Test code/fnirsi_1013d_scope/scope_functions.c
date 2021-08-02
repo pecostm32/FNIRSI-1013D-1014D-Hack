@@ -36,6 +36,7 @@ extern const uint8 grid_brightness_icon[];
 extern const uint8 trigger_50_percent_icon[];
 extern const uint8 baseline_calibration_icon[];
 extern const uint8 x_y_mode_display_icon[];
+extern const uint8 return_arrow_icon[];
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -956,20 +957,19 @@ void scope_main_return_button(int mode)
   //Check if inactive or active
   if(mode == 0)
   {
-    //Inactive so white foreground
+    //Inactive so white foreground and grey background
     display_set_fg_color(0x00FFFFFF);
+    display_set_bg_color(0x00000000);
   }
   else
   {
-    //Active so black foreground
+    //Active so black foreground and white background
     display_set_fg_color(0x00000000);
+    display_set_bg_color(0x00FFFFFF);
   }
-  
-  //Needs to be an arrow image but text for now
-  
-  //Display the text
-  display_set_font(&font_3);
-  display_text(16, 11, "RETURN");
+
+  //Display the icon with the set colors
+  display_copy_icon_use_colors(return_arrow_icon, 20, 6, 40, 25);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -3189,7 +3189,7 @@ void scope_open_measures_menu(void)
   display_set_screen_buffer(maindisplaybuffer);
 
   //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
-  display_slide_right_rect_onto_screen(231, 263, 499, 214, 63039);
+  display_slide_right_rect_onto_screen(231, 263, 499, 214, 75646);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -3452,11 +3452,11 @@ void scope_display_slide_button(uint16 xpos, uint16 ypos, uint8 state)
   
   //Draw the background
   display_set_fg_color(fillcolor);
-  display_fill_rounded_rect(xpos, ypos, 45, 20, 2);
+  display_fill_rounded_rect(xpos, ypos, 45, 21, 2);
 
   //Draw the edge
   display_set_fg_color(edgecolor);
-  display_draw_rounded_rect(xpos, ypos, 45, 20, 2);
+  display_draw_rounded_rect(xpos, ypos, 45, 21, 2);
 
   //Draw button in dark grey
   display_set_fg_color(0x00444444);

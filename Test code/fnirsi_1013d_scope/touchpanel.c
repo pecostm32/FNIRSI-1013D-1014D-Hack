@@ -429,11 +429,19 @@ uint8 tp_i2c_read_byte(void)
 //A count of 4 is approximately 3uS when running on 600MHz with cache enabled
 
 void tp_delay(uint32 usec)
+#if 0
 {
   int i;
-
-  //Just loop the number of requested cycles  
+  
   for(i=0;i<usec;i++);
 }
+#else
+{
+  //Lower then 64 does not work properly, because the panel fails to hold the new configuration when coming from the original code
+  unsigned int loops = usec * 90;
 
+  __asm__ __volatile__ ("1:\n" "subs %0, %1, #1\n"  "bne 1b":"=r"(loops):"0"(loops));
+}
+#endif
+  
 //----------------------------------------------------------------------------------------------------------------------------------

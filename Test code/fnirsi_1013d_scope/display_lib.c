@@ -87,7 +87,7 @@ void display_set_destination_buffer(uint16 *buffer)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_draw_line(uint32 xstart, uint32 ystart, uint32 xend, uint32 yend )
+void display_draw_line(uint32 xstart, uint32 ystart, uint32 xend, uint32 yend)
 {
   uint16 *ptr;
   uint32 x, xs, xe, y, ys, ye, dx;
@@ -275,6 +275,10 @@ void display_draw_vert_line(uint32 xpos, uint32 ystart, uint32 yend)
 
 void display_draw_rect(uint32 xpos, uint32 ypos, uint32 width, uint32 height)
 {
+  //Compensate for the last pixel
+  width--;
+  height--;
+  
   uint32 xe = xpos + width;
   uint32 ye = ypos + height;
   
@@ -289,6 +293,10 @@ void display_draw_rect(uint32 xpos, uint32 ypos, uint32 width, uint32 height)
 
 void display_draw_rounded_rect(uint32 xpos, uint32 ypos, uint32 width, uint32 height, uint32 radius)
 {
+  //Compensate for the last pixel
+  width--;
+  height--;
+  
   uint32 xs = xpos + radius;
   uint32 ys = ypos + radius;
   uint32 xe = xpos + width - radius;
@@ -462,6 +470,10 @@ void display_fill_rounded_rect(uint32 xpos, uint32 ypos, uint32 width, uint32 he
   uint32  x, xc, xs, xe, xt, y, yc, ys, ye;
   uint32  a, step, r;
 
+  //Compensate for the last pixel
+  width--;
+  height--;
+  
   //Calculate the max radius for the given width and height
   if(width < height)
   {
@@ -534,7 +546,6 @@ void display_fill_rounded_rect(uint32 xpos, uint32 ypos, uint32 width, uint32 he
           *ptr2++ = displaydata.fg_color;
         }
       }
-      
     }
   }
   
@@ -558,7 +569,7 @@ void display_fill_rounded_rect(uint32 xpos, uint32 ypos, uint32 width, uint32 he
   }
  
   //Draw all the pixels for the middle section
-  for(y=ys;y<=ye;y++)
+  for(y=ys;y<ye;y++)
   {
     //Point to the first pixel of this line in the screen buffer
     ptr1 = displaydata.screenbuffer + ((y * displaydata.pixelsperline) + xpos);
@@ -601,7 +612,7 @@ void display_slide_top_rect_onto_screen(uint32 xpos, uint32 ypos, uint32 width, 
     ptr1 = displaydata.screenbuffer + startxy;
     
     //Handle the needed number of lines for this loop
-    for(line=startline;line<=height;line++)
+    for(line=startline;line<height;line++)
     {
       //Copy a single line to the screen buffer
       memcpy(ptr1, ptr2, width);
@@ -647,7 +658,7 @@ void display_slide_left_rect_onto_screen(uint32 xpos, uint32 ypos, uint32 width,
     bytecount = (width - startpixel) << 1;
     
     //Handle the lines
-    for(line=0;line<=height;line++)
+    for(line=0;line<height;line++)
     {
       //Copy the needed pixels for this loop to the screen buffer
       memcpy(ptr1, ptr2, bytecount);
@@ -693,7 +704,7 @@ void display_slide_right_rect_onto_screen(uint32 xpos, uint32 ypos, uint32 width
     bytecount = (width - startpixel) << 1;
     
     //Handle the lines
-    for(line=0;line<=height;line++)
+    for(line=0;line<height;line++)
     {
       //Copy the needed pixels for this loop to the screen buffer
       memcpy(ptr1, ptr2, bytecount);
@@ -728,7 +739,7 @@ void display_copy_rect_from_screen(uint32 xpos, uint32 ypos, uint32 width, uint3
   width <<=1;
   
   //Copy the needed lines
-  for(line=0;line<=height;line++)
+  for(line=0;line<height;line++)
   {
     //Copy a single line to the destination buffer
     memcpy(ptr1, ptr2, width);
@@ -759,7 +770,7 @@ void display_copy_rect_to_screen(uint32 xpos, uint32 ypos, uint32 width, uint32 
   width <<=1;
   
   //Copy the needed lines
-  for(line=0;line<=height;line++)
+  for(line=0;line<height;line++)
   {
     //Copy a single line to the destination buffer
     memcpy(ptr1, ptr2, width);

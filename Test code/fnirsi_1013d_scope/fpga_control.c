@@ -197,10 +197,23 @@ void fpga_write_int(unsigned int data)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void set_backlight_brightness(unsigned short brightness)
+void fpga_set_backlight_brightness(unsigned short brightness)
 {
   fpga_write_cmd(0x38);
   fpga_write_short(brightness);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_set_translated_brightness(unsigned int brightness)
+{
+  unsigned short data;
+  
+  //Translate the 0 - 100 brightness value into data for the FPGA
+  data = fpga_read_parameter_ic(0x10, brightness);
+  
+  //Write it to the FPGA
+  fpga_set_backlight_brightness(data);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -214,7 +227,7 @@ unsigned short fpga_get_version(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void check_fpga_ready(void)
+void fpga_check_ready(void)
 {
   int i;
   
@@ -234,7 +247,7 @@ unsigned char parameter_crypt_byte;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void init_parameter_ic(void)
+void fpga_init_parameter_ic(void)
 {
   int i;
   
@@ -243,6 +256,7 @@ void init_parameter_ic(void)
   fpga_write_cmd(0x64);
   
   //Need a delay here. In the scope it is delay(20) but not sure what the base of the delay is
+//  fpga_delay(10);
   
   //Start the read action
   fpga_write_cmd(0x66);
@@ -270,7 +284,7 @@ void init_parameter_ic(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void write_parameter_ic(unsigned char id, unsigned int value)
+void fpga_write_parameter_ic(unsigned char id, unsigned int value)
 {
   unsigned char length = 3;
   int i;
@@ -374,7 +388,7 @@ void write_parameter_ic(unsigned char id, unsigned int value)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-unsigned int read_parameter_ic(unsigned char id, unsigned int value)
+unsigned int fpga_read_parameter_ic(unsigned char id, unsigned int value)
 {
   int           i,j;
   int           unvalid = 0;
@@ -385,10 +399,10 @@ unsigned int read_parameter_ic(unsigned char id, unsigned int value)
   while(i < 6)
   {
     //Start the sequence with a write
-    write_parameter_ic(id, value);
+    fpga_write_parameter_ic(id, value);
     
     //Need a delay here. In the scope it is delay(500) but not sure what the base of the delay is
- 
+    fpga_delay(500);
     
     //Reset counter
     j=0;
@@ -404,6 +418,7 @@ unsigned int read_parameter_ic(unsigned char id, unsigned int value)
       fpga_write_cmd(0x64);
 
       //Need a delay here. In the scope it is delay(20) but not sure what the base of the delay is
+//      fpga_delay(10);
 
       //Start the read action
       fpga_write_cmd(0x66);
@@ -474,7 +489,7 @@ unsigned int read_parameter_ic(unsigned char id, unsigned int value)
       }
       
       //Need a delay here. In the scope it is delay(100) but not sure what the base of the delay is
-
+//      fpga_delay(50);
       
       //One more try if not valid
       j++;
@@ -489,3 +504,10 @@ unsigned int read_parameter_ic(unsigned char id, unsigned int value)
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_delay(unsigned int usec)
+{
+  unsigned int loops = usec * 54;
+
+  __asm__ __volatile__ ("1:\n" "subs %0, %1, #1\n"  "bne 1b":"=r"(loops):"0"(loops));
+}

@@ -48,15 +48,18 @@ unsigned short fpga_read_short(void);
 
 void fpga_write_int(unsigned int data);
 
-void set_backlight_brightness(unsigned short brightness);
+void fpga_set_backlight_brightness(unsigned short brightness);
+void fpga_set_translated_brightness(unsigned int brightness);
 
 unsigned short fpga_get_version(void);
 
-void check_fpga_ready(void);
+void fpga_check_ready(void);
 
-void init_parameter_ic(void);
-void write_parameter_ic(unsigned char id, unsigned int value);
-unsigned int read_parameter_ic(unsigned char id, unsigned int value);
+void fpga_init_parameter_ic(void);
+void fpga_write_parameter_ic(unsigned char id, unsigned int value);
+unsigned int fpga_read_parameter_ic(unsigned char id, unsigned int value);
+
+void fpga_delay(unsigned int usec);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
