@@ -43,7 +43,7 @@ List of commands
 0x16    Write a data byte. Select trigger edge. 0x00 ==> rising, 0x01 ==> falling.
 
 
-0x17    Write a data byte. Something to do with trigger???
+0x17    Write a data byte. Something to do with trigger??? Might be the 50% trigger setting
         For 10nS and 25nS this command is only send once every 10 command 0x0E cycles
         For 50nS, 100nS, 250nS, 500nS, 1uS, 2uS, 10uS, 20uS, 50Us, 100uS, 200uS, 500uS, 1mS, 2mS, 5mS, 10mS and 20mS this command is send twice at the start of a full sequence. A full cycle is 10 0x0E commands
         For 20ms and 50mS this command is send twice at the start of a full sequence. A full cycle is 2 0x0E commands. Only 750 bytes are read.
