@@ -94,7 +94,7 @@ int main(void)
   tp_i2c_setup();
   
   scopesettings.rightmenustate = 0;
-  scopesettings.waveviewmode = 1;
+  scopesettings.waveviewmode = 0;
 
   scopesettings.runstate = 0;
 
@@ -143,13 +143,36 @@ int main(void)
 
   scopesettings.measuresstate[1][2] = 1;
   scopesettings.measuresstate[1][10] = 1;
+
   
-  //Analyze the original code to find the screen build up and other display functions
+  //Enable or disable the channels based on the scope loaded settings
+  fpga_set_channel1_enable();
+  fpga_set_channel2_enable();
   
+  //Set the volts per div for each channel based on the loaded scope settings
+  fpga_set_channel1_voltperdiv();
+  fpga_set_channel2_voltperdiv();
   
+  //Set the channels AC or DC coupling based on the loaded scope settings
+  fpga_set_channel1_coupling();
+  fpga_set_channel2_coupling();
+  
+  //Enable something in the FPGA
+  fpga_enable_system();
+  
+  //Initialize the communication with the parameter IC
   fpga_init_parameter_ic();
   
+  //Setup the trigger system in the FPGA based on the loaded scope settings
+  fpga_set_trigger_timebase();
+  fpga_set_trigger_channel();
+  fpga_swap_trigger_channel();   //This is a bit redundant since the correct channel should be in the loaded settings.
+  fpga_set_trigger_edge();
   
+  
+  
+  
+    
   //Setup the main parts of the screen
   scope_setup_main_screen();
     

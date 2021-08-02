@@ -120,8 +120,8 @@ void scan_for_touch(void)
           tp_i2c_read_status();
         }
 
-        //Set the button inactive
-        scope_main_return_button(0);
+        //Switch back to the main menu button and set it inactive
+        scope_menu_button(0);
 
         //Reset the wave view mode back to normal state
         scopesettings.waveviewmode = 0;
@@ -449,6 +449,10 @@ void handle_main_menu_touch(void)
 
           //Toggle the always trigger 50% state
           scopesettings.alwaystrigger50 ^= 1;
+          
+          //Need to look into handle_main_menu_touch.c line 486 for further handling of this bit here
+          //to see if fpga command 0x17 is the 50% trigger setting.
+          
   
           //Show the state
           scope_display_slide_button(326, 183, scopesettings.alwaystrigger50);
@@ -610,8 +614,8 @@ void handle_channel1_menu_touch(void)
             //Enable the channel
             scopesettings.channel1.enable = 1;
             
-            //Need to call some function here
-            //FUN_80002790
+            //Update the trigger channel selection in the FPGA as needed
+            fpga_swap_trigger_channel();
             
             //Display this
             scope_channel1_enable_select();
@@ -623,16 +627,15 @@ void handle_channel1_menu_touch(void)
             //Disable the channel
             scopesettings.channel1.enable = 0;
 
-            //Need to call some function here
-            //FUN_80002790    //Check on trigger channel and write it to the fpga
-                              //Only needed on disable, because it does not remember the prev setting
+            //Update the trigger channel selection in the FPGA as needed
+            fpga_swap_trigger_channel();
             
             //Reset the volts/div setting to max
             scopesettings.channel1.voltperdiv = 0;
 
-            //Need to call some function here
-            //FUN_8000689c    //Set volts per div in the fpga
-            
+            //Set volts per div in the FPGA
+            fpga_set_channel1_voltperdiv();
+
             //Display this
             scope_channel1_enable_select();
             scope_channel1_settings(0);
@@ -669,8 +672,8 @@ void handle_channel1_menu_touch(void)
             //Set the channel to DC coupling
             scopesettings.channel1.coupling = 0;
             
-            //Need to call some function here
-            //FUN_800068d4  //set_channel1_fpga_coupling
+            //Update the FPGA
+            fpga_set_channel1_coupling();
             
             //Display this
             scope_channel1_coupling_select();
@@ -681,9 +684,9 @@ void handle_channel1_menu_touch(void)
           {
             //Set the channel to AC coupling
             scopesettings.channel1.coupling = 1;
-
-            //Need to call some function here
-            //FUN_800068d4
+            
+            //Update the FPGA
+            fpga_set_channel1_coupling();
             
             //Display this
             scope_channel1_coupling_select();
@@ -766,8 +769,8 @@ void handle_channel2_menu_touch(void)
             //Enable the channel
             scopesettings.channel2.enable = 1;
             
-            //Need to call some function here
-            //FUN_80002790
+            //Update the trigger channel selection in the FPGA as needed
+            fpga_swap_trigger_channel();
             
             //Display this
             scope_channel2_enable_select();
@@ -779,15 +782,14 @@ void handle_channel2_menu_touch(void)
             //Disable the channel
             scopesettings.channel2.enable = 0;
 
-            //Need to call some function here
-            //FUN_80002790    //Check on trigger channel and write it to the fpga
-                              //Only needed on disable, because it does not remember the prev setting
+            //Update the trigger channel selection in the FPGA as needed
+            fpga_swap_trigger_channel();
             
             //Reset the volts/div setting to max
             scopesettings.channel2.voltperdiv = 0;
 
-            //Need to call some function here
-            //FUN_8000689c    //Set volts per div in the fpga
+            //Set volts per div in the FPGA
+            fpga_set_channel2_voltperdiv();
             
             //Display this
             scope_channel2_enable_select();
@@ -825,8 +827,8 @@ void handle_channel2_menu_touch(void)
             //Set the channel to DC coupling
             scopesettings.channel2.coupling = 0;
             
-            //Need to call some function here
-            //FUN_800068d4  //set_channel2_fpga_coupling
+            //Update the FPGA
+            fpga_set_channel2_coupling();
             
             //Display this
             scope_channel2_coupling_select();
@@ -837,9 +839,9 @@ void handle_channel2_menu_touch(void)
           {
             //Set the channel to AC coupling
             scopesettings.channel2.coupling = 1;
-
-            //Need to call some function here
-            //FUN_800068d4
+            
+            //Update the FPGA
+            fpga_set_channel2_coupling();
             
             //Display this
             scope_channel2_coupling_select();
@@ -1009,10 +1011,9 @@ void handle_trigger_menu_touch(void)
             //Set the trigger edge to rising
             scopesettings.triggeredge = 0;
             
-            //Need to call some function here
-/*
-            FUN_80026808();            //Trigger edge
-*/            
+            //Update the FPGA
+            fpga_set_trigger_edge();
+
             //Display this
             scope_trigger_edge_select();
             scope_trigger_settings(0);
@@ -1023,10 +1024,9 @@ void handle_trigger_menu_touch(void)
             //Set the trigger edge to falling
             scopesettings.triggeredge = 1;
             
-            //Need to call some function here
-/*
-            FUN_80026808();            //Trigger edge
-*/            
+            //Update the FPGA
+            fpga_set_trigger_edge();
+
             //Display this
             scope_trigger_edge_select();
             scope_trigger_settings(0);
@@ -1038,30 +1038,36 @@ void handle_trigger_menu_touch(void)
           //Check on channel 1
           if((xtouch >= 632) && (xtouch <= 664))
           {
-            //Set the channel 1 as trigger source
-            scopesettings.triggerchannel = 0;
-            
-            //Need to call some function here
-/*
-            FUN_800267e8();            //Trigger channel
-*/            
-            //Display this
-            scope_trigger_channel_select();
-            scope_trigger_settings(0);
+            //Only when the channel is enabled
+            if(scopesettings.channel1.enable)
+            {
+              //Set the channel 1 as trigger source
+              scopesettings.triggerchannel = 0;
+
+              //Update the FPGA
+              fpga_set_trigger_channel();
+
+              //Display this
+              scope_trigger_channel_select();
+              scope_trigger_settings(0);
+            }
           }
           //Check on channel 2
           else if((xtouch >= 680) && (xtouch <= 712))
           {
-            //Set channel 2 as trigger source
-            scopesettings.triggerchannel = 1;
+            //Only when the channel is enabled
+            if(scopesettings.channel2.enable)
+            {
+              //Set channel 2 as trigger source
+              scopesettings.triggerchannel = 1;
 
-            //Need to call some function here
-/*
-            FUN_800267e8();            //Trigger channel
-*/            
-            //Display this
-            scope_trigger_channel_select();
-            scope_trigger_settings(0);
+              //Update the FPGA
+              fpga_set_trigger_channel();
+
+              //Display this
+              scope_trigger_channel_select();
+              scope_trigger_settings(0);
+            }
           }
         }
         
@@ -1398,17 +1404,52 @@ void handle_right_volts_div_menu_touch(void)
 
     //Button back to inactive state
     scope_ch1_sensitivity_control(0,0);
+    
+    //Only if channel is enabled
+    if(scopesettings.channel1.enable)
+    {
+      //Check if setting not already on max
+      if(scopesettings.channel1.voltperdiv < 6)
+      {
+        //Original code has some limit on updating when the scope is not running on the time base setting or a previous stored volts per div setting
+        //The latter maybe has to do with a stored wave that is being looked at
+        //The first check might have to do with not having the signal in memory to do the change on????
+        //For now just allowing constant change within the max limit
+        
+        //Step up to the next setting. (Lowering the setting)
+        scopesettings.channel1.voltperdiv++;
+        
+        //Show the change on the screen
+        scope_channel1_settings(0);
+        
+        //Only update the FPGA in normal view mode
+        if(scopesettings.waveviewmode == 0)
+        {
+          //Set the volts per div for this channel
+          fpga_set_channel1_voltperdiv();
+          
+          //Need a ms timed delay
+        }
+        
+      }
+    }
 /*
     if (*pcVar5 != '\0') //Channel enable
     {
       bVar2 = pcVar5[0x3a];   //Scope run mode
       bVar26 = bVar2 != 0;
 
-      if (bVar26)
+      if (bVar26)             //Only when scope is not running
       {
         bVar2 = pcVar5[10];   //Time base
       }
 
+        //No updating when scope stopped and the time base is more then 50mS/div
+//        if(!((scopesettings.runstate != 0) && (scopesettings.timeperdiv < 9)))
+//        {
+//        }
+
+      //Only increment when volts per div less then 6
       if (((!bVar26 || 8 < bVar2) && ((byte)pcVar5[3] < 6)) && ((pcVar5[0x3a] == '\0' || (((ushort)(byte)pcVar5[3] <= *(ushort *)puVar19 || (((ushort)(byte)pcVar5[3] - *(ushort *)puVar19 & 0xff) < 2))))))
       {
         pcVar5[3] = pcVar5[3] + '\x01';  //Add one to the volt/div setting
@@ -1439,13 +1480,40 @@ void handle_right_volts_div_menu_touch(void)
 
     //Button back to inactive state
     scope_ch1_sensitivity_control(1,0);
+    
+    //Only if channel is enabled
+    if(scopesettings.channel1.enable)
+    {
+      //Check if setting not already on min
+      if(scopesettings.channel1.voltperdiv > 0)
+      {
+        //Original code has some limit on updating when the scope is not running on the time base setting or a previous stored volts per div setting
+        //The latter maybe has to do with a stored wave that is being looked at
+        //For now just allowing constant change within the max limit
+        
+        //Step down to the next setting. (Increasing the setting)
+        scopesettings.channel1.voltperdiv--;
+        
+        //Show the change on the screen
+        scope_channel1_settings(0);
+        
+        //Only update the FPGA in normal view mode
+        if(scopesettings.waveviewmode == 0)
+        {
+          //Set the volts per div for this channel
+          fpga_set_channel1_voltperdiv();
+
+          //Need a ms timed delay
+        }
+      }
+    }
 /*
     if (*pcVar5 != '\0') //Channel enable
     {
       bVar2 = pcVar5[0x3a];   //Scope run mode
       bVar26 = bVar2 != 0;
 
-      if (bVar26)
+      if (bVar26)             //Only when stopped
       {
         bVar2 = pcVar5[10];   //Time base
       }
@@ -1480,6 +1548,33 @@ void handle_right_volts_div_menu_touch(void)
 
     //Button back to inactive state
     scope_ch2_sensitivity_control(0,0);
+    
+    //Only if channel is enabled
+    if(scopesettings.channel2.enable)
+    {
+      //Check if setting not already on max
+      if(scopesettings.channel2.voltperdiv < 6)
+      {
+        //Original code has some limit on updating when the scope is not running on the time base setting or a previous stored volts per div setting
+        //The latter maybe has to do with a stored wave that is being looked at
+        //For now just allowing constant change within the max limit
+        
+        //Step up to the next setting. (Lowering the setting)
+        scopesettings.channel2.voltperdiv++;
+        
+        //Show the change on the screen
+        scope_channel2_settings(0);
+        
+        //Only update the FPGA in normal view mode
+        if(scopesettings.waveviewmode == 0)
+        {
+          //Set the volts per div for this channel
+          fpga_set_channel2_voltperdiv();
+          
+          //Need a ms timed delay
+        }
+      }
+    }
 /*
     if (*pcVar5[0x0C] != '\0') //Channel enable
     {
@@ -1521,6 +1616,33 @@ void handle_right_volts_div_menu_touch(void)
 
     //Button back to inactive state
     scope_ch2_sensitivity_control(1,0);
+    
+    //Only if channel is enabled
+    if(scopesettings.channel2.enable)
+    {
+      //Check if setting not already on min
+      if(scopesettings.channel2.voltperdiv > 0)
+      {
+        //Original code has some limit on updating when the scope is not running on the time base setting or a previous stored volts per div setting
+        //The latter maybe has to do with a stored wave that is being looked at
+        //For now just allowing constant change within the max limit
+        
+        //Step down to the next setting. (Increasing the setting)
+        scopesettings.channel2.voltperdiv--;
+        
+        //Show the change on the screen
+        scope_channel2_settings(0);
+        
+        //Only update the FPGA in normal view mode
+        if(scopesettings.waveviewmode == 0)
+        {
+          //Set the volts per div for this channel
+          fpga_set_channel2_voltperdiv();
+          
+          //Need a ms timed delay
+        }
+      }
+    }
 /*
     if (*pcVar5[0x0C] != '\0') //Channel enable
     {

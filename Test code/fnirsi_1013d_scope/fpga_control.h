@@ -55,6 +55,22 @@ unsigned short fpga_get_version(void);
 
 void fpga_check_ready(void);
 
+void fpga_enable_system(void);
+
+void fpga_set_channel1_enable(void);
+void fpga_set_channel1_coupling(void);
+void fpga_set_channel1_voltperdiv(void);
+
+void fpga_set_channel2_enable(void);
+void fpga_set_channel2_coupling(void);
+void fpga_set_channel2_voltperdiv(void);
+
+void fpga_set_trigger_timebase(void);
+void fpga_set_trigger_channel(void);
+void fpga_set_trigger_edge(void);
+void fpga_swap_trigger_channel(void);
+void fpga_set_50_percent_trigger(void);
+
 void fpga_init_parameter_ic(void);
 void fpga_write_parameter_ic(unsigned char id, unsigned int value);
 unsigned int fpga_read_parameter_ic(unsigned char id, unsigned int value);

@@ -1,6 +1,7 @@
 //----------------------------------------------------------------------------------------------------------------------------------
 
 #include "fpga_control.h"
+#include "fnirsi_1013d_scope.h"
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -29,6 +30,10 @@ union tagByteAndBits
   unsigned char byte;
   ByteBits      bits;
 };
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+extern SCOPESETTINGS scopesettings;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -236,8 +241,238 @@ void fpga_check_ready(void)
   {
     //if not just wait a bit and try it again
     //At 600MHz CPU_CLK 1000 = ~200uS
-    for(i=0;i<1000;i++);
+    for(i=0;i<1000;i++)
+    {
+      __asm__ ("nop");
+    }
   }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_enable_system(void)
+{
+  //This command is only ever set with 1 as data and this function is only called at setup and check hardware
+  fpga_write_cmd(0x04);
+  fpga_write_byte(0x01);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_set_channel1_enable(void)
+{
+  //Send the command for channel 1 enable to the FPGA
+  fpga_write_cmd(0x02);
+  
+  //Write the needed data based on the setting
+  if(scopesettings.channel1.enable == 0)
+  {
+    //Disable the channel
+    fpga_write_byte(0x00);
+  }
+  else
+  {
+    //Enable the channel
+    fpga_write_byte(0x01);
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_set_channel1_coupling(void)
+{
+  //Send the command for channel 1 coupling to the FPGA
+  fpga_write_cmd(0x34);
+  
+  //Write the needed data based on the setting
+  if(scopesettings.channel1.coupling == 0)
+  {
+    //Set the DC coupling for the channel
+    fpga_write_byte(0x01);
+  }
+  else
+  {
+    //Set the AC coupling for the channel
+    fpga_write_byte(0x00);
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_set_channel1_voltperdiv(void)
+{
+  register uint32 setting = scopesettings.channel1.voltperdiv;
+  
+  //Send the command for channel 1 volts per div to the FPGA
+  fpga_write_cmd(0x33);
+  
+  //Check if setting in range of what is allowed
+  if(setting > 5)
+    setting = 5;
+  
+  //Write it to the FPGA
+  fpga_write_byte(setting);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_set_channel2_enable(void)
+{
+  //Send the command for channel 2 enable to the FPGA
+  fpga_write_cmd(0x03);
+  
+  //Write the needed data based on the setting
+  if(scopesettings.channel2.enable == 0)
+  {
+    //Disable the channel
+    fpga_write_byte(0x00);
+  }
+  else
+  {
+    //Enable the channel
+    fpga_write_byte(0x01);
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_set_channel2_coupling(void)
+{
+  //Send the command for channel 2 coupling to the FPGA
+  fpga_write_cmd(0x37);
+  
+  //Write the needed data based on the setting
+  if(scopesettings.channel2.coupling == 0)
+  {
+    //Set the DC coupling for the channel
+    fpga_write_byte(0x01);
+  }
+  else
+  {
+    //Set the AC coupling for the channel
+    fpga_write_byte(0x00);
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_set_channel2_voltperdiv(void)
+{
+  register uint32 setting = scopesettings.channel2.voltperdiv;
+  
+  //Send the command for channel 2 volts per div to the FPGA
+  fpga_write_cmd(0x36);
+  
+  //Check if setting in range of what is allowed
+  if(setting > 5)
+    setting = 5;
+  
+  //Write it to the FPGA
+  fpga_write_byte(setting);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_set_trigger_timebase(void)
+{
+  uint32 data;
+  uint8  command;
+  
+  //Translate the time per div setting to what the FPGA needs
+  data = fpga_read_parameter_ic(0x0A, scopesettings.timeperdiv);
+  
+  //Get the FPGA command that needs the setting
+  command = fpga_read_parameter_ic(0x14, 0xED);
+  
+  //Write the command to the FPGA
+  fpga_write_cmd(command);
+  
+  //Write the data to the FPGA
+  fpga_write_int(data);
+  
+  //A variable at 0x80192EAA is made 0 in this function???
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_set_trigger_channel(void)
+{
+  //Send the command for selecting the trigger channel to the FPGA
+  fpga_write_cmd(0x15);
+  
+  //Write the needed data based on the setting
+  if(scopesettings.triggerchannel == 0)
+  {
+    //Set channel 1 as trigger input
+    fpga_write_byte(0x00);
+  }
+  else
+  {
+    //Set channel 2 as trigger input
+    fpga_write_byte(0x01);
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_set_trigger_edge(void)
+{
+  //Send the command for selecting the trigger channel to the FPGA
+  fpga_write_cmd(0x16);
+  
+  //Write the needed data based on the setting
+  if(scopesettings.triggeredge == 0)
+  {
+    //Set trigger edge to rising
+    fpga_write_byte(0x00);
+  }
+  else
+  {
+    //Set trigger edge to falling
+    fpga_write_byte(0x01);
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_swap_trigger_channel(void)
+{
+  //Check if channel 1 is disabled or channel 2 is enabled
+  if((scopesettings.channel1.enable == 0) || (scopesettings.channel2.enable))
+  {
+    //Check if both channels are disabled
+    if(scopesettings.channel2.enable == 0)
+    {
+      //If so do nothing
+      return;
+    }
+    
+    //Else check if channel 1 is enabled
+    if(scopesettings.channel1.enable)
+    {
+      //Assume the correct setting is already in the FPGA and do nothing
+      return;
+    }
+    
+    //Only channel 2 enabled so set it as source
+    scopesettings.triggerchannel = 1;
+  }
+  else
+  {
+    //Only channel 1 enabled so set that as source
+    scopesettings.triggerchannel = 0;
+  }
+  
+  //Write it the new setting to the FPGA
+  fpga_set_trigger_channel();
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_set_50_percent_trigger(void)
+{
+  //Needs some research of the code. Another function is called that looks at the trigger channels settings to prepare the data for
+  //command 0x17
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
