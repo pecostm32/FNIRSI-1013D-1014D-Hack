@@ -108,3 +108,15 @@ Also made a new bootloader that allows loading of the new scope code through FEL
 With this bootloader it is possible to start the scope in FEL mode with the DRAM enabled. The FNIRSI startup image is displayed.
 "sudo ./sunxi-fel -p spl fnirsi_1013d_startup_with_fel.bin" starts the system and returns to FEL. After this DRAM is enabled and FEL is active.
 "sudo ./sunxi-fel -p write 0x7FFFFFE0 fnirsi_1013d_scope.bin exe 0x80000000" then loads and executes the output of the scope project
+
+----------------------------------------------------------------------------------------------------------
+02-AUGUSTUS-2021
+Tested and tweaked the FPGA parameter ic code I wrote a while back. Is needed for the screen brightness setting. In the original code there are some delay's
+in between the different actions, of which only one is realy needed. Between the writing and the reading it needs a fair amount of time. Not for the FPGA,
+but for the special IC that is communicated with. To short a time and the reading part needs to be repeated. Used another scope to tweak the delay loop such
+that it only needs one read action.
+
+Also tweaked the touch panel speed after changing the delay function to assembly code. It is now around 200KHz
+
+The remainder of the user interface, the moving of the traces, cursors, trigger position and timebase change are left for when the scope part is implemented.
+Took a look at that part of the user interface code and it is messy, but it starts to make some sense.
