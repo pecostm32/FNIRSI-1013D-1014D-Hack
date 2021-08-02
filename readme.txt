@@ -120,3 +120,6 @@ Also tweaked the touch panel speed after changing the delay function to assembly
 
 The remainder of the user interface, the moving of the traces, cursors, trigger position and timebase change are left for when the scope part is implemented.
 Took a look at that part of the user interface code and it is messy, but it starts to make some sense.
+
+Started with the implementation of the functions that send commands to the FPGA. Hooked a lot of them into the user interface and it is now possible to
+adjust the channel sensitivity and hear the relay's click.
