@@ -33,7 +33,7 @@
 0x8019d5c3   trigger channel
 
 
-
+0x8019d5c8   Always 50% trigger setting??
 
 0x8019d5d8   battery charge level
 0x8019d5d9   charging indicator
@@ -48,6 +48,11 @@
 
 //Measurement settings base address
 0x801FA24C
++0x000  List of enabled measures items
+  |
++0x017
+
+
 +0x100  Channel1 Vmax    ??
 +0x112  Channel1 Vmin
 +0x122  Channel1 Vavg
