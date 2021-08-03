@@ -458,57 +458,83 @@ LAB_80028c60:
         iVar20 = 1;
       }
     }
-    else {
+    else
+    {
+
+//  pcVar16 = DAT_80029140;                       //0x8036B792  Touch panel data
+//  puVar17 = DAT_8002913c;                       //0x80361378  State variable for highlight routine
+
       in_r2 = (undefined *)(uint)*(ushort *)(PTR_DAT_80029144 + 6);
       puVar12 = (undefined *)(uint)*(ushort *)(pcVar16 + 4);
       in_r12 = in_r2 + 0x76;
       bVar25 = in_r12 <= puVar12;
       bVar23 = puVar12 == in_r12;
-      if (bVar25 && !bVar23) {
+      if (bVar25 && !bVar23)
+      {
         in_r2 = in_r2 + 0xb1;
       }
-      if (bVar25 && !bVar23) {
+
+      if (bVar25 && !bVar23)
+      {
         bVar25 = puVar12 <= in_r2;
         bVar23 = in_r2 == puVar12;
       }
-      if (!bVar25 || bVar23) goto LAB_80028c60;
+
+      if (!bVar25 || bVar23)
+        goto LAB_80028c60;
+
       cVar1 = *pcVar16;
-      while (uVar28 = (undefined)in_stack_ffffffe0, cVar1 != '\0') {
+
+      while (uVar28 = (undefined)in_stack_ffffffe0, cVar1 != '\0')
+      {
         tp_i2c_read_status();
         cVar1 = *pcVar16;
       }
-      if (puVar17[4] == '\0') {
+
+      if (puVar17[4] == '\0')
+      {
         puVar17[4] = 1;                     //always 50% trigger toggle
       }
-      else {
+      else
+      {
         puVar17[4] = 0;
       }
-      puVar17[1] = 0;
-      if (pcVar16[8] == '\x01') {
+
+      puVar17[1] = 0;                       //No item to highlight
+
+      if (pcVar16[8] == '\x01')             //Screen brightness open then close it
+      {
         pcVar16[8] = '\0';
         FUN_800117a8(0);
         FUN_8001c6c0();
       }
-      if (pcVar16[9] == '\x01') {
+
+      if (pcVar16[9] == '\x01')              //Grid brightness open then close it
+      {
         pcVar16[9] = '\0';
         FUN_800114f4(0);
         FUN_80009e9c();
       }
+
       cVar1 = pcVar16[10];
+
 joined_r0x80028db4:
-      if (cVar1 == '\x01') {
+      if (cVar1 == '\x01')                   //Calibration text open then close it
+      {
         pcVar16[10] = '\0';
         FUN_80002b3c();
       }
+
       display_system_settings_menu();
     }
   }
+
 LAB_80028dcc:
   uVar3 = DAT_80029150;
   uVar15 = DAT_8002914c;
 
 
-  if (pcVar16[8] == '\x01') {                                //screen brightness
+  if (pcVar16[8] == '\x01') {                                //screen brightness slider open
     uVar22 = (uint)*(ushort *)(pcVar16 + 2);
     uVar18 = (uint)*(ushort *)(PTR_DAT_80029144 + 4);
     uVar14 = uVar18 + 0x108;
@@ -607,9 +633,6 @@ joined_r0x80028f00:
           }
           if (bVar23 && !bVar24) {
             if (puVar17[8] != '\0') {
-                    // WARNING: Could not recover jumptable at 0x80029068. Too many branches
-                    // WARNING: Treating indirect jump as call
-              (*UNRECOVERED_JUMPTABLE)();
               return;
             }
             cVar1 = *pcVar16;
