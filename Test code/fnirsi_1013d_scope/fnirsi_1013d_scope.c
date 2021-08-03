@@ -64,6 +64,8 @@ int main(void)
   arm32_icache_enable();
   arm32_dcache_enable();
   
+  //Setup timer interrupt
+  
   //Initialize SPI for flash (PORT C + SPI0)
   sys_spi_flash_init();
   
@@ -93,6 +95,10 @@ int main(void)
   //Setup the touch panel interface
   tp_i2c_setup();
   
+  //Setup and check SD card
+  //Show message when it fails and hang in endless loop
+  
+  
   scopesettings.rightmenustate = 0;
   scopesettings.waveviewmode = 0;
 
@@ -105,16 +111,19 @@ int main(void)
   scopesettings.channel1.magnification = 2;
   scopesettings.channel1.voltperdiv = 5;
   scopesettings.channel1.fftenable = 0;
+  scopesettings.channel1.signalaverage = 10;
   
   scopesettings.channel2.enable = 1;
   scopesettings.channel2.coupling = 1;
   scopesettings.channel2.magnification = 0;
   scopesettings.channel2.voltperdiv = 2;
   scopesettings.channel2.fftenable = 0;
+  scopesettings.channel2.signalaverage = 10;
   
   scopesettings.triggermode = 1;
   scopesettings.triggeredge = 1;
   scopesettings.triggerchannel = 1;
+  scopesettings.triggerlevel = 20;
   
   scopesettings.timeperdiv = 5;
   
@@ -144,6 +153,15 @@ int main(void)
   scopesettings.measuresstate[1][2] = 1;
   scopesettings.measuresstate[1][10] = 1;
 
+  //In the original code there is some hardware check function here. Actions are not performed unless some data in the FLASH is not set
+  
+  //Here USB setup needs to be done
+  
+  //Power monitoring adc and interrupt setup
+  
+  //Load configuration data from FLASH
+  
+  //Check if configuration data is ok and if not write new one to flash and reload it
   
   //Enable or disable the channels based on the scope loaded settings
   fpga_set_channel1_enable();
@@ -168,11 +186,19 @@ int main(void)
   fpga_set_trigger_channel();
   fpga_swap_trigger_channel();   //This is a bit redundant since the correct channel should be in the loaded settings.
   fpga_set_trigger_edge();
+  fpga_set_trigger_level();      //Needs to be implemented yet
+  fpga_set_trigger_mode();
   
+  fpga_set_channel1_offset();    //Needs to be implemented yet
+  fpga_set_channel2_offset();    //Needs to be implemented yet
   
+  //Some initialization of the FPGA??. Data written with command 0x3C
+  fpga_set_battery_level();      //Only called here and in hardware check
   
-  
-    
+  //In the original code there is another hardware check function here. Actions are not performed unless some data in the FLASH is not set
+
+  //Here a function is called that looks at some system file?????
+
   //Setup the main parts of the screen
   scope_setup_main_screen();
     

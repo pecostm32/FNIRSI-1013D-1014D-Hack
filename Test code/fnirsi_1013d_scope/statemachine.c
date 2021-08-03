@@ -450,10 +450,6 @@ void handle_main_menu_touch(void)
           //Toggle the always trigger 50% state
           scopesettings.alwaystrigger50 ^= 1;
           
-          //Need to look into handle_main_menu_touch.c line 486 for further handling of this bit here
-          //to see if fpga command 0x17 is the 50% trigger setting.
-          
-  
           //Show the state
           scope_display_slide_button(326, 183, scopesettings.alwaystrigger50);
         }

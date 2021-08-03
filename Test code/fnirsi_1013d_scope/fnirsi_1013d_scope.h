@@ -25,11 +25,12 @@ struct tagTouchCoords
 
 struct tagChannelSettings
 {
-  uint8 enable;
-  uint8 coupling;
-  uint8 magnification;
-  uint8 voltperdiv;
-  uint8 fftenable;
+  uint8  enable;
+  uint8  coupling;
+  uint8  magnification;
+  uint8  voltperdiv;
+  uint8  fftenable;
+  uint16 signalaverage;   //No idea if this is correct. Found at 0x8019d5a6 and 0x8019d5b2 in the original code
 };
 
 struct tagScopeSettings
@@ -41,6 +42,8 @@ struct tagScopeSettings
   uint8 triggermode;
   uint8 triggeredge;
   uint8 triggerchannel;
+  
+  uint8 triggerlevel;
   
   uint8 movespeed;
   

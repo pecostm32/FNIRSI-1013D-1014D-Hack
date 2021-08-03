@@ -316,6 +316,15 @@ void fpga_set_channel1_voltperdiv(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+void fpga_set_channel1_offset(void)
+{
+  //Send the command for channel 1 offset to the FPGA
+  //fpga_write_cmd(0x32);
+  
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 void fpga_set_channel2_enable(void)
 {
   //Send the command for channel 2 enable to the FPGA
@@ -369,6 +378,15 @@ void fpga_set_channel2_voltperdiv(void)
   
   //Write it to the FPGA
   fpga_write_byte(setting);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_set_channel2_offset(void)
+{
+  //Send the command for channel 2 offset to the FPGA
+  //fpga_write_cmd(0x35);
+  
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -469,10 +487,47 @@ void fpga_swap_trigger_channel(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void fpga_set_50_percent_trigger(void)
+const uint8 trigger_level_dividers[7] = { 0xAD, 0xAF, 0xB4, 0xB4, 0xB8, 0xB8, 0xB8 };
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_set_trigger_level(void)
 {
-  //Needs some research of the code. Another function is called that looks at the trigger channels settings to prepare the data for
+  //Needs some research of the code. Another function is called that looks at the trigger channel settings to prepare the data for
   //command 0x17
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_set_trigger_mode(void)
+{
+  //Send the command for selecting the trigger mode to the FPGA
+  fpga_write_cmd(0x1A);
+  
+  //Write the needed data based on the setting
+  if(scopesettings.triggermode == 0)
+  {
+    //Set trigger mode to auto
+    fpga_write_byte(0x00);
+  }
+  else
+  {
+    //Set trigger mode to single or normal
+    fpga_write_byte(0x01);
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_set_battery_level(void)
+{
+  uint32 data = fpga_read_parameter_ic(0x16, scopesettings.batterychargelevel * scopesettings.channel2.signalaverage);
+  
+  //Send the command for setting the battery level to the FPGA
+  fpga_write_cmd(0x3C);
+  
+  //Write the data
+  fpga_write_short(data);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
