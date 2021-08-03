@@ -12,7 +12,7 @@
 0x8019d5a3   channel1 volts/div
 0x8019d5a4   channel1 fft enable
 
-
+0x8019d5a6   ?? used in trigger level and channel offset calculations
 
 0x8019d5aa   timebase time/div
 
@@ -22,6 +22,8 @@
 0x8019d5ae   channel2 magnification
 0x8019d5af   channel2 volts/div
 0x8019d5b0   channel2 fft enable
+
+0x8019d5b2   ?? used in trigger level and channel offset calculations
 
 
 0x8019d5b6   move speed
@@ -33,7 +35,7 @@
 0x8019d5c3   trigger channel
 
 
-0x8019d5c8   Always 50% trigger setting??
+0x8019d5c8   trigger level???
 
 0x8019d5d8   battery charge level
 0x8019d5d9   charging indicator
@@ -44,6 +46,15 @@
 
 0x8019d5e2   right menu mode state
 0x8019d5e3   wave view mode state
+0x8019d5e4   system ok flag             needs to be 0x1432
+
+
+0x8019D5EA   short Channel 1 signal average  (Timebase 50S/div - 100mS/div)
+
+
+0x801a04ca   short Channel 2 signal average  (Timebase 50S/div - 100mS/div)
+
+
 
 
 //Measurement settings base address
