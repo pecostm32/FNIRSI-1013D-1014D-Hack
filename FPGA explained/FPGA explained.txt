@@ -11,8 +11,8 @@ List of commands that have been found
 
 List of commands
 0x01    Write a data byte (0x00 or 0x01)
-0x02    Write a data byte (0x00 or 0x01)
-0x03    Write a data byte (0x00 or 0x01)
+0x02    Write a data byte (0x00 or 0x01)    Channel 1 enable (0 disable, 1 enable) Only written at startup of the scope??
+0x03    Write a data byte (0x00 or 0x01)    Channel 2 enable (0 disable, 1 enable) Only written at startup of the scope??
 0x04    Write a data byte (0x00 or 0x01)
 
 
@@ -43,13 +43,13 @@ List of commands
 0x16    Write a data byte. Select trigger edge. 0x00 ==> rising, 0x01 ==> falling.
 
 
-0x17    Write a data byte. Something to do with trigger???
+0x17    Write a data byte. Something to do with trigger??? Might be the 50% trigger setting
         For 10nS and 25nS this command is only send once every 10 command 0x0E cycles
         For 50nS, 100nS, 250nS, 500nS, 1uS, 2uS, 10uS, 20uS, 50Us, 100uS, 200uS, 500uS, 1mS, 2mS, 5mS, 10mS and 20mS this command is send twice at the start of a full sequence. A full cycle is 10 0x0E commands
         For 20ms and 50mS this command is send twice at the start of a full sequence. A full cycle is 2 0x0E commands. Only 750 bytes are read.
 
 
-0x1A    Write a data byte. Select trigger mode. 0x00 ==> auto + single, 0x01 == normal.
+0x1A    Write a data byte. Select trigger mode. 0x00 ==> auto, 0x01 == normal + single.
 
 
 0x1F    Write two bytes of data. Written per channel after every basic read (0x20, 0x22) The data is variable based on the time base setting.
@@ -89,7 +89,7 @@ List of commands
 0x38    Set display brightness. Two bytes. Set in FUN_8001d380 (User based control of brightness) and FUN_8001c138 (Default setting 0xEA60 for error message)
 
 
-0x3C    Write two bytes gotten from parameter id 0x16
+0x3C    Write two bytes gotten from parameter id 0x16. Only at startup
 
 
 0x41    Return touch panel coordinates register address. Always 0x8150 (GT911 point 1 lsb X coordinate). There is a check in te software to see if this number is returned from the FPGA. It falls into an endless loop if this is not the case.
@@ -199,7 +199,7 @@ time / div     command 0x0E data
 20mS           0x00 0x00 0x03 0x20
 50mS           0x00 0x00 0x03 0x20
 
-From here on it seems that the FPGA switches to 0x0D for time base setting and the data is read with 0x24 and 0x26, 10 bytes per read. 0x28 is written 1 after or before every read sequence. 0x0D is also written
+From here on it seems that the FPGA switches to 0x0D for time base setting and the data is read with 0x24 and 0x26, 10 bytes per read. 0x28 is written 0x01 after or before every read sequence. 0x0D is also written
 Once it switches to this state the special IC is no longer addressed. The scope just reads the data with the other hard coded FPGA commands. Probably based on timer interrupt.
 
 time / div     command 0x0D data
