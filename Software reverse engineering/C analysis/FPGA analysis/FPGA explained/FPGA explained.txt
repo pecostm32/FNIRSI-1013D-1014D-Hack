@@ -89,7 +89,7 @@ List of commands
 0x38    Set display brightness. Two bytes. Set in FUN_8001d380 (User based control of brightness) and FUN_8001c138 (Default setting 0xEA60 for error message)
 
 
-0x3C    Write two bytes gotten from parameter id 0x16
+0x3C    Write two bytes gotten from parameter id 0x16. Only at startup
 
 
 0x41    Return touch panel coordinates register address. Always 0x8150 (GT911 point 1 lsb X coordinate). There is a check in te software to see if this number is returned from the FPGA. It falls into an endless loop if this is not the case.
@@ -199,7 +199,7 @@ time / div     command 0x0E data
 20mS           0x00 0x00 0x03 0x20
 50mS           0x00 0x00 0x03 0x20
 
-From here on it seems that the FPGA switches to 0x0D for time base setting and the data is read with 0x24 and 0x26, 10 bytes per read. 0x28 is written 1 after or before every read sequence. 0x0D is also written
+From here on it seems that the FPGA switches to 0x0D for time base setting and the data is read with 0x24 and 0x26, 10 bytes per read. 0x28 is written 0x01 after or before every read sequence. 0x0D is also written
 Once it switches to this state the special IC is no longer addressed. The scope just reads the data with the other hard coded FPGA commands. Probably based on timer interrupt.
 
 time / div     command 0x0D data
