@@ -12,9 +12,10 @@
 0x8019d5a3   channel1 volts/div
 0x8019d5a4   channel1 fft enable
 
-0x8019d5a6   ?? used in trigger level and channel offset calculations
+0x8019d5a6   ?? used in trigger level and channel offset calculations. is a short that holds the screen offset of the trace
 
 0x8019d5aa   timebase time/div
+0x8019d5ab   copy of the timebase time/div
 
 
 0x8019d5ac   channel2 enable
@@ -23,20 +24,25 @@
 0x8019d5af   channel2 volts/div
 0x8019d5b0   channel2 fft enable
 
-0x8019d5b2   ?? used in trigger level and channel offset calculations
+0x8019d5b2   ?? used in trigger level and channel offset calculations. is a short that holds the screen offset of the trace
 
 
 0x8019d5b6   move speed
 
-
+0x8019d5b7   some flag used in triggering????
+0x8019d5b8   some flag used in triggering????
 
 0x8019d5c1   trigger mode
 0x8019d5c2   trigger edge
 0x8019d5c3   trigger channel
-
-
+0x8019d5c4   short (trigger position on screen. x position)
+0x8019d5c6   short (trigger level screen offset)
 0x8019d5c8   trigger level???
 
+
+0x8019d5d6   some state variable for triggering???
+
+0x8019d5d7   update screen flag  ?????? checked in handling short timebase data
 0x8019d5d8   battery charge level
 0x8019d5d9   charging indicator
 0x8019d5da   scope run mode state
@@ -83,7 +89,15 @@
 +0x282  Channel2 Duty-
 
 
++0x292  Time cursor on off
 
++0x29A  Volt cursor on off
+
+0x801fa4e0  short timecursor1 position
+0x801fa4e2  short timecursor2 position
+
+0x801fa4e8  short voltcursor1 position
+0x801fa4ea  short voltcursor2 position
 
 
 0x80361378  some state variable for menu handling
