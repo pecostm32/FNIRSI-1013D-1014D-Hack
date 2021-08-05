@@ -30,7 +30,7 @@ struct tagChannelSettings
   uint8  magnification;
   uint8  voltperdiv;
   uint8  fftenable;
-  uint16 signalaverage;   //No idea if this is correct. Found at 0x8019d5a6 and 0x8019d5b2 in the original code
+  uint16 traceoffset;   //No idea if this is correct. Found at 0x8019d5a6 and 0x8019d5b2 in the original code
 };
 
 struct tagScopeSettings
@@ -42,10 +42,12 @@ struct tagScopeSettings
   uint8 triggermode;
   uint8 triggeredge;
   uint8 triggerchannel;
-  
-  uint8 triggerlevel;
+  uint16 triggerposition;
+  uint16 triggeroffset;
+  uint16 triggerlevel;
   
   uint8 movespeed;
+  uint8 temp;
   
   uint8 rightmenustate;
   uint8 waveviewmode;
@@ -58,6 +60,17 @@ struct tagScopeSettings
   uint8 gridbrightness;
   uint8 alwaystrigger50;
   uint8 xymodedisplay;
+  
+  uint8 timecursorsenable;
+  uint8 voltcursorsenable;
+  
+  uint16 timecursor1position;
+  uint16 timecursor2position;
+  
+  uint16 voltcursor1position;
+  uint16 voltcursor2position;
+  
+  uint32 previoustimerticks;
   
   uint8 measuresstate[2][12];
 };

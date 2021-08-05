@@ -27,6 +27,12 @@ DISPLAYDATA displaydata;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+extern const uint8 left_pointer_icon[];
+extern const uint8 right_pointer_icon[];
+extern const uint8 top_pointer_icon[];
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 void display_set_position(uint32 xpos, uint32 ypos)
 {
   displaydata.xpos = xpos;
@@ -180,8 +186,8 @@ void display_draw_line(uint32 xstart, uint32 ystart, uint32 xend, uint32 yend)
 
 void display_draw_horz_line(uint32 ypos, uint32 xstart, uint32 xend)
 {
-  uint16 *ptr;
-  uint32 x, xs, xe;
+  register uint16 *ptr;
+  register uint32 x, xs, xe;
   
   //Check if the line is on the screen
   if(ypos > displaydata.height)
@@ -226,8 +232,9 @@ void display_draw_horz_line(uint32 ypos, uint32 xstart, uint32 xend)
 
 void display_draw_vert_line(uint32 xpos, uint32 ystart, uint32 yend)
 {
-  uint16 *ptr;
-  uint32 y, ys, ye;
+  register uint16 *ptr;
+  register uint32 y, ys, ye;
+  register uint32 pixels = displaydata.pixelsperline;
   
   //Check if the line is on the screen
   if(xpos > displaydata.width)
@@ -258,7 +265,7 @@ void display_draw_vert_line(uint32 xpos, uint32 ystart, uint32 yend)
   }
 
   //Point to where the line needs to be drawn
-  ptr = displaydata.screenbuffer + ((ys * displaydata.pixelsperline) + xpos);
+  ptr = displaydata.screenbuffer + ((ys * pixels) + xpos);
   
   //Draw the dots
   for(y=ys;y<=ye;y++)
@@ -267,7 +274,227 @@ void display_draw_vert_line(uint32 xpos, uint32 ystart, uint32 yend)
     *ptr = displaydata.fg_color;
     
     //Point to the next dot
-    ptr += displaydata.pixelsperline;
+    ptr += pixels;
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_draw_horz_dots(uint32 ypos, uint32 xstart, uint32 xend, uint32 interval)
+{
+  register uint16 *ptr;
+  register uint32 x, xs, xe;
+  
+  //Check if the line is on the screen
+  if(ypos > displaydata.height)
+  {
+    //Outside the y range so do nothing
+    return;
+  }
+    
+  //Determine the lowest x for start point
+  if(xstart < xend)
+  {
+    //Use the coordinates as is
+    xs = xstart;
+    xe = xend;
+  }
+  else
+  {
+    //Swap start and end
+    xs = xend;
+    xe = xstart;
+  }
+  
+  //Check if the end of the line is on the screen
+  if(xe > displaydata.width)
+  {
+    //Outside so limit to the end of the screen
+    xe = displaydata.width;
+  }
+
+  //Point to where the dots need to be drawn
+  ptr = displaydata.screenbuffer + ((ypos * displaydata.pixelsperline) + xs);
+  
+  //Draw the dots
+  for(x=xs;x<=xe;x+=interval)
+  {
+    //Fill the dot
+    *ptr = displaydata.fg_color;
+    
+    ptr += interval;
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_draw_vert_dots(uint32 xpos, uint32 ystart, uint32 yend, uint32 interval)
+{
+  register uint16 *ptr;
+  register uint32 y, ys, ye;
+  register uint32 pixels;
+  
+  //Check if the line is on the screen
+  if(xpos > displaydata.width)
+  {
+    //Outside the x range so do nothing
+    return;
+  }
+    
+  //Determine the lowest y for start point
+  if(ystart < yend)
+  {
+    //Use the coordinates as is
+    ys = ystart;
+    ye = yend;
+  }
+  else
+  {
+    //Swap start and end
+    ys = yend;
+    ye = ystart;
+  }
+  
+  //Check if the end of the line is on the screen
+  if(ye > displaydata.height)
+  {
+    //Outside so limit to the end of the screen
+    ye = displaydata.height;
+  }
+
+  //Calculate the dot interval
+  pixels = displaydata.pixelsperline * interval;
+  
+  //Point to where the dots need to be drawn
+  ptr = displaydata.screenbuffer + ((ys * displaydata.pixelsperline) + xpos);
+  
+  //Draw the dots
+  for(y=ys;y<=ye;y+=interval)
+  {
+    //Fill the dot
+    *ptr = displaydata.fg_color;
+    
+    //Point to the next dot
+    ptr += pixels;
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_draw_horz_dashes(uint32 ypos, uint32 xstart, uint32 xend, uint32 length, uint32 interval)
+{
+  register uint16 *ptr;
+  register uint32 x, xs, xe, cnt;
+  
+  //Check if the line is on the screen
+  if(ypos > displaydata.height)
+  {
+    //Outside the y range so do nothing
+    return;
+  }
+    
+  //Determine the lowest x for start point
+  if(xstart < xend)
+  {
+    //Use the coordinates as is
+    xs = xstart;
+    xe = xend;
+  }
+  else
+  {
+    //Swap start and end
+    xs = xend;
+    xe = xstart;
+  }
+  
+  //Check if the end of the line is on the screen
+  if(xe > displaydata.width)
+  {
+    //Outside so limit to the end of the screen
+    xe = displaydata.width;
+  }
+
+  //Point to where the dots need to be drawn
+  ptr = displaydata.screenbuffer + ((ypos * displaydata.pixelsperline) + xs);
+  
+  //Draw the dashes
+  for(cnt=0,x=xs;x<=xe;x++)
+  {
+    //Fill the dot
+    *ptr++ = displaydata.fg_color;
+    
+    //Check if dash length number of pixels done
+    if(cnt++ == length)
+    {
+      //If so reset and skip the interval
+      cnt = 0;
+      x += interval;
+      ptr += interval;
+    }
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_draw_vert_dashes(uint32 xpos, uint32 ystart, uint32 yend, uint32 length, uint32 interval)
+{
+  register uint16 *ptr;
+  register uint32 y, ys, ye, cnt;
+  register uint32 pixels1;
+  register uint32 pixels2;
+  
+  //Check if the line is on the screen
+  if(xpos > displaydata.width)
+  {
+    //Outside the x range so do nothing
+    return;
+  }
+    
+  //Determine the lowest y for start point
+  if(ystart < yend)
+  {
+    //Use the coordinates as is
+    ys = ystart;
+    ye = yend;
+  }
+  else
+  {
+    //Swap start and end
+    ys = yend;
+    ye = ystart;
+  }
+  
+  //Check if the end of the line is on the screen
+  if(ye > displaydata.height)
+  {
+    //Outside so limit to the end of the screen
+    ye = displaydata.height;
+  }
+
+  //Calculate the dash interval
+  pixels1 = displaydata.pixelsperline;
+  pixels2 = displaydata.pixelsperline * interval;
+  
+  //Point to where the dots need to be drawn
+  ptr = displaydata.screenbuffer + ((ys * displaydata.pixelsperline) + xpos);
+  
+  //Draw the dots
+  for(cnt=0,y=ys;y<=ye;y++)
+  {
+    //Fill the dot
+    *ptr = displaydata.fg_color;
+    
+    //Point to the next dot
+    ptr += pixels1;
+    
+    //Check if dash length number of pixels done
+    if(cnt++ == length)
+    {
+      //If so reset and skip the interval
+      cnt = 0;
+      y += interval;
+      ptr += pixels2;
+    }
   }
 }
 
@@ -844,6 +1071,98 @@ void display_copy_icon_use_colors(const uint8 *icon, uint32 xpos, uint32 ypos, u
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+void display_copy_icon_fg_color(const uint8 *icon, uint32 xpos, uint32 ypos, uint32 width, uint32 height)
+{
+  register uint16 *ptr;
+  register uint32  line;
+  register uint32  pixel;
+  register uint32  idx;
+  register uint32  pixeldata;
+  register uint32  bytesperrow = (width + 7) / 8;
+  register uint32  pixels = displaydata.pixelsperline;
+
+  //Setup destination pointer
+  ptr = displaydata.screenbuffer + xpos + (ypos * pixels);
+  
+  //Copy the needed lines
+  for(line=0;line<height;line++)
+  {
+    //Point the icon start byte for this line
+    idx = line * bytesperrow;
+    
+    //Get the data for per bit handling
+    pixeldata = icon[idx];
+    
+    //Copy a single line to the destination buffer
+    for(pixel=0;pixel<width;)
+    {
+      //Select the pixel to check
+      pixeldata <<= 1;
+      
+      //Copy one pixel at a time with a check on being on and only fill in the ones that are on
+      if(pixeldata & 0x0100)
+      {
+        //When on use the foreground color
+        ptr[pixel] = displaydata.fg_color;
+      }
+      
+      //Select next pixel
+      pixel++;
+      
+      //Check if pixel on multiple of 8 for next byte select
+      if((pixel & 0x07) == 0)
+      {
+        //Point to the next byte
+        idx++;
+    
+        //And get the data for it
+        pixeldata = icon[idx];
+      }
+    }
+
+    //Point to the next line of pixels in the destination
+    ptr += pixels;
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_left_pointer(uint32 xpos, uint32 ypos, int8 id)
+{
+  //Draw the pointer
+  display_copy_icon_fg_color(left_pointer_icon, xpos, ypos, 21, 14);
+ 
+  //Set the color for drawing the id
+  displaydata.fg_color = displaydata.bg_color;
+  
+  //Draw the id
+  display_character(xpos + 5, ypos, id);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_right_pointer(uint32 xpos, uint32 ypos, int8 id)
+{
+  //Draw the pointer
+  display_copy_icon_fg_color(right_pointer_icon, xpos, ypos, 21, 14);
+ 
+  //Set the color for drawing the id
+  displaydata.fg_color = displaydata.bg_color;
+  
+  //Draw the id
+  display_character(xpos + 9, ypos, id);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_top_pointer(uint32 xpos, uint32 ypos)
+{
+  //Draw the pointer
+  display_copy_icon_fg_color(top_pointer_icon, xpos, ypos, 15, 15);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 void display_decimal(uint32 xpos, uint32 ypos, int32 value)
 {
   char   b[13];
@@ -885,6 +1204,27 @@ void display_decimal(uint32 xpos, uint32 ypos, int32 value)
     }
     
     display_text(xpos, ypos, &b[i]);
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_character(uint32 xpos, uint32 ypos, int8 text)
+{
+  //Set the positions for drawing the text
+  displaydata.xpos = xpos;
+  displaydata.ypos = ypos;
+  
+  //Check on the type of font for the correct handling function
+  if(displaydata.font->type == VARIABLE_WIDTH_FONT)
+  {
+    //Draw this character in the screen buffer
+    draw_vw_character((uint16)text);
+  }
+  else
+  {
+    //Draw this character in the screen buffer
+    draw_fw_character((uint16)text);
   }
 }
 

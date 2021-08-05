@@ -5,10 +5,14 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+#include "types.h"
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 //FPGA port registers (Port E on the F1C100s)
-#define FPGA_BUS_CFG_REG        ((volatile unsigned int *)(0x01C20890))
-#define FPGA_CTRL_CFG_REG       ((volatile unsigned int *)(0x01C20894))
-#define FPGA_DATA_REG           ((volatile unsigned int *)(0x01C208A0))
+#define FPGA_BUS_CFG_REG        ((volatile uint32 *)(0x01C20890))
+#define FPGA_CTRL_CFG_REG       ((volatile uint32 *)(0x01C20894))
+#define FPGA_DATA_REG           ((volatile uint32 *)(0x01C208A0))
 
 //Initialize the control lines for communication with the FPGA (PE8:10 output)
 #define FPGA_CTRL_INIT()        *FPGA_CTRL_CFG_REG = (*FPGA_CTRL_CFG_REG & 0xFFFFF000) | 0x00000111
@@ -37,21 +41,21 @@
 
 void fpga_init(void);
 
-void fpga_write_cmd(unsigned char command);
-unsigned char fpga_read_cmd(void);
+void fpga_write_cmd(uint8 command);
+uint8 fpga_read_cmd(void);
 
-void fpga_write_byte(unsigned char data);
-unsigned char fpga_read_byte(void);
+void fpga_write_byte(uint8 data);
+uint8 fpga_read_byte(void);
 
-void fpga_write_short(unsigned short data);
-unsigned short fpga_read_short(void);
+void fpga_write_short(uint16 data);
+uint16 fpga_read_short(void);
 
-void fpga_write_int(unsigned int data);
+void fpga_write_int(uint32 data);
 
-void fpga_set_backlight_brightness(unsigned short brightness);
-void fpga_set_translated_brightness(unsigned int brightness);
+void fpga_set_backlight_brightness(uint16 brightness);
+void fpga_set_translated_brightness(uint32 brightness);
 
-unsigned short fpga_get_version(void);
+uint16 fpga_get_version(void);
 
 void fpga_check_ready(void);
 
@@ -74,13 +78,20 @@ void fpga_swap_trigger_channel(void);
 void fpga_set_trigger_level(void);
 void fpga_set_trigger_mode(void);
 
+void fpga_set_long_timebase(void);
+void fpga_set_short_timebase(uint32 data);
+
+uint16 fpga_prepare_for_transfer(void);
+
+void fpga_read_trace_data(uint8 command, uint16 *buffer, int32 count);
+
 void fpga_set_battery_level(void);
 
 void fpga_init_parameter_ic(void);
-void fpga_write_parameter_ic(unsigned char id, unsigned int value);
-unsigned int fpga_read_parameter_ic(unsigned char id, unsigned int value);
+void fpga_write_parameter_ic(uint8 id, uint32 value);
+uint32 fpga_read_parameter_ic(uint8 id, uint32 value);
 
-void fpga_delay(unsigned int usec);
+void fpga_delay(uint32 usec);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

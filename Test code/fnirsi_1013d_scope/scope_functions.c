@@ -3,6 +3,8 @@
 #include "types.h"
 #include "font_structs.h"
 #include "scope_functions.h"
+#include "touchpanel.h"
+#include "fpga_control.h"
 #include "display_lib.h"
 #include "fnirsi_1013d_scope.h"
 
@@ -14,6 +16,8 @@
 
 #define CHANNEL1_TRIG_COLOR    0x00CCCC00
 #define CHANNEL2_TRIG_COLOR    0x0000CCCC
+
+#define CURSORS_COLOR          0x0000AA11
 
 #define ITEM_ACTIVE_COLOR      0x00EF9311
 
@@ -1280,8 +1284,8 @@ const int8 *time_div_texts[30] =
   "500uS/div", "200uS/div", "100uS/div",
    "50uS/div",  "20uS/div",  "10uS/div",
     "5uS/div",   "2uS/div",   "1uS/div",
-  "500nS/div", "200nS/div", "100nS/div",
-   "50nS/div",  "20nS/div",  "10nS/div",
+  "500nS/div", "250nS/div", "100nS/div",
+   "50nS/div",  "25nS/div",  "10nS/div",
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -3504,6 +3508,298 @@ void scope_display_ok_button(uint16 xpos, uint16 ypos, uint8 mode)
   //Display the text
   display_set_font(&font_3);
   display_text(xpos + 24, ypos + 14, "OK");
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_draw_grid(void)
+{
+  uint32 color;
+  register uint32 i;
+  
+  //Only draw the grid when something will show (not in the original code)
+  if(scopesettings.gridbrightness > 3)
+  {
+    //Calculate a grey shade based on the grid brightness setting
+    color = (scopesettings.gridbrightness * 255) / 100;
+    color = (color << 16) | (color << 8) | color;
+
+    //Set the color for drawing
+    display_set_fg_color(color);
+    
+    //Draw the edge
+    display_draw_rect(2, 46, 726, 404);
+
+    //Draw the center lines
+    display_draw_horz_line(249,  2, 726);
+    display_draw_vert_line(364, 46, 448);
+    
+    //Draw the ticks on the x line
+    for(i=4;i<726;i+=5)
+    {
+      display_draw_vert_line(i, 247, 251);
+    }
+
+    //Draw the ticks on the y line
+    for(i=49;i<448;i+=5)
+    {
+      display_draw_horz_line(i, 362, 366);
+    }
+
+    //Draw the horizontal dots
+    for(i=99;i<448;i+=50)
+    {
+      display_draw_horz_dots(i, 4, 726, 5);
+    }
+
+    //Draw the vertical dots
+    for(i=14;i<726;i+=50)
+    {
+      display_draw_vert_dots(i, 49, 448, 5);
+    }
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_draw_pointers(void)
+{
+  uint32 position;
+  
+  //Draw channel 1 pointer when it is enabled
+  if(scopesettings.channel1.enable)
+  {
+    //y position for the channel 1 trace center pointer
+    position = 448 - scopesettings.channel1.traceoffset;
+    
+    //Limit on the top of the displayable region
+    if(position < 46)
+    {
+      position = 46;
+    }
+    //Limit on the bottom of the displayable region
+    else if(position > 441)
+    {
+      position = 441;
+    }
+    
+    //Set the colors for drawing
+    display_set_fg_color(CHANNEL1_COLOR);
+    display_set_bg_color(0x00000000);
+    
+    //Select the font for this pointer id
+    display_set_font(&font_0);
+    
+    //Draw the pointer
+    display_left_pointer(2, position, '1');
+  }
+  
+  //Draw channel 2 pointer when it is enabled
+  if(scopesettings.channel2.enable)
+  {
+    //y position for the channel 2 trace center pointer
+    position = 448 - scopesettings.channel2.traceoffset;
+    
+    //Limit on the top of the displayable region
+    if(position < 46)
+    {
+      position = 46;
+    }
+    //Limit on the bottom of the displayable region
+    else if(position > 441)
+    {
+      position = 441;
+    }
+    
+    //Set the colors for drawing
+    display_set_fg_color(CHANNEL2_COLOR);
+    display_set_bg_color(0x00000000);
+    
+    //Select the font for this pointer id
+    display_set_font(&font_0);
+    
+    //Draw the pointer
+    display_left_pointer(2, position, '2');
+  }
+  
+  //Draw trigger position and level pointer when time base in range of 10mS/div - 10nS/div
+  if(scopesettings.timeperdiv > 10)
+  {
+    //x position for the trigger position pointer
+    position = scopesettings.triggerposition + 2;
+    
+    //Limit on the left of the displayable region
+    if(position < 10)
+    {
+      position = 10;
+    }
+    //Limit on the right of the displayable region
+    else if(position > 718)
+    {
+      position = 718;
+    }
+
+    //Set the colors for drawing
+    display_set_fg_color(TRIGGER_COLOR);
+    display_set_bg_color(0x00000000);
+    
+    //Draw the pointer
+    display_top_pointer(position, 47);
+
+    //y position for the trigger level pointer
+    position = 448 - scopesettings.triggeroffset;
+    
+    //Limit on the top of the displayable region
+    if(position < 46)
+    {
+      position = 46;
+    }
+    //Limit on the bottom of the displayable region
+    else if(position > 441)
+    {
+      position = 441;
+    }
+    
+    //Select the font for this pointer id
+    display_set_font(&font_3);
+    
+    //Draw the pointer
+    display_right_pointer(707, position, 'T');
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_draw_time_cursors(void)
+{
+  //Only draw the lines when enabled
+  if(scopesettings.timecursorsenable)
+  {
+    //Set the color for the dashed lines
+    display_set_fg_color(CURSORS_COLOR);
+   
+    //Draw the lines
+    display_draw_vert_dashes(scopesettings.timecursor1position, 48, 448, 3, 3);
+    display_draw_vert_dashes(scopesettings.timecursor2position, 48, 448, 3, 3);
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_draw_vlot_cursors(void)
+{
+  //Only draw the lines when enabled
+  if(scopesettings.voltcursorsenable)
+  {
+    //Set the color for the dashed lines
+    display_set_fg_color(CURSORS_COLOR);
+   
+    //Draw the lines
+    display_draw_horz_dashes(scopesettings.voltcursor1position, 5, 726, 3, 3);
+    display_draw_horz_dashes(scopesettings.voltcursor2position, 5, 726, 3, 3);
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_process_trace_data(void)
+{
+  //Based on the time base setting different actions are needed for getting the trace data
+  //Check on time base setting if range is between 50S/div and 100ms/div
+  if(scopesettings.timeperdiv < 9)
+  {
+    scope_get_long_timebase_data();
+  }
+  else
+  {
+    scope_get_short_timebase_data();
+    
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_get_long_timebase_data(void)
+{
+  //Default timeout for 50S/div
+  int32 timeout = 2000;
+  int32 curticks;
+  
+  //Send the time base command for the longer settings
+  fpga_set_long_timebase();
+  
+  //Get the delay setting based on the time base
+  switch(scopesettings.timeperdiv)
+  {
+    //20S/div
+    case 1:
+      timeout = 1000;
+      break;
+
+    //10S/div
+    case 2:
+      timeout = 400;
+      break;
+
+    //5S/div
+    case 3:
+      timeout = 200;
+      break;
+
+    //2S/div
+    case 4:
+      timeout = 80;
+      break;
+
+    //1S/div
+    case 5:
+      timeout = 40;
+      break;
+
+    //500mS/div
+    case 6:
+      timeout = 20;
+      break;
+
+    //200mS/div
+    case 7:
+      timeout = 8;
+      break;
+
+    //100mS/div
+    case 8:
+      timeout = 4;
+      break;
+  }
+  
+  //Make the timeout timer tick related by adding it to the previous capture
+  timeout += scopesettings.previoustimerticks;
+  
+  //For smaller timeouts (500mS/div, 200mS/div and 100mS/div) stay in the wait loop even if there is touch
+  while((scopesettings.timeperdiv > 5) || (havetouch == 0))
+  {
+//  curticks = get_timer_ticks();
+  
+    //Check if there is a timeout
+    if(curticks > timeout)
+    {
+      //Save the current ticks for next timeout and bail out the loop
+      scopesettings.previoustimerticks = curticks;
+      break;
+    }
+    
+    //Scan the touch panel to see if there is user input
+    tp_i2c_read_status();
+  }
+    
+    
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_get_short_timebase_data(void)
+{
+  
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

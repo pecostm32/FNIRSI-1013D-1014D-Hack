@@ -1106,14 +1106,14 @@ void handle_right_basic_menu_touch(void)
       //Button back to inactive state
       scope_run_stop_button(0);
 
-      //Toggle the right menu state
+      //Toggle the run state
       scopesettings.runstate ^= 1;
 /*
       if (pcVar5[0x3a] == '\0')  //scopesettings.runstate
       {
         pcVar5[0x3a] = '\x01';
-        *(ushort *)puVar19 = (ushort)(byte)pcVar5[3];     //Save the volts/div setting for each channel when runstate is enabled
-        *(ushort *)puVar7 = (ushort)(byte)pcVar5[0xf];
+        *(ushort *)puVar19 = (ushort)(byte)pcVar5[3];     //Save the volts/div setting for each channel when runstate is enabled (In 0x80192ec6)
+        *(ushort *)puVar7 = (ushort)(byte)pcVar5[0xf];    //(In 0x80192ec8)
       }
       else
       {
@@ -1133,7 +1133,7 @@ void handle_right_basic_menu_touch(void)
       else
       {
         pcVar5[0x36] = '\0';
-        pcVar5[0x37] = '\x01';
+        pcVar5[0x37] = '\x01';   //Update screen flag
       }
 */      
       //Display the changed state
@@ -1222,20 +1222,13 @@ void handle_right_basic_menu_touch(void)
 
     //Button back to inactive state
     scope_t_cursor_button(0);
-/*
-    //Check on some setting    
-    if (8 < (byte)pcVar5[10])  //Time base setting
+    
+    //Time cursor only allowed for time base 50mS/div and lower
+    if(scopesettings.timeperdiv > 8)
     {
-      if (*(char *)(iVar25 + 0x292) == '\0')
-      {
-        *(undefined *)(iVar25 + 0x292) = 1;
-      }
-      else
-      {
-        *(undefined *)(iVar25 + 0x292) = 0;
-      }
+      //Toggle the enable setting
+      scopesettings.timecursorsenable ^= 1;
     }
-*/
   }
   //Check if volt cursor button is touched
   else if((ytouch >= 243) && (ytouch <= 297))
@@ -1252,20 +1245,13 @@ void handle_right_basic_menu_touch(void)
 
     //Button back to inactive state
     scope_v_cursor_button(0);
-/*
-    //Check on some setting    
-    if (8 < (byte)pcVar5[10])
+
+    //Volt cursor only allowed for time base 50mS/div and lower
+    if(scopesettings.timeperdiv > 8)
     {
-      if (*(char *)(iVar25 + 0x29a) == '\0')
-      {
-        *(undefined *)(iVar25 + 0x29a) = 1;
-      }
-      else
-      {
-        *(undefined *)(iVar25 + 0x29a) = 0;
-      }
+      //Toggle the enable setting
+      scopesettings.voltcursorsenable ^= 1;
     }
-*/    
   }
   //Check if measures button is touched
   else if((ytouch >= 303) && (ytouch <= 357))

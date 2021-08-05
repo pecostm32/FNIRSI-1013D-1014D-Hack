@@ -111,29 +111,42 @@ int main(void)
   scopesettings.channel1.magnification = 2;
   scopesettings.channel1.voltperdiv = 5;
   scopesettings.channel1.fftenable = 0;
-  scopesettings.channel1.signalaverage = 10;
+  scopesettings.channel1.traceoffset = 305;
   
   scopesettings.channel2.enable = 1;
   scopesettings.channel2.coupling = 1;
   scopesettings.channel2.magnification = 0;
   scopesettings.channel2.voltperdiv = 2;
   scopesettings.channel2.fftenable = 0;
-  scopesettings.channel2.signalaverage = 10;
+  scopesettings.channel2.traceoffset = 105;
   
   scopesettings.triggermode = 1;
   scopesettings.triggeredge = 1;
   scopesettings.triggerchannel = 1;
+  
+  scopesettings.triggerposition = 350;
+  scopesettings.triggeroffset = 124;
   scopesettings.triggerlevel = 20;
   
-  scopesettings.timeperdiv = 5;
+  scopesettings.timeperdiv = 14;
   
   scopesettings.batterychargelevel = 20;
   scopesettings.batterycharging = 1;
   
   scopesettings.screenbrightness = 67;
-  scopesettings.gridbrightness = 45;
+  scopesettings.gridbrightness = 3;
   scopesettings.alwaystrigger50 = 1;
   scopesettings.xymodedisplay = 0;
+  
+  scopesettings.timecursorsenable = 1;
+  scopesettings.timecursor1position = 78;
+  scopesettings.timecursor2position = 358;
+
+ 
+  scopesettings.voltcursorsenable = 1;
+  scopesettings.voltcursor1position = 169;
+  scopesettings.voltcursor2position = 234;
+
   
   int channel;
   int item;
@@ -153,6 +166,10 @@ int main(void)
   scopesettings.measuresstate[1][2] = 1;
   scopesettings.measuresstate[1][10] = 1;
 
+  
+  scopesettings.previoustimerticks = 0;
+  
+  
   //In the original code there is some hardware check function here. Actions are not performed unless some data in the FLASH is not set
   
   //Here USB setup needs to be done
@@ -194,7 +211,7 @@ int main(void)
   
   //Some initialization of the FPGA??. Data written with command 0x3C
   fpga_set_battery_level();      //Only called here and in hardware check
-  
+
   //In the original code there is another hardware check function here. Actions are not performed unless some data in the FLASH is not set
 
   //Here a function is called that looks at some system file?????
@@ -204,40 +221,25 @@ int main(void)
     
   //Set screen brightness
   fpga_set_translated_brightness(scopesettings.screenbrightness);
+
   
-//  int8 buffer[20];
+//  scope_draw_grid();
+  
+//  scope_draw_time_cursors();
+//  scope_draw_vlot_cursors();
+
+//  scope_draw_pointers();
   
   while(1)
   {
-/*
-    //Check the touch panel status
-    tp_i2c_read_status();
+    //Monitor the battery status
     
-    display_set_fg_color(0x00000000);
-
-    display_fill_rect(10, 50, 100, 60);
-
-    display_set_fg_color(0x00FFFFFF);
-
-    buffer[0] = '0';
-    buffer[1] = 'x';
-    buffer[2] = printhexnibble((xtouch >> 12) & 0x0F);
-    buffer[3] = printhexnibble((xtouch >>  8) & 0x0F);
-    buffer[4] = printhexnibble((xtouch >>  4) & 0x0F);
-    buffer[5] = printhexnibble( xtouch        & 0x0F);
-    buffer[6] = 0;
-      
-    display_set_font(&font_0);
-    display_text(10, 50, buffer);
+    //Go through the trace data and make it ready for displaying
+    scope_process_trace_data();
     
-    buffer[2] = printhexnibble((ytouch >> 12) & 0x0F);
-    buffer[3] = printhexnibble((ytouch >>  8) & 0x0F);
-    buffer[4] = printhexnibble((ytouch >>  4) & 0x0F);
-    buffer[5] = printhexnibble( ytouch        & 0x0F);
+    //Display the trace data
     
-    display_text(10, 70, buffer);
-*/
-    
+    //Handle the touch panel input
     touch_handler();
   }
 }

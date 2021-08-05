@@ -51,6 +51,10 @@ void display_set_destination_buffer(uint16 *buffer);
 void display_draw_line(uint32 xstart, uint32 ystart, uint32 xend, uint32 yend);
 void display_draw_horz_line(uint32 ypos, uint32 xstart, uint32 xend);
 void display_draw_vert_line(uint32 xpos, uint32 ystart, uint32 yend);
+void display_draw_horz_dots(uint32 ypos, uint32 xstart, uint32 xend, uint32 interval);
+void display_draw_vert_dots(uint32 xpos, uint32 ystart, uint32 yend, uint32 interval);
+void display_draw_horz_dashes(uint32 ypos, uint32 xstart, uint32 xend, uint32 length, uint32 interval);
+void display_draw_vert_dashes(uint32 xpos, uint32 ystart, uint32 yend, uint32 length, uint32 interval);
 void display_draw_rect(uint32 xpos, uint32 ypos, uint32 width, uint32 height);
 void display_draw_rounded_rect(uint32 xpos, uint32 ypos, uint32 width, uint32 height, uint32 radius);
 void display_draw_arc(uint32 xpos, uint32 ypos, uint32 radius, uint32 startangle, uint32 endangle, uint32 direction);
@@ -74,10 +78,18 @@ void display_copy_rect_to_screen(uint32 xpos, uint32 ypos, uint32 width, uint32 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void display_copy_icon_use_colors(const uint8 *icon, uint32 xpos, uint32 ypos, uint32 width, uint32 height);
+void display_copy_icon_fg_color(const uint8 *icon, uint32 xpos, uint32 ypos, uint32 width, uint32 height);
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_left_pointer(uint32 xpos, uint32 ypos, int8 id);
+void display_right_pointer(uint32 xpos, uint32 ypos, int8 id);
+void display_top_pointer(uint32 xpos, uint32 ypos);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void display_decimal(uint32 xpos, uint32 ypos, int32 value);
+void display_character(uint32 xpos, uint32 ypos, int8 text);
 void display_text(uint32 xpos, uint32 ypos, int8 *text);
 
 //----------------------------------------------------------------------------------------------------------------------------------

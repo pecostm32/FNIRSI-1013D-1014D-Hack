@@ -13,21 +13,21 @@ typedef union tagByteAndBits  ByteAndBits;
 
 struct tagByteBits
 {
-  unsigned char b0:1;
-  unsigned char b1:1;
-  unsigned char b2:1;
-  unsigned char b3:1;
-  unsigned char b4:1;
-  unsigned char b5:1;
-  unsigned char b6:1;
-  unsigned char b7:1;
+  uint8 b0:1;
+  uint8 b1:1;
+  uint8 b2:1;
+  uint8 b3:1;
+  uint8 b4:1;
+  uint8 b5:1;
+  uint8 b6:1;
+  uint8 b7:1;
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 union tagByteAndBits
 {
-  unsigned char byte;
+  uint8 byte;
   ByteBits      bits;
 };
 
@@ -48,7 +48,7 @@ void fpga_init(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void fpga_write_cmd(unsigned char command)
+void fpga_write_cmd(uint8 command)
 {
   //Set the control lines for writing a command
   FPGA_CMD_WRITE();
@@ -65,7 +65,7 @@ void fpga_write_cmd(unsigned char command)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-unsigned char fpga_read_cmd(void)
+uint8 fpga_read_cmd(void)
 {
   //Set the bus for reading
   FPGA_BUS_DIR_IN();
@@ -82,7 +82,7 @@ unsigned char fpga_read_cmd(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void fpga_write_byte(unsigned char data)
+void fpga_write_byte(uint8 data)
 {
   //Set the control lines for writing a command
   FPGA_DATA_WRITE();
@@ -99,7 +99,7 @@ void fpga_write_byte(unsigned char data)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-unsigned char fpga_read_byte(void)
+uint8 fpga_read_byte(void)
 {
   //Set the bus for reading
   FPGA_BUS_DIR_IN();
@@ -116,7 +116,7 @@ unsigned char fpga_read_byte(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void fpga_write_short(unsigned short data)
+void fpga_write_short(uint16 data)
 {
   //Set the control lines for writing a command
   FPGA_DATA_WRITE();
@@ -139,9 +139,9 @@ void fpga_write_short(unsigned short data)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-unsigned short fpga_read_short(void)
+uint16 fpga_read_short(void)
 {
-  unsigned short data;
+  uint16 data;
   
   //Set the bus for reading
   FPGA_BUS_DIR_IN();
@@ -167,7 +167,7 @@ unsigned short fpga_read_short(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void fpga_write_int(unsigned int data)
+void fpga_write_int(uint32 data)
 {
   //Set the control lines for writing a command
   FPGA_DATA_WRITE();
@@ -202,7 +202,7 @@ void fpga_write_int(unsigned int data)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void fpga_set_backlight_brightness(unsigned short brightness)
+void fpga_set_backlight_brightness(uint16 brightness)
 {
   fpga_write_cmd(0x38);
   fpga_write_short(brightness);
@@ -210,9 +210,9 @@ void fpga_set_backlight_brightness(unsigned short brightness)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void fpga_set_translated_brightness(unsigned int brightness)
+void fpga_set_translated_brightness(uint32 brightness)
 {
-  unsigned short data;
+  uint16 data;
   
   //Translate the 0 - 100 brightness value into data for the FPGA
   data = fpga_read_parameter_ic(0x10, brightness);
@@ -223,7 +223,7 @@ void fpga_set_translated_brightness(unsigned int brightness)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-unsigned short fpga_get_version(void)
+uint16 fpga_get_version(void)
 {
   fpga_write_cmd(0x06);
 
@@ -519,9 +519,78 @@ void fpga_set_trigger_mode(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+void fpga_set_long_timebase(void)
+{
+  //Send the command for long time base to the FPGA
+  fpga_write_cmd(0x0D);
+  
+  //Send the data, which is always 2000
+  fpga_write_int(2000);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_set_short_timebase(uint32 data)
+{
+  
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+uint16 fpga_prepare_for_transfer(void)
+{
+  uint8  data1;
+  uint8  data2;
+  uint32 data;
+  
+  //Send the command for getting some data from the FPGA
+  fpga_write_cmd(0x14);
+  
+  //Get the data, only 4 bits for first byte
+  data1 = fpga_read_byte() & 0x0F;
+  data2 = fpga_read_byte();
+  
+  //Prepare for translation
+  data = (data1 << 12) | (data2 << 4) | data1;
+  
+  //Translate it via the special ic
+  data = fpga_read_parameter_ic(0x11, data);
+ 
+  return(data & 0x0FFF);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_read_trace_data(uint8 command, uint16 *buffer, int32 count)
+{
+  //Send a command for getting trace data from the FPGA
+  fpga_write_cmd(command);
+  
+  //Set the bus for reading
+  FPGA_BUS_DIR_IN();
+  
+  //Set the control lines for reading a command
+  FPGA_DATA_READ();
+
+  //Read the data as long as there is count
+  while(count)
+  {
+    //Clock the data to the output of the FPGA
+    FPGA_PULSE_CLK();
+ 
+    //Read the data
+    *buffer++ = (uint16)FPGA_GET_DATA();
+    
+    //One read done
+    count--;
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 void fpga_set_battery_level(void)
 {
-  uint32 data = fpga_read_parameter_ic(0x16, scopesettings.batterychargelevel * scopesettings.channel2.signalaverage);
+  uint32 data = fpga_read_parameter_ic(0x16, scopesettings.batterychargelevel * scopesettings.channel2.traceoffset);
   
   //Send the command for setting the battery level to the FPGA
   fpga_write_cmd(0x3C);
@@ -532,8 +601,8 @@ void fpga_set_battery_level(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-unsigned char parameter_buffer[7];
-unsigned char parameter_crypt_byte;
+uint8 parameter_buffer[7];
+uint8 parameter_crypt_byte;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -574,9 +643,9 @@ void fpga_init_parameter_ic(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void fpga_write_parameter_ic(unsigned char id, unsigned int value)
+void fpga_write_parameter_ic(uint8 id, uint32 value)
 {
-  unsigned char length = 3;
+  uint8 length = 3;
   int i;
 
   ByteAndBits crypt_in;
@@ -586,10 +655,10 @@ void fpga_write_parameter_ic(unsigned char id, unsigned int value)
   parameter_buffer[0] = parameter_crypt_byte;
 
   //Load the data bytes with the value
-  parameter_buffer[3] = (unsigned char)(value >> 24);
-  parameter_buffer[4] = (unsigned char)(value >> 16);
-  parameter_buffer[5] = (unsigned char)(value >> 8);
-  parameter_buffer[6] = (unsigned char)(value);
+  parameter_buffer[3] = (uint8)(value >> 24);
+  parameter_buffer[4] = (uint8)(value >> 16);
+  parameter_buffer[5] = (uint8)(value >> 8);
+  parameter_buffer[6] = (uint8)(value);
 
   //Check if MSB is actually used
   if(parameter_buffer[3] == 0x00)
@@ -678,12 +747,12 @@ void fpga_write_parameter_ic(unsigned char id, unsigned int value)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-unsigned int fpga_read_parameter_ic(unsigned char id, unsigned int value)
+uint32 fpga_read_parameter_ic(uint8 id, uint32 value)
 {
   int           i,j;
   int           unvalid = 0;
-  unsigned int  rcv_value;
-  unsigned char checksum;
+  uint32  rcv_value;
+  uint8 checksum;
   
   //Max retry on write read sequence
   while(i < 6)
@@ -795,9 +864,9 @@ unsigned int fpga_read_parameter_ic(unsigned char id, unsigned int value)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void fpga_delay(unsigned int usec)
+void fpga_delay(uint32 usec)
 {
-  unsigned int loops = usec * 54;
+  uint32 loops = usec * 54;
 
   __asm__ __volatile__ ("1:\n" "subs %0, %1, #1\n"  "bne 1b":"=r"(loops):"0"(loops));
 }

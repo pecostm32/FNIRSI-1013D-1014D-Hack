@@ -105,9 +105,26 @@ void scope_display_slide_button(uint16 xpos, uint16 ypos, uint8 state);
 
 void scope_display_ok_button(uint16 xpos, uint16 ypos, uint8 mode);
 
-
+//----------------------------------------------------------------------------------------------------------------------------------
+// Grid and cursor functions
 //----------------------------------------------------------------------------------------------------------------------------------
 
+void scope_draw_grid(void);
+void scope_draw_pointers(void);
+void scope_draw_time_cursors(void);
+void scope_draw_vlot_cursors(void);
+
+//----------------------------------------------------------------------------------------------------------------------------------
+// Signal data processing functions
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_process_trace_data(void);
+
+
+
+void scope_get_long_timebase_data(void);
+
+void scope_get_short_timebase_data(void);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
