@@ -125,6 +125,7 @@ command: 0x6B  read   length: 1     data: 0x00
 command: 0x6C  read   length: 1     data: 0x00 
 command: 0x6D  read   length: 1     data: 0x00 
 command: 0x6E  read   length: 1     data: 0xB8 
+
 command: 0x17  write  length: 1     data: 0x27 
 command: 0x0E  write  length: 4     data: 0x00 0x00 0x03 0x20 
 command: 0x0F  write  length: 1     data: 0x00 

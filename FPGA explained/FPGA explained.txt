@@ -10,13 +10,13 @@ PE10  data/command   0 = data, 1 = command
 List of commands that have been found
 
 List of commands
-0x01    Write a data byte (0x00 or 0x01)
+0x01    Write a data byte (0x00 or 0x01)    Some start/stop signal
 0x02    Write a data byte (0x00 or 0x01)    Channel 1 enable (0 disable, 1 enable) Only written at startup of the scope??
 0x03    Write a data byte (0x00 or 0x01)    Channel 2 enable (0 disable, 1 enable) Only written at startup of the scope??
 0x04    Write a data byte (0x00 or 0x01)
 
 
-0x05    Read two bytes. No idea what it is for yet, but read every signal read cycle.
+0x05    Read in a loop. Software waits for the lsb to go one. Done twice to confirm it is actualy one and not a glitch
 
 
 0x06    Check on FPGA version. Needs to return 0x1432. Only checked in a hardware check function, which can be enabled by changing two bytes in the flash memory. At address 0x001FE000 the code expects 0x9086 for skipping the check.
