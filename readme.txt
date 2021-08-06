@@ -110,7 +110,7 @@ With this bootloader it is possible to start the scope in FEL mode with the DRAM
 "sudo ./sunxi-fel -p write 0x7FFFFFE0 fnirsi_1013d_scope.bin exe 0x80000000" then loads and executes the output of the scope project
 
 ----------------------------------------------------------------------------------------------------------
-02-AUGUSTUS-2021
+02-AUGUST-2021
 Tested and tweaked the FPGA parameter ic code I wrote a while back. Is needed for the screen brightness setting. In the original code there are some delay's
 in between the different actions, of which only one is realy needed. Between the writing and the reading it needs a fair amount of time. Not for the FPGA,
 but for the special IC that is communicated with. To short a time and the reading part needs to be repeated. Used another scope to tweak the delay loop such
@@ -123,3 +123,9 @@ Took a look at that part of the user interface code and it is messy, but it star
 
 Started with the implementation of the functions that send commands to the FPGA. Hooked a lot of them into the user interface and it is now possible to
 adjust the channel sensitivity and hear the relay's click.
+
+----------------------------------------------------------------------------------------------------------
+06-AUGUST-2021
+Fixed a bug in the fpga read parameter function. A local variable was not initialized:-(
+Implemented timer0 interrupt handling, somewhat based on the original code, but can do with improvement.
+Started implementation of trace data capture. This will take a bit of time. A lot of code to work through.
