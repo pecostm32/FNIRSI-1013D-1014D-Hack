@@ -52,10 +52,31 @@
 //#define MY_BREAK_POINT_1  0x80024ED4      //end of init parameter storage
 //#define MY_BREAK_POINT_1  0x80025090      //end of write parameter storage
 
-#define MY_BREAK_POINT_2  0x80024AF8        //end of get setting from parameter storage
+//#define MY_BREAK_POINT_2  0x80024AF8        //end of get setting from parameter storage
 //#define MY_BREAK_POINT_1  0x80024A74        //first check on 0x55
 
-#define MY_BREAK_POINT_1  0x800178B4
+//#define MY_BREAK_POINT_1  0x800178B4
+
+//#define MY_BREAK_POINT_1  0x80035350     //Call from main to tp_i2c_setup
+
+//#define MY_BREAK_POINT_1  0x80018c28       //End of display text (Call FUN_80019A6C)
+
+//#define MY_BREAK_POINT_1  0x800193cc       //Something within possible save context function
+
+//#define MY_BREAK_POINT_1  0x800353d4   //endless loop in main
+
+//#define MY_BREAK_POINT_1  0x8000b6f4   //Use of font 0
+
+//#define MY_BREAK_POINT_1  0x80018024  //font function
+//#define MY_BREAK_POINT_2  0x80018030  //font function
+
+
+//#define MY_BREAK_POINT_1  0x8001263c  //End of time div print
+
+#define MY_BREAK_POINT_2  0x80035454  //font function
+
+
+#define MY_BREAK_POINT_1  0x80035454  //while loop in test code
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -67,7 +88,18 @@
 //#define MY_TRACE_STOP_POINT    0x8001933C  //Address where setup_display_lib is called
 
 //#define MY_TRACE_START_POINT    0x80035360   //Address where sd card setup and check is called
-#define MY_TRACE_START_POINT    0x80035444   //Address where the main loop starts
+//#define MY_TRACE_START_POINT    0x80035444   //Address where the main loop starts
+
+//#define MY_TRACE_START_POINT    0x8003534c     //Address in main from where setup_display lib is called
+
+//#define MY_TRACE_START_POINT    0x80018bf8    //Display text function
+
+//#define MY_TRACE_START_POINT    0x80035390    //Main start of sd error on display
+
+//#define MY_TRACE_START_POINT    0x80012280   //Usage of font 0
+
+//#define MY_TRACE_START_POINT    0x80000658
+#define MY_TRACE_START_POINT    0x80035320
 
 
 //#define TRACE_ENABLED
@@ -79,7 +111,12 @@
 
 //#define TRACE_FILE_NAME         "screen_buf_clear"
 //#define TRACE_FILE_NAME         "sd_card_check"
-#define TRACE_FILE_NAME         "main_loop_trace_2/main_loop"
+//#define TRACE_FILE_NAME         "main_loop_trace_2/main_loop"
+//#define TRACE_FILE_NAME         "setup_display_lib_trace/display_setup"
+
+//#define TRACE_FILE_NAME         "display_text_trace/display_text"
+//#define TRACE_FILE_NAME         "display_text_test/display_text_test"
+#define TRACE_FILE_NAME         "main_startup/main_startup"
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -131,6 +168,9 @@ void *armcorethread(void *arg)
   
   //Load a program to arm memory
   FILE *fp = fopen("scope_spl.bin", "rb");
+//  FILE *fp = fopen("fnirsi_1013d_bootloader.bin", "rb");
+  
+  
   
   if(fp)
   {
@@ -140,7 +180,8 @@ void *armcorethread(void *arg)
   }
 
   //Open the flash image
-  parm_core->FlashFilePointer = fopen("W25Q32_scope.bin", "rb");
+  //parm_core->FlashFilePointer = fopen("W25Q32_scope.bin", "rb");
+  parm_core->FlashFilePointer = fopen("scope_test_code.bin", "rb");
   
   //Open the parameter storage file
   parm_core->fpgadata.param_file = fopen("scope_settings.bin", "rb+");
@@ -1964,7 +2005,7 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
       if(core->registers[core->current_bank][ARM_REG_SPSR_IDX])
       {
         //Copy the spsr if available
-        *core->registers[core->current_bank][core->arm_instruction.mrs.rd] = *core->registers[core->current_bank][ARM_REG_SPSR_IDX];
+        core->status->word = *core->registers[core->current_bank][ARM_REG_SPSR_IDX];
       }
       
       //Handle the possible mode change
