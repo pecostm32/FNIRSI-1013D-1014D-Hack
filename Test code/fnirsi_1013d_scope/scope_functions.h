@@ -112,7 +112,7 @@ void scope_display_ok_button(uint16 xpos, uint16 ypos, uint8 mode);
 void scope_draw_grid(void);
 void scope_draw_pointers(void);
 void scope_draw_time_cursors(void);
-void scope_draw_vlot_cursors(void);
+void scope_draw_volt_cursors(void);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 // Signal data processing functions

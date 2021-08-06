@@ -4,6 +4,7 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
+      <itemPath>arm32.h</itemPath>
       <itemPath>ccu_control.h</itemPath>
       <itemPath>display_control.h</itemPath>
       <itemPath>display_lib.h</itemPath>
@@ -11,10 +12,12 @@
       <itemPath>font_structs.h</itemPath>
       <itemPath>fpga_control.h</itemPath>
       <itemPath>gpio_control.h</itemPath>
+      <itemPath>interrupt.h</itemPath>
       <itemPath>scope_functions.h</itemPath>
       <itemPath>sin_cos_math.h</itemPath>
       <itemPath>spi_control.h</itemPath>
       <itemPath>statemachine.h</itemPath>
+      <itemPath>timer.h</itemPath>
       <itemPath>touchpanel.h</itemPath>
       <itemPath>types.h</itemPath>
     </logicalFolder>
@@ -36,12 +39,15 @@
       <itemPath>font_5.c</itemPath>
       <itemPath>fpga_control.c</itemPath>
       <itemPath>icons.c</itemPath>
+      <itemPath>interrupt.c</itemPath>
       <itemPath>memcpy.s</itemPath>
+      <itemPath>memset.s</itemPath>
       <itemPath>scope_functions.c</itemPath>
       <itemPath>sin_cos_math.c</itemPath>
       <itemPath>spi_control.c</itemPath>
       <itemPath>start.s</itemPath>
       <itemPath>statemachine.c</itemPath>
+      <itemPath>timer.c</itemPath>
       <itemPath>touchpanel.c</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
@@ -68,7 +74,7 @@
       </toolsSet>
       <compileType>
         <cTool>
-          <commandLine>-Wall -Wno-write-strings -Wno-char-subscripts -fno-stack-protector -DNO_STDLIB=1 -mcpu='arm926ej-s' -O0</commandLine>
+          <commandLine>-Wall -Wno-write-strings -Wno-char-subscripts -fno-stack-protector -DNO_STDLIB=1 -mcpu='arm926ej-s' -O3</commandLine>
           <useLinkerLibraries>false</useLinkerLibraries>
         </cTool>
         <ccTool>
@@ -84,6 +90,8 @@
           <commandLine>-T./fnirsi_1013d.ld -nostdlib -lgcc</commandLine>
         </linkerTool>
       </compileType>
+      <item path="arm32.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="ccu_control.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="ccu_control.h" ex="false" tool="3" flavor2="0">
@@ -120,7 +128,13 @@
       </item>
       <item path="icons.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="interrupt.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="interrupt.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="memcpy.s" ex="false" tool="4" flavor2="0">
+      </item>
+      <item path="memset.s" ex="false" tool="4" flavor2="0">
       </item>
       <item path="scope_functions.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -139,6 +153,10 @@
       <item path="statemachine.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="statemachine.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="timer.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="timer.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="touchpanel.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -173,6 +191,8 @@
           <commandLine>-T./stm32f103-64k.ld -nostdlib</commandLine>
         </linkerTool>
       </compileType>
+      <item path="arm32.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="ccu_control.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="ccu_control.h" ex="false" tool="3" flavor2="0">
@@ -209,7 +229,13 @@
       </item>
       <item path="icons.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="interrupt.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="interrupt.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="memcpy.s" ex="false" tool="4" flavor2="0">
+      </item>
+      <item path="memset.s" ex="false" tool="4" flavor2="0">
       </item>
       <item path="scope_functions.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -228,6 +254,10 @@
       <item path="statemachine.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="statemachine.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="timer.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="timer.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="touchpanel.c" ex="false" tool="0" flavor2="0">
       </item>

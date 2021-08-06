@@ -70,6 +70,9 @@ struct tagScopeSettings
   uint16 voltcursor1position;
   uint16 voltcursor2position;
   
+  uint16 channel1average;
+  uint16 channel2average;
+  
   uint32 previoustimerticks;
   
   uint8 measuresstate[2][12];

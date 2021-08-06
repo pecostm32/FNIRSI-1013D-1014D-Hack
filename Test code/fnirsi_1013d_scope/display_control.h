@@ -69,8 +69,14 @@
 
 #define DEBE_LAY0_ATT_CTRL1_RGB565          0x00000500         //16 bits per pixel RGB 565 mode
 
+
+#define DEBE_NUMBER_OF_BYTES                384
+
 //--------------------------------------------------------------------------------------
 //Functions
+
+void sys_disable_display(void);
+
 void sys_init_display(uint16 xsize, uint16 ysize, uint16 *address);
 
 void display_bitmap(uint16 xpos, uint16 ypos, uint16 xsize, uint16 ysize, uint16 *source, uint16 *dest);

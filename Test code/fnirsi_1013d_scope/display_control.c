@@ -5,32 +5,57 @@
 #include "ccu_control.h"
 #include "gpio_control.h"
 
+#include <string.h>
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void sys_disable_display(void)
+{
+  volatile uint32 *ptr;
+
+  //Clear the DEBE registers
+  for(ptr=DEBE_MODE_CTRL;ptr<=DEBE_COEF23;ptr++)
+    *ptr = 0;
+    
+  //Disable the LCD timing control module
+  *TCON_CTRL = 0;
+  
+  //Disable the LCD timing interrupts
+  *TCON_INT0 = 0;
+  
+  //Disable the LCD clock
+  *TCON_CLK_CTRL &= 0x0FFFFFFF;
+  
+  //Disable all the TCON0 display outputs;
+  *TCON0_IO_CTRL1 = 0xFFFFFFFF;
+  
+  //Disable all the TCON1 display outputs;
+  *TCON1_IO_CTRL1 = 0xFFFFFFFF;
+  
+  //Enable the display engine back end
+  *CCU_BUS_CLK_GATE1 &= ~CCU_BCGR1_DEBE_EN;
+
+  //De-assert the display engine back end reset
+  *CCU_BUS_SOFT_RST1 &= ~CCU_BSRR1_DEBE_RST;
+}
+
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void sys_init_display(uint16 xsize, uint16 ysize, uint16 *address)
 {
-  volatile uint32 *ptr;
   int32   time;
-  uint16 *mptr = address;
-  uint16  x;
-  uint16  y;
   
   //Setup the used port D pins for LCD
   *PORTD_CFG0_REG = 0x22222227;   //PD00 is not used for the display
   *PORTD_CFG1_REG = 0x22222227;   //PD12 is not used for the display
   *PORTD_CFG2_REG = 0x00222222;   //Only 22 pins for port D
    
-  //Clear the display memory
-  for(y=0;y<ysize;y++)
-  {
-    for(x=0;x<xsize;x++)
-      *mptr++ = 0x0000;
-  }
+  //Clear the display memory (Set in bytes so twice the number of pixels)
+  memset((uint8 *)address, 0, xsize * ysize * 2);
   
   //Clear the DEBE registers
-  for(ptr=DEBE_MODE_CTRL;ptr<=DEBE_COEF23;ptr++)
-    *ptr = 0;
-    
+  memset((uint8 *)DEBE_MODE_CTRL, 0, DEBE_NUMBER_OF_BYTES);
+  
   //Disable the LCD timing control module
   *TCON_CTRL = 0;
   

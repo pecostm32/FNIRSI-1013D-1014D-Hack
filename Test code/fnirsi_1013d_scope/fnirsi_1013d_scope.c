@@ -4,6 +4,8 @@
 
 #include "ccu_control.h"
 #include "spi_control.h"
+#include "timer.h"
+#include "interrupt.h"
 #include "display_control.h"
 #include "fpga_control.h"
 #include "touchpanel.h"
@@ -14,6 +16,8 @@
 #include "statemachine.h"
 
 #include "arm32.h"
+
+#include <string.h>
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -31,6 +35,8 @@ extern uint8 calibrationopen;
 extern uint16 maindisplaybuffer[];
 
 extern SCOPESETTINGS scopesettings;
+
+extern IRQHANDLERFUNCION interrupthandlers[];
 
 //extern FONTDATA font_0;
 
@@ -64,7 +70,14 @@ int main(void)
   arm32_icache_enable();
   arm32_dcache_enable();
   
+  //Clear the interrupt variables
+  memset(interrupthandlers, 0, 256);
+  
   //Setup timer interrupt
+  timer0_setup();
+  
+  //Enable interrupts only once. In the original code it is done on more then one location.
+  arm32_interrupt_enable();
   
   //Initialize SPI for flash (PORT C + SPI0)
   sys_spi_flash_init();
@@ -128,13 +141,13 @@ int main(void)
   scopesettings.triggeroffset = 124;
   scopesettings.triggerlevel = 20;
   
-  scopesettings.timeperdiv = 14;
+  scopesettings.timeperdiv = 6;
   
   scopesettings.batterychargelevel = 20;
   scopesettings.batterycharging = 1;
   
   scopesettings.screenbrightness = 67;
-  scopesettings.gridbrightness = 3;
+  scopesettings.gridbrightness = 46;
   scopesettings.alwaystrigger50 = 1;
   scopesettings.xymodedisplay = 0;
   
@@ -179,7 +192,7 @@ int main(void)
   //Load configuration data from FLASH
   
   //Check if configuration data is ok and if not write new one to flash and reload it
-  
+
   //Enable or disable the channels based on the scope loaded settings
   fpga_set_channel1_enable();
   fpga_set_channel2_enable();
@@ -216,23 +229,25 @@ int main(void)
 
   //Here a function is called that looks at some system file?????
 
+  
   //Setup the main parts of the screen
   scope_setup_main_screen();
     
   //Set screen brightness
-  fpga_set_translated_brightness(scopesettings.screenbrightness);
+  fpga_set_translated_brightness();
 
   
 //  scope_draw_grid();
   
 //  scope_draw_time_cursors();
-//  scope_draw_vlot_cursors();
+//  scope_draw_volt_cursors();
 
 //  scope_draw_pointers();
   
   while(1)
   {
     //Monitor the battery status
+
     
     //Go through the trace data and make it ready for displaying
     scope_process_trace_data();

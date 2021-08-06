@@ -4,6 +4,7 @@
 #include "font_structs.h"
 #include "scope_functions.h"
 #include "touchpanel.h"
+#include "timer.h"
 #include "fpga_control.h"
 #include "display_lib.h"
 #include "fnirsi_1013d_scope.h"
@@ -3686,7 +3687,7 @@ void scope_draw_time_cursors(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_draw_vlot_cursors(void)
+void scope_draw_volt_cursors(void)
 {
   //Only draw the lines when enabled
   if(scopesettings.voltcursorsenable)
@@ -3722,8 +3723,9 @@ void scope_process_trace_data(void)
 void scope_get_long_timebase_data(void)
 {
   //Default timeout for 50S/div
-  int32 timeout = 2000;
-  int32 curticks;
+  uint32 timeout = 2000;
+  uint32 curticks;
+  uint32 deltaticks;
   
   //Send the time base command for the longer settings
   fpga_set_long_timebase();
@@ -3772,16 +3774,25 @@ void scope_get_long_timebase_data(void)
       break;
   }
   
-  //Make the timeout timer tick related by adding it to the previous capture
-  timeout += scopesettings.previoustimerticks;
-  
   //For smaller timeouts (500mS/div, 200mS/div and 100mS/div) stay in the wait loop even if there is touch
   while((scopesettings.timeperdiv > 5) || (havetouch == 0))
   {
-//  curticks = get_timer_ticks();
+    curticks = timer0_get_ticks();
   
+    //Check on timer ticks overflow
+    if(curticks >= scopesettings.previoustimerticks)
+    {
+      //Not then the delta is simple subtraction of the values
+      deltaticks = curticks - scopesettings.previoustimerticks;
+    }
+    else
+    {
+      //In case of an overflow calculate the remainder of ticks to max count plus the current ticks
+      deltaticks = (0xFFFFFFFF - scopesettings.previoustimerticks) + curticks;
+    }
+      
     //Check if there is a timeout
-    if(curticks > timeout)
+    if(deltaticks > timeout)
     {
       //Save the current ticks for next timeout and bail out the loop
       scopesettings.previoustimerticks = curticks;
@@ -3792,7 +3803,19 @@ void scope_get_long_timebase_data(void)
     tp_i2c_read_status();
   }
     
-    
+  //Wait an extra 40 milliseconds
+  timer0_delay(40);
+  
+  //Some start command for the FPGA
+  fpga_write_cmd(0x28);
+  fpga_write_byte(0x01);
+  
+  //Read, accumulate and average 10 bytes of channel 1 trace data
+  scopesettings.channel1average = fpga_average_trace_data(0x24);
+  
+  //Read, accumulate and average 10 bytes of channel 2 trace data
+  scopesettings.channel2average = fpga_average_trace_data(0x26);
+  
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

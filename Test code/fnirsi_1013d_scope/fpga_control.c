@@ -210,12 +210,12 @@ void fpga_set_backlight_brightness(uint16 brightness)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void fpga_set_translated_brightness(uint32 brightness)
+void fpga_set_translated_brightness(void)
 {
   uint16 data;
   
   //Translate the 0 - 100 brightness value into data for the FPGA
-  data = fpga_read_parameter_ic(0x10, brightness);
+  data = fpga_read_parameter_ic(0x10, scopesettings.screenbrightness);
   
   //Write it to the FPGA
   fpga_set_backlight_brightness(data);
@@ -588,6 +588,40 @@ void fpga_read_trace_data(uint8 command, uint16 *buffer, int32 count)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+uint16 fpga_average_trace_data(uint8 command)
+{
+  //Read ten bytes of trace data and average them
+  uint16 data = 0;
+  uint32 count = 10;
+  
+  //Send a command for getting trace data from the FPGA
+  fpga_write_cmd(command);
+  
+  //Set the bus for reading
+  FPGA_BUS_DIR_IN();
+  
+  //Set the control lines for reading a command
+  FPGA_DATA_READ();
+
+  //Read the data as long as there is count
+  while(count)
+  {
+    //Clock the data to the output of the FPGA
+    FPGA_PULSE_CLK();
+ 
+    //Read the data
+    data += (uint16)FPGA_GET_DATA();
+    
+    //One read done
+    count--;
+  }
+  
+  //Calculate the average and return it
+  return(data / 10);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 void fpga_set_battery_level(void)
 {
   uint32 data = fpga_read_parameter_ic(0x16, scopesettings.batterychargelevel * scopesettings.channel2.traceoffset);
@@ -749,10 +783,11 @@ void fpga_write_parameter_ic(uint8 id, uint32 value)
 
 uint32 fpga_read_parameter_ic(uint8 id, uint32 value)
 {
-  int           i,j;
-  int           unvalid = 0;
-  uint32  rcv_value;
-  uint8 checksum;
+  int32  i = 0;
+  int32  j = 0;
+  int32  unvalid = 0;
+  uint32 rcv_value;
+  uint8  checksum;
   
   //Max retry on write read sequence
   while(i < 6)

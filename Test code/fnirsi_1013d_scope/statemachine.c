@@ -509,7 +509,7 @@ void handle_main_menu_touch(void)
           scope_system_settings_screen_brightness_value();
           
           //Update the actual screen brightness
-          fpga_set_translated_brightness(scopesettings.screenbrightness);
+          fpga_set_translated_brightness();
         }
       }
       //Check on grid brightness slider opened and being touched

@@ -46,17 +46,20 @@ OBJECTFILES= \
 	${OBJECTDIR}/font_5.o \
 	${OBJECTDIR}/fpga_control.o \
 	${OBJECTDIR}/icons.o \
+	${OBJECTDIR}/interrupt.o \
 	${OBJECTDIR}/memcpy.o \
+	${OBJECTDIR}/memset.o \
 	${OBJECTDIR}/scope_functions.o \
 	${OBJECTDIR}/sin_cos_math.o \
 	${OBJECTDIR}/spi_control.o \
 	${OBJECTDIR}/start.o \
 	${OBJECTDIR}/statemachine.o \
+	${OBJECTDIR}/timer.o \
 	${OBJECTDIR}/touchpanel.o
 
 
 # C Compiler Flags
-CFLAGS=-Wall -Wno-write-strings -Wno-char-subscripts -fno-stack-protector -DNO_STDLIB=1 -mcpu='arm926ej-s' -O0
+CFLAGS=-Wall -Wno-write-strings -Wno-char-subscripts -fno-stack-protector -DNO_STDLIB=1 -mcpu='arm926ej-s' -O3
 
 # CC Compiler Flags
 CCFLAGS=
@@ -134,9 +137,18 @@ ${OBJECTDIR}/icons.o: icons.c
 	${RM} "$@.d"
 	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/icons.o icons.c
 
+${OBJECTDIR}/interrupt.o: interrupt.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/interrupt.o interrupt.c
+
 ${OBJECTDIR}/memcpy.o: memcpy.s
 	${MKDIR} -p ${OBJECTDIR}
 	$(AS) $(ASFLAGS) -g -o ${OBJECTDIR}/memcpy.o memcpy.s
+
+${OBJECTDIR}/memset.o: memset.s
+	${MKDIR} -p ${OBJECTDIR}
+	$(AS) $(ASFLAGS) -g -o ${OBJECTDIR}/memset.o memset.s
 
 ${OBJECTDIR}/scope_functions.o: scope_functions.c
 	${MKDIR} -p ${OBJECTDIR}
@@ -161,6 +173,11 @@ ${OBJECTDIR}/statemachine.o: statemachine.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/statemachine.o statemachine.c
+
+${OBJECTDIR}/timer.o: timer.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/timer.o timer.c
 
 ${OBJECTDIR}/touchpanel.o: touchpanel.c
 	${MKDIR} -p ${OBJECTDIR}

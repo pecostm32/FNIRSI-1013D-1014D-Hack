@@ -796,7 +796,7 @@ void display_fill_rounded_rect(uint32 xpos, uint32 ypos, uint32 width, uint32 he
   }
  
   //Draw all the pixels for the middle section
-  for(y=ys;y<ye;y++)
+  for(y=ys;y<=ye;y++)
   {
     //Point to the first pixel of this line in the screen buffer
     ptr1 = displaydata.screenbuffer + ((y * displaydata.pixelsperline) + xpos);

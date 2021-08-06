@@ -53,7 +53,7 @@ uint16 fpga_read_short(void);
 void fpga_write_int(uint32 data);
 
 void fpga_set_backlight_brightness(uint16 brightness);
-void fpga_set_translated_brightness(uint32 brightness);
+void fpga_set_translated_brightness(void);
 
 uint16 fpga_get_version(void);
 
@@ -84,6 +84,8 @@ void fpga_set_short_timebase(uint32 data);
 uint16 fpga_prepare_for_transfer(void);
 
 void fpga_read_trace_data(uint8 command, uint16 *buffer, int32 count);
+
+uint16 fpga_average_trace_data(uint8 command);
 
 void fpga_set_battery_level(void);
 
