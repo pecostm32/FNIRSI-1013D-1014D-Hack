@@ -49,6 +49,8 @@ extern uint8  havetouch;
 extern uint16 xtouch;
 extern uint16 ytouch;
 
+extern uint8  touchstate;
+
 //----------------------------------------------------------------------------------------------------------------------------------
 
 SCOPESETTINGS scopesettings;
@@ -57,10 +59,24 @@ uint16 maindisplaybuffer[SCREEN_WIDTH * SCREEN_HEIGHT];
 uint16 displaybuffer1[SCREEN_WIDTH * SCREEN_HEIGHT];
 uint16 displaybuffer2[SCREEN_WIDTH * SCREEN_HEIGHT];
 
+uint16 channel1tracebuffer1[6000];    //In original code at 0x8019D5EA
+uint16 channel1tracebuffer2[6000];    //Not used in original code
+uint16 channel1tracebuffer3[3000];    //Target buffer for processed trace data. In original code at 0x801A916A
+
+uint16 channel2tracebuffer1[6000];    //In original code at 0x801A04CA
+uint16 channel2tracebuffer2[6000];    //In original code at 0x801A1C3A
+uint16 channel2tracebuffer3[3000];    //In original code at 0x801AA8DA
+
 //----------------------------------------------------------------------------------------------------------------------------------
 //For touch filtering on slider movement
 
 uint16 prevxtouch = 0;
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+const uint16 signal_adjusters[7] = { 0xAD, 0xAF, 0xB4, 0xB4, 0xB8, 0xB8, 0xB8 };
+
+const uint16 timebase_adjusters[5] = { 0x01A9, 0x00AA, 0x0055, 0x002F, 0x0014 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -105,7 +121,7 @@ void scope_setup_main_screen(void)
   }
  
   //Show the user if the acquisition is running or stopped
-  scope_run_stop_text(scopesettings.runstate);
+  scope_run_stop_text();
   
   //Display the channel menu select buttons and their settings
   scope_channel1_settings(0);
@@ -979,10 +995,10 @@ void scope_main_return_button(int mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_run_stop_text(int mode)
+void scope_run_stop_text(void)
 {
   //Check if run or stop mode
-  if(mode == 0)
+  if(scopesettings.runstate == 0)
   {
     //Run mode. Black box
     display_set_fg_color(0x00000000);
@@ -1000,7 +1016,7 @@ void scope_run_stop_text(int mode)
   display_set_font(&font_3);
   
   //Check if run or stop mode
-  if(mode == 0)
+  if(scopesettings.runstate == 0)
   {
     //Run mode. White text
     display_set_fg_color(0x00FFFFFF);
@@ -3709,12 +3725,22 @@ void scope_process_trace_data(void)
   //Check on time base setting if range is between 50S/div and 100ms/div
   if(scopesettings.timeperdiv < 9)
   {
+    //Reads an average of ten data points for each channel, active or not
     scope_get_long_timebase_data();
+    
+    //In this range no measurements are calculated nor shown
+    //Cursors are not displayed
   }
   else
   {
-    scope_get_short_timebase_data();
-    
+    //Check if running and not in a touch state
+    if((scopesettings.runstate == 0) && (touchstate != 2))
+    {
+      //Read trace data for active channels
+      scope_get_short_timebase_data();
+      
+      //scope_process_short_timebase_data();
+    }
   }
 }
 
@@ -3725,7 +3751,8 @@ void scope_get_long_timebase_data(void)
   //Default timeout for 50S/div
   uint32 timeout = 2000;
   uint32 curticks;
-  uint32 deltaticks;
+  uint32 signaladjust;
+  uint32 temp1, temp2;
   
   //Send the time base command for the longer settings
   fpga_set_long_timebase();
@@ -3774,25 +3801,18 @@ void scope_get_long_timebase_data(void)
       break;
   }
   
+  //Make the timeout timer tick related by adding it to the previous capture
+  timeout += scopesettings.previoustimerticks;
+  
   //For smaller timeouts (500mS/div, 200mS/div and 100mS/div) stay in the wait loop even if there is touch
   while((scopesettings.timeperdiv > 5) || (havetouch == 0))
   {
+    //Get the current ticks
     curticks = timer0_get_ticks();
   
-    //Check on timer ticks overflow
-    if(curticks >= scopesettings.previoustimerticks)
-    {
-      //Not then the delta is simple subtraction of the values
-      deltaticks = curticks - scopesettings.previoustimerticks;
-    }
-    else
-    {
-      //In case of an overflow calculate the remainder of ticks to max count plus the current ticks
-      deltaticks = (0xFFFFFFFF - scopesettings.previoustimerticks) + curticks;
-    }
-      
     //Check if there is a timeout
-    if(deltaticks > timeout)
+    //While technically prone to error on timer ticks overflow the scope has to be running for >49 days before it occurs
+    if(curticks >= timeout)
     {
       //Save the current ticks for next timeout and bail out the loop
       scopesettings.previoustimerticks = curticks;
@@ -3806,21 +3826,463 @@ void scope_get_long_timebase_data(void)
   //Wait an extra 40 milliseconds
   timer0_delay(40);
   
-  //Some start command for the FPGA
+  //Some mode select command for the FPGA (0x01 for long time base)
   fpga_write_cmd(0x28);
   fpga_write_byte(0x01);
   
   //Read, accumulate and average 10 bytes of channel 1 trace data
-  scopesettings.channel1average = fpga_average_trace_data(0x24);
+  channel1tracebuffer1[0]= fpga_average_trace_data(0x24);
   
   //Read, accumulate and average 10 bytes of channel 2 trace data
-  scopesettings.channel2average = fpga_average_trace_data(0x26);
+  channel2tracebuffer1[0] = fpga_average_trace_data(0x26);
   
+  //Need insight in the code that displays the data to get an understanding of the next bit of code
+  //It is a more or less straight conversion from what Ghidra shows
+  //Might need 64 bit variables declared to handle it, or at least type casts
+  
+  //Some fractional scaling on the signal to fit it on screen???
+  //Adjust the channel 1 signal based on the volts per div setting
+  signaladjust = channel1tracebuffer1[0] * signal_adjusters[scopesettings.channel1.voltperdiv];
+  temp1 = ((0xA3D7 * signaladjust) + 0xA3D7) >> 0x16;
+  temp2 = signaladjust + (((uint64)(signaladjust * 0x51EB851F) >> 0x25) * -100);
+  
+  //If above half the pixel up to next one?????
+  if(temp2 > 50)
+  {
+    temp1++;
+  }
+  
+  //Store it somewhere
+  scopesettings.channel1pixelA = temp1;               //At address 0x801A916A in original code
+  
+  //Check if outside displayable range??
+  if(temp1 > 401)
+  {
+    //Keep it on max allowed
+    scopesettings.channel1pixelB = 401;               //At address 0x801AC04A in original code
+  }
+  else
+  {
+    //Else store it again in an other location
+    scopesettings.channel1pixelB = temp1;
+  }
+  
+  //Some fractional scaling on the signal to fit it on screen???
+  //Adjust the channel 2 signal based on the volts per div setting
+  signaladjust = channel2tracebuffer1[0] * signal_adjusters[scopesettings.channel2.voltperdiv];
+  temp1 = ((0xA3D7 * signaladjust) + 0xA3D7) >> 0x16;
+  temp2 = signaladjust + (((uint64)(signaladjust * 0x51EB851F) >> 0x25) * -100);
+  
+  //If above half the pixel up to next one?????
+  if(temp2 > 50)
+  {
+    temp1++;
+  }
+  
+  //Store it somewhere
+  scopesettings.channel2pixelA = temp1;               //At address 0x801AA8DA in original code
+  
+  //Check if outside displayable range??
+  if(temp1 > 401)
+  {
+    //Keep it on max allowed
+    scopesettings.channel2pixelB = 401;               //At address 0x801AD7BA in original code
+  }
+  else
+  {
+    //Else store it again in an other location
+    scopesettings.channel2pixelB = temp1;
+  }
+  
+  //In the original code a call is made to the display function, which is also called from the main loop
+  //So need to check if it needs to be done twice
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void scope_get_short_timebase_data(void)
+{
+  uint32 data;
+  uint32 count;
+  uint32 command;
+  uint32 triggered = 0;
+  uint32 signaladjust;
+  uint32 temp1, temp2, temp3;
+  uint16 *ptr1, *ptr2;
+  
+  //Check if time base in range 50mS/div - 50nS/div or trigger mode is single or normal
+  if((scopesettings.timeperdiv < 28) || scopesettings.triggermode)
+  {
+    //Set the trigger level if so
+    fpga_set_trigger_level();
+  }
+  
+  //Write the short time base setting to the FPGA
+  fpga_set_short_timebase();
+  
+  //Some bounds setting. Zero here, One after trigger???
+  fpga_write_cmd(0x0F);
+  fpga_write_byte(0x00);
+
+  //Some mode select command for the FPGA (0x00 for short time base)
+  fpga_write_cmd(0x28);
+  fpga_write_byte(0x00);
+
+  //Some start command??
+  fpga_write_cmd(0x01);
+  fpga_write_byte(0x01);
+  
+  //Send check on ready command
+  fpga_write_cmd(0x05);
+  
+  //Wait for the flag to become 1
+  while((fpga_read_byte() & 1) == 0);
+  
+  //Test again to make sure it was no glitch?????
+  while((fpga_read_byte() & 1) == 0);
+  
+  //Some stop command??
+  fpga_write_cmd(0x01);
+  fpga_write_byte(0x00);
+  
+  //Backup the settings
+  scopesettings.timeperdivbackup = scopesettings.timeperdiv;
+  scopesettings.channel1.voltperdivbackup = scopesettings.channel1.voltperdiv;
+  scopesettings.channel2.voltperdivbackup = scopesettings.channel2.voltperdiv;
+  
+  //Check if screen needs to be redrawn
+  if(scopesettings.updatescreen)
+  {
+    //Reset the flag so only done once until new request
+    scopesettings.updatescreen = 0;
+    
+    //Draw directly on the screen
+    display_set_screen_buffer(maindisplaybuffer);
+      
+    //Clear the trace portion of the screen
+    display_set_fg_color(0x00000000);
+    display_fill_rect(2, 47, 728, 432);
+    
+    //Draw the grid lines and dots based on the grid brightness setting
+    scope_draw_grid();
+    
+    //Draw the signal center, trigger level and trigger position pointers
+    scope_draw_pointers();
+  }
+  
+  //Send check on triggered command to the FPGA
+  fpga_write_cmd(0x0A);
+  
+  //Wait for the FPGA to signal triggered or touch panel is touched or signals or cursors are being moved
+  while(((fpga_read_byte() & 1) == 0) && (havetouch == 0) && (touchstate != 2))
+  {
+    //Scan the touch panel
+    tp_i2c_read_status();
+  }
+  
+  //Some bounds setting. Zero here, One after trigger???
+  fpga_write_cmd(0x0F);
+  fpga_write_byte(0x01);
+  
+  //Check on trigger mode not being auto
+  if(scopesettings.triggermode)
+  {
+    //Check if there is touch
+    if(havetouch)
+    {
+      //Signal this in some state variables
+      scopesettings.triggerflag2 = 1;
+      
+      //Check if single mode
+      if(scopesettings.triggermode == 1)
+      {
+        //Signal this in the flags
+        scopesettings.triggerflag1 = 0;
+        scopesettings.triggerflag3 = 0;
+      }
+      else
+      {
+        //In normal mode
+        if(scopesettings.triggerflag3 == 0)
+        {
+          scopesettings.triggerflag1 = 0;
+        }
+        else
+        {
+          scopesettings.triggerflag1 = 1;
+        }
+      }
+      
+      return;
+    }
+    
+    //Check if in single mode
+    if(scopesettings.triggermode == 1)
+    {
+      //Switch to stopped
+      scopesettings.runstate = 1;
+      
+      //Show this on the screen
+      scope_run_stop_text();
+      
+      //Backup the settings
+      scopesettings.channel1.voltperdivbackup = scopesettings.channel1.voltperdiv;
+      scopesettings.channel2.voltperdivbackup = scopesettings.channel2.voltperdiv;
+    }
+    
+    //Switch some mode
+    scopesettings.triggerflag3 = 1;
+  }
+
+  //Not sure if this name is correct. Sends command 0x14 and formats and translates returned data
+  //Later on used to send to the FPGA with command 0x1F
+  data = fpga_prepare_for_transfer();
+
+  //Handle the returned data based on the time base setting
+  //For the range 50mS/div - 500nS/div (50S/div - 100mS/div are handled in the long time base function)
+  if(scopesettings.timeperdiv < 25)
+  {
+    //Check if range is 50mS/div - 20mS/div or 10mS/div - 500nS/div
+    if(scopesettings.timeperdiv < 11)
+    {
+      //For 50mS/div and 20mS/div use 10
+      data = 10;
+    }
+    else
+    {
+      //For 10mS/div - 500nS/div add or subtract data based on from FPGA returned value
+      if(data < 750)
+      {
+        //Less the 750 make it bigger
+        data = data + 3345;
+      }
+      else
+      {
+        //More then 750 make it smaller
+        data = data - 750;
+      }
+    }
+  }
+  else
+  {
+    //Get correction value for the time base range 200nS/div - 10nS/div
+    signaladjust = timebase_adjusters[scopesettings.timeperdiv - 25];
+    
+    //Check if need to add or subtract
+    if(data < signaladjust)
+    {
+      //Perform some other adjustment
+      data = 4095 - (signaladjust - data);
+    }
+    else
+    {
+      //Take adjuster of
+      data = data - signaladjust;
+    }
+  }
+  
+  //Check if channel 1 is enabled
+  if(scopesettings.channel1.enable)
+  {
+    //Send command 0x1F to the FPGA followed by the translated data returned from command 0x14
+    fpga_write_cmd(0x1F);
+    fpga_write_short(data);
+    
+    //Determine the number of bytes to read based on the time base setting
+    if(scopesettings.timeperdiv < 11)
+    {
+      //For 50mS/div and 20mS/div only 750 bytes
+      count = 750;
+    }
+    else
+    {
+      //For 10mS/div - 10nS/div 1500 bytes
+      count = 1500;
+    }
+    
+    //Get the FPGA command to read from based on the trigger channel
+    command = fpga_read_parameter_ic(0x0C, scopesettings.triggerchannel);
+    
+    //Read the bytes into a trace buffer
+    fpga_read_trace_data(command, channel1tracebuffer1, count);
+
+    //Check if triggered on this channel
+    if(scopesettings.triggerchannel == 0)
+    {
+      triggered = scope_process_trigger();
+    }
+    
+    //Pre process data based on time base setting
+    switch(scopesettings.timeperdiv)
+    {
+      //250nS/div
+      case 25:
+        //Call pre process function for it
+        scope_pre_process_250ns_data(channel1tracebuffer1, 0, 2500);
+        break;
+
+      //100nS/div
+      case 26:
+        //Call pre process function for it
+        scope_pre_process_100ns_data(channel1tracebuffer1, 0, 2500);
+        break;
+
+      //50nS/div
+      case 27:
+        //Call pre process function for it
+        scope_pre_process_50ns_data(channel1tracebuffer1, 0, 2500);
+        break;
+
+      //25nS/div and 10nS/div
+      case 28:
+      case 29:
+        //Prepare FPGA for reading again
+        //Send command 0x1F to the FPGA followed by the translated data returned from command 0x14
+        fpga_write_cmd(0x1F);
+        fpga_write_short(data);
+        
+        //Read the bytes into a trace buffer
+        fpga_read_trace_data(0x21, channel1tracebuffer2, 1500);                //In original code this is done in buffer1
+        
+        //Call pre process function for it
+        scope_pre_process_25ns_data(channel1tracebuffer2, 0, 1500);
+        scope_process_25ns_data(channel1tracebuffer2, 0, 1500);
+        break;
+    }
+
+    //Set sample count based on time base setting
+    if(scopesettings.timeperdiv >= 25)
+    {
+      //For settings 250nS/div - 10nS/div. This would mean that for 250nS/div, 100nS/div and 50nS/div samples are interpolated???
+      count = 2500;
+    }
+    else if(scopesettings.timeperdiv >= 11)  //In original code this is 9, but below that is handled in long time base function
+    {                                        //And based on the code before I guessed it to be 11. Needs to be confirmed
+      //For settings 10mS/div - 250nS/div
+      count = 1500;
+    }
+    else
+    {
+      //For settings 50mS/div and 20mS/div
+      count = 750;
+    }
+    
+    //Translate the channel 1 volts per div setting
+    signaladjust = fpga_read_parameter_ic(0x0B, scopesettings.channel1.voltperdiv) & 0x0000FFFF;
+    
+    //Point to the data to process and the place to store the processed data
+    ptr1 = channel1tracebuffer1;
+    ptr2 = channel1tracebuffer3;
+    
+    //Process the samples
+    while(count)
+    {
+      //Some fractional scaling on the signal to fit it on screen???
+      //Adjust the channel 1 signal based on the volts per div setting
+      temp1 = *ptr1 * signaladjust;
+      temp2 = ((0xA3D7 * temp1) + 0xA3D7) >> 0x16;
+      temp3 = temp1 + (((uint64)(temp1 * 0x51EB851F) >> 0x25) * -100);
+
+      //If above half the pixel up to next one?????
+      if(temp3 > 50)
+      {
+        temp2++;
+      }
+
+      //Store it for further handling
+      *ptr2 = temp2;
+
+      //Point to next source and destination
+      ptr1++;
+      ptr2++;
+      
+      //One more sample done
+      count--;
+    }
+
+    //Set sample count based on time base setting
+    if(scopesettings.timeperdiv >= 25)
+    {
+      //For settings 250nS/div - 10nS/div. This would mean that for 250nS/div, 100nS/div and 50nS/div samples are interpolated???
+      count = 2500;
+    }
+    else if(scopesettings.timeperdiv >= 11)  //In original code this is 9, but below that is handled in long time base function
+    {                                        //And based on the code before I guessed it to be 11. Needs to be confirmed
+      //For settings 10mS/div - 250nS/div
+      count = 1500;
+    }
+    else
+    {
+      //For settings 50mS/div and 20mS/div
+      count = 750;
+    }
+
+
+
+
+
+
+  }
+  
+  //Handle channel 2 here
+  
+  
+  //Set flags based on being triggered
+  if(triggered)
+  {
+    //Triggered
+    scopesettings.triggerflag4 = 1;
+    scopesettings.triggerflag1 = 0;
+    scopesettings.triggerflag2 = 0;
+  }
+  else
+  {
+    //Not triggered
+    scopesettings.triggerflag4 = 0;
+    scopesettings.triggerflag1 = 1;
+    scopesettings.triggerflag2 = 1;
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+uint32 scope_process_trigger(void)
+{
+
+  return(0);  
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_pre_process_250ns_data(uint16 * buffer, uint32 offset, uint32 count)
+{
+  
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_pre_process_100ns_data(uint16 * buffer, uint32 offset, uint32 count)
+{
+  
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_pre_process_50ns_data(uint16 * buffer, uint32 offset, uint32 count)
+{
+  
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_pre_process_25ns_data(uint16 * buffer, uint32 offset, uint32 count)
+{
+  
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_process_25ns_data(uint16 * buffer, uint32 offset, uint32 count)
 {
   
 }

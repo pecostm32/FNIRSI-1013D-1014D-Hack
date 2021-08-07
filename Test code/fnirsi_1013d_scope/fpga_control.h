@@ -79,7 +79,7 @@ void fpga_set_trigger_level(void);
 void fpga_set_trigger_mode(void);
 
 void fpga_set_long_timebase(void);
-void fpga_set_short_timebase(uint32 data);
+void fpga_set_short_timebase(void);
 
 uint16 fpga_prepare_for_transfer(void);
 

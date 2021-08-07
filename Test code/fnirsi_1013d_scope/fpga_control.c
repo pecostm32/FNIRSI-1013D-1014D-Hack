@@ -35,6 +35,8 @@ union tagByteAndBits
 
 extern SCOPESETTINGS scopesettings;
 
+extern const uint16 signal_adjusters[];
+
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void fpga_init(void)
@@ -487,14 +489,61 @@ void fpga_swap_trigger_channel(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-const uint8 trigger_level_dividers[7] = { 0xAD, 0xAF, 0xB4, 0xB4, 0xB8, 0xB8, 0xB8 };
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
 void fpga_set_trigger_level(void)
 {
-  //Needs some research of the code. Another function is called that looks at the trigger channel settings to prepare the data for
-  //command 0x17
+  uint32 voltperdiv;
+  uint32 traceoffset;
+  uint32 adjuster;
+  uint32 level;
+  
+  //Check which channel is used for triggering
+  if(scopesettings.triggerchannel == 0)
+  {
+    //Channel 1, so use its data
+    voltperdiv  = scopesettings.channel1.voltperdiv;
+    traceoffset = scopesettings.channel1.traceoffset;
+  }
+  else
+  {
+    //Channel 2, so use its data
+    voltperdiv  = scopesettings.channel2.voltperdiv;
+    traceoffset = scopesettings.channel2.traceoffset;
+  }
+  
+  //Get the adjuster for the level based on the volts per div setting
+  adjuster = signal_adjusters[voltperdiv];
+  
+  //Process the data different when on lowest volts per div setting
+  if(voltperdiv == 6)
+  {
+    //check if trigger trace offset below channel trace offset
+    if(scopesettings.triggeroffset < traceoffset)
+    {
+      //Below the trace
+      //Use the trace screen offset minus half the delta of the screen offsets and scale it with the signal adjuster setting
+      level = ((traceoffset - ((traceoffset - scopesettings.triggeroffset) / 2)) * 100) / adjuster;
+    }
+    else
+    {
+      //Above the trace
+      //Use the trace screen offset plus half the delta of the screen offsets and scale it with the signal adjuster setting
+      level = ((traceoffset +- ((scopesettings.triggeroffset - traceoffset) / 2)) * 100) / adjuster;
+    }
+  }
+  else
+  {
+    //Scale the screen offset with the signal adjuster setting
+    level = (scopesettings.triggeroffset * 100) / adjuster;
+  }
+  
+  //Store the result in the global settings
+  scopesettings.triggerlevel = level;
+  
+  //Send the command for setting the trigger level to the FPGA
+  fpga_write_cmd(0x17);
+  
+  //Write the actual level to the FPGA
+  fpga_write_byte(level);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -530,9 +579,40 @@ void fpga_set_long_timebase(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void fpga_set_short_timebase(uint32 data)
+const uint32 short_timebase_settings[] =
 {
+     800,   // 50mS/div
+     800,   // 20mS/div
+    1800,   // 10mS/div
+    2500,   //  5mS/div
+    2500,   //  2mS/div
+    2500,   //  1mS/div
+    2500,   //500uS/div
+    2500,   //200uS/div
+    3000,   //100uS/div
+    5596,   // 50uS/div
+    9692,   // 20uS/div
+   21980,   // 10uS/div
+   21980,   //  5uS/div
+   83420,   //  2uS/div
+  206300,   //  1uS/div
+  411100,   //500nS/div
+  411100,   //250nS/div
+  411100,   //100nS/div
+  411100,   // 50nS/div
+  411100,   // 25nS/div
+  411100,   // 10nS/div
+};
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_set_short_timebase(void)
+{
+  //Write the command to set the short time base data to the FPGA
+  fpga_write_cmd(0x0E);
   
+  //Table settings ranges from setting 9 (50mS/div) to 29 (10nS/div)
+  fpga_write_int(short_timebase_settings[scopesettings.timeperdiv - 9]);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

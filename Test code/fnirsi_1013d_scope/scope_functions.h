@@ -44,7 +44,7 @@ void scope_ch2_sensitivity_control(int type, int mode);
 
 void scope_menu_button(int mode);
 void scope_main_return_button(int mode);
-void scope_run_stop_text(int mode);
+void scope_run_stop_text(void);
 void scope_channel1_settings(int mode);
 void scope_channel2_settings(int mode);
 void scope_time_div_setting(void);
@@ -125,6 +125,16 @@ void scope_process_trace_data(void);
 void scope_get_long_timebase_data(void);
 
 void scope_get_short_timebase_data(void);
+
+uint32 scope_process_trigger(void);
+
+void scope_pre_process_250ns_data(uint16 * buffer, uint32 offset, uint32 count);
+void scope_pre_process_100ns_data(uint16 * buffer, uint32 offset, uint32 count);
+void scope_pre_process_50ns_data(uint16 * buffer, uint32 offset, uint32 count);
+void scope_pre_process_25ns_data(uint16 * buffer, uint32 offset, uint32 count);
+
+
+void scope_process_25ns_data(uint16 * buffer, uint32 offset, uint32 count);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

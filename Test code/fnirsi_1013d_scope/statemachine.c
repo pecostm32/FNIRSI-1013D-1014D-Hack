@@ -1137,7 +1137,7 @@ void handle_right_basic_menu_touch(void)
       }
 */      
       //Display the changed state
-      scope_run_stop_text(scopesettings.runstate);
+      scope_run_stop_text();
     }
     else
     {

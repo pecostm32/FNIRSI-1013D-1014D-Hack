@@ -141,7 +141,15 @@ int main(void)
   scopesettings.triggeroffset = 124;
   scopesettings.triggerlevel = 20;
   
+  scopesettings.timeperdivbackup = 0;
   scopesettings.timeperdiv = 6;
+  
+  scopesettings.triggerflag1 = 0;
+  scopesettings.triggerflag2 = 0;
+  scopesettings.triggerflag3 = 0;
+  scopesettings.triggerflag4 = 0;
+  
+  scopesettings.updatescreen = 1;
   
   scopesettings.batterychargelevel = 20;
   scopesettings.batterycharging = 1;
@@ -160,6 +168,12 @@ int main(void)
   scopesettings.voltcursor1position = 169;
   scopesettings.voltcursor2position = 234;
 
+  scopesettings.channel1pixelA = 0;
+  scopesettings.channel1pixelB = 0;
+  scopesettings.channel2pixelA = 0;
+  scopesettings.channel2pixelB = 0;
+  
+  scopesettings.previoustimerticks = 0;
   
   int channel;
   int item;
@@ -180,7 +194,6 @@ int main(void)
   scopesettings.measuresstate[1][10] = 1;
 
   
-  scopesettings.previoustimerticks = 0;
   
   
   //In the original code there is some hardware check function here. Actions are not performed unless some data in the FLASH is not set
@@ -237,7 +250,6 @@ int main(void)
   fpga_set_translated_brightness();
 
   
-//  scope_draw_grid();
   
 //  scope_draw_time_cursors();
 //  scope_draw_volt_cursors();

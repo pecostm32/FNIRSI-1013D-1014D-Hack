@@ -52,37 +52,12 @@ uint32 timer0_get_ticks(void)
 
 void timer0_delay(uint32 timeout)
 {
-  uint32 curticks;
-  uint32 prevticks;
-  uint32 deltaticks;
-
-  //Get the current ticks as previous
-  prevticks = timer0_get_ticks();
+  //Calculate the timeout ticks
+  timeout += timer0ticks;
   
-  while(1)  
-  {
-    //Get the current ticks for delta check
-    curticks = timer0_get_ticks();
-
-    //Check on timer ticks overflow
-    if(curticks >= prevticks)
-    {
-      //Not then the delta is simple subtraction of the values
-      deltaticks = curticks - prevticks;
-    }
-    else
-    {
-      //In case of an overflow calculate the remainder of ticks to max count plus the current ticks
-      deltaticks = (0xFFFFFFFF - prevticks) + curticks;
-    }
-
-    //Check if there is a timeout
-    if(deltaticks > timeout)
-    {
-      //Done so break the loop
-      break;
-    }
-  }
+  //While technically prone to error on timer ticks overflow the scope has to be running for >49 days before it occurs
+  //Wait until time has past
+  while(timer0ticks < timeout);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
