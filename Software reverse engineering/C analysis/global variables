@@ -32,6 +32,8 @@
 0x8019d5b7   some flag used in triggering????
 0x8019d5b8   some flag used in triggering????
 
+0x8019d5be   some flag used in triggering????
+
 0x8019d5c1   trigger mode
 0x8019d5c2   trigger edge
 0x8019d5c3   trigger channel
@@ -55,13 +57,19 @@
 0x8019d5e4   system ok flag             needs to be 0x1432
 
 
-0x8019D5EA   short Channel 1 signal average  (Timebase 50S/div - 100mS/div)
+0x8019d5e8   some flag checked in signal processing
 
 
-0x801a04ca   short Channel 2 signal average  (Timebase 50S/div - 100mS/div)
+0x8019D5EA   short Channel 1 signal average  (Timebase 50S/div - 100mS/div)  Actualy start of channel 1 trace data buffer (12000 bytes, 6000 samples)
 
 
+0x801a04ca   short Channel 2 signal average  (Timebase 50S/div - 100mS/div)  Actualy start of channel 2 trace data buffer (12000 bytes, 6000 samples)
 
+0x801A1C3A   channel 2 second read buffer
+
+0x801A916A   channel 1 processed signal buffer
+
+0x801AA8DA   channel 2 processed signal buffer
 
 //Measurement settings base address
 0x801FA24C
