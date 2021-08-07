@@ -77,7 +77,7 @@
       set_gpio_pin_low(puVar24,10);
 
       if (puVar22 != (uint *)0x0) {
-        puVar16 = DAT_8000b2a0;
+        puVar16 = DAT_8000b2a0;    //0x801A1C3A
         puVar18 = DAT_8000b27c;
       }
 

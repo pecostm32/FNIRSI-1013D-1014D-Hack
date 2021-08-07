@@ -1,4 +1,5 @@
 //------------------------------------------------------------------------------------------------------------------------------------------------
+//scope_get_short_timebase_data in my code
 
 void FUN_80025468(void)
 {
@@ -120,13 +121,15 @@ void FUN_80025468(void)
   fpga_write_cmd('\x01');
   fpga_write_data('\0');
 
+
   puVar8 = PTR_DAT_8002573c;    //0x80192ec8
   puVar7 = PTR_DAT_80025738;    //0x80192ec6
 
   *(undefined *)(iVar19 + 0xb) = *(undefined *)(iVar19 + 10);  //Copy the timebase setting for what???    (0x8019d5ab)
 
   *(ushort *)puVar7 = (ushort)*(byte *)(iVar19 + 3);           //Copy the volts/div setting for channel 1 (0x80192ec6) Seen these addresses in the fpga handling
-  *(ushort *)puVar8 = (ushort)*(byte *)(iVar19 + 0xf);         //Copy the volts/div setting for channel 2 (0x80192ec8)
+  *(ushort *)puVar8 = (ushort)*(byte *)(iVar19 + 0xf);         //Copy the volts/div setting for channel 2 (0x80192ec8) voltperdivbackup
+
 
   //Check some variable to see if an update on screen is needed
   if (*(char *)(iVar19 + 0x37) != '\0')
@@ -173,7 +176,6 @@ void FUN_80025468(void)
   fpga_write_cmd('\x0f');
   fpga_write_data('\x01');
 
-
   //Trigger mode single and normal
   if (*(char *)(iVar19 + 0x21) != '\0')
   {
@@ -181,10 +183,11 @@ void FUN_80025468(void)
     {
       *(undefined *)(iVar19 + 0x18) = 1;            //0x8019d5b8  some flag
 
-      bVar26 = *(char *)(iVar19 + 0x21) != '\x01';  //Not in single mode
+      bVar26 = *(char *)(iVar19 + 0x21) != '\x01';  //Not in single mode  True for normal mode
 
       if (bVar26)
       {
+        //Normal mode
         if (*(char *)(iVar19 + 0x36) == '\0')       //0x8019d5d6  Some state variable????
         {
           bVar26 = false;
@@ -212,14 +215,17 @@ void FUN_80025468(void)
       *(ushort *)puVar8 = (ushort)*(byte *)(iVar19 + 0xf);
     }
 
-    *(undefined *)(iVar19 + 0x36) = 1;              //Signal in the state variable single stopped????
+    *(undefined *)(iVar19 + 0x36) = 1;              //Signal in some state variable single or normal
   }
+
+
 
 
   local_30 = 0;
 
   puVar12 = (uint *)fpga_prepare_for_transfer();   //Send command 0x14 and translate the received data
-                                                   //Is this getting the data count
+
+
 
   puVar6 = DAT_8000b270;                           //0x000005DC   (1500)
   puVar15 = DAT_8000b268;                          //0x000002EE    (750)
@@ -245,7 +251,7 @@ void FUN_80025468(void)
   }
   else 
   {
-    switch(DAT_8000b264[10])                       //0x8019D5AA so timebase settings
+    switch(DAT_8000b264[10])                       //0x8019D5AA so timebase settings.  Use timebase_adjusters
     {
     case '\x19':                                   //200nS/div
       unaff_r4 = DAT_8000b26c;                     //0x01A9
@@ -273,9 +279,15 @@ void FUN_80025468(void)
     }
   }
 
-  puVar12 = DAT_8000b270 + 0xfa;
+  puVar12 = DAT_8000b270 + 0xfa;                    //0x000005DC + FA = 6D6 = 1750 Some offset in some data???
   data = (uchar)((ushort)sVar10 >> 8);
   data_00 = (uchar)sVar10;
+
+
+
+
+
+
 
 
   //Channel 1 handling (Channel 2 handling is similair but uses different functions at some points)
@@ -311,11 +323,12 @@ void FUN_80025468(void)
       {
         set_gpio_pin_low(puVar18,8);
         set_gpio_pin_high(puVar18,8);
-        puVar16 = DAT_8000b278 + (int)puVar24;
+        puVar16 = DAT_8000b278 + (int)puVar24;                             //0x8019D5EA
         puVar24 = (uint *)((uint)((int)puVar24 + 1) & 0xfffeffff);
         *puVar16 = (ushort)puVar18[4] & 0xff;
       } while (puVar24 < puVar22);
     }
+
 
     pcVar2 = DAT_8000b264;
     *DAT_8000b278 = DAT_8000b278[1];
@@ -323,22 +336,22 @@ void FUN_80025468(void)
 
     if (pcVar2[0x23] == '\0')    //Trigger on channel 1 ?
     {
-      local_30 = FUN_800291e0();
+      local_30 = FUN_800291e0();  //scope_process_trigger
     }
 
     if (pcVar2[10] == '\x19')    //Timebase 250nS/div ?
     {
-      FUN_8001363c(DAT_8000b278,0);
+      FUN_8001363c(DAT_8000b278,0);  //0x8019D5EA   //scope_pre_process_250ns_data
     }
 
     if (pcVar2[10] == '\x1a')    //Timebase 100nS/div ?
     {
-      FUN_800141c8(DAT_8000b278,0);
+      FUN_800141c8(DAT_8000b278,0);  //scope_pre_process_100ns_data
     }
 
     if (pcVar2[10] == '\x1b')    //Timebase 50nS/div ?
     {
-      FUN_800130c4(DAT_8000b278,0);
+      FUN_800130c4(DAT_8000b278,0);  //scope_pre_process_50ns_data
     }
 
     //Timebase 25nS/div or 10nS/div
@@ -351,7 +364,7 @@ void FUN_80025468(void)
 
       puVar22 = puVar6;  //1500 bytes
 
-      if ((byte)DAT_8000b264[10] < 0xb)
+      if ((byte)DAT_8000b264[10] < 0xb)  //Total bullshit since this part of the code is only for 0x1C and 0x1D setting!!!
       {
         puVar22 = puVar15;
       }
@@ -377,37 +390,53 @@ void FUN_80025468(void)
           set_gpio_pin_high(puVar18,8);
           iVar19 = (int)puVar21 * 2;
           puVar21 = (uint *)((uint)((int)puVar21 + 1) & 0xfffeffff);
-          *(ushort *)(DAT_8000b280 + iVar19) = (ushort)*puVar24 & 0xff;
+          *(ushort *)(DAT_8000b280 + iVar19) = (ushort)*puVar24 & 0xff;     //0x8019ED5A
         } while (puVar21 < puVar22);
       }
 
-      FUN_8000460c();   //Different functions for channel 1 and 2
-      FUN_800062bc();
+      FUN_8000460c();   //Different functions for channel 1 and 2  scope_pre_process_25ns_data, since most likely same processing on different data
+      FUN_800062bc();   //scope_process_25ns_data
     }
 
     //Process further on the total data
-    puVar22 = puVar12;
+    puVar22 = puVar12;    // = 2500
 
-    //Check on time base and number of bytes read
+    //Check on time base and set number of bytes read
     if(((byte)DAT_8000b264[10] < 0x19) && (puVar22 = puVar6, (byte)DAT_8000b264[10] < 9))
     {
       puVar22 = puVar15;
     }
 
+/*
+                             LAB_8000aad0                                    XREF[1]:     8000aa24(j)  
+        8000aad0 8c 07 9f e5     ldr        r0,[DAT_8000b264]                                = 8019D5A0h
+        8000aad4 0a 10 d0 e5     ldrb       r1,[r0,#0xa]=>DAT_8019d5aa
+        8000aad8 19 00 51 e3     cmp        r1,#0x19
+        8000aadc 08 40 a0 21     movcs      r4,r8                               =0x09c4  == 2500
+        8000aae0 03 00 00 2a     bcs        LAB_8000aaf4
+        8000aae4 0a 10 d0 e5     ldrb       r1,[r0,#0xa]=>DAT_8019d5aa
+        8000aae8 09 00 51 e3     cmp        r1,#0x9
+        8000aaec 07 40 a0 21     movcs      r4,r7                               =0x05DC  == 1500
+        8000aaf0 06 40 a0 31     movcc      r4,r6                               =0x02EE  == 750
+*/
+
 
     //Translate based on channel 1 volts per div
     uVar14 = translate_parameter(0xb,(uint)(byte)DAT_8000b264[3]);
 
-    uVar13 = DAT_8000b288;
-    pcVar2 = DAT_8000b264;
-    puVar16 = DAT_8000b278;
-    puVar17 = DAT_8000b284;
-    puVar4 = DAT_8000b284;
-    puVar5 = DAT_8000b290;
 
-    while (DAT_8000b264 = pcVar2, DAT_8000b284 = puVar4, DAT_8000b290 = puVar5, puVar22 != (uint *)0x0)
+    uVar13 = DAT_8000b288;    //0x51EB851F
+    pcVar2 = DAT_8000b264;    //0x8019D5A0
+    puVar16 = DAT_8000b278;   //0x8019D5EA
+    puVar17 = DAT_8000b284;   //0x801A916A   some target buffer
+    puVar4 = DAT_8000b284;    //0x801A916A
+    puVar5 = DAT_8000b290;    //0x801AC04A   //second channel buffer????
+
+    while (puVar22 != (uint *)0x0)
     {
+      //Same processing as in long time base
       uVar20 = (uVar14 & 0xffff) * (uint)*puVar16 & 0xffff;
+
       uVar1 = (ushort)(DAT_8000b28c * uVar20 + DAT_8000b28c >> 0x10);
       uVar11 = uVar1 >> 6;
 
@@ -418,19 +447,31 @@ void FUN_80025468(void)
 
       puVar22 = (uint *)((int)puVar22 + -1);
       *puVar17 = uVar11;
-      pcVar2 = DAT_8000b264;
       puVar16 = puVar16 + 1;
       puVar17 = puVar17 + 1;
-      puVar4 = DAT_8000b284;
-      puVar5 = DAT_8000b290;
     }
 
-    puVar22 = puVar12;
+
+    //Same setup for getting count
+    puVar22 = puVar12;    // = 2500
 
     if (((byte)pcVar2[10] < 0x19) && (puVar22 = puVar6, (byte)pcVar2[10] < 9))
     {
       puVar22 = puVar15;
     }
+
+//Tot hier gehad
+
+
+
+
+
+
+
+
+    pcVar2 = DAT_8000b264;   //0x8019D5A0
+    puVar4 = DAT_8000b284;   //0x801A916A    buffer with converted trace data
+    puVar5 = DAT_8000b290;   //0x801AC04A    channel 2 buffer
 
     puVar16 = puVar4 + -1;
     puVar17 = puVar5 + -1;
@@ -445,7 +486,7 @@ void FUN_80025468(void)
     uVar11 = puVar16[1];
     iVar19 = (int)puVar22 + -1 >> 1;
 
-    while (iVar19 != 0)
+    while (iVar19 != 0)     //SOme copy action to the second channel trace buffer???????????
     {
       uVar1 = puVar16[2];
       puVar17[1] = uVar11;
@@ -463,7 +504,7 @@ void FUN_80025468(void)
       puVar5[iVar19] = puVar4[iVar19];
     }
 
-    puVar22 = puVar12;
+    puVar22 = puVar12;    // = 1750
 
     if (((byte)pcVar2[10] < 0x19) && (puVar22 = puVar6, (byte)pcVar2[10] < 9))
     {
@@ -471,7 +512,7 @@ void FUN_80025468(void)
     }
 
     puVar16 = DAT_8000b290;
-    puVar18 = puVar12;
+    puVar18 = puVar12;    // = 1750
     uVar13 = DAT_8000b294;
 
     if ((pcVar2[3] == '\x06') && (puVar22 != (uint *)0x0))
@@ -581,6 +622,16 @@ void FUN_80025468(void)
     }
   }
 
+
+
+
+
+
+
+
+
+
+
   //Channel 2 handling
   if (DAT_8000b264[0xc] != '\0')
   {
@@ -603,7 +654,7 @@ void FUN_80025468(void)
     puVar24 = DAT_8000b274;
     set_gpio_pin_low(DAT_8000b274,9);
     set_gpio_pin_low(puVar24,10);
-    puVar16 = DAT_8000b29c;
+    puVar16 = DAT_8000b29c;                      //0x801A04CA
     puVar18 = (uint *)0x0;
 
     if (puVar22 != (uint *)0x0) {
@@ -824,9 +875,9 @@ void FUN_80025468(void)
 
   if (local_30 == 0)
   {
-    pcVar2[0x1e] = '\0';
-    pcVar2[0x18] = '\x01';
-    pcVar2[0x17] = '\x01';
+    pcVar2[0x1e] = '\0';     //scopesettings.triggerflag4
+    pcVar2[0x18] = '\x01';   //scopesettings.triggerflag2
+    pcVar2[0x17] = '\x01';   //scopesettings.triggerflag1
   }
   else
   {

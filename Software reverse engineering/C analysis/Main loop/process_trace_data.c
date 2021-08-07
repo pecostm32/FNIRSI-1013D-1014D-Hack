@@ -97,7 +97,7 @@ void process_trace_data(void)
     {
       uVar14 = get_timer_ticks();
 
-      //So some variable wait depending on the time base. 
+      //So some variable wait depending on the time base. This is error prone on timer overflow
       if ((uint)(iVar13 + iVar21) <= uVar14)
       {
         *(uint *)(puVar8 + 8) = uVar14;          //On time out store the current timer ticks
@@ -156,6 +156,10 @@ LAB_8002582c:
 
     *DAT_80025ae8 = (short)(uVar15 & 0xff);          //0x801A04CA. Store the signal average
 
+
+
+
+
     puVar11 = DAT_80025af4;                          //0x801A916A
     uVar14 = DAT_80025af0;                           //0x51EB851F
     puVar16 = DAT_80025aec;                          //0x802F18F8  Some base address of a set of data. Set on init???
@@ -199,8 +203,10 @@ LAB_8002582c:
     //0x72BFF8D4 + 0xa3d7 = 0x72C09CAB
     //72C09CAB >> 0x16 = 0x1CB
 
+    //Sample
     //0x24 * 0xB4 = 0x1950 * 0x51EB851F = 0x8199999A0B0 >> 0x25 = 0x40 * -100 = 0xFFFFE700   0x1950 + 0xFFFFE700 = 0x0050
-    //0x51EB851F >> 0x0F = 0xA3D7 * 0x1950 = 0x10333230 + 0xa3d7 = 0x40
+
+    //0x51EB851F >> 0x0F = 0xA3D7 * 0x1950 = 0x10333230 + 0xa3d7 >> 0x16 = 0x40
 
     //r12 = 0x51EB851F
     //r1  = uVar26
@@ -208,7 +214,7 @@ LAB_8002582c:
     //mvn r4,#0x18          r4 = 0xFFFFFFE7
     //mov r3,r3, lsr #0x5   is >> 0x25
     //mul r3,r4,r3
-    //add r4,r1,r3, lsl #0x2 makes (uVar26 + (uint)((ulonglong)uVar26 * (ulonglong)DAT_80025af0 >> 0x25) * -100)
+    //add r4,r1,r3, lsl #0x2 makes uVar26 + ((uint)((ulonglong)uVar26 * (ulonglong)DAT_80025af0 >> 0x25) * -100)
 
 
 
@@ -228,7 +234,7 @@ LAB_8002582c:
 
     puVar17 = DAT_80025af8;    //0x801AC04A
 
-    uVar28 = *puVar11;         //0x801A916A
+    uVar28 = *puVar11;         //0x801A916A  original data = temp1
 
     *DAT_80025af8 = uVar28;    //Store the result at 0x801ac04a
 
@@ -289,6 +295,7 @@ LAB_8002582c:
     //0x8019D5A0 + 3A = run mode ==> 0 is run, 0x80192f08 is touch state, where 2 seems to be moving of traces
     if ((*(char *)(DAT_80025460 + 0x3a) != '\x01') && (*PTR_DAT_80025464 != '\x02'))
     {
+      //scope_get_short_timebase_data in my code
       FUN_80025468();  //process short time base data
 
       //This is function FUN_80021a78 which is also only called from here
