@@ -298,6 +298,9 @@ LAB_8002582c:
       //scope_get_short_timebase_data in my code
       FUN_80025468();  //process short time base data
 
+
+
+
       //This is function FUN_80021a78 which is also only called from here
       iVar7 = DAT_80021bd4;
       uVar14 = DAT_80021bd0;
