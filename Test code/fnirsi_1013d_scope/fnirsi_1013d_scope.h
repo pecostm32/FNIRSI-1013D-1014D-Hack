@@ -82,11 +82,6 @@ struct tagScopeSettings
   uint16 voltcursor1position;
   uint16 voltcursor2position;
   
-  uint16 channel1pixelA;       //Long time base code writes these variables, where the first is the actual sample and the second is the possible limited one
-  uint16 channel1pixelB;
-  uint16 channel2pixelA;
-  uint16 channel2pixelB;
-  
   uint32 previoustimerticks;
   
   uint8 measuresstate[2][12];

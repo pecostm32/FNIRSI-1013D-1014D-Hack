@@ -9,6 +9,8 @@
 #include "display_lib.h"
 #include "fnirsi_1013d_scope.h"
 
+#include <string.h>
+
 //----------------------------------------------------------------------------------------------------------------------------------
 
 #define CHANNEL1_COLOR         0x00FFFF00
@@ -62,10 +64,16 @@ uint16 displaybuffer2[SCREEN_WIDTH * SCREEN_HEIGHT];
 uint16 channel1tracebuffer1[6000];    //In original code at 0x8019D5EA
 uint16 channel1tracebuffer2[6000];    //Not used in original code
 uint16 channel1tracebuffer3[3000];    //Target buffer for processed trace data. In original code at 0x801A916A
+uint16 channel1tracebuffer4[3000];    //Not used in original code
 
 uint16 channel2tracebuffer1[6000];    //In original code at 0x801A04CA
 uint16 channel2tracebuffer2[6000];    //In original code at 0x801A1C3A
 uint16 channel2tracebuffer3[3000];    //In original code at 0x801AA8DA
+uint16 channel2tracebuffer4[3000];    //In original code at 0x801AA8DA
+
+uint16 temptracebuffer1[6000];         //In original code at 0x801AEF26
+uint16 temptracebuffer2[6000];         //In original code at 0x801B8B60
+
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //For touch filtering on slider movement
@@ -3838,7 +3846,6 @@ void scope_get_long_timebase_data(void)
   
   //Need insight in the code that displays the data to get an understanding of the next bit of code
   //It is a more or less straight conversion from what Ghidra shows
-  //Might need 64 bit variables declared to handle it, or at least type casts
   
   //Some fractional scaling on the signal to fit it on screen???
   //Adjust the channel 1 signal based on the volts per div setting
@@ -3853,18 +3860,25 @@ void scope_get_long_timebase_data(void)
   }
   
   //Store it somewhere
-  scopesettings.channel1pixelA = temp1;               //At address 0x801A916A in original code
+  channel1tracebuffer3[0] = temp1;                    //At address 0x801A916A in original code
+  
+  //Check if data needs to be doubled
+  if(scopesettings.channel1.voltperdiv == 6)          //This is missing in the original code
+  {
+    //Only on highest sensitivity
+    temp1 <<= 1;
+  }
   
   //Check if outside displayable range??
   if(temp1 > 401)
   {
     //Keep it on max allowed
-    scopesettings.channel1pixelB = 401;               //At address 0x801AC04A in original code
+    channel1tracebuffer4[0] = 401;                    //At address 0x801AC04A in original code (In original also used for channel 2 sample data???)
   }
   else
   {
     //Else store it again in an other location
-    scopesettings.channel1pixelB = temp1;
+    channel1tracebuffer4[0] = temp1;
   }
   
   //Some fractional scaling on the signal to fit it on screen???
@@ -3880,18 +3894,25 @@ void scope_get_long_timebase_data(void)
   }
   
   //Store it somewhere
-  scopesettings.channel2pixelA = temp1;               //At address 0x801AA8DA in original code
+  channel2tracebuffer3[0] = temp1;               //At address 0x801AA8DA in original code
+  
+  //Check if data needs to be doubled
+  if(scopesettings.channel2.voltperdiv == 6)     //This is missing in the original code
+  {
+    //Only on highest sensitivity
+    temp1 <<= 1;
+  }
   
   //Check if outside displayable range??
   if(temp1 > 401)
   {
     //Keep it on max allowed
-    scopesettings.channel2pixelB = 401;               //At address 0x801AD7BA in original code
+    channel2tracebuffer4[0] = 401;               //At address 0x801AD7BA in original code
   }
   else
   {
     //Else store it again in an other location
-    scopesettings.channel2pixelB = temp1;
+    channel2tracebuffer4[0] = temp1;
   }
   
   //In the original code a call is made to the display function, which is also called from the main loop
@@ -3907,8 +3928,6 @@ void scope_get_short_timebase_data(void)
   uint32 command;
   uint32 triggered = 0;
   uint32 signaladjust;
-  uint32 temp1, temp2, temp3;
-  uint16 *ptr1, *ptr2;
   
   //Check if time base in range 50mS/div - 50nS/div or trigger mode is single or normal
   if((scopesettings.timeperdiv < 28) || scopesettings.triggermode)
@@ -4118,19 +4137,19 @@ void scope_get_short_timebase_data(void)
       //250nS/div
       case 25:
         //Call pre process function for it
-        scope_pre_process_250ns_data(channel1tracebuffer1, 0, 2500);
+        scope_pre_process_250ns_data(channel1tracebuffer1, 2500);
         break;
 
       //100nS/div
       case 26:
         //Call pre process function for it
-        scope_pre_process_100ns_data(channel1tracebuffer1, 0, 2500);
+        scope_pre_process_100ns_data(channel1tracebuffer1, 2500);
         break;
 
       //50nS/div
       case 27:
         //Call pre process function for it
-        scope_pre_process_50ns_data(channel1tracebuffer1, 0, 2500);
+        scope_pre_process_50ns_data(channel1tracebuffer1, 2500);
         break;
 
       //25nS/div and 10nS/div
@@ -4166,62 +4185,42 @@ void scope_get_short_timebase_data(void)
       //For settings 50mS/div and 20mS/div
       count = 750;
     }
+
+    //Adjust the data into another buffer
+    scope_adjust_data(channel1tracebuffer3, channel1tracebuffer1, count, scopesettings.channel1.voltperdiv);
     
-    //Translate the channel 1 volts per div setting
-    signaladjust = fpga_read_parameter_ic(0x0B, scopesettings.channel1.voltperdiv) & 0x0000FFFF;
+    //Copy the buffer to another buffer
+    memcpy((uint8*)channel1tracebuffer4, (uint8*)channel1tracebuffer3, count);
     
-    //Point to the data to process and the place to store the processed data
-    ptr1 = channel1tracebuffer1;
-    ptr2 = channel1tracebuffer3;
-    
-    //Process the samples
-    while(count)
+    //Check if on highest sensitivity (50mV/div on 1x probe setting)
+    if(scopesettings.channel1.voltperdiv == 6)
     {
-      //Some fractional scaling on the signal to fit it on screen???
-      //Adjust the channel 1 signal based on the volts per div setting
-      temp1 = *ptr1 * signaladjust;
-      temp2 = ((0xA3D7 * temp1) + 0xA3D7) >> 0x16;
-      temp3 = temp1 + (((uint64)(temp1 * 0x51EB851F) >> 0x25) * -100);
-
-      //If above half the pixel up to next one?????
-      if(temp3 > 50)
-      {
-        temp2++;
-      }
-
-      //Store it for further handling
-      *ptr2 = temp2;
-
-      //Point to next source and destination
-      ptr1++;
-      ptr2++;
+      //Adjust data in buffer 4 to be twice the magnitude
+      scope_double_data(channel1tracebuffer4, count);
       
-      //One more sample done
-      count--;
+      //Adjust the data for trace offset???
+      scope_offset_data(channel1tracebuffer4, count, scopesettings.channel1.traceoffset);
     }
 
-    //Set sample count based on time base setting
-    if(scopesettings.timeperdiv >= 25)
+    //Limit the data to max range
+    scope_limit_data(channel1tracebuffer4, count);   //In the original they process 2500 samples no matter what
+    
+    //Do additional handling for time base range 50mS/div - 500nS/div
+    if(scopesettings.timeperdiv < 25)
     {
-      //For settings 250nS/div - 10nS/div. This would mean that for 250nS/div, 100nS/div and 50nS/div samples are interpolated???
-      count = 2500;
+      //Filter the data
+      scope_filter_data(channel1tracebuffer4, count - 2);    //In the original the do 2998 samples no matter what
     }
-    else if(scopesettings.timeperdiv >= 11)  //In original code this is 9, but below that is handled in long time base function
-    {                                        //And based on the code before I guessed it to be 11. Needs to be confirmed
-      //For settings 10mS/div - 250nS/div
-      count = 1500;
-    }
-    else
-    {
-      //For settings 50mS/div and 20mS/div
-      count = 750;
-    }
-
-
-
-
-
-
+    
+    //Call some functions here dedicated to channel 1
+    //FUN_800049a0();
+    //FUN_80006654();
+    
+    //And if some variable is 0 call another one
+    //if (pcVar2[0x48] == '\0')
+    //{
+    //  FUN_80003ec8();
+    //}
   }
   
   //Handle channel 2 here
@@ -4230,14 +4229,14 @@ void scope_get_short_timebase_data(void)
   //Set flags based on being triggered
   if(triggered)
   {
-    //Triggered
+    //Triggered????
     scopesettings.triggerflag4 = 1;
     scopesettings.triggerflag1 = 0;
     scopesettings.triggerflag2 = 0;
   }
   else
   {
-    //Not triggered
+    //Not triggered????
     scopesettings.triggerflag4 = 0;
     scopesettings.triggerflag1 = 1;
     scopesettings.triggerflag2 = 1;
@@ -4246,30 +4245,635 @@ void scope_get_short_timebase_data(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+void scope_adjust_data(uint16 *destination, uint16 *source, uint32 count, uint8 voltperdiv)
+{
+  uint32 signaladjust;
+  uint32 temp1, temp2, temp3;
+
+  //Translate the channel 1 volts per div setting
+  signaladjust = fpga_read_parameter_ic(0x0B, voltperdiv) & 0x0000FFFF;
+  
+  //Process the samples
+  while(count)
+  {
+    //Some fractional scaling on the signal to fit it on screen???
+    //Adjust the channel 1 signal based on the volts per div setting
+    temp1 = *source * signaladjust;
+    temp2 = ((0xA3D7 * temp1) + 0xA3D7) >> 0x16;
+    temp3 = temp1 + (((uint64)(temp1 * 0x51EB851F) >> 0x25) * -100);
+
+    //If above half the pixel up to next one?????
+    if(temp3 > 50)
+    {
+      temp2++;
+    }
+
+    //Store it for further handling
+    *destination = temp2;
+
+    //Point to next source and destination
+    source++;
+    destination++;
+
+    //One more sample done
+    count--;
+  }
+  
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_offset_data(uint16 *buffer, uint32 count, uint32 offset)
+{
+  //Process the samples
+  while(count)
+  {
+    //Check if the data is smaller then the offset
+    if(*buffer < offset)
+    {
+      //If so limit to top of the screen
+      *buffer = 0;
+    }
+    else
+    {
+      //Else take of the offset
+      *buffer = *buffer - offset;
+    }
+
+    //Point to next sample
+    buffer++;
+
+    //One more sample done
+    count--;
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_limit_data(uint16 *buffer, uint32 count)
+{
+  //Process the samples
+  while(count)
+  {
+    //Check if the data is smaller then the offset
+    if(*buffer > 401)
+    {
+      //If so limit to top of the screen
+      *buffer = 401;
+    }
+
+    //Point to next sample
+    buffer++;
+
+    //One more sample done
+    count--;
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_filter_data(uint16 *buffer, uint32 count)
+{
+  uint32 sample1, sample2, sample3;
+  uint32 midlow, midhigh;
+  
+  //Process the samples
+  while(count)
+  {
+    //Get three consecutive samples
+    sample1 = buffer[0];
+    sample2 = buffer[1];
+    sample3 = buffer[2];
+    
+    //Set filter ranges
+    midlow  = sample2 - 6;
+    midhigh = sample2 + 6;
+    
+    //Check if first and last sample not near the middle sample and at the same side of it. (both below or above)
+    if(((sample1 < midlow) && (sample3 < midlow)) || ((midhigh < sample1) && (midhigh < sample3)))
+    {
+      //If so set the middle sample to the average of the other two
+      buffer[1] = (sample1 + sample3) >> 1;
+    }
+
+    //Point to next sample
+    buffer++;
+
+    //One more sample done
+    count--;
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_double_data(uint16 *buffer, uint32 count)
+{
+  //Process the samples
+  while(count)
+  {
+    //Multiply the sample by two
+    *buffer <<= 1;
+
+    //Point to next sample
+    buffer++;
+
+    //One more sample done
+    count--;
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 uint32 scope_process_trigger(void)
 {
-
-  return(0);  
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-void scope_pre_process_250ns_data(uint16 * buffer, uint32 offset, uint32 count)
-{
+  uint16 *buffer;
+  uint32  index;
+  uint32  level = scopesettings.triggerlevel;
+  uint32  havetrigger = 1;
+  uint32  lower  = 0;
+  uint32  higher = 0;
   
-}
+  //Process based on time base setting and trigger mode
+  //Skip for 50mS/div, 20mS/div, 250nS/div, 100nS/div, 50nS/div, 25nS/div and 10nS/div or single and normal trigger modes
+  if((scopesettings.timeperdiv > 10) && (scopesettings.timeperdiv < 25) && (scopesettings.triggermode = 0))
+  {
+    //Select the trace buffer to process based on the trigger channel
+    if(scopesettings.triggerchannel == 0)
+    {
+      //Channel 1 buffer
+      buffer = channel1tracebuffer1;
+    }
+    else
+    {
+      //Channel 2 buffer
+      buffer = channel2tracebuffer1;
+    }
 
-//----------------------------------------------------------------------------------------------------------------------------------
-
-void scope_pre_process_100ns_data(uint16 * buffer, uint32 offset, uint32 count)
-{
+    //Set a starting point for checking on trigger
+    index = 745;
+    
+    //Check on which edge to trigger
+    if(scopesettings.triggeredge == 0)
+    {
+      //Rising edge
+      //Only check around center point of the buffer
+      while(index < 755)
+      {
+        //Check if previous sample lower then level and next sample equal or higher then level
+        if((buffer[index - 1] < level) && (level <= buffer[index + 1]))
+        {
+          //Is this a triggered signal or not???
+          havetrigger = 0;
+          break;
+        }
+        
+        //One sample done
+        index++;
+      }
+    }
+    else
+    {
+      //Falling edge
+      //Only check around center point of the buffer
+      while(index < 755)
+      {
+        //Check if previous sample higher then level and next sample equal or lower then level
+        if((level < buffer[index - 1]) && (buffer[index + 1] <= level))
+        {
+          //Is this a triggered signal or not???
+          havetrigger = 0;
+          break;
+        }
+        
+        //One sample done
+        index++;
+      }
+    }
+    
+    //Set a new starting point for checking
+    index = 100;
+    
+    //Process the buffer from sample 100 to sample 1400
+    while(index < 1400)
+    {
+      //Check if sample lower then level
+      if(buffer[index] < level)
+      {
+        //Signal had sample lower  then level
+        lower = 1;
+      }
+      //Check if sample higher then level
+      else if(buffer[index] > level)
+      {
+        //Signal had sample higher then level
+        higher = 1;
+      }
+        
+      //One sample done
+      index++;
+    }
+    
+    //Check if all samples where on trigger level
+    if((lower == 0) || (higher == 0))
+    {
+      //Return zero if so
+      return(0);
+    }
+    
+    //Otherwise return the flag from edge scan
+    return(havetrigger);  
+  }
   
+  //No valid time base or trigger setting just return 0
+  return(0);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_pre_process_50ns_data(uint16 * buffer, uint32 offset, uint32 count)
+void scope_pre_process_250ns_data(uint16 * buffer, uint32 count)   //In original code an offset is used, but it is always 0
 {
+  uint32 cnt;
+  uint32 sample;
+  uint16 *ptr1 = temptracebuffer1;
+  uint16 *ptr2 = buffer;
+  
+  //More efficient way of doing this would be to handle the samples from the end and keep them in a single buffer
+  //Need to investigate this further
+  //This has to do with what the FPGA returns. The time base setting in the FPGA is the same for these time base settings
+  //So some manipulation of the samples needs to be done.
+  //Base is 500nS/div so for 250nS/div they are doubled, for 100nS/div they are multiplied by 5, so probably for 50nS/div times 10
+  
+  //Only do half the samples
+  cnt = count >> 1;
+  
+  //Check if odd number of samples to process
+  if(cnt & 1)
+  {
+    //Copy the odd sample
+    *ptr1 = *ptr2;
+  }
+  else
+  {
+    //Point to before data since copy loop starts on next data
+    ptr1 -= 2;
+    ptr2--;
+  }
+  
+  //Handle two samples per loop
+  cnt >>= 1;
+  
+  //Process the samples
+  while(cnt)
+  {
+    //Copy samples with an interleave in the destination
+    ptr1[2] = ptr2[1];
+    ptr1[4] = ptr2[2];
+    
+    //Point to next destination and source
+    ptr1 += 4;
+    ptr2 += 2;
+    
+    //Two samples done
+    cnt--;
+  }
+  
+  //Average a sample in between
+  cnt = (count >> 1) - 1;
+  
+  //Check if odd number of samples to process
+  if(cnt & 1)
+  {
+    //Point to the buffer
+    ptr1 = temptracebuffer1;
+    
+    //Average the odd sample
+    ptr1[1] = (ptr1[0] + ptr1[2]) >> 1;
+  }
+  else
+  {
+    //Point to before data since copy loop starts on next data
+    ptr1 = temptracebuffer1 - 2;
+  }
+  
+  //Handle two samples per loop
+  cnt >>= 1;
+
+  //Process the samples
+  while(cnt)
+  {
+    //Get the middle sample
+    sample = ptr1[4];
+    
+    //Average the in between samples
+    ptr1[3] = (ptr1[2] + sample) >> 1;
+    ptr1[5] = (sample + ptr1[6]) >> 1;
+    
+    //Point to next set to handle
+    ptr1 += 4;
+    
+    //Two samples done
+    cnt--;
+  }
+
+  //Point to the buffers to copy back the samples to the original buffer
+  ptr1 = temptracebuffer1;
+  ptr2 = buffer;
+  
+  //Check if odd number of samples to process
+  if(count & 1)
+  {
+    *ptr2 = *ptr1;
+  }
+  else
+  {
+    //Point to before data since copy loop starts on next data
+    ptr1--;
+    ptr2--;
+  }
+  
+  //Two samples at a time so half the count
+  cnt = count >> 1;
+  
+  //Copy the samples
+  while(cnt)
+  {
+    //Do two samples per loop
+    ptr2[1] = ptr1[1];
+    ptr2[2] = ptr1[2];
+    
+    //Point to next destination and source
+    ptr1 += 2;
+    ptr2 += 2;
+    
+    //Two samples done
+    cnt--;
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_pre_process_100ns_data(uint16 * buffer, uint32 count)
+{
+  uint32 cnt1, cnt2;
+  uint32 sample1, sample2;
+  int32  delta;
+  uint16 *ptr1 = temptracebuffer1;
+  uint16 *ptr2 = buffer;
+  
+  //Only one fifth of the samples
+  cnt1 = count / 5;
+  
+  //Check if odd number of samples to process
+  if(cnt1 & 1)
+  {
+    //Copy the odd sample
+    *ptr1 = *ptr2;
+  }
+  else
+  {
+    //Point to before data since copy loop starts on next data
+    ptr1 -= 5;
+    ptr2--;
+  }
+  
+  //Handle two samples per loop
+  cnt2 = cnt1 >> 1;
+  
+  //Process the samples
+  while(cnt2)
+  {
+    //Copy samples with an interleave of 5 in the destination
+    ptr1[5]  = ptr2[1];
+    ptr1[10] = ptr2[2];
+    
+    //Point to next destination and source
+    ptr1 += 10;
+    ptr2 += 2;
+    
+    //Two samples done
+    cnt2--;
+  }
+  
+  //One less sample to do
+  cnt1--;
+  
+  //Point to the buffer to work in
+  ptr1 = temptracebuffer1;
+  
+  //Process the samples to be interpolated in between the copied ones
+  while(cnt1)
+  {
+    //The original code uses a different approach
+    //Need to check if this is correct
+    //Get the samples shifted up for fractional calculations 10.22 bits
+    sample1 = ptr1[0] << 22;
+    sample2 = ptr1[5] << 22;
+    
+    //Calculate a delta step between the samples
+    delta = (sample1 - sample2) / 5;
+    
+    for(cnt2=1;cnt2<5;cnt2++)
+    {
+      //Calculate the next sample with fixed point calculation
+      sample1 += delta;
+      
+      //Store the decimal part of it
+      ptr1[cnt2] = sample1 >> 22;
+    }
+    
+    //One set of samples done
+    cnt1--;
+  }
+  
+  //Point to the buffers to copy back the samples to the original buffer
+  ptr1 = temptracebuffer1;
+  ptr2 = buffer;
+  
+  //Check if odd number of samples to process
+  if(count & 1)
+  {
+    *ptr2 = *ptr1;
+  }
+  else
+  {
+    //Point to before data since copy loop starts on next data
+    ptr1--;
+    ptr2--;
+  }
+  
+  //Two samples at a time so half the count
+  cnt1 = count >> 1;
+  
+  //Copy the samples
+  while(cnt1)
+  {
+    //Do two samples per loop
+    ptr2[1] = ptr1[1];
+    ptr2[2] = ptr1[2];
+    
+    //Point to next destination and source
+    ptr1 += 2;
+    ptr2 += 2;
+    
+    //Two samples done
+    cnt1--;
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_pre_process_50ns_data(uint16 * buffer, uint32 count)
+{
+  uint32 cnt1, cnt2;
+  uint32 sample1, sample2;
+  int32  delta;
+  uint16 *ptr1 = temptracebuffer1;
+  uint16 *ptr2 = buffer;
+  
+  //Only one tenth of the samples
+  cnt1 = count / 10;
+  
+  //Check if odd number of samples to process
+  if(cnt1 & 1)
+  {
+    //Copy the odd sample
+    *ptr1 = *ptr2;
+  }
+  else
+  {
+    //Point to before data since copy loop starts on next data
+    ptr1 -= 10;
+    ptr2--;
+  }
+  
+  //Handle two samples per loop
+  cnt2 = cnt1 >> 1;
+  
+  //Process the samples
+  while(cnt2)
+  {
+    //Copy samples with an interleave of 10 in the destination
+    ptr1[10] = ptr2[1];
+    ptr1[20] = ptr2[2];
+    
+    //Point to next destination and source
+    ptr1 += 20;
+    ptr2 += 2;
+    
+    //Two samples done
+    cnt2--;
+  }
+
+  //One less sample to do
+  cnt2 = cnt1 - 1;
+  
+  //Point to the buffer to work in
+  ptr1 = temptracebuffer1;
+  
+  //Process the samples to be interpolated in between the copied ones
+  while(cnt2)
+  {
+    //The original code uses a different approach
+    //Need to check if this is correct
+    //Get the samples shifted up for fractional calculations 10.22 bits
+    sample1 = ptr1[0]  << 22;
+    sample2 = ptr1[10] << 22;
+    
+    //Calculate a delta step between the samples
+    delta = (sample1 - sample2) / 10;
+    
+    for(cnt2=1;cnt2<10;cnt2++)
+    {
+      //Calculate the next sample with fixed point calculation
+      sample1 += delta;
+      
+      //Store the decimal part of it
+      ptr1[cnt2] = sample1 >> 22;
+    }
+    
+    //Point to next set of samples to do
+    ptr1 += 10;
+    
+    //One set of samples done
+    cnt2--;
+  }
+  
+  //One less sample to do
+  cnt2 = cnt1 - 1;
+
+  //Point to another buffer for destination and the 5th before sample in the temporary buffer
+  ptr1 = temptracebuffer2;
+  ptr2 = temptracebuffer1 - 5;
+  
+  //Check if odd number of samples to process
+  if(cnt1 & 1)
+  {
+    //Copy the odd sample
+    ptr1[10] = ptr2[10];
+  }
+  
+  //Half the number to do since two samples per loop
+  cnt2 >>= 1;
+  
+  //Do them all
+  while(cnt2)
+  {
+    //Copy the samples with an offset of 5 samples in the source, which is a calculated sample.
+    ptr1[10] = ptr2[10];
+    ptr1[20] = ptr2[20];
+    
+    //Point to next set of samples to do
+    ptr1 += 10;
+    ptr2 += 10;
+    
+    //One set of samples done
+    cnt2--;
+  }
+  
+  //Up sample a second set based on already up sampled samples
+  //Two samples less to do
+  cnt2 = cnt1 - 2;
+  
+  //Point to the buffer to work in
+  ptr1 = temptracebuffer2;
+  
+  //Process the samples to be interpolated in between the copied ones
+  while(cnt2)
+  {
+    //The original code uses a different approach
+    //Need to check if this is correct
+    //Get the samples shifted up for fractional calculations 10.22 bits
+    sample1 = ptr1[0]  << 22;
+    sample2 = ptr1[10] << 22;
+    
+    //Calculate a delta step between the samples
+    delta = (sample1 - sample2) / 10;
+    
+    for(cnt2=1;cnt2<10;cnt2++)
+    {
+      //Calculate the next sample with fixed point calculation
+      sample1 += delta;
+      
+      //Store the decimal part of it
+      ptr1[cnt2] = sample1 >> 22;
+    }
+    
+    //Point to next set of samples to do
+    ptr1 += 10;
+    
+    //One set of samples done
+    cnt2--;
+  }
+  
+  //Copy back to original buffer an average of the two temporary samples
+  //Do half the input count
+  cnt1 = count >> 1;
+  
+  
+  //Needs more processing here, but not sure if it is really needed and if the found errors are actual errors
+  
+  
+  
   
 }
 

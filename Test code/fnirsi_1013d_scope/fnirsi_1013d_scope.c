@@ -168,11 +168,6 @@ int main(void)
   scopesettings.voltcursor1position = 169;
   scopesettings.voltcursor2position = 234;
 
-  scopesettings.channel1pixelA = 0;
-  scopesettings.channel1pixelB = 0;
-  scopesettings.channel2pixelA = 0;
-  scopesettings.channel2pixelB = 0;
-  
   scopesettings.previoustimerticks = 0;
   
   int channel;

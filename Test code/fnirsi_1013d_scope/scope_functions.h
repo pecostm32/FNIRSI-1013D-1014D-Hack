@@ -120,21 +120,28 @@ void scope_draw_volt_cursors(void);
 
 void scope_process_trace_data(void);
 
-
-
 void scope_get_long_timebase_data(void);
 
 void scope_get_short_timebase_data(void);
 
+void scope_adjust_data(uint16 *destination, uint16 *source, uint32 count, uint8 voltperdiv);
+void scope_offset_data(uint16 *buffer, uint32 count, uint32 offset);
+void scope_limit_data(uint16 *buffer, uint32 count);
+void scope_filter_data(uint16 *buffer, uint32 count);
+void scope_double_data(uint16 *buffer, uint32 count);
+
+
 uint32 scope_process_trigger(void);
 
-void scope_pre_process_250ns_data(uint16 * buffer, uint32 offset, uint32 count);
-void scope_pre_process_100ns_data(uint16 * buffer, uint32 offset, uint32 count);
-void scope_pre_process_50ns_data(uint16 * buffer, uint32 offset, uint32 count);
-void scope_pre_process_25ns_data(uint16 * buffer, uint32 offset, uint32 count);
+void scope_pre_process_250ns_data(uint16 *buffer, uint32 count);
+void scope_pre_process_100ns_data(uint16 *buffer, uint32 count);
+void scope_pre_process_50ns_data(uint16 *buffer, uint32 count);
+void scope_pre_process_25ns_data(uint16 *buffer, uint32 offset, uint32 count);
 
 
-void scope_process_25ns_data(uint16 * buffer, uint32 offset, uint32 count);
+void scope_process_25ns_data(uint16 *buffer, uint32 offset, uint32 count);
+
+
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
