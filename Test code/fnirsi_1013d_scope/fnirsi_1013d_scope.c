@@ -142,7 +142,7 @@ int main(void)
   scopesettings.triggerlevel = 20;
   
   scopesettings.timeperdivbackup = 0;
-  scopesettings.timeperdiv = 6;
+  scopesettings.timeperdiv = 8;
   
   scopesettings.triggerflag1 = 0;
   scopesettings.triggerflag2 = 0;
@@ -260,6 +260,7 @@ int main(void)
     scope_process_trace_data();
     
     //Display the trace data
+    scope_display_trace_data();
     
     //Handle the touch panel input
     touch_handler();

@@ -20,6 +20,8 @@
 #define CHANNEL1_TRIG_COLOR    0x00CCCC00
 #define CHANNEL2_TRIG_COLOR    0x0000CCCC
 
+#define XYMODE_COLOR           0x00FF00FF
+
 #define CURSORS_COLOR          0x0000AA11
 
 #define ITEM_ACTIVE_COLOR      0x00EF9311
@@ -75,6 +77,19 @@ uint16 temptracebuffer1[6000];         //In original code at 0x801AEF26
 uint16 temptracebuffer2[6000];         //In original code at 0x801B8B60
 
 
+uint16 channel1ypoints[1000];          //At 0x801C374A in original code
+uint16 channel2ypoints[1000];          //At 0x801C374A + 2000 in original code
+
+
+uint16 disp_xpos;                      //In original code at 0x80192EAA
+
+
+uint16 disp_ch1_y;
+uint16 disp_ch2_y;
+
+uint16 disp_ch1_prev_y;
+uint16 disp_ch2_prev_y;
+
 //----------------------------------------------------------------------------------------------------------------------------------
 //For touch filtering on slider movement
 
@@ -95,6 +110,14 @@ void scope_setup_display_lib(void)
   display_set_screen_buffer(maindisplaybuffer);
   
   display_set_dimensions(SCREEN_WIDTH, SCREEN_HEIGHT);
+  
+  disp_xpos = 0;
+  
+  disp_ch1_y = 0;
+  disp_ch2_y = 0;
+  
+  disp_ch1_prev_y = 0;
+  disp_ch2_prev_y = 0;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -3736,8 +3759,9 @@ void scope_process_trace_data(void)
     //Reads an average of ten data points for each channel, active or not
     scope_get_long_timebase_data();
     
-    //In this range no measurements are calculated nor shown
-    //Cursors are not displayed
+    //Point needs to be drawn twice to be on the correct time base speed
+    //So called here as well as in the main loop
+    scope_display_trace_data();
   }
   else
   {
@@ -3873,7 +3897,7 @@ void scope_get_long_timebase_data(void)
   if(temp1 > 401)
   {
     //Keep it on max allowed
-    channel1tracebuffer4[0] = 401;                    //At address 0x801AC04A in original code (In original also used for channel 2 sample data???)
+    channel1tracebuffer4[0] = 401;                    //At address 0x801AC04A in original code
   }
   else
   {
@@ -4889,6 +4913,239 @@ void scope_pre_process_25ns_data(uint16 * buffer, uint32 offset, uint32 count)
 void scope_process_25ns_data(uint16 * buffer, uint32 offset, uint32 count)
 {
   
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_display_trace_data(void)
+{
+  uint32 xpos1;
+  uint32 xpos2;
+  uint32 dy;
+ 
+  //Reset some flags if display touched for time base change and stopped or in auto or normal mode
+  if((touchstate == 2) && ((scopesettings.triggermode != 1) || (scopesettings.runstate != 0)))
+  {
+    //Clear some flags
+    scopesettings.triggerflag1 = 1;
+    scopesettings.triggerflag2 = 1;
+  }
+  
+  //Depending on the time base setting use different methods
+  //Check if time base on 50mS/div - 10nS/div
+  if(scopesettings.timeperdiv > 8)
+  {
+    
+  }
+  else
+  {
+    //Long time base data 50S/div - 100mS/div
+    //Check if not running
+    if(scopesettings.runstate != 0)
+    {
+      //Done for now
+      return;
+    }
+    
+    //Based on touch state get either the previous xpos or reset it
+    if(touchstate == 2)
+    {
+      disp_xpos = 0;
+    }
+    
+    //Current x positions for drawing the trace lines
+    xpos1 = disp_xpos + 3;
+    xpos2 = disp_xpos + 4;
+    
+    //Draw directly to screen
+    display_set_screen_buffer(maindisplaybuffer);
+    
+    //Check if back on start of screen
+    if(disp_xpos == 0)
+    {
+      //Reset the screen
+      //Clear the trace portion of the screen
+      display_set_fg_color(0x00000000);
+      display_fill_rect(2, 47, 728, 432);
+
+      //Draw the grid lines and dots based on the grid brightness setting
+      scope_draw_grid();
+
+      //Draw the signal center, trigger level and trigger position pointers
+      scope_draw_pointers();
+    }
+
+    //Check if channel 1 is enabled
+    if(scopesettings.channel1.enable)
+    {
+      //Get the current sample for channel 1 coming up from the bottom of the screen
+      disp_ch1_y = 449 - channel1tracebuffer4[0];
+      
+      //Check if it is within displayable region
+      if(disp_ch1_y < 47)
+      {
+        //Limit on the top of the screen
+        disp_ch1_y = 47;
+      }
+      else if(disp_ch1_y > 448)
+      {
+        //Limit on the bottom of the screen
+        disp_ch1_y = 448;
+      }
+      
+      //Skip drawing if in x-y mode
+      if(scopesettings.xymodedisplay == 0)
+      {
+        //On start of screen need to start with fresh previous
+        if(disp_xpos == 0)
+        {
+          //Make previous the current
+          disp_ch1_prev_y = disp_ch1_y;
+        }
+
+        //Set x-y mode display trace color
+        display_set_fg_color(CHANNEL1_COLOR);
+
+        //Check on rise speed of the signal
+        if(disp_ch1_y < disp_ch1_prev_y)
+        {
+          //previous bigger then current so subtract from it to get positive delta
+          dy = disp_ch1_prev_y - disp_ch1_y;
+        }
+        else
+        {
+          //current bigger then previous so subtract from it to get positive delta
+          dy = disp_ch1_y - disp_ch1_prev_y;
+        }
+        
+        //Take action based on the delta
+        if(dy < 15)
+        {
+          //Less then 15 apart slow the trace by stopping on the average of the two points
+          disp_ch1_y = (disp_ch1_y + disp_ch1_prev_y) >> 1;
+        }
+        else if(dy > 20)
+        {
+          //Else if delta bigger then 20 draw on a single x position 
+          xpos2--;
+        }
+
+        //Draw the lines. When on a single x point it is a bit inefficient. Would be better to only draw one line and make it one longer for the double width
+        display_draw_line(xpos1, disp_ch1_prev_y, xpos2, disp_ch1_y);
+        display_draw_line(xpos1, disp_ch1_prev_y + 1, xpos2, disp_ch1_y + 1);
+
+        //Copy the new points to the previous one
+        disp_ch1_prev_y = disp_ch1_y;
+
+        //Save in a point array for????
+        channel1ypoints[disp_xpos] = disp_ch1_y;
+      }
+    }
+
+    //Check if channel 2 is enabled
+    if(scopesettings.channel2.enable)
+    {
+      //Get the current sample for channel 1 coming up from the bottom of the screen
+      disp_ch2_y = 449 - channel2tracebuffer4[0];
+      
+      //Check if it is within displayable region
+      if(disp_ch2_y < 47)
+      {
+        //Limit on the top of the screen
+        disp_ch2_y = 47;
+      }
+      else if(disp_ch2_y > 448)
+      {
+        //Limit on the bottom of the screen
+        disp_ch2_y = 448;
+      }
+      
+      //Skip drawing if in x-y mode
+      if(scopesettings.xymodedisplay == 0)
+      {
+        //On start of screen need to start with fresh previous
+        if(disp_xpos == 0)
+        {
+          //Make previous the current
+          disp_ch2_prev_y = disp_ch2_y;
+        }
+
+        //Set x-y mode display trace color
+        display_set_fg_color(CHANNEL2_COLOR);
+
+        //Check on rise speed of the signal
+        if(disp_ch2_y < disp_ch2_prev_y)
+        {
+          //previous bigger then current so subtract from it to get positive delta
+          dy = disp_ch2_prev_y - disp_ch2_y;
+        }
+        else
+        {
+          //current bigger then previous so subtract from it to get positive delta
+          dy = disp_ch2_y - disp_ch2_prev_y;
+        }
+        
+        //Take action based on the delta
+        if(dy < 15)
+        {
+          //Less then 15 apart slow the trace by stopping on the average of the two points
+          disp_ch2_y = (disp_ch2_y + disp_ch2_prev_y) >> 1;
+        }
+        else if(dy > 20)
+        {
+          //Else if delta bigger then 20 draw on a single x position 
+          xpos2--;
+        }
+
+        //Draw the lines. When on a single x point it is a bit inefficient. Would be better to only draw one line and make it one longer for the double width
+        display_draw_line(xpos1, disp_ch2_prev_y, xpos2, disp_ch2_y);
+        display_draw_line(xpos1, disp_ch2_prev_y + 1, xpos2, disp_ch2_y + 1);
+
+        //Copy the new points to the previous one
+        disp_ch2_prev_y = disp_ch2_y;
+
+        //Save in a point array for????
+        channel2ypoints[disp_xpos] = disp_ch2_y;
+      }
+    }
+
+    //Check if in x-y mode
+    if(scopesettings.xymodedisplay)
+    {
+      //On start of screen need to start with fresh previous
+      if(disp_xpos == 0)
+      {
+        //Make previous the current
+        disp_ch1_prev_y = disp_ch1_y;
+        disp_ch2_prev_y = disp_ch2_y;
+      }
+    
+      //Set x-y mode display trace color
+      display_set_fg_color(XYMODE_COLOR);
+      
+      //Draw some lines two dots wide
+      
+      
+
+      //Copy the new points to the previous one
+      disp_ch1_prev_y = disp_ch1_y;
+      disp_ch2_prev_y = disp_ch2_y;
+      
+      //Save in a point array for????
+      channel1ypoints[disp_xpos] = disp_ch1_y;
+      channel2ypoints[disp_xpos] = disp_ch2_y;
+    }
+
+    //Point to next x position
+    disp_xpos++;
+    
+    //Check if past the end of displayable region
+    if(disp_xpos > 719)
+    {
+      //Reset the x position
+      disp_xpos = 0;
+    }
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
