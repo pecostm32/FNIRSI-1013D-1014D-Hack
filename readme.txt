@@ -129,3 +129,9 @@ adjust the channel sensitivity and hear the relay's click.
 Fixed a bug in the fpga read parameter function. A local variable was not initialized:-(
 Implemented timer0 interrupt handling, somewhat based on the original code, but can do with improvement.
 Started implementation of trace data capture. This will take a bit of time. A lot of code to work through.
+
+----------------------------------------------------------------------------------------------------------
+11-AUGUST-2021
+Got the long time base trace capture and display working. Still has a problem in the timing area, but signals are apearing on the screen.
+The short time base trace capture is partially implemented and is still a lot of work to get it all implemented. Have to take a side step and implement
+the remainder of the user interface first. This concerns the moving of the traces and the cursors and the adjusting of the time base setting.
