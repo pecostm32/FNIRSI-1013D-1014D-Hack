@@ -37,6 +37,8 @@ extern SCOPESETTINGS scopesettings;
 
 extern const uint16 signal_adjusters[];
 
+extern uint16 disp_xpos;
+
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void fpga_init(void)
@@ -318,11 +320,25 @@ void fpga_set_channel1_voltperdiv(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+uint16 channel1_calibration_factor = 0x00DC;
+uint16 channel1_calibration_data[] = { 0x054D, 0x0545, 0x0554, 0x054D, 0x0553, 0x054C, 0x054C };
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 void fpga_set_channel1_offset(void)
 {
-  //Send the command for channel 1 offset to the FPGA
-  //fpga_write_cmd(0x32);
+  uint32 offset;
+
+  //Do some fractional calculation with sign correction?????
+  //For now a copy of what Ghidra made of it
+  offset = ((uint64)((uint64)0x51EB851F * (uint64)(scopesettings.channel1.traceoffset * channel1_calibration_factor)) >> 37);
+  offset = (signal_adjusters[0] * offset) / signal_adjusters[scopesettings.channel1.voltperdiv];
   
+  //Send the command for channel 1 offset to the FPGA
+  fpga_write_cmd(0x32);
+
+  //Write the calibrated offset data  
+  fpga_write_short(channel1_calibration_data[scopesettings.channel1.voltperdiv] - offset);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -384,11 +400,25 @@ void fpga_set_channel2_voltperdiv(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+uint16 channel2_calibration_factor = 0x00D9;
+uint16 channel2_calibration_data[] = { 0x055B, 0x0556, 0x0561, 0x055B, 0x0560, 0x055A, 0x055A };
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 void fpga_set_channel2_offset(void)
 {
-  //Send the command for channel 2 offset to the FPGA
-  //fpga_write_cmd(0x35);
+  uint32 offset;
+
+  //Do some fractional calculation with sign correction?????
+  //For now a copy of what Ghidra made of it  
+  offset = ((uint64)((uint64)0x51EB851F * (uint64)(scopesettings.channel2.traceoffset * channel2_calibration_factor)) >> 37);
+  offset = (signal_adjusters[0] * offset) / signal_adjusters[scopesettings.channel2.voltperdiv];
   
+  //Send the command for channel 2 offset to the FPGA
+  fpga_write_cmd(0x35);
+
+  //Write the calibrated offset data  
+  fpga_write_short(channel2_calibration_data[scopesettings.channel2.voltperdiv] - offset);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -410,7 +440,8 @@ void fpga_set_trigger_timebase(void)
   //Write the data to the FPGA
   fpga_write_int(data);
   
-  //A variable at 0x80192EAA is made 0 in this function???
+  //Signal to reset the display
+  disp_xpos = 0;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

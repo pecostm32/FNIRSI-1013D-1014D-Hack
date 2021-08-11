@@ -95,10 +95,10 @@ void display_set_destination_buffer(uint16 *buffer)
 
 void display_draw_line(uint32 xstart, uint32 ystart, uint32 xend, uint32 yend)
 {
-  uint16 *ptr;
-  uint32 x, xs, xe, y, ys, ye, dx;
-  uint32 yacc;
-  int32  ystep;
+  register uint16 *ptr;
+  register int32  x, xs, xe, y, ys, ye, dx;
+  register int32  yacc;
+  register int32  ystep;
   
   //Determine the lowest x for start point
   if(xstart < xend)

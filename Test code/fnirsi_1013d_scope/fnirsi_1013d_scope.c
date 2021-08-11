@@ -121,17 +121,17 @@ int main(void)
 
   scopesettings.channel1.enable = 1;
   scopesettings.channel1.coupling = 0;
-  scopesettings.channel1.magnification = 2;
-  scopesettings.channel1.voltperdiv = 5;
+  scopesettings.channel1.magnification = 0;
+  scopesettings.channel1.voltperdiv = 3;
   scopesettings.channel1.fftenable = 0;
   scopesettings.channel1.traceoffset = 305;
   
   scopesettings.channel2.enable = 1;
-  scopesettings.channel2.coupling = 1;
+  scopesettings.channel2.coupling = 0;
   scopesettings.channel2.magnification = 0;
-  scopesettings.channel2.voltperdiv = 2;
+  scopesettings.channel2.voltperdiv = 3;
   scopesettings.channel2.fftenable = 0;
-  scopesettings.channel2.traceoffset = 105;
+  scopesettings.channel2.traceoffset = 155;
   
   scopesettings.triggermode = 1;
   scopesettings.triggeredge = 1;
@@ -224,11 +224,11 @@ int main(void)
   fpga_set_trigger_channel();
   fpga_swap_trigger_channel();   //This is a bit redundant since the correct channel should be in the loaded settings.
   fpga_set_trigger_edge();
-  fpga_set_trigger_level();      //Needs to be implemented yet
+  fpga_set_trigger_level();
   fpga_set_trigger_mode();
   
-  fpga_set_channel1_offset();    //Needs to be implemented yet
-  fpga_set_channel2_offset();    //Needs to be implemented yet
+  fpga_set_channel1_offset();
+  fpga_set_channel2_offset();
   
   //Some initialization of the FPGA??. Data written with command 0x3C
   fpga_set_battery_level();      //Only called here and in hardware check

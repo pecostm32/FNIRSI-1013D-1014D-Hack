@@ -3875,7 +3875,7 @@ void scope_get_long_timebase_data(void)
   //Adjust the channel 1 signal based on the volts per div setting
   signaladjust = channel1tracebuffer1[0] * signal_adjusters[scopesettings.channel1.voltperdiv];
   temp1 = ((0xA3D7 * signaladjust) + 0xA3D7) >> 0x16;
-  temp2 = signaladjust + (((uint64)(signaladjust * 0x51EB851F) >> 0x25) * -100);
+  temp2 = signaladjust + (((uint64)((uint64)signaladjust * (uint64)0x51EB851F) >> 0x25) * -100);
   
   //If above half the pixel up to next one?????
   if(temp2 > 50)
@@ -3909,7 +3909,7 @@ void scope_get_long_timebase_data(void)
   //Adjust the channel 2 signal based on the volts per div setting
   signaladjust = channel2tracebuffer1[0] * signal_adjusters[scopesettings.channel2.voltperdiv];
   temp1 = ((0xA3D7 * signaladjust) + 0xA3D7) >> 0x16;
-  temp2 = signaladjust + (((uint64)(signaladjust * 0x51EB851F) >> 0x25) * -100);
+  temp2 = signaladjust + (((uint64)((uint64)signaladjust * (uint64)0x51EB851F) >> 0x25) * -100);
   
   //If above half the pixel up to next one?????
   if(temp2 > 50)
@@ -3938,9 +3938,6 @@ void scope_get_long_timebase_data(void)
     //Else store it again in an other location
     channel2tracebuffer4[0] = temp1;
   }
-  
-  //In the original code a call is made to the display function, which is also called from the main loop
-  //So need to check if it needs to be done twice
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -4953,10 +4950,6 @@ void scope_display_trace_data(void)
       disp_xpos = 0;
     }
     
-    //Current x positions for drawing the trace lines
-    xpos1 = disp_xpos + 3;
-    xpos2 = disp_xpos + 4;
-    
     //Draw directly to screen
     display_set_screen_buffer(maindisplaybuffer);
     
@@ -5006,6 +4999,10 @@ void scope_display_trace_data(void)
         //Set x-y mode display trace color
         display_set_fg_color(CHANNEL1_COLOR);
 
+        //Current x positions for drawing the trace lines
+        xpos1 = disp_xpos + 3;
+        xpos2 = disp_xpos + 4;
+
         //Check on rise speed of the signal
         if(disp_ch1_y < disp_ch1_prev_y)
         {
@@ -5030,7 +5027,7 @@ void scope_display_trace_data(void)
           xpos2--;
         }
 
-        //Draw the lines. When on a single x point it is a bit inefficient. Would be better to only draw one line and make it one longer for the double width
+        //Draw the lines. Needs improvement
         display_draw_line(xpos1, disp_ch1_prev_y, xpos2, disp_ch1_y);
         display_draw_line(xpos1, disp_ch1_prev_y + 1, xpos2, disp_ch1_y + 1);
 
@@ -5073,6 +5070,10 @@ void scope_display_trace_data(void)
         //Set x-y mode display trace color
         display_set_fg_color(CHANNEL2_COLOR);
 
+        //Current x positions for drawing the trace lines
+        xpos1 = disp_xpos + 3;
+        xpos2 = disp_xpos + 4;
+
         //Check on rise speed of the signal
         if(disp_ch2_y < disp_ch2_prev_y)
         {
@@ -5097,7 +5098,7 @@ void scope_display_trace_data(void)
           xpos2--;
         }
 
-        //Draw the lines. When on a single x point it is a bit inefficient. Would be better to only draw one line and make it one longer for the double width
+        //Draw the lines
         display_draw_line(xpos1, disp_ch2_prev_y, xpos2, disp_ch2_y);
         display_draw_line(xpos1, disp_ch2_prev_y + 1, xpos2, disp_ch2_y + 1);
 
@@ -5124,8 +5125,9 @@ void scope_display_trace_data(void)
       display_set_fg_color(XYMODE_COLOR);
       
       //Draw some lines two dots wide
-      
-      
+      //The offsets do not put it on center screen so needs adjusting
+      display_draw_line(disp_ch1_prev_y + 150, disp_ch2_prev_y, disp_ch1_y + 150, disp_ch2_y);
+      display_draw_line(disp_ch1_prev_y + 151, disp_ch2_prev_y, disp_ch1_y + 151, disp_ch2_y);
 
       //Copy the new points to the previous one
       disp_ch1_prev_y = disp_ch1_y;
