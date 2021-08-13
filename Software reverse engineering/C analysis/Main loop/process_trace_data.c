@@ -282,7 +282,7 @@ LAB_8002582c:
     *DAT_80025b00 = uVar19;
     puVar16 = DAT_80025b08;
     uVar28 = *puVar17;
-    *DAT_80025b08 = uVar28;
+    *DAT_80025b08 = uVar28;   //0x801AD7BA
     if (uVar26 < uVar28) 
     {
       *puVar16 = (ushort)uVar26;
@@ -295,12 +295,13 @@ LAB_8002582c:
     //0x8019D5A0 + 3A = run mode ==> 0 is run, 0x80192f08 is touch state, where 2 seems to be moving of traces
     if ((*(char *)(DAT_80025460 + 0x3a) != '\x01') && (*PTR_DAT_80025464 != '\x02'))
     {
+      //Partialy done!!!!!!!!!!!!!
       //scope_get_short_timebase_data in my code
       FUN_80025468();  //process short time base data
 
 
 
-
+      //Still needs to be done!!!!!!!!!!
       //This is function FUN_80021a78 which is also only called from here
       iVar7 = DAT_80021bd4;
       uVar14 = DAT_80021bd0;
@@ -560,6 +561,9 @@ LAB_80007fac:
       {
         iVar12 = iVar12 + *(int *)(DAT_8000856c + (uVar27 - 1) * 4);
       }
+    
+    //In this range no measurements are calculated nor shown
+    //Cursors are not displayed
 
       uVar26 = divide(iVar12,uVar27);
 
