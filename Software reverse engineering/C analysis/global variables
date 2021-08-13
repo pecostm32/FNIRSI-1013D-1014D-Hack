@@ -37,6 +37,7 @@
 0x8019d5c1   trigger mode
 0x8019d5c2   trigger edge
 0x8019d5c3   trigger channel
+
 0x8019d5c4   short (trigger position on screen. x position)
 0x8019d5c6   short (trigger level screen offset)
 0x8019d5c8   trigger level???
@@ -63,13 +64,25 @@
 0x8019D5EA   short Channel 1 signal average  (Timebase 50S/div - 100mS/div)  Actualy start of channel 1 trace data buffer (12000 bytes, 6000 samples)
 
 
-0x801a04ca   short Channel 2 signal average  (Timebase 50S/div - 100mS/div)  Actualy start of channel 2 trace data buffer (12000 bytes, 6000 samples)
+0x801A04CA   short Channel 2 signal average  (Timebase 50S/div - 100mS/div)  Actualy start of channel 2 trace data buffer (12000 bytes, 6000 samples)
+
 
 0x801A1C3A   channel 2 second read buffer
 
 0x801A916A   channel 1 processed signal buffer
 
 0x801AA8DA   channel 2 processed signal buffer
+
+
+
+0x801AC04A   channel 1 long time base result
+
+0x801AD7BA   channel 2 long time base result
+
+
+0x801AEF2A    Another trace buffer??
+
+0x801B8B6A    Yet another buffer
 
 //Measurement settings base address
 0x801FA24C
@@ -116,3 +129,44 @@
 
 
 0x8036137f  x-y mode display
+
+
+
+
+
+
+
+//Settings are loaded to this address. All data seems to be 16bit based
+0x8035344E
+
+//Settings in flash
+//These are byte based in the scope software
+channel 1 enable
+channel 1 volts per div
+channel 1 fft enable
+channel 1 coupling
+channel 1 magnification
+
+channel 2 enable
+channel 2 volts per div
+channel 2 fft enable
+channel 2 coupling
+channel 2 magnification
+
+time per div
+
+move speed
+
+trigger mode
+trigger edge
+trigger channel
+
+
+
+
+
+
+
+0x8035353e     offset 240
+channel 1 calibration data
+
