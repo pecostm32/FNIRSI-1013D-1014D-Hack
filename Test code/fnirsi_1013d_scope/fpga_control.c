@@ -263,7 +263,7 @@ void fpga_enable_system(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void fpga_set_channel1_enable(void)
+void fpga_set_channel_1_enable(void)
 {
   //Send the command for channel 1 enable to the FPGA
   fpga_write_cmd(0x02);
@@ -283,7 +283,7 @@ void fpga_set_channel1_enable(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void fpga_set_channel1_coupling(void)
+void fpga_set_channel_1_coupling(void)
 {
   //Send the command for channel 1 coupling to the FPGA
   fpga_write_cmd(0x34);
@@ -303,7 +303,7 @@ void fpga_set_channel1_coupling(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void fpga_set_channel1_voltperdiv(void)
+void fpga_set_channel_1_voltperdiv(void)
 {
   register uint32 setting = scopesettings.channel1.voltperdiv;
   
@@ -325,7 +325,7 @@ uint16 channel1_calibration_data[] = { 0x054D, 0x0545, 0x0554, 0x054D, 0x0553, 0
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void fpga_set_channel1_offset(void)
+void fpga_set_channel_1_offset(void)
 {
   uint32 offset;
 
@@ -343,7 +343,7 @@ void fpga_set_channel1_offset(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void fpga_set_channel2_enable(void)
+void fpga_set_channel_2_enable(void)
 {
   //Send the command for channel 2 enable to the FPGA
   fpga_write_cmd(0x03);
@@ -363,7 +363,7 @@ void fpga_set_channel2_enable(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void fpga_set_channel2_coupling(void)
+void fpga_set_channel_2_coupling(void)
 {
   //Send the command for channel 2 coupling to the FPGA
   fpga_write_cmd(0x37);
@@ -383,7 +383,7 @@ void fpga_set_channel2_coupling(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void fpga_set_channel2_voltperdiv(void)
+void fpga_set_channel_2_voltperdiv(void)
 {
   register uint32 setting = scopesettings.channel2.voltperdiv;
   
@@ -405,7 +405,7 @@ uint16 channel2_calibration_data[] = { 0x055B, 0x0556, 0x0561, 0x055B, 0x0560, 0
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void fpga_set_channel2_offset(void)
+void fpga_set_channel_2_offset(void)
 {
   uint32 offset;
 

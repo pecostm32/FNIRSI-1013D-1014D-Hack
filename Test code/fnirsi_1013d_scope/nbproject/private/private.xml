@@ -9,11 +9,13 @@
         <group>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/fpga_control.h</file>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/fnirsi_1013d_scope.h</file>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/touchpanel.c</file>
+            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/variables.c</file>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/scope_functions.h</file>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/fnirsi_1013d_scope.c</file>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/statemachine.c</file>
+            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/variables.h</file>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/scope_functions.c</file>
+            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/timer.c</file>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/statemachine.h</file>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/fpga_control.c</file>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/todo.txt</file>

@@ -5,11 +5,6 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-#define SCREEN_WIDTH    800
-#define SCREEN_HEIGHT   480
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
 void scope_setup_display_lib(void);
 
 void scope_setup_main_screen(void);
@@ -104,6 +99,10 @@ int scope_move_slider(uint16 xpos, uint16 ypos, uint8 *position);
 void scope_display_slide_button(uint16 xpos, uint16 ypos, uint8 state);
 
 void scope_display_ok_button(uint16 xpos, uint16 ypos, uint8 mode);
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_adjust_timebase(void);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 // Grid and cursor functions

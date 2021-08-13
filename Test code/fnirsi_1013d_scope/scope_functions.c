@@ -1,105 +1,15 @@
 //----------------------------------------------------------------------------------------------------------------------------------
 
 #include "types.h"
-#include "font_structs.h"
 #include "scope_functions.h"
 #include "touchpanel.h"
 #include "timer.h"
 #include "fpga_control.h"
 #include "display_lib.h"
-#include "fnirsi_1013d_scope.h"
+
+#include "variables.h"
 
 #include <string.h>
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-#define CHANNEL1_COLOR         0x00FFFF00
-#define CHANNEL2_COLOR         0x0000FFFF
-#define TRIGGER_COLOR          0x0000FF00
-
-#define CHANNEL1_TRIG_COLOR    0x00CCCC00
-#define CHANNEL2_TRIG_COLOR    0x0000CCCC
-
-#define XYMODE_COLOR           0x00FF00FF
-
-#define CURSORS_COLOR          0x0000AA11
-
-#define ITEM_ACTIVE_COLOR      0x00EF9311
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-extern FONTDATA font_0;
-extern FONTDATA font_2;
-extern FONTDATA font_3;
-extern FONTDATA font_4;
-extern FONTDATA font_5;
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-extern const uint8 system_settings_icon[];
-extern const uint8 picture_view_icon[];
-extern const uint8 waveform_view_icon[];
-extern const uint8 usb_icon[];
-extern const uint8 screen_brightness_icon[];
-extern const uint8 grid_brightness_icon[];
-extern const uint8 trigger_50_percent_icon[];
-extern const uint8 baseline_calibration_icon[];
-extern const uint8 x_y_mode_display_icon[];
-extern const uint8 return_arrow_icon[];
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-extern uint8  havetouch;
-extern uint16 xtouch;
-extern uint16 ytouch;
-
-extern uint8  touchstate;
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-SCOPESETTINGS scopesettings;
-
-uint16 maindisplaybuffer[SCREEN_WIDTH * SCREEN_HEIGHT];
-uint16 displaybuffer1[SCREEN_WIDTH * SCREEN_HEIGHT];
-uint16 displaybuffer2[SCREEN_WIDTH * SCREEN_HEIGHT];
-
-uint16 channel1tracebuffer1[6000];    //In original code at 0x8019D5EA
-uint16 channel1tracebuffer2[6000];    //Not used in original code
-uint16 channel1tracebuffer3[3000];    //Target buffer for processed trace data. In original code at 0x801A916A
-uint16 channel1tracebuffer4[3000];    //Not used in original code
-
-uint16 channel2tracebuffer1[6000];    //In original code at 0x801A04CA
-uint16 channel2tracebuffer2[6000];    //In original code at 0x801A1C3A
-uint16 channel2tracebuffer3[3000];    //In original code at 0x801AA8DA
-uint16 channel2tracebuffer4[3000];    //In original code at 0x801AA8DA
-
-uint16 temptracebuffer1[6000];         //In original code at 0x801AEF26
-uint16 temptracebuffer2[6000];         //In original code at 0x801B8B60
-
-
-uint16 channel1ypoints[1000];          //At 0x801C374A in original code
-uint16 channel2ypoints[1000];          //At 0x801C374A + 2000 in original code
-
-
-uint16 disp_xpos;                      //In original code at 0x80192EAA
-
-
-uint16 disp_ch1_y;
-uint16 disp_ch2_y;
-
-uint16 disp_ch1_prev_y;
-uint16 disp_ch2_prev_y;
-
-//----------------------------------------------------------------------------------------------------------------------------------
-//For touch filtering on slider movement
-
-uint16 prevxtouch = 0;
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-const uint16 signal_adjusters[7] = { 0xAD, 0xAF, 0xB4, 0xB4, 0xB8, 0xB8, 0xB8 };
-
-const uint16 timebase_adjusters[5] = { 0x01A9, 0x00AA, 0x0055, 0x002F, 0x0014 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -3560,6 +3470,85 @@ void scope_display_ok_button(uint16 xpos, uint16 ypos, uint8 mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+void scope_adjust_timebase(void)
+{
+  int32 diff;
+  
+  //Check if touch within the trace display region
+  if((previousxtouch > 2) && (previousxtouch < 720) && (previousytouch > 50) && (previousytouch < 470))
+  {
+    //Check if touch on the left of the center line
+    if(previousxtouch < 358)
+    {
+      //Check if not already on the highest setting (50S/div)
+      if(scopesettings.timeperdiv > 0)
+      {
+        //Go up in time by taking one of the setting
+        scopesettings.timeperdiv--;
+      }
+    }
+    //Check if touch on the right of the center line
+    else if(previousxtouch > 362)
+    {
+      //Check if not already on the lowest setting (10nS/div)
+      if(scopesettings.timeperdiv < 29)
+      {
+        //Go down in time by adding one to the setting
+        scopesettings.timeperdiv++;
+      }
+    }
+    
+    //Check if in stopped state to limit on selectable range
+    if(scopesettings.runstate)    
+    {
+      //Check if new setting above 10mS/div. (below 11)
+      if(scopesettings.timeperdiv < 11)
+      {
+        //Keep it on 10mS/div if so
+        scopesettings.timeperdiv = 11;
+      }
+      
+      //Check if new setting within allowed range from backed up setting, which is time base of last sample data
+      //Calculate the step difference between the two settings
+      diff = scopesettings.timeperdiv - scopesettings.timeperdivbackup;
+      
+      //Limit it on 3 steps either side
+      if(diff > 3)
+      {
+        //Add three if the new setting is above the old
+        scopesettings.timeperdiv = scopesettings.timeperdivbackup + 3;
+      }
+      else if(diff < -3)
+      {
+        //Subtract three if the new setting is below the old
+        scopesettings.timeperdiv = scopesettings.timeperdivbackup - 3;
+      }
+    }
+
+    //For trigger modes single and normal the time base setting can't go up beyond 50mS/div
+    if((scopesettings.triggermode) && (scopesettings.timeperdiv < 9))
+    {
+      //In that case limit it on 50mS/div
+      scopesettings.timeperdiv = 9;
+    }
+    
+    //When in run state save the new setting in the backup
+    if(scopesettings.runstate == 0)
+    {
+      //Save the setting
+      scopesettings.timeperdivbackup = scopesettings.timeperdiv;
+    }
+    
+    //Set the new setting in the FPGA
+    fpga_set_trigger_timebase();
+    
+    //Show he new setting on the display
+    scope_time_div_setting();
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 void scope_draw_grid(void)
 {
   uint32 color;
@@ -3617,8 +3606,8 @@ void scope_draw_pointers(void)
   //Draw channel 1 pointer when it is enabled
   if(scopesettings.channel1.enable)
   {
-    //y position for the channel 1 trace center pointer
-    position = 448 - scopesettings.channel1.traceoffset;
+    //y position for the channel 1 trace center pointer.
+    position = 441 - scopesettings.channel1.traceoffset;
     
     //Limit on the top of the displayable region
     if(position < 46)
@@ -3646,7 +3635,7 @@ void scope_draw_pointers(void)
   if(scopesettings.channel2.enable)
   {
     //y position for the channel 2 trace center pointer
-    position = 448 - scopesettings.channel2.traceoffset;
+    position = 441 - scopesettings.channel2.traceoffset;
     
     //Limit on the top of the displayable region
     if(position < 46)
@@ -3765,8 +3754,8 @@ void scope_process_trace_data(void)
   }
   else
   {
-    //Check if running and not in a touch state
-    if((scopesettings.runstate == 0) && (touchstate != 2))
+    //Check if running and not in a trace or cursor displacement state
+    if((scopesettings.runstate == 0) && (touchstate == 0))
     {
       //Read trace data for active channels
       scope_get_short_timebase_data();
@@ -3848,22 +3837,23 @@ void scope_get_long_timebase_data(void)
     {
       //Save the current ticks for next timeout and bail out the loop
       scopesettings.previoustimerticks = curticks;
-      break;
+      goto skip_delay;
     }
     
     //Scan the touch panel to see if there is user input
     tp_i2c_read_status();
   }
     
-  //Wait an extra 40 milliseconds
+  //Wait an extra 40 milliseconds when there was touch
   timer0_delay(40);
   
+skip_delay:
   //Some mode select command for the FPGA (0x01 for long time base)
   fpga_write_cmd(0x28);
   fpga_write_byte(0x01);
   
   //Read, accumulate and average 10 bytes of channel 1 trace data
-  channel1tracebuffer1[0]= fpga_average_trace_data(0x24);
+  channel1tracebuffer1[0] = fpga_average_trace_data(0x24);
   
   //Read, accumulate and average 10 bytes of channel 2 trace data
   channel2tracebuffer1[0] = fpga_average_trace_data(0x26);
@@ -4014,7 +4004,7 @@ void scope_get_short_timebase_data(void)
   fpga_write_cmd(0x0A);
   
   //Wait for the FPGA to signal triggered or touch panel is touched or signals or cursors are being moved
-  while(((fpga_read_byte() & 1) == 0) && (havetouch == 0) && (touchstate != 2))
+  while(((fpga_read_byte() & 1) == 0) && (havetouch == 0) && (touchstate == 0))
   {
     //Scan the touch panel
     tp_i2c_read_status();
@@ -4920,8 +4910,8 @@ void scope_display_trace_data(void)
   uint32 xpos2;
   uint32 dy;
  
-  //Reset some flags if display touched for time base change and stopped or in auto or normal mode
-  if((touchstate == 2) && ((scopesettings.triggermode != 1) || (scopesettings.runstate != 0)))
+  //Reset some flags if display touched for trace and cursor movement and stopped or in auto or normal mode
+  if((touchstate) && ((scopesettings.triggermode != 1) || (scopesettings.runstate)))
   {
     //Clear some flags
     scopesettings.triggerflag1 = 1;
@@ -4945,7 +4935,7 @@ void scope_display_trace_data(void)
     }
     
     //Based on touch state get either the previous xpos or reset it
-    if(touchstate == 2)
+    if(touchstate)
     {
       disp_xpos = 0;
     }
@@ -4963,9 +4953,6 @@ void scope_display_trace_data(void)
 
       //Draw the grid lines and dots based on the grid brightness setting
       scope_draw_grid();
-
-      //Draw the signal center, trigger level and trigger position pointers
-      scope_draw_pointers();
     }
 
     //Check if channel 1 is enabled
@@ -5138,6 +5125,13 @@ void scope_display_trace_data(void)
       channel2ypoints[disp_xpos] = disp_ch2_y;
     }
 
+    //Check if signal pointers need to be redisplayed
+    if(disp_xpos < 22)
+    {
+      //Draw the signal center, trigger level and trigger position pointers
+      scope_draw_pointers();
+    }
+    
     //Point to next x position
     disp_xpos++;
     

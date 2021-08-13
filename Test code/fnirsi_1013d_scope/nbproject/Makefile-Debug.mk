@@ -55,7 +55,8 @@ OBJECTFILES= \
 	${OBJECTDIR}/start.o \
 	${OBJECTDIR}/statemachine.o \
 	${OBJECTDIR}/timer.o \
-	${OBJECTDIR}/touchpanel.o
+	${OBJECTDIR}/touchpanel.o \
+	${OBJECTDIR}/variables.o
 
 
 # C Compiler Flags
@@ -183,6 +184,11 @@ ${OBJECTDIR}/touchpanel.o: touchpanel.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/touchpanel.o touchpanel.c
+
+${OBJECTDIR}/variables.o: variables.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/variables.o variables.c
 
 # Subprojects
 .build-subprojects:

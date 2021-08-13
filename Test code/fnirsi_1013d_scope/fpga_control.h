@@ -61,15 +61,15 @@ void fpga_check_ready(void);
 
 void fpga_enable_system(void);
 
-void fpga_set_channel1_enable(void);
-void fpga_set_channel1_coupling(void);
-void fpga_set_channel1_voltperdiv(void);
-void fpga_set_channel1_offset(void);
+void fpga_set_channel_1_enable(void);
+void fpga_set_channel_1_coupling(void);
+void fpga_set_channel_1_voltperdiv(void);
+void fpga_set_channel_1_offset(void);
 
-void fpga_set_channel2_enable(void);
-void fpga_set_channel2_coupling(void);
-void fpga_set_channel2_voltperdiv(void);
-void fpga_set_channel2_offset(void);
+void fpga_set_channel_2_enable(void);
+void fpga_set_channel_2_coupling(void);
+void fpga_set_channel_2_voltperdiv(void);
+void fpga_set_channel_2_offset(void);
 
 void fpga_set_trigger_timebase(void);
 void fpga_set_trigger_channel(void);

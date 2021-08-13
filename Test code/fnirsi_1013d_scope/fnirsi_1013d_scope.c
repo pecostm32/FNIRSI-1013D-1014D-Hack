@@ -133,7 +133,7 @@ int main(void)
   scopesettings.channel2.fftenable = 0;
   scopesettings.channel2.traceoffset = 155;
   
-  scopesettings.triggermode = 1;
+  scopesettings.triggermode = 0;
   scopesettings.triggeredge = 1;
   scopesettings.triggerchannel = 1;
   
@@ -141,7 +141,7 @@ int main(void)
   scopesettings.triggeroffset = 124;
   scopesettings.triggerlevel = 20;
   
-  scopesettings.timeperdivbackup = 0;
+  scopesettings.timeperdivbackup = 14;
   scopesettings.timeperdiv = 8;
   
   scopesettings.triggerflag1 = 0;
@@ -202,16 +202,16 @@ int main(void)
   //Check if configuration data is ok and if not write new one to flash and reload it
 
   //Enable or disable the channels based on the scope loaded settings
-  fpga_set_channel1_enable();
-  fpga_set_channel2_enable();
+  fpga_set_channel_1_enable();
+  fpga_set_channel_2_enable();
   
   //Set the volts per div for each channel based on the loaded scope settings
-  fpga_set_channel1_voltperdiv();
-  fpga_set_channel2_voltperdiv();
+  fpga_set_channel_1_voltperdiv();
+  fpga_set_channel_2_voltperdiv();
   
   //Set the channels AC or DC coupling based on the loaded scope settings
-  fpga_set_channel1_coupling();
-  fpga_set_channel2_coupling();
+  fpga_set_channel_1_coupling();
+  fpga_set_channel_2_coupling();
   
   //Enable something in the FPGA
   fpga_enable_system();
@@ -227,8 +227,8 @@ int main(void)
   fpga_set_trigger_level();
   fpga_set_trigger_mode();
   
-  fpga_set_channel1_offset();
-  fpga_set_channel2_offset();
+  fpga_set_channel_1_offset();
+  fpga_set_channel_2_offset();
   
   //Some initialization of the FPGA??. Data written with command 0x3C
   fpga_set_battery_level();      //Only called here and in hardware check
