@@ -135,3 +135,11 @@ Started implementation of trace data capture. This will take a bit of time. A lo
 Got the long time base trace capture and display working. Still has a problem in the timing area, but signals are apearing on the screen.
 The short time base trace capture is partially implemented and is still a lot of work to get it all implemented. Have to take a side step and implement
 the remainder of the user interface first. This concerns the moving of the traces and the cursors and the adjusting of the time base setting.
+
+----------------------------------------------------------------------------------------------------------
+13-AUGUST-2021
+Got the adjusting of the time base setting working. Started with the implementation of the trace, cursor and pointers moving. The signal traces can be moved,
+but the display flickers when this is done. Need to improve on this trace display refresh. It is done directly to the main display buffer, but needs a separate
+buffer to build it in and then copy to the main buffer to make it more steady.
+
+Switching down to 50nS/div kills the program, but this most likely has to do with the fact that the 50nS processing is only partialy implemented.
