@@ -90,7 +90,15 @@ extern uint16 distance_volt_cursor_bottom;
 extern uint16 previous_channel_1_offset;
 extern uint16 previous_channel_2_offset;
 
+extern uint16 previous_trigger_level_offset;
+
 extern uint16 previous_trigger_point_position;
+
+extern uint16 previous_left_time_cursor_position;
+extern uint16 previous_right_time_cursor_position;
+
+extern uint16 previous_top_volt_cursor_position;
+extern uint16 previous_bottom_volt_cursor_position;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Predefined data

@@ -93,8 +93,15 @@ uint16 distance_volt_cursor_bottom;
 uint16 previous_channel_1_offset;
 uint16 previous_channel_2_offset;
 
+uint16 previous_trigger_level_offset;
 
 uint16 previous_trigger_point_position;
+
+uint16 previous_left_time_cursor_position;
+uint16 previous_right_time_cursor_position;
+
+uint16 previous_top_volt_cursor_position;
+uint16 previous_bottom_volt_cursor_position;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //For touch filtering on slider movement

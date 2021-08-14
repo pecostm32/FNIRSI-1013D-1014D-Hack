@@ -3606,29 +3606,52 @@ void scope_draw_pointers(void)
   //Draw channel 1 pointer when it is enabled
   if(scopesettings.channel1.enable)
   {
-    //y position for the channel 1 trace center pointer.
-    position = 441 - scopesettings.channel1.traceoffset;
-    
-    //Limit on the top of the displayable region
-    if(position < 46)
-    {
-      position = 46;
-    }
-    //Limit on the bottom of the displayable region
-    else if(position > 441)
-    {
-      position = 441;
-    }
-    
     //Set the colors for drawing
     display_set_fg_color(CHANNEL1_COLOR);
     display_set_bg_color(0x00000000);
-    
+
     //Select the font for this pointer id
     display_set_font(&font_0);
     
-    //Draw the pointer
-    display_left_pointer(2, position, '1');
+    //Check if in normal or x-y display mode
+    if(scopesettings.xymodedisplay == 0)
+    {
+      //y position for the channel 1 trace center pointer.
+      position = 441 - scopesettings.channel1.traceoffset;
+
+      //Limit on the top of the displayable region
+      if(position < 46)
+      {
+        position = 46;
+      }
+      //Limit on the bottom of the displayable region
+      else if(position > 441)
+      {
+        position = 441;
+      }
+
+      //Draw the pointer
+      display_left_pointer(2, position, '1');
+    }
+    else
+    {
+      //y position for the channel 1 trace center pointer.
+      position = 154 + scopesettings.channel1.traceoffset;
+
+      //Limit on the left of the active range
+      if(position < 166)
+      {
+        position = 166;
+      }
+      //Limit on the right of the active range
+      else if(position > 548)
+      {
+        position = 548;
+      }
+
+      //Draw the pointer
+      display_top_pointer(position, 47, '1');
+    }
   }
   
   //Draw channel 2 pointer when it is enabled
@@ -3666,22 +3689,25 @@ void scope_draw_pointers(void)
     position = scopesettings.triggerposition + 2;
     
     //Limit on the left of the displayable region
-    if(position < 10)
+    if(position < 2)
     {
-      position = 10;
+      position = 2;
     }
     //Limit on the right of the displayable region
-    else if(position > 718)
+    else if(position > 712)
     {
-      position = 718;
+      position = 712;
     }
 
     //Set the colors for drawing
     display_set_fg_color(TRIGGER_COLOR);
     display_set_bg_color(0x00000000);
+
+    //Select the font for this pointer id
+    display_set_font(&font_3);
     
     //Draw the pointer
-    display_top_pointer(position, 47);
+    display_top_pointer(position, 47, 'H');
 
     //y position for the trigger level pointer
     position = 448 - scopesettings.triggeroffset;
@@ -3696,9 +3722,9 @@ void scope_draw_pointers(void)
     {
       position = 441;
     }
-    
-    //Select the font for this pointer id
-    display_set_font(&font_3);
+
+    //Need to reset the fore ground color
+    display_set_fg_color(TRIGGER_COLOR);
     
     //Draw the pointer
     display_right_pointer(707, position, 'T');
@@ -3985,19 +4011,24 @@ void scope_get_short_timebase_data(void)
   {
     //Reset the flag so only done once until new request
     scopesettings.updatescreen = 0;
-    
-    //Draw directly on the screen
-    display_set_screen_buffer(maindisplaybuffer);
+
+    //Use a separate buffer to clear the screen
+    display_set_screen_buffer(displaybuffer1);
       
     //Clear the trace portion of the screen
     display_set_fg_color(0x00000000);
-    display_fill_rect(2, 47, 728, 432);
+    display_fill_rect(2, 46, 728, 432);
     
     //Draw the grid lines and dots based on the grid brightness setting
     scope_draw_grid();
     
     //Draw the signal center, trigger level and trigger position pointers
     scope_draw_pointers();
+
+    //Copy it to the actual screen buffer
+    display_set_source_buffer(displaybuffer1);
+    display_set_screen_buffer(maindisplaybuffer);
+    display_copy_rect_to_screen(2, 46, 728, 432);
   }
   
   //Send check on triggered command to the FPGA
@@ -4923,6 +4954,30 @@ void scope_display_trace_data(void)
   if(scopesettings.timeperdiv > 8)
   {
     
+    //For testing just clear the screen every time this is called
+    
+      //Use a separate buffer to clear the screen
+      display_set_screen_buffer(displaybuffer1);
+
+      //Clear the trace portion of the screen
+      display_set_fg_color(0x00000000);
+      display_fill_rect(2, 46, 728, 432);
+
+      //Draw the grid lines and dots based on the grid brightness setting
+      scope_draw_grid();
+      
+      //Draw the signal center, trigger level and trigger position pointers
+      scope_draw_pointers();
+
+      scope_draw_time_cursors();
+      scope_draw_volt_cursors();
+      
+      //Copy it to the actual screen buffer
+      display_set_source_buffer(displaybuffer1);
+      display_set_screen_buffer(maindisplaybuffer);
+      display_copy_rect_to_screen(2, 46, 728, 432);
+    
+    
   }
   else
   {
@@ -4934,27 +4989,37 @@ void scope_display_trace_data(void)
       return;
     }
     
-    //Based on touch state get either the previous xpos or reset it
+    //Based on touchstate in move trace or cursor lines use either the previous x position or reset it
     if(touchstate)
     {
       disp_xpos = 0;
     }
     
-    //Draw directly to screen
-    display_set_screen_buffer(maindisplaybuffer);
-    
     //Check if back on start of screen
     if(disp_xpos == 0)
     {
-      //Reset the screen
+      //Use a separate buffer to clear the screen
+      display_set_screen_buffer(displaybuffer1);
+
       //Clear the trace portion of the screen
       display_set_fg_color(0x00000000);
-      display_fill_rect(2, 47, 728, 432);
+      display_fill_rect(2, 46, 728, 432);
 
       //Draw the grid lines and dots based on the grid brightness setting
       scope_draw_grid();
+      
+      //Draw the signal center, trigger level and trigger position pointers
+      scope_draw_pointers();
+
+      //Copy it to the actual screen buffer
+      display_set_source_buffer(displaybuffer1);
+      display_set_screen_buffer(maindisplaybuffer);
+      display_copy_rect_to_screen(2, 46, 728, 432);
     }
 
+    //Draw the traces directly to the screen
+    display_set_screen_buffer(maindisplaybuffer);
+    
     //Check if channel 1 is enabled
     if(scopesettings.channel1.enable)
     {

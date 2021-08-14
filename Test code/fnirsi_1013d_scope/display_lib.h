@@ -84,7 +84,7 @@ void display_copy_icon_fg_color(const uint8 *icon, uint32 xpos, uint32 ypos, uin
 
 void display_left_pointer(uint32 xpos, uint32 ypos, int8 id);
 void display_right_pointer(uint32 xpos, uint32 ypos, int8 id);
-void display_top_pointer(uint32 xpos, uint32 ypos);
+void display_top_pointer(uint32 xpos, uint32 ypos, int8 id);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

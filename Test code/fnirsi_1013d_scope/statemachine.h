@@ -29,9 +29,16 @@ void close_open_sub_menus(void);
 
 void move_trigger_point_position(void);
 
-void change_channel_1_x_offset(void);
-void change_channel_1_y_offset(void);
-void change_channel_2_y_offset(void);
+void change_channel_1_offset(void);
+void change_channel_2_offset(void);
+
+void change_trigger_level_offset(void);
+
+void move_left_time_cursor_position(void);
+void move_right_time_cursor_position(void);
+
+void move_top_volt_cursor_position(void);
+void move_bottom_volt_cursor_position(void);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

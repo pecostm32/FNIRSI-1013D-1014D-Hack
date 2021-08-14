@@ -43,33 +43,50 @@ void touch_handler(void)
       switch(touchstate & TOUCH_STATE_MASK)
       {
         case TOUCH_STATE_X_Y_MODE:
+          previous_channel_1_offset = scopesettings.channel1.traceoffset;
+          previous_channel_2_offset = scopesettings.channel2.traceoffset;
           break;
 
         case TOUCH_STATE_MOVE_CHANNEL_1:
           previous_channel_1_offset = scopesettings.channel1.traceoffset;
+        
+          //Check if trigger on this channel and if so save it's current offset
+          if(scopesettings.triggerchannel == 0)
+          {
+            previous_trigger_level_offset = scopesettings.triggeroffset;
+          }
           break;
 
         case TOUCH_STATE_MOVE_CHANNEL_2:
           previous_channel_2_offset = scopesettings.channel2.traceoffset;
+        
+          //Check if trigger on this channel and if so save it's current offset
+          if(scopesettings.triggerchannel)
+          {
+            previous_trigger_level_offset = scopesettings.triggeroffset;
+          }
           break;
 
         case TOUCH_STATE_MOVE_TRIGGER_LEVEL:
+          previous_trigger_level_offset = scopesettings.triggeroffset;
           break;
 
         case TOUCH_STATE_MOVE_TIME_CURSOR_LEFT:
+          previous_left_time_cursor_position = scopesettings.timecursor1position;
           break;
 
         case TOUCH_STATE_MOVE_TIME_CURSOR_RIGHT:
+          previous_right_time_cursor_position = scopesettings.timecursor2position;
           break;
 
         case TOUCH_STATE_MOVE_VOLT_CURSOR_TOP:
+          previous_top_volt_cursor_position = scopesettings.voltcursor1position;
           break;
 
         case TOUCH_STATE_MOVE_VOLT_CURSOR_BOTTOM:
+          previous_bottom_volt_cursor_position = scopesettings.voltcursor2position;
           break;
       }
-      
-      //If trigger channel is being moved the level needs to be moved to!!!!!!!
     }
   }
   else
@@ -88,6 +105,9 @@ void touch_handler(void)
       return;
     }
     
+    //Slow things down a bit. This is not a proper solution but will do for now
+    timer0_delay(50);
+    
     //Check if the trigger point position can be moved
     if(touchstate & TOUCH_STATE_MOVE_TRIGGER_POINT)
     {
@@ -99,60 +119,56 @@ void touch_handler(void)
     switch(touchstate & TOUCH_STATE_MASK)
     {
       case TOUCH_STATE_X_Y_MODE:
+        change_channel_1_offset();
+        change_channel_2_offset();
         break;
         
       case TOUCH_STATE_MOVE_CHANNEL_1:
-        change_channel_1_y_offset();
+        change_channel_1_offset();
         
         //Check if trigger on this channel and if so move it accordingly
         if(scopesettings.triggerchannel == 0)
         {
-          
+          change_trigger_level_offset();
         }
         break;
         
       case TOUCH_STATE_MOVE_CHANNEL_2:
-        change_channel_2_y_offset();
+        change_channel_2_offset();
         
         //Check if trigger on this channel and if so move it accordingly
         if(scopesettings.triggerchannel)
         {
-          
+          change_trigger_level_offset();
         }
         break;
         
       case TOUCH_STATE_MOVE_TRIGGER_LEVEL:
+        change_trigger_level_offset();
         break;
         
       case TOUCH_STATE_MOVE_TIME_CURSOR_LEFT:
+        move_left_time_cursor_position();
         break;
         
       case TOUCH_STATE_MOVE_TIME_CURSOR_RIGHT:
+        move_right_time_cursor_position();
         break;
         
       case TOUCH_STATE_MOVE_VOLT_CURSOR_TOP:
+        move_top_volt_cursor_position();
         break;
         
       case TOUCH_STATE_MOVE_VOLT_CURSOR_BOTTOM:
+        move_bottom_volt_cursor_position();
         break;
     }
-    
-    
-    //The touchstate variable can be used here to signal which trace or cursor needs to be handled and if trigger point movement can be done
-    //Need to search through the rest of the code to change the two state to not 0 state
     
     
     //In x-y mode only the channel offsets can be changed. Needs a better pointer setup for this. The top pointer needs to be the x trace (channel 1)
     //and the left pointer the y trace. Colors changed to show the change. The other two pointers should not be shown
     
-    
-    //In fast mode the offsets limit to the edges without touch outside the region. In slow mode the touch continues into the menu regions, so in this section
-    //no check on the trace display bounds
-    
   }
-  
-  
-  
 }
 
 //Need to reset disp_xpos somewhere when touch in center part is done
@@ -527,6 +543,11 @@ void scan_for_touch(void)
           }
         }
 
+        
+        //This bit needs to be skipped for time base 50S/div - 100mS/div
+        
+        
+        
         //Check on x above 660 to decide early on move of trigger level offset
         if(xtouch > 660)
         {
@@ -650,6 +671,8 @@ void scan_for_touch(void)
           }
         }
 
+        //Down to here for the skip
+        
         //No other object selected so far then check again on the signal traces
         //When channel 1 or channel2 or only x movement signal that the trigger point can also be moved.
         touchstate = TOUCH_STATE_MOVE_TRIGGER_POINT;
@@ -2263,15 +2286,15 @@ void move_trigger_point_position(void)
   position = (int32)previous_trigger_point_position + diff;
   
   //Limit it on the trace portion of the screen
-  if(position < 10)
+  if(position < 2)
   {
     //So not below 2
-    position = 10;
+    position = 2;
   }
-  else if(position > 718)
+  else if(position > 712)
   {
-    //And not above 718;
-    position = 718;
+    //And not above 712;
+    position = 712;
   }
   
   //Update the current position
@@ -2280,13 +2303,22 @@ void move_trigger_point_position(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void change_channel_1_y_offset(void)
+void change_channel_1_offset(void)
 {
   int32 diff;
   int32 position;
   
-  //Calculate the distance to move the setting with
-  diff = ytouch - previousytouch;
+  //Calculate the distance to move the setting with based on the display mode
+  if(scopesettings.xymodedisplay == 0)
+  {
+    //For normal display use y displacement
+    diff = ytouch - previousytouch;
+  }
+  else
+  {
+    //For x-y mode display use x displacement
+    diff = previousxtouch - xtouch;
+  }
   
   //Make it based on move speed
   if(scopesettings.movespeed)
@@ -2301,12 +2333,12 @@ void change_channel_1_y_offset(void)
   //Limit it on the trace portion of the screen
   if(position < 6)
   {
-    //So not below 46
+    //So not below 6
     position = 6;
   }
   else if(position > 394)
   {
-    //And not above 441;
+    //And not above 394;
     position = 394;
   }
   
@@ -2319,7 +2351,7 @@ void change_channel_1_y_offset(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void change_channel_2_y_offset(void)
+void change_channel_2_offset(void)
 {
   int32 diff;
   int32 position;
@@ -2340,12 +2372,12 @@ void change_channel_2_y_offset(void)
   //Limit it on the trace portion of the screen
   if(position < 6)
   {
-    //So not below 46
+    //So not below 6
     position = 6;
   }
   else if(position > 394)
   {
-    //And not above 441;
+    //And not above 394;
     position = 394;
   }
   
@@ -2354,6 +2386,186 @@ void change_channel_2_y_offset(void)
   
   //Write it to the FPGA
   fpga_set_channel_2_offset();
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void change_trigger_level_offset(void)
+{
+  int32 diff;
+  int32 position;
+  
+  //Calculate the distance to move the setting with
+  diff = ytouch - previousytouch;
+  
+  //Make it based on move speed
+  if(scopesettings.movespeed)
+  {
+    //For slow divide by 5
+    diff /= 5;
+  }
+  
+  //Calculate the new position
+  position = (int32)previous_trigger_level_offset - diff;
+  
+  //Limit it on the trace portion of the screen
+  if(position < 6)
+  {
+    //So not below 6
+    position = 6;
+  }
+  else if(position > 394)
+  {
+    //And not above 394;
+    position = 394;
+  }
+  
+  //Update the current position
+  scopesettings.triggeroffset = position;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void move_left_time_cursor_position(void)
+{
+  int32 diff;
+  int32 position;
+  
+  //Calculate the distance to move the setting with
+  diff = xtouch - previousxtouch;
+  
+  //Make it based on move speed
+  if(scopesettings.movespeed)
+  {
+    //For slow divide by 5
+    diff /= 5;
+  }
+  
+  //Calculate the new position
+  position = (int32)previous_left_time_cursor_position + diff;
+  
+  //Limit it on the trace portion of the screen and the right time cursor
+  if(position < 3)
+  {
+    //So not below 3
+    position = 3;
+  }
+  else if(position >= scopesettings.timecursor2position)
+  {
+    //And not right of the right cursor;
+    position = scopesettings.timecursor2position - 1;
+  }
+  
+  //Update the current position
+  scopesettings.timecursor1position = position;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void move_right_time_cursor_position(void)
+{
+  int32 diff;
+  int32 position;
+  
+  //Calculate the distance to move the setting with
+  diff = xtouch - previousxtouch;
+  
+  //Make it based on move speed
+  if(scopesettings.movespeed)
+  {
+    //For slow divide by 5
+    diff /= 5;
+  }
+  
+  //Calculate the new position
+  position = (int32)previous_right_time_cursor_position + diff;
+  
+  //Limit it on the trace portion of the screen and the left cursor
+  if(position <= scopesettings.timecursor1position)
+  {
+    //So not left of the left cursor
+    position = scopesettings.timecursor1position + 1;
+  }
+  else if(position > 722)
+  {
+    //And not beyond end of the screen;
+    position = 722;
+  }
+  
+  //Update the current position
+  scopesettings.timecursor2position = position;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void move_top_volt_cursor_position(void)
+{
+  int32 diff;
+  int32 position;
+  
+  //Calculate the distance to move the setting with
+  diff = ytouch - previousytouch;
+  
+  //Make it based on move speed
+  if(scopesettings.movespeed)
+  {
+    //For slow divide by 5
+    diff /= 5;
+  }
+  
+  //Calculate the new position
+  position = (int32)previous_top_volt_cursor_position + diff;
+  
+  //Limit it on the trace portion of the screen and not below the bottom cursor
+  if(position < 47)
+  {
+    //So not below 47
+    position = 47;
+  }
+  else if(position >= scopesettings.voltcursor2position)
+  {
+    //And not below the bottom cursor;
+    position = scopesettings.voltcursor2position - 1;
+  }
+  
+  //Update the current position
+  scopesettings.voltcursor1position = position;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void move_bottom_volt_cursor_position(void)
+{
+  int32 diff;
+  int32 position;
+  
+  //Calculate the distance to move the setting with
+  diff = ytouch - previousytouch;
+  
+  //Make it based on move speed
+  if(scopesettings.movespeed)
+  {
+    //For slow divide by 5
+    diff /= 5;
+  }
+  
+  //Calculate the new position
+  position = (int32)previous_bottom_volt_cursor_position + diff;
+  
+  //Limit it on the trace portion of the screen and not above the top cursor
+  if(position <= scopesettings.voltcursor1position)
+  {
+    //So not above the top cursor
+    position = scopesettings.voltcursor1position + 1;
+  }
+  else if(position > 447)
+  {
+    //And not above 447;
+    position = 447;
+  }
+  
+  //Update the current position
+  scopesettings.voltcursor2position = position;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

@@ -994,7 +994,7 @@ void display_copy_rect_to_screen(uint32 xpos, uint32 ypos, uint32 width, uint32 
   ptr2 = displaydata.sourcebuffer + startpixel;
   
   //For copying bytes instead of shorts the width doubles
-  width <<=1;
+  width <<= 1;
   
   //Copy the needed lines
   for(line=0;line<height;line++)
@@ -1155,10 +1155,16 @@ void display_right_pointer(uint32 xpos, uint32 ypos, int8 id)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void display_top_pointer(uint32 xpos, uint32 ypos)
+void display_top_pointer(uint32 xpos, uint32 ypos, int8 id)
 {
   //Draw the pointer
-  display_copy_icon_fg_color(top_pointer_icon, xpos, ypos, 15, 15);
+  display_copy_icon_fg_color(top_pointer_icon, xpos, ypos, 15, 19);
+ 
+  //Set the color for drawing the id
+  displaydata.fg_color = displaydata.bg_color;
+  
+  //Draw the id
+  display_character(xpos + 4, ypos + 1, id);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
