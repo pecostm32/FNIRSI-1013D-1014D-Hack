@@ -7,9 +7,13 @@ One also needs a machine with linux to make it work with the given commands.
 This concerns the bootloader that makes the scope ready for loading the actual program with the sunxi-fel utility.
 
 
+!!!!!!Make sure to check the /dev device where your SD card resides!!!!!!!
+
 To write it to the SD card use the following command:
 
    sudo dd if=fnirsi_1013d_startup_with_fel.bin of=/dev/sdc bs=1024 seek=8
+   
+!!!!!!Make sure to check the /dev device where your SD card resides!!!!!!!
 
 
 Insert the newly written SD card into the scope. On power up it will show the FNIRSI-1013D startup bitmap and go into fel mode.
