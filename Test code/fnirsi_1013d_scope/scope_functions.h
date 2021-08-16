@@ -5,6 +5,10 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+#include "fnirsi_1013d_scope.h"
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 void scope_setup_display_lib(void);
 
 void scope_setup_main_screen(void);
@@ -132,13 +136,20 @@ void scope_double_data(uint16 *buffer, uint32 count);
 
 uint32 scope_process_trigger(void);
 
-void scope_pre_process_250ns_data(uint16 *buffer, uint32 count);
-void scope_pre_process_100ns_data(uint16 *buffer, uint32 count);
-void scope_pre_process_50ns_data(uint16 *buffer, uint32 count);
+void scope_up_sample_x_2(uint16 *buffer, uint32 count);
+void scope_up_sample_x_5(uint16 *buffer, uint32 count);
+void scope_up_sample_x_10(uint16 *buffer, uint32 count);
+
+
+
 void scope_pre_process_25ns_data(uint16 *buffer, uint32 offset, uint32 count);
 
-
 void scope_process_25ns_data(uint16 *buffer, uint32 offset, uint32 count);
+
+void scope_calculate_min_max_avg(uint16 *buffer, PMEASUREMENTS measurements);
+void scope_evaluate_trace_data(uint16 *buffer, PMEASUREMENTS measurements, uint32 voltperdiv, uint32 screenoffset);
+
+void scope_determine_sample_buffer_indexes(void);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 // Signal data display functions
@@ -146,6 +157,9 @@ void scope_process_25ns_data(uint16 *buffer, uint32 offset, uint32 count);
 
 void scope_display_trace_data(void);
 
+void scope_display_cursor_measurements(void);
+
+void scope_display_measurements(void);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

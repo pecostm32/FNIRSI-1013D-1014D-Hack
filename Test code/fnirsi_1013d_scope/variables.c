@@ -46,6 +46,9 @@ uint16 displaybuffer2[SCREEN_SIZE];
 
 SCOPESETTINGS scopesettings;
 
+MEASUREMENTS channel1measurements;
+MEASUREMENTS channel2measurements;
+
 uint16 channel1tracebuffer1[6000];    //In original code at 0x8019D5EA
 uint16 channel1tracebuffer2[6000];    //Not used in original code
 uint16 channel1tracebuffer3[3000];    //Target buffer for processed trace data. In original code at 0x801A916A
@@ -70,6 +73,14 @@ uint16 disp_ch2_y = 0;
 
 uint16 disp_ch1_prev_y = 0;
 uint16 disp_ch2_prev_y = 0;
+
+uint8 zoom_select = 0;
+
+uint16 sample_start_index = 0;
+uint16 sample_end_index = 0;
+
+
+uint8 channel_1_process_anyway = 0;    //In original code at 0x8019D5A9 (Basically a channel setting)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Distances of touch point to traces and cursors
@@ -116,5 +127,12 @@ uint16 prevxtouch = 0;
 const uint16 signal_adjusters[7] = { 0xAD, 0xAF, 0xB4, 0xB4, 0xB8, 0xB8, 0xB8 };
 
 const uint16 timebase_adjusters[5] = { 0x01A9, 0x00AA, 0x0055, 0x002F, 0x0014 };
+
+const uint8 zoom_select_settings[3][7] =
+{
+  { 8, 10, 5, 0, 2, 3, 4 },
+  { 8,  7, 6, 0, 1, 9, 4 },
+  { 8,  7, 5, 0, 1, 3, 4 }
+};
 
 //----------------------------------------------------------------------------------------------------------------------------------

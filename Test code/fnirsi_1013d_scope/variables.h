@@ -44,6 +44,9 @@ extern uint8 calibrationopen;
 
 extern SCOPESETTINGS scopesettings;
 
+extern MEASUREMENTS channel1measurements;
+extern MEASUREMENTS channel2measurements;
+
 extern uint16 channel1tracebuffer1[];
 extern uint16 channel1tracebuffer2[];
 extern uint16 channel1tracebuffer3[];
@@ -67,6 +70,13 @@ extern uint16 disp_ch2_y;
 
 extern uint16 disp_ch1_prev_y;
 extern uint16 disp_ch2_prev_y;
+
+extern uint8 zoom_select;
+
+extern uint16 sample_start_index;
+extern uint16 sample_end_index;
+
+extern uint8 channel_1_process_anyway;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Distances of touch point to traces and cursors
@@ -107,6 +117,8 @@ extern uint16 previous_bottom_volt_cursor_position;
 extern const uint16 signal_adjusters[];
 
 extern const uint16 timebase_adjusters[];
+
+extern const uint8 zoom_select_settings[][7];
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //For touch filtering on slider movement

@@ -1527,28 +1527,28 @@ void handle_right_basic_menu_touch(void)
 /*
       if (pcVar5[0x3a] == '\0')  //scopesettings.runstate
       {
-        pcVar5[0x3a] = '\x01';
+        pcVar5[0x3a] = '\x01';                            //stopped
         *(ushort *)puVar19 = (ushort)(byte)pcVar5[3];     //Save the volts/div setting for each channel when runstate is enabled (In 0x80192ec6)
         *(ushort *)puVar7 = (ushort)(byte)pcVar5[0xf];    //(In 0x80192ec8)
       }
       else
       {
-        pcVar5[0x3a] = '\0';
-        *(undefined2 *)PTR_DAT_800202ec = 0;
-        *(undefined2 *)PTR_DAT_800202f0 = 400;
-        *(undefined2 *)PTR_DAT_800202f4 = 0;
-        *(undefined2 *)PTR_DAT_800202f8 = 400;
+        pcVar5[0x3a] = '\0';                              //running
+        *(undefined2 *)PTR_DAT_800202ec = 0;              //0x80192EC4   //State flag for getting start+end in sample buffers???
+        *(undefined2 *)PTR_DAT_800202f0 = 400;            //0x80192EBC
+        *(undefined2 *)PTR_DAT_800202f4 = 0;              //0x80192ECE
+        *(undefined2 *)PTR_DAT_800202f8 = 400;            //0x80192EBE
       }
 
          //Trigger mode              run state
       if ((pcVar5[0x21] == '\0') || (pcVar5[0x3a] != '\0'))
       {
-        pcVar5[0x18] = '\x01';
-        pcVar5[0x17] = '\x01';
+        pcVar5[0x18] = '\x01';        triggerflag2
+        pcVar5[0x17] = '\x01';        triggerflag1
       }
       else
       {
-        pcVar5[0x36] = '\0';
+        pcVar5[0x36] = '\0';     //triggerflag3
         pcVar5[0x37] = '\x01';   //Update screen flag
       }
 */      

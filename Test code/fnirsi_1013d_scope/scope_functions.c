@@ -3507,22 +3507,31 @@ void scope_adjust_timebase(void)
         //Keep it on 10mS/div if so
         scopesettings.timeperdiv = 11;
       }
-      
+
       //Check if new setting within allowed range from backed up setting, which is time base of last sample data
       //Calculate the step difference between the two settings
       diff = scopesettings.timeperdiv - scopesettings.timeperdivbackup;
-      
+
       //Limit it on 3 steps either side
       if(diff > 3)
       {
         //Add three if the new setting is above the old
         scopesettings.timeperdiv = scopesettings.timeperdivbackup + 3;
+
+        //Limit on max for table index
+        diff = 3;
       }
       else if(diff < -3)
       {
         //Subtract three if the new setting is below the old
         scopesettings.timeperdiv = scopesettings.timeperdivbackup - 3;
+
+        //Limit on min for table index
+        diff = -3;
       }
+
+      //Set sample buffer position select for zoom in stop mode. This also selects an up sampling function as needed
+      zoom_select = zoom_select_settings[scopesettings.timeperdivbackup % 3][diff + 3];
     }
 
     //For trigger modes single and normal the time base setting can't go up beyond 50mS/div
@@ -3682,8 +3691,8 @@ void scope_draw_pointers(void)
     display_left_pointer(2, position, '2');
   }
   
-  //Draw trigger position and level pointer when time base in range of 10mS/div - 10nS/div
-  if(scopesettings.timeperdiv > 10)
+  //Draw trigger position and level pointer when time base in range of 10mS/div - 10nS/div and in normal display mode
+  if((scopesettings.timeperdiv > 10) && (scopesettings.xymodedisplay == 0))
   {
     //x position for the trigger position pointer
     position = scopesettings.triggerposition + 2;
@@ -4179,19 +4188,19 @@ void scope_get_short_timebase_data(void)
       //250nS/div
       case 25:
         //Call pre process function for it
-        scope_pre_process_250ns_data(channel1tracebuffer1, 2500);
+        scope_up_sample_x_2(channel1tracebuffer1, 2500);
         break;
 
       //100nS/div
       case 26:
         //Call pre process function for it
-        scope_pre_process_100ns_data(channel1tracebuffer1, 2500);
+        scope_up_sample_x_5(channel1tracebuffer1, 2500);
         break;
 
       //50nS/div
       case 27:
         //Call pre process function for it
-        scope_pre_process_50ns_data(channel1tracebuffer1, 2500);
+//        scope_pre_process_50ns_data(channel1tracebuffer1, 2500);
         break;
 
       //25nS/div and 10nS/div
@@ -4251,14 +4260,19 @@ void scope_get_short_timebase_data(void)
     if(scopesettings.timeperdiv < 25)
     {
       //Filter the data
-      scope_filter_data(channel1tracebuffer4, count - 2);    //In the original the do 2998 samples no matter what
+      scope_filter_data(channel1tracebuffer4, count - 2);    //In the original they do 2998 samples no matter what
     }
     
-    //Call some functions here dedicated to channel 1
-    //FUN_800049a0();
-    //FUN_80006654();
+    //Calculate some of the basic measurements like min, max, average, peak peak an another one (max + (min >> 1))???
+    scope_calculate_min_max_avg(channel1tracebuffer4, &channel1measurements);
     
+    //Check on signal being large enough and otherwise clear it with some noise
+    scope_evaluate_trace_data(channel1tracebuffer4, &channel1measurements, scopesettings.channel1.voltperdiv, scopesettings.channel1.traceoffset);
+    
+    //SKip for now
     //And if some variable is 0 call another one
+    //Basically only turned off in perform auto set
+    //Is this frequency determination??????
     //if (pcVar2[0x48] == '\0')
     //{
     //  FUN_80003ec8();
@@ -4266,6 +4280,13 @@ void scope_get_short_timebase_data(void)
   }
   
   //Handle channel 2 here
+  
+  
+  
+  
+  //Handle some trigger stuff here
+  
+  
   
   
   //Set flags based on being triggered
@@ -4532,7 +4553,7 @@ uint32 scope_process_trigger(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_pre_process_250ns_data(uint16 * buffer, uint32 count)   //In original code an offset is used, but it is always 0
+void scope_up_sample_x_2(uint16 * buffer, uint32 count)   //In original code an offset is used, but it is always 0
 {
   uint32 cnt;
   uint32 sample;
@@ -4654,7 +4675,7 @@ void scope_pre_process_250ns_data(uint16 * buffer, uint32 count)   //In original
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_pre_process_100ns_data(uint16 * buffer, uint32 count)
+void scope_up_sample_x_5(uint16 * buffer, uint32 count)
 {
   uint32 cnt1, cnt2;
   uint32 sample1, sample2;
@@ -4764,7 +4785,7 @@ void scope_pre_process_100ns_data(uint16 * buffer, uint32 count)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_pre_process_50ns_data(uint16 * buffer, uint32 count)
+void scope_up_sample_x_10(uint16 * buffer, uint32 count)
 {
   uint32 cnt1, cnt2;
   uint32 sample1, sample2;
@@ -4935,6 +4956,184 @@ void scope_process_25ns_data(uint16 * buffer, uint32 offset, uint32 count)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+void scope_calculate_min_max_avg(uint16 *buffer, PMEASUREMENTS measurements)
+{
+  uint32 start;
+  uint32 end;
+  uint16 *ptr;
+  uint32  min = 0xFFFF;
+  uint32  max = 0;
+  uint32  avg = 0;
+  uint32  cnt1, cnt2;
+  uint32  sample;
+  
+  //Check on time base setting for start and end points
+  if(scopesettings.timeperdiv < 11)
+  {
+    //For 50mS/div and 20mS/div start at 100 and end at 600
+    start = 100;
+    end   = 600;
+  }
+  else
+  {
+    //For 10mS/div - 10nS/div start at 200 and end at 1200
+    start =  200;
+    end   = 1200;
+  }
+  
+  //Point to the start of the data
+  ptr = &buffer[start];
+  
+  //Calculate the number of samples to do
+  cnt1 = end - start;
+  cnt2 = cnt1;
+  
+  //Process the samples
+  while(cnt2)
+  {
+    //Get the current sample and point to the next one
+    sample = *ptr++;
+    
+    //Get the minimum value of the samples
+    if(sample < min)
+    {
+      //Keep the lowest
+      min = sample;
+    }
+    
+    //Get the maximum value of the samples
+    if(sample > max)
+    {
+      //Keep the highest
+      max = sample;
+    }
+    
+    //Add the samples for average calculation
+    avg += sample;
+    
+    //One more sample done
+    cnt2--;
+  }
+  
+  //Save the results
+  measurements->min = min;
+  measurements->max = max;
+  measurements->avg = avg / cnt1;
+  measurements->peakpeak = max - min;
+  measurements->maxplushalfmin = max + (min >> 1); 
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_evaluate_trace_data(uint16 *buffer, PMEASUREMENTS measurements, uint32 voltperdiv, uint32 screenoffset)
+{
+  uint32 minsignalneeded;
+  uint32 cnt1, cnt2;
+  uint32 sample;
+  uint32 index;
+  
+  //Check if on highest sensitivity (lowest volt/div setting)
+  if(voltperdiv == 6)
+  {
+    //Set the compensation factor for this
+    minsignalneeded = 35;
+  }
+  else
+  {
+    //Otherwise use a lower compensation
+    minsignalneeded = 20;
+  }
+  
+  //Check on time base setting for the number of samples to process
+  if(scopesettings.timeperdiv < 25)
+  {
+    //For 50mS/div - 500nS/div use 1500 samples
+    cnt1 = 1500;
+  }
+  else
+  {
+    //For 250nS/div - 10nS/div use 2500 samples
+    cnt1 = 2500;
+  }
+  
+  //Check if peak peak measurement of the signal is less then the minimum signal needed
+  if(measurements->peakpeak < minsignalneeded)
+  {
+    //Check if the center of the signal is outside the minimal signal band around the center line
+    if((measurements->avg < (screenoffset - minsignalneeded)) || (measurements->avg > (screenoffset + minsignalneeded)))
+    {
+      //Remove the small signal from the buffer by using the average
+      while(cnt1)
+      {
+        //Count is either 1500 or 2500 so even and therfore ok to handle two samples at once
+        //Set the current sample with average value
+        *buffer++ = measurements->avg;
+        *buffer++ = measurements->avg;
+        
+        //Two samples done
+        cnt1 -= 2;
+      }
+    }
+    else
+    {
+      //signal center within the minimal signal band around the center line
+      index = 0;
+      cnt2 = 0;
+      
+      //Process the samples
+      while(cnt1)
+      {
+        //Get a sample
+        sample = buffer[index];
+
+        //Overwrite it with the screen offset
+        buffer[index] = screenoffset;
+        
+        //Check if it is above the average
+        if(sample > measurements->avg)
+        {
+          //Every so many counts introduce some noise?????
+          if(cnt2 >= 21)
+          {
+            //No idea on the why of this
+            cnt2 = 0;
+            buffer[index] += 1;
+          }
+        }
+        else
+        {
+          //Check is sample on the average
+          if(sample == measurements->avg)
+          {
+            //Every so many samples a bit of noise is introduced???
+            cnt2++;
+          }
+          else if(cnt2 >= 21)
+          {
+            //No idea on the why of this
+            cnt2 = 0;
+            buffer[index] -= 1;
+          }
+        }
+        
+        //One sample done
+        cnt1--;
+      }
+    }
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_determine_sample_buffer_indexes(void)
+{
+  //Needs to set these based on the zoom_select variable
+  //sample_start_index
+  //sample_end_index
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 void scope_display_trace_data(void)
 {
   uint32 xpos1;
@@ -4953,31 +5152,85 @@ void scope_display_trace_data(void)
   //Check if time base on 50mS/div - 10nS/div
   if(scopesettings.timeperdiv > 8)
   {
-    
-    //For testing just clear the screen every time this is called
-    
-      //Use a separate buffer to clear the screen
-      display_set_screen_buffer(displaybuffer1);
+    //Use a separate display buffer
+    display_set_screen_buffer(displaybuffer1);
 
+    //Check if screen needs to be redrawn
+    if(scopesettings.triggerflag2)
+    {
       //Clear the trace portion of the screen
       display_set_fg_color(0x00000000);
       display_fill_rect(2, 46, 728, 432);
 
       //Draw the grid lines and dots based on the grid brightness setting
       scope_draw_grid();
+    }
+    
+    //Check on another flag if this next bit needs to be done
+    if(scopesettings.triggerflag1)
+    {
+      //Get the sample buffer indexes based on the sample_index_select variable
+      scope_determine_sample_buffer_indexes();
       
-      //Draw the signal center, trigger level and trigger position pointers
-      scope_draw_pointers();
+      //Check if channel 1 is enabled
+      if(scopesettings.channel1.enable)
+      {
+        //Check if running and not moving traces, cursors or pointers
+        if((scopesettings.runstate == 0) && (touchstate == 0))
+        {
+          //Set some variable here
+          //*(undefined2 *)(puVar8 + 0x12) = 400; 
+        }
+        
+        //Call the zoom processing function
+        //FUN_8000410c();
+        
+        //Check if auto or normal trigger mode and the time base in range of 50nS/div - 10nS/div and (trigger channel is channel 2 or some variable is set)
+        if(((scopesettings.triggermode == 0) || (scopesettings.triggermode == 2)) &&  (scopesettings.timeperdiv > 26) && ((scopesettings.triggerchannel == 1) || channel_1_process_anyway))
+        {
+          //Process channel 1 trigger???
+          //FUN_8000583c();
+        }
+        
+        //Check if in normal display mode
+        if(scopesettings.xymodedisplay == 0)
+        {
+          //Draw the trace on the screen
+          //FUN_80012a64(*(undefined2 *)(pcVar7 + 0x1a),0,*(undefined2 *)(pcVar7 + 0x1c),DAT_8002b654);
+        }
+      }
+      
 
+      //Do channel 2 here
+
+
+      //Check on channel 1 FFT here
+      
+      
+      //Check on channel 2 FFT here
+
+    }
+    
+    
+    //Check if screen needs to be redrawn
+    if(scopesettings.triggerflag2)
+    {
+      //Draw the cursors with their measurement displays
       scope_draw_time_cursors();
       scope_draw_volt_cursors();
+      scope_display_cursor_measurements();    //Still needs implementing
+
+      //Draw the signal center, trigger level and trigger position pointers
+      scope_draw_pointers();
       
+      //Show the enabled measurements on the screen
+      scope_display_measurements();    //Still needs implementing
+
       //Copy it to the actual screen buffer
       display_set_source_buffer(displaybuffer1);
       display_set_screen_buffer(maindisplaybuffer);
       display_copy_rect_to_screen(2, 46, 728, 432);
-    
-    
+    }
   }
   else
   {
@@ -5190,12 +5443,8 @@ void scope_display_trace_data(void)
       channel2ypoints[disp_xpos] = disp_ch2_y;
     }
 
-    //Check if signal pointers need to be redisplayed
-    if(disp_xpos < 22)
-    {
-      //Draw the signal center, trigger level and trigger position pointers
-      scope_draw_pointers();
-    }
+    //Redraw the signal center, trigger level and trigger position pointers to be on top of the signals
+    scope_draw_pointers();
     
     //Point to next x position
     disp_xpos++;
@@ -5207,6 +5456,20 @@ void scope_display_trace_data(void)
       disp_xpos = 0;
     }
   }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_display_cursor_measurements(void)
+{
+  
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_display_measurements(void)
+{
+  
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
