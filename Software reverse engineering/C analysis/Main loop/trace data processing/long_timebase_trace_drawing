@@ -1,0 +1,88 @@
+  int current  = 37;
+  int previous = 23;
+  int temp;
+  int chk1, chk2;
+
+  char *result = "draw on consecutive x points";
+  
+  if(current < previous)
+    temp = previous - current;
+  else
+    temp = current - previous;
+  
+  if(temp < 15)
+  {
+    result = "make average";
+  }
+  else if(temp > 20)
+  {
+    result = "draw on single x point";
+  }
+
+
+
+
+
+
+
+current   68
+previous  23
+
+a = 23
+b = 68 + 15 = 83
+c = 68
+
+x = 23 <= 83 = true
+y = 83 == 23 = false
+
+if x && !y = true
+  b = 23 + 15 = 38
+
+  x = 63 <= 38 = false
+  y = 38 == 63 = false
+
+  if !x || y = true
+    b = 23 + 20 = 43
+
+    x = 43 <= 63 = true
+    y = 63 == 43 = false
+
+    if !x || y = false
+
+
+    if x && !y = true
+      draw on same x
+
+(cur much bigger then prev)
+
+
+
+current   23
+previous  68
+
+a = 68
+b = 23 + 15 = 38
+c = 23
+
+x = 23 <= 83 = true
+y = 83 == 23 = false
+
+if x && !y = true
+  b = 23 + 15 = 38
+
+  x = 63 <= 38 = false
+  y = 38 == 63 = false
+
+  if !x || y = true
+    b = 23 + 20 = 43
+
+    x = 43 <= 63 = true
+    y = 63 == 43 = false
+
+    if !x || y = false
+
+
+    if x && !y = true
+      draw on same x
+
+(cur much bigger then prev)
