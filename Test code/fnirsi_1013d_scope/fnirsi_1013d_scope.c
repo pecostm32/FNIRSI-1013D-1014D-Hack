@@ -122,11 +122,11 @@ int main(void)
   scopesettings.channel1.enable = 1;
   scopesettings.channel1.coupling = 0;
   scopesettings.channel1.magnification = 0;
-  scopesettings.channel1.voltperdiv = 3;
+  scopesettings.channel1.voltperdiv = 4;
   scopesettings.channel1.fftenable = 0;
-  scopesettings.channel1.traceoffset = 305;
+  scopesettings.channel1.traceoffset = 220;
   
-  scopesettings.channel2.enable = 1;
+  scopesettings.channel2.enable = 0;
   scopesettings.channel2.coupling = 0;
   scopesettings.channel2.magnification = 0;
   scopesettings.channel2.voltperdiv = 3;
@@ -135,14 +135,14 @@ int main(void)
   
   scopesettings.triggermode = 0;
   scopesettings.triggeredge = 1;
-  scopesettings.triggerchannel = 1;
+  scopesettings.triggerchannel = 0;
   
   scopesettings.triggerposition = 350;
-  scopesettings.triggeroffset = 124;
+  scopesettings.triggeroffset = 225;
   scopesettings.triggerlevel = 20;
   
-  scopesettings.timeperdivbackup = 8;
-  scopesettings.timeperdiv = 8;
+  scopesettings.timeperdivbackup = 25;
+  scopesettings.timeperdiv = 25;
   
   scopesettings.triggerflag1 = 0;
   scopesettings.triggerflag2 = 0;
@@ -157,7 +157,7 @@ int main(void)
   scopesettings.screenbrightness = 67;
   scopesettings.gridbrightness = 46;
   scopesettings.alwaystrigger50 = 1;
-  scopesettings.xymodedisplay = 1;
+  scopesettings.xymodedisplay = 0;
   
   scopesettings.timecursorsenable = 0;
   scopesettings.timecursor1position = 78;

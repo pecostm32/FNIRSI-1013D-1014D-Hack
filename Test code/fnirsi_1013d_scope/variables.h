@@ -73,8 +73,8 @@ extern uint16 disp_ch2_prev_y;
 
 extern uint8 zoom_select;
 
-extern uint16 sample_start_index;
-extern uint16 sample_end_index;
+extern uint16 disp_x_start;
+extern uint16 disp_sample_count;
 
 extern uint8 channel_1_process_anyway;
 

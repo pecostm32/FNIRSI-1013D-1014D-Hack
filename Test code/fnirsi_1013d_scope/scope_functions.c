@@ -4050,7 +4050,7 @@ void scope_get_short_timebase_data(void)
     tp_i2c_read_status();
   }
   
-  //Some bounds setting. Zero here, One after trigger???
+  //Some bounds setting. Zero before, one here after trigger???
   fpga_write_cmd(0x0F);
   fpga_write_byte(0x01);
   
@@ -4170,8 +4170,11 @@ void scope_get_short_timebase_data(void)
       count = 1500;
     }
     
+    //It seems it actually needs this. Using a fixed command 0x20 without the call to the special chip makes the trace garbage
     //Get the FPGA command to read from based on the trigger channel
     command = fpga_read_parameter_ic(0x0C, scopesettings.triggerchannel);
+  
+//    command = 20;
     
     //Read the bytes into a trace buffer
     fpga_read_trace_data(command, channel1tracebuffer1, count);
@@ -4187,20 +4190,20 @@ void scope_get_short_timebase_data(void)
     {
       //250nS/div
       case 25:
-        //Call pre process function for it
-        scope_up_sample_x_2(channel1tracebuffer1, 2500);
+        //Call up sampling function for it
+//        scope_up_sample_x_2(channel1tracebuffer1, 2500);
         break;
 
       //100nS/div
       case 26:
-        //Call pre process function for it
-        scope_up_sample_x_5(channel1tracebuffer1, 2500);
+        //Call up sampling function for it
+//        scope_up_sample_x_5(channel1tracebuffer1, 2500);
         break;
 
       //50nS/div
       case 27:
-        //Call pre process function for it
-//        scope_pre_process_50ns_data(channel1tracebuffer1, 2500);
+        //Call up sampling function for it
+//        scope_up_sample_x_10(channel1tracebuffer1, 2500);
         break;
 
       //25nS/div and 10nS/div
@@ -4267,7 +4270,7 @@ void scope_get_short_timebase_data(void)
     scope_calculate_min_max_avg(channel1tracebuffer4, &channel1measurements);
     
     //Check on signal being large enough and otherwise clear it with some noise
-    scope_evaluate_trace_data(channel1tracebuffer4, &channel1measurements, scopesettings.channel1.voltperdiv, scopesettings.channel1.traceoffset);
+    //scope_evaluate_trace_data(channel1tracebuffer4, &channel1measurements, scopesettings.channel1.voltperdiv, scopesettings.channel1.traceoffset);
     
     //SKip for now
     //And if some variable is 0 call another one
@@ -5128,8 +5131,8 @@ void scope_evaluate_trace_data(uint16 *buffer, PMEASUREMENTS measurements, uint3
 void scope_determine_sample_buffer_indexes(void)
 {
   //Needs to set these based on the zoom_select variable
-  //sample_start_index
-  //sample_end_index
+  //disp_x_start = 0;
+  //disp_sample_count = 0;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -5192,11 +5195,15 @@ void scope_display_trace_data(void)
           //FUN_8000583c();
         }
         
+        //Temporarily set to fixed values for testing
+        disp_x_start = 3;
+        disp_sample_count = 720;
+        
         //Check if in normal display mode
         if(scopesettings.xymodedisplay == 0)
         {
           //Draw the trace on the screen
-          //FUN_80012a64(*(undefined2 *)(pcVar7 + 0x1a),0,*(undefined2 *)(pcVar7 + 0x1c),DAT_8002b654);
+          scope_display_channel_trace(channel1tracebuffer4, disp_x_start, disp_sample_count, CHANNEL1_COLOR);
         }
       }
       
@@ -5455,6 +5462,29 @@ void scope_display_trace_data(void)
       //Reset the x position
       disp_xpos = 0;
     }
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_display_channel_trace(uint16 *buffer, uint16 xpos, uint16 count, uint32 color)
+{
+  register uint32 index = 0;
+  register uint32 sample1, sample2;
+
+  display_set_fg_color(color);
+  
+  sample1 = buffer[index++];
+  
+  while(index < count)
+  {
+    sample2 = buffer[index++];
+
+    display_draw_line(xpos, sample1, xpos + 1, sample2);
+    
+    xpos++;
+    
+    sample1 = sample2;
   }
 }
 

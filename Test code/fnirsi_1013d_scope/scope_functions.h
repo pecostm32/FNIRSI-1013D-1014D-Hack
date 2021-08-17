@@ -157,6 +157,8 @@ void scope_determine_sample_buffer_indexes(void);
 
 void scope_display_trace_data(void);
 
+void scope_display_channel_trace(uint16 *buffer, uint16 xpos, uint16 count, uint32 color);
+
 void scope_display_cursor_measurements(void);
 
 void scope_display_measurements(void);

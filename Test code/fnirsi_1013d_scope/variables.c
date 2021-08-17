@@ -76,8 +76,8 @@ uint16 disp_ch2_prev_y = 0;
 
 uint8 zoom_select = 0;
 
-uint16 sample_start_index = 0;
-uint16 sample_end_index = 0;
+uint16 disp_x_start = 0;               //In original code at 0x8019D5BA
+uint16 disp_sample_count = 0;          //In original code at 0x8019D5BC
 
 
 uint8 channel_1_process_anyway = 0;    //In original code at 0x8019D5A9 (Basically a channel setting)
