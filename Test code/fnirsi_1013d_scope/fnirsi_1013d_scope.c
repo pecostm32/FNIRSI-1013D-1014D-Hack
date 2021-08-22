@@ -112,6 +112,10 @@ int main(void)
   //Show message when it fails and hang in endless loop
   
   
+  
+  
+  
+  
   scopesettings.rightmenustate = 0;
   scopesettings.waveviewmode = 0;
 
@@ -141,8 +145,8 @@ int main(void)
   scopesettings.triggeroffset = 225;
   scopesettings.triggerlevel = 20;
   
-  scopesettings.timeperdivbackup = 25;
-  scopesettings.timeperdiv = 25;
+  scopesettings.timeperdivbackup = 24;
+  scopesettings.timeperdiv = 24;
   
   scopesettings.triggerflag1 = 0;
   scopesettings.triggerflag2 = 0;

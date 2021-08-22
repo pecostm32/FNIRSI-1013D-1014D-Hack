@@ -1,5 +1,9 @@
+//--------------------------------------------------------------------------------------
+
 #ifndef SPI_CONTROL_H
 #define SPI_CONTROL_H
+
+//--------------------------------------------------------------------------------------
 
 #define SPI0_GCR         ((volatile unsigned int *)(0x01C05004))
 #define SPI0_TCR         ((volatile unsigned int *)(0x01C05008))
@@ -21,7 +25,6 @@
 
 #define SPI0_TXD_BYTE    ((volatile unsigned char *)(0x01C05200))
 #define SPI0_RXD_BYTE    ((volatile unsigned char *)(0x01C05300))
-
 
 //--------------------------------------------------------------------------------------
 //Global control settings
@@ -72,15 +75,34 @@
 #define SPI_CCR_CDR2(x)            (x & 0xF)
 
 //--------------------------------------------------------------------------------------
+
+#define FLASH_SECTOR_ADDR_MASK    0x00FFF000
+
+#define FLASH_SECTOR_MASK         0x00000FFF
+#define FLASH_SECTOR_SIZE               4096
+
+#define FLASH_PAGE_MASK           0x000000FF
+#define FLASH_PAGE_SIZE                  256
+
+//--------------------------------------------------------------------------------------
 //Functions
 void sys_spi_flash_init(void);
 void sys_spi_flash_exit(void);
-void sys_spi_flash_read(int addr, unsigned char *rxbuffer, int length);
+void sys_spi_flash_read(int addr, unsigned char *buffer, int length);
+void sys_spi_flash_write(int addr, unsigned char *buffer, int length);
+
+void sys_spi_flash_write_enable(void);
+void sys_spi_flash_wait_while_busy(void);
+void sys_spi_flash_erase_sector(int addr);
+void sys_spi_flash_program_page(int addr, unsigned char *buffer, int length);
+void sys_spi_flash_program_sector(int addr, unsigned char *buffer, int length);
 
 //--------------------------------------------------------------------------------------
 //Support functions
 void sys_spi_write(unsigned char *buffer, int length);
 void sys_spi_read(unsigned char *buffer, int length);
+
+//--------------------------------------------------------------------------------------
 
 #endif /* SPI_CONTROL_H */
 

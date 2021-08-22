@@ -961,6 +961,7 @@ void handle_main_menu_touch(void)
           
           //Start the calibration process
           
+          
           //Show the calibration successful text if all went well
           scope_show_calibration_done_text();
           
