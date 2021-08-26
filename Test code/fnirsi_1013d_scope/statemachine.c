@@ -208,11 +208,7 @@ void scan_for_touch(void)
         scope_menu_button(1);
 
         //Wait until touch is released
-        while(havetouch)
-        {
-          //Read the touch panel status
-          tp_i2c_read_status();
-        }
+        tp_i2c_wait_for_touch_release();
 
         //Set the button inactive
         scope_menu_button(0);
@@ -237,11 +233,7 @@ void scan_for_touch(void)
         scope_main_return_button(1);
 
         //Wait until touch is released
-        while(havetouch)
-        {
-          //Read the touch panel status
-          tp_i2c_read_status();
-        }
+        tp_i2c_wait_for_touch_release();
 
         //Switch back to the main menu button and set it inactive
         scope_menu_button(0);
@@ -257,11 +249,7 @@ void scan_for_touch(void)
       scope_channel1_settings(1);
       
       //Wait until touch is released
-      while(havetouch)
-      {
-        //Read the touch panel status
-        tp_i2c_read_status();
-      }
+      tp_i2c_wait_for_touch_release();
       
       //Set the button inactive
       scope_channel1_settings(0);
@@ -287,11 +275,7 @@ void scan_for_touch(void)
       scope_channel2_settings(1);
       
       //Wait until touch is released
-      while(havetouch)
-      {
-        //Read the touch panel status
-        tp_i2c_read_status();
-      }
+      tp_i2c_wait_for_touch_release();
       
       //Set the button inactive
       scope_channel2_settings(0);
@@ -317,11 +301,7 @@ void scan_for_touch(void)
       scope_move_speed(1);
 
       //Wait until touch is released
-      while(havetouch)
-      {
-        //Read the touch panel status
-        tp_i2c_read_status();
-      }
+      tp_i2c_wait_for_touch_release();
       
       //Toggle the speed
       scopesettings.movespeed ^= 1;
@@ -336,11 +316,7 @@ void scan_for_touch(void)
       scope_trigger_settings(1);
       
       //Wait until touch is released
-      while(havetouch)
-      {
-        //Read the touch panel status
-        tp_i2c_read_status();
-      }
+      tp_i2c_wait_for_touch_release();
       
       //Set the button inactive
       scope_trigger_settings(0);
@@ -369,11 +345,7 @@ void scan_for_touch(void)
       scope_control_button(1);
       
       //Wait until touch is released
-      while(havetouch)
-      {
-        //Read the touch panel status
-        tp_i2c_read_status();
-      }
+      tp_i2c_wait_for_touch_release();
 
       //Button back to inactive state
       scope_control_button(0);
@@ -725,11 +697,7 @@ void handle_main_menu_touch(void)
             scope_main_menu_system_settings(1);
 
             //Wait until touch is released
-            while(havetouch)
-            {
-              //Read the touch panel status
-              tp_i2c_read_status();
-            }
+            tp_i2c_wait_for_touch_release();
 
             //Save the screen under the menu
             display_set_destination_buffer(displaybuffer2);
@@ -749,11 +717,7 @@ void handle_main_menu_touch(void)
           scope_main_menu_picture_view(1);
 
           //Wait until touch is released
-          while(havetouch)
-          {
-            //Read the touch panel status
-            tp_i2c_read_status();
-          }
+          tp_i2c_wait_for_touch_release();
 
           //Show and handle the picture view here
           
@@ -767,11 +731,7 @@ void handle_main_menu_touch(void)
           scope_main_menu_waveform_view(1);
 
           //Wait until touch is released
-          while(havetouch)
-          {
-            //Read the touch panel status
-            tp_i2c_read_status();
-          }
+          tp_i2c_wait_for_touch_release();
 
           //Show and handle the waveform view here
 
@@ -784,11 +744,7 @@ void handle_main_menu_touch(void)
           scope_main_menu_usb_connection(1);
 
           //Wait until touch is released
-          while(havetouch)
-          {
-            //Read the touch panel status
-            tp_i2c_read_status();
-          }
+          tp_i2c_wait_for_touch_release();
 
           //Show and handle the usb connection here
 
@@ -811,11 +767,7 @@ void handle_main_menu_touch(void)
             scope_system_settings_screen_brightness_item(1);
 
             //Wait until touch is released
-            while(havetouch)
-            {
-              //Read the touch panel status
-              tp_i2c_read_status();
-            }
+            tp_i2c_wait_for_touch_release();
 
             //Show the screen brightness slider
             scope_open_slider(395, 46, scopesettings.screenbrightness);
@@ -837,11 +789,7 @@ void handle_main_menu_touch(void)
             scope_system_settings_grid_brightness_item(1);
 
             //Wait until touch is released
-            while(havetouch)
-            {
-              //Read the touch panel status
-              tp_i2c_read_status();
-            }
+            tp_i2c_wait_for_touch_release();
 
             //Show the screen brightness slider
             scope_open_slider(395, 104, scopesettings.gridbrightness);
@@ -857,11 +805,7 @@ void handle_main_menu_touch(void)
           close_open_sub_menus();
           
           //Wait until touch is released
-          while(havetouch)
-          {
-            //Read the touch panel status
-            tp_i2c_read_status();
-          }
+          tp_i2c_wait_for_touch_release();
 
           //Toggle the always trigger 50% state
           scopesettings.alwaystrigger50 ^= 1;
@@ -882,11 +826,7 @@ void handle_main_menu_touch(void)
             scope_system_settings_calibration_item(1);
 
             //Wait until touch is released
-            while(havetouch)
-            {
-              //Read the touch panel status
-              tp_i2c_read_status();
-            }
+            tp_i2c_wait_for_touch_release();
 
             //Show the start text
             scope_open_calibration_start_text();
@@ -902,11 +842,7 @@ void handle_main_menu_touch(void)
           close_open_sub_menus();
           
           //Wait until touch is released
-          while(havetouch)
-          {
-            //Read the touch panel status
-            tp_i2c_read_status();
-          }
+          tp_i2c_wait_for_touch_release();
 
           //Toggle the x-y mode display state
           scopesettings.xymodedisplay ^= 1;
@@ -950,11 +886,7 @@ void handle_main_menu_touch(void)
           scope_display_ok_button(517, 230, 1);
           
           //Wait until touch is released
-          while(havetouch)
-          {
-            //Read the touch panel status
-            tp_i2c_read_status();
-          }
+          tp_i2c_wait_for_touch_release();
           
           //Show the baseline calibration active text
           scope_show_calibrating_text();
@@ -973,11 +905,7 @@ void handle_main_menu_touch(void)
       else if((calibrationopen == 2) && (xtouch >= 395) && (xtouch <= 505) && (ytouch >= 223) && (ytouch <= 280))
       {
         //Nothing to do here so wait until touch is released
-        while(havetouch)
-        {
-          //Read the touch panel status
-          tp_i2c_read_status();
-        }
+        tp_i2c_wait_for_touch_release();
       }
       else
       {
@@ -995,7 +923,9 @@ void handle_main_menu_touch(void)
           systemsettingsmenuopen = 0;
         }
         
-        //Touch outside the menu's so quit
+        //Touch outside the menu so wait until touch is released and then quit
+        tp_i2c_wait_for_touch_release();
+        
         return;
       }
     }
@@ -1142,15 +1072,13 @@ void handle_channel1_menu_touch(void)
         }
         
         //Wait until touch is released before checking on a new position
-        while(havetouch)
-        {
-          //Scan the touch panel for touch
-          tp_i2c_read_status();
-        }
+        tp_i2c_wait_for_touch_release();
       }
       else
       {
-        //Touch outside the menu so quit
+        //Touch outside the menu so wait until touch is released and then quit
+        tp_i2c_wait_for_touch_release();
+        
         return;
       }
     }
@@ -1297,15 +1225,13 @@ void handle_channel2_menu_touch(void)
         }
         
         //Wait until touch is released before checking on a new position
-        while(havetouch)
-        {
-          //Scan the touch panel for touch
-          tp_i2c_read_status();
-        }
+        tp_i2c_wait_for_touch_release();
       }
       else
       {
-        //Touch outside the menu so quit
+        //Touch outside the menu so wait until touch is released and then quit
+        tp_i2c_wait_for_touch_release();
+        
         return;
       }
     }
@@ -1485,15 +1411,13 @@ void handle_trigger_menu_touch(void)
         }
         
         //Wait until touch is released before checking on a new position
-        while(havetouch)
-        {
-          //Scan the touch panel for touch
-          tp_i2c_read_status();
-        }
+        tp_i2c_wait_for_touch_release();
       }
       else
       {
-        //Touch outside the menu so quit
+        //Touch outside the menu so wait until touch is released and then quit
+        tp_i2c_wait_for_touch_release();
+        
         return;
       }
     }
@@ -1514,11 +1438,7 @@ void handle_right_basic_menu_touch(void)
       scope_run_stop_button(1);
 
       //Wait until touch is released
-      while(havetouch)
-      {
-        //Read the touch panel status
-        tp_i2c_read_status();
-      }
+      tp_i2c_wait_for_touch_release();
 
       //Button back to inactive state
       scope_run_stop_button(0);
@@ -1562,11 +1482,7 @@ void handle_right_basic_menu_touch(void)
       scope_page_up_button(1);
 
       //Wait until touch is released
-      while(havetouch)
-      {
-        //Read the touch panel status
-        tp_i2c_read_status();
-      }
+      tp_i2c_wait_for_touch_release();
 
       //Button back to inactive state
       scope_page_up_button(0);
@@ -1586,11 +1502,7 @@ void handle_right_basic_menu_touch(void)
       scope_auto_set_button(1);
 
       //Wait until touch is released
-      while(havetouch)
-      {
-        //Read the touch panel status
-        tp_i2c_read_status();
-      }
+      tp_i2c_wait_for_touch_release();
 
       //Button back to inactive state
       scope_auto_set_button(0);
@@ -1610,11 +1522,7 @@ void handle_right_basic_menu_touch(void)
       scope_page_down_button(1);
 
       //Wait until touch is released
-      while(havetouch)
-      {
-        //Read the touch panel status
-        tp_i2c_read_status();
-      }
+      tp_i2c_wait_for_touch_release();
 
       //Button back to inactive state
       scope_page_down_button(0);
@@ -1631,11 +1539,7 @@ void handle_right_basic_menu_touch(void)
     scope_t_cursor_button(1);
 
     //Wait until touch is released
-    while(havetouch)
-    {
-      //Read the touch panel status
-      tp_i2c_read_status();
-    }
+    tp_i2c_wait_for_touch_release();
 
     //Button back to inactive state
     scope_t_cursor_button(0);
@@ -1654,11 +1558,7 @@ void handle_right_basic_menu_touch(void)
     scope_v_cursor_button(1);
 
     //Wait until touch is released
-    while(havetouch)
-    {
-      //Read the touch panel status
-      tp_i2c_read_status();
-    }
+    tp_i2c_wait_for_touch_release();
 
     //Button back to inactive state
     scope_v_cursor_button(0);
@@ -1677,11 +1577,7 @@ void handle_right_basic_menu_touch(void)
     scope_measures_button(1);
 
     //Wait until touch is released
-    while(havetouch)
-    {
-      //Read the touch panel status
-      tp_i2c_read_status();
-    }
+    tp_i2c_wait_for_touch_release();
 
     //Button back to inactive state
     scope_measures_button(0);
@@ -1707,11 +1603,7 @@ void handle_right_basic_menu_touch(void)
     scope_save_picture_button(1);
 
     //Wait until touch is released
-    while(havetouch)
-    {
-      //Read the touch panel status
-      tp_i2c_read_status();
-    }
+    tp_i2c_wait_for_touch_release();
 
     //Button back to inactive state
     scope_save_picture_button(0);
@@ -1735,11 +1627,7 @@ void handle_right_basic_menu_touch(void)
       scope_save_wave_button(1);
 
       //Wait until touch is released
-      while(havetouch)
-      {
-        //Read the touch panel status
-        tp_i2c_read_status();
-      }
+      tp_i2c_wait_for_touch_release();
 
       //Button back to inactive state
       scope_save_wave_button(0);
@@ -1754,11 +1642,7 @@ void handle_right_basic_menu_touch(void)
       scope_delete_wave_button(1);
 
       //Wait until touch is released
-      while(havetouch)
-      {
-        //Read the touch panel status
-        tp_i2c_read_status();
-      }
+      tp_i2c_wait_for_touch_release();
 
       //Button back to inactive state
       scope_delete_wave_button(0);
@@ -1795,11 +1679,7 @@ void handle_right_volts_div_menu_touch(void)
     scope_ch1_sensitivity_control(0,1);
 
     //Wait until touch is released
-    while(havetouch)
-    {
-      //Read the touch panel status
-      tp_i2c_read_status();
-    }
+    tp_i2c_wait_for_touch_release();
 
     //Button back to inactive state
     scope_ch1_sensitivity_control(0,0);
@@ -1871,11 +1751,7 @@ void handle_right_volts_div_menu_touch(void)
     scope_ch1_sensitivity_control(1,1);
 
     //Wait until touch is released
-    while(havetouch)
-    {
-      //Read the touch panel status
-      tp_i2c_read_status();
-    }
+    tp_i2c_wait_for_touch_release();
 
     //Button back to inactive state
     scope_ch1_sensitivity_control(1,0);
@@ -1939,11 +1815,7 @@ void handle_right_volts_div_menu_touch(void)
     scope_ch2_sensitivity_control(0,1);
 
     //Wait until touch is released
-    while(havetouch)
-    {
-      //Read the touch panel status
-      tp_i2c_read_status();
-    }
+    tp_i2c_wait_for_touch_release();
 
     //Button back to inactive state
     scope_ch2_sensitivity_control(0,0);
@@ -2007,11 +1879,7 @@ void handle_right_volts_div_menu_touch(void)
     scope_ch2_sensitivity_control(1,1);
 
     //Wait until touch is released
-    while(havetouch)
-    {
-      //Read the touch panel status
-      tp_i2c_read_status();
-    }
+    tp_i2c_wait_for_touch_release();
 
     //Button back to inactive state
     scope_ch2_sensitivity_control(1,0);
@@ -2078,11 +1946,7 @@ void handle_right_volts_div_menu_touch(void)
       scope_50_percent_trigger_button(1);
 
       //Wait until touch is released
-      while(havetouch)
-      {
-        //Read the touch panel status
-        tp_i2c_read_status();
-      }
+      tp_i2c_wait_for_touch_release();
 
       //Button back to inactive state
       scope_50_percent_trigger_button(0);
@@ -2100,11 +1964,7 @@ void handle_right_volts_div_menu_touch(void)
       scope_show_grid_button(1);
 
       //Wait until touch is released
-      while(havetouch)
-      {
-        //Read the touch panel status
-        tp_i2c_read_status();
-      }
+      tp_i2c_wait_for_touch_release();
 
       //Button back to inactive state
       scope_show_grid_button(0);
@@ -2204,15 +2064,13 @@ void handle_measures_menu_touch(void)
         }
         
         //Wait until touch is released before checking on a new position
-        while(havetouch)
-        {
-          //Scan the touch panel for touch
-          tp_i2c_read_status();
-        }
+        tp_i2c_wait_for_touch_release();
       }
       else
       {
-        //Touch outside the menu so quit
+        //Touch outside the menu so wait until touch is released and then quit
+        tp_i2c_wait_for_touch_release();
+        
         return;
       }
     }

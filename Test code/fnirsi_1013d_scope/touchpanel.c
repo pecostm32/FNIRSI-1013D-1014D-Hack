@@ -100,6 +100,18 @@ void tp_i2c_setup(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+void tp_i2c_wait_for_touch_release(void)
+{
+  //Wait until touch is released
+  while(havetouch)
+  {
+    //Read the touch panel status
+    tp_i2c_read_status();
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 void tp_i2c_read_status(void)
 {
   uint8  status;

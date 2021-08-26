@@ -36,6 +36,8 @@ void tp_i2c_setup(void);
 
 void tp_i2c_read_status(void);
 
+void tp_i2c_wait_for_touch_release(void);
+
 void tp_i2c_send_data(uint16 reg_addr, uint8 *buffer, uint32 size);
 void tp_i2c_read_data(uint16 reg_addr, uint8 *buffer, uint32 size);
 
