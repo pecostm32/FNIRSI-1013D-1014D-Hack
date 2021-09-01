@@ -50,6 +50,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/memcpy.o \
 	${OBJECTDIR}/memset.o \
 	${OBJECTDIR}/scope_functions.o \
+	${OBJECTDIR}/sd_card_interface.o \
 	${OBJECTDIR}/sin_cos_math.o \
 	${OBJECTDIR}/spi_control.o \
 	${OBJECTDIR}/start.o \
@@ -155,6 +156,11 @@ ${OBJECTDIR}/scope_functions.o: scope_functions.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/scope_functions.o scope_functions.c
+
+${OBJECTDIR}/sd_card_interface.o: sd_card_interface.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/sd_card_interface.o sd_card_interface.c
 
 ${OBJECTDIR}/sin_cos_math.o: sin_cos_math.c
 	${MKDIR} -p ${OBJECTDIR}

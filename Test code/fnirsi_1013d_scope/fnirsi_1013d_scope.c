@@ -109,6 +109,8 @@ int main(void)
   tp_i2c_setup();
   
   //Setup and check SD card
+  
+  
   //Show message when it fails and hang in endless loop
   
   
@@ -239,7 +241,7 @@ int main(void)
 
   //In the original code there is another hardware check function here. Actions are not performed unless some data in the FLASH is not set
 
-  //Here a function is called that looks at some system file?????
+  //Here a function is called that looks at some system file????? Firmware upgrade!!!
 
   
   //Setup the main parts of the screen

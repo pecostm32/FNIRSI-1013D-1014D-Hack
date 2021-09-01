@@ -149,6 +149,7 @@
 //Bus clock gating settings
 #define CCU_BCGR0_SPI0_EN                       0x00100000
 
+#define CCU_BCGR0_SD0_EN                        0x00000100
 
 #define CCU_BCGR1_LCD_EN                        0x00000010
 
@@ -159,6 +160,7 @@
 //Bus software reset settings
 #define CCU_BSRR0_SPI0_RST                      0x00100000
 
+#define CCU_BSRR0_SD0_RST                       0x00000100
 
 #define CCU_BSRR1_LCD_RST                       0x00000010
 

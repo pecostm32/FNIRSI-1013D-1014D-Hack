@@ -14,6 +14,7 @@
       <itemPath>gpio_control.h</itemPath>
       <itemPath>interrupt.h</itemPath>
       <itemPath>scope_functions.h</itemPath>
+      <itemPath>sd_card_interface.h</itemPath>
       <itemPath>sin_cos_math.h</itemPath>
       <itemPath>spi_control.h</itemPath>
       <itemPath>statemachine.h</itemPath>
@@ -44,6 +45,7 @@
       <itemPath>memcpy.s</itemPath>
       <itemPath>memset.s</itemPath>
       <itemPath>scope_functions.c</itemPath>
+      <itemPath>sd_card_interface.c</itemPath>
       <itemPath>sin_cos_math.c</itemPath>
       <itemPath>spi_control.c</itemPath>
       <itemPath>start.s</itemPath>
@@ -141,6 +143,10 @@
       <item path="scope_functions.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="scope_functions.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="sd_card_interface.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="sd_card_interface.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="sin_cos_math.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -246,6 +252,10 @@
       <item path="scope_functions.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="scope_functions.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="sd_card_interface.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="sd_card_interface.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="sin_cos_math.c" ex="false" tool="0" flavor2="0">
       </item>
