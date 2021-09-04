@@ -59,6 +59,8 @@
 
 #define SD_GCTL_CD_DBC_ENB               0x00000100
 
+#define SD_GCTL_FIFO_ACCESS_AHB          0x80000000
+
 
 
 #define SD_CKCR_CCLK_ENB                 0x00010000
@@ -85,16 +87,36 @@
 #define SD_CMD_AUTO_STOP                 0x00001000
 #define SD_CMD_WAIT_PRE_OVER             0x00002000
 
+#define SD_CMD_UPCLK_ONLY                0x00200000
+
 
 #define SD_STATUS_CARD_DATA_BUSY         0x00000200
 
+#define SD_STATUS_FIFO_EMPTY             0x00000004
+#define SD_STATUS_FIFO_FULL              0x00000008
 
 
 
-
+#define SD_RINT_RESP_ERROR               0x00000002
 #define SD_RINT_COMMAND_DONE             0x00000004
 #define SD_RINT_DATA_OVER                0x00000008
+#define SD_RINT_TX_DATA_REQUEST          0x00000010
+#define SD_RINT_RX_DATA_REQUEST          0x00000020
+#define SD_RINT_RESP_CRC_ERROR           0x00000040
+#define SD_RINT_DATA_CRC_ERROR           0x00000080
+#define SD_RINT_RESP_TIMEOUT             0x00000100
+#define SD_RINT_DATA_TIMEOUT             0x00000200
+#define SD_RINT_VOLTAGE_CHANGE_DONE      0x00000400
+#define SD_RINT_FIFO_RUN_ERROR           0x00000800
+#define SD_RINT_HARDWARE_LOCKED          0x00001000
+#define SD_RINT_START_BIT_ERROR          0x00002000
 #define SD_RINT_AUTO_COMMAND_DONE        0x00004000
+#define SD_RINT_END_BIT_ERROR            0x00008000
+#define SD_RINT_SDIO_INTERRUPT           0x00010000
+#define SD_RINT_CARD_INSERT              0x40000000
+#define SD_RINT_CARD_REMOVE              0x80000000
+
+#define SD_RINT_INTERRUPT_ERROR_BITS     (SD_RINT_END_BIT_ERROR | SD_RINT_START_BIT_ERROR | SD_RINT_HARDWARE_LOCKED | SD_RINT_FIFO_RUN_ERROR | SD_RINT_VOLTAGE_CHANGE_DONE | SD_RINT_DATA_TIMEOUT | SD_RINT_RESP_TIMEOUT | SD_RINT_DATA_CRC_ERROR | SD_RINT_RESP_CRC_ERROR | SD_RINT_RESP_ERROR)
 
 
 #define MMC_RSP_PRESENT                  0x00000001
@@ -104,13 +126,15 @@
 
 
 
-#define MMC_DATA_READ		                          1
-#define MMC_DATA_WRITE		                        2
+#define MMC_DATA_READ                              1
+#define MMC_DATA_WRITE                            2
 
 
+
+
+#define SD_OK                                     0
 #define SD_ERROR                                 -1
 #define SD_ERROR_TIMEOUT                         -2
-#define SD_ERROR_BUSY_TIMEOUT                    -3
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -121,18 +145,18 @@ typedef struct tagSD_CARD_DATA      SD_CARD_DATA,    *PSD_CARD_DATA;
 
 struct tagSD_CARD_COMMAND
 {
-	uint16 cmdidx;
-	uint32 resp_type;
-	uint32 cmdarg;
-	uint32 response[4];
+  uint16 cmdidx;
+  uint32 resp_type;
+  uint32 cmdarg;
+  uint32 response[4];
 };
 
 struct tagSD_CARD_DATA
 {
   uint8  *data;
-	uint32  flags;
-	uint32  blocks;
-	uint32  blocksize;
+  uint32  flags;
+  uint32  blocks;
+  uint32  blocksize;
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -140,15 +164,15 @@ struct tagSD_CARD_DATA
 
 int sd_card_init(void);
 
-void sd_card_clk_init(uint32 frequency);
+int32 sd_card_clk_init(uint32 frequency);
 
-void sd_card_update_clock(void);
+int32 sd_card_update_clock(void);
 
 int32 sd_card_send_command(PSD_CARD_COMMAND command, PSD_CARD_DATA data);
 
 int32 sd_send_data(PSD_CARD_DATA data);
 
-int32 sd_rint_wait(uint32 timeout, uint32 flag);
+int32 sd_rint_wait(uint32 timeout, uint32 status_bit);
 
 void sd_card_delay(uint32 delay);
 
