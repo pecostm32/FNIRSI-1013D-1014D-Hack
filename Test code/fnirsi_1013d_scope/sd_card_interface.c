@@ -42,19 +42,19 @@ int sd_card_init(void)
   *SD0_HWRST &= ~SD_HWRST_ACTIVE;
   
   //Wait a while for the device to be reset
-  sd_card_delay(5000);
+  sd_card_delay(500);
 
   //Make the SD card interface active again
   *SD0_HWRST |= SD_HWRST_ACTIVE;
 
   //Wait a while for the device to become active again
-  sd_card_delay(5000);
+  sd_card_delay(50);
   
   //Reset the DMA, FIFO and controller
   *SD0_GCTL |= (SD_GCTL_DMA_RST | SD_GCTL_FIFO_RST | SD_GCTL_SOFT_RST);
   
   //Wait a while for the system to be done resetting
-  sd_card_delay(5000);
+  sd_card_delay(50);
   
   //Disable card detect de-bounce
   *SD0_GCTL &= ~SD_GCTL_CD_DBC_ENB;
@@ -84,19 +84,20 @@ int sd_card_init(void)
   sd_card_send_command(&command, 0);
 
   //Wait a while for the card to reset
-  sd_card_delay(500);
+  sd_card_delay(50);
   
   //Send card interface condition command to the card
   command.cmdidx    = 8;
-  command.cmdarg    = 0x00000155;
+  command.cmdarg    = 0x00000155;        //31:12 reserved (0x00000), 11:8 supply voltage (0x1 = 2.7 - 3.6V), 7:0 check pattern (0x55)
   command.resp_type = 5;
   result = sd_card_send_command(&command, 0);
   
   //Check if version 2.00 or later SD memory card
-  //On result OK (0) it  probably is a SDSC, SDHC or SDXC card
+  //On result OK (0) it probably is a SDSC, SDHC or SDXC card
   if(result == SD_OK)
   {
     //Might need to check on returned information of command 8
+    //Response should match the given command arg
     //Card could be not usable???
     
     //Send some initialization commands until the card is ready?????
@@ -263,7 +264,7 @@ int sd_card_init(void)
       command.cmdarg    = 0;
       command.resp_type = 7;
       result = sd_card_send_command(&command, 0);
-
+      
       if(result)
       {
         return(SD_ERROR);
@@ -273,10 +274,7 @@ int sd_card_init(void)
     cardrca = command.response[3];
   }
   
-  
-  
-  
-  return(0);
+  return(SD_OK);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -454,7 +452,7 @@ int32 sd_card_send_command(PSD_CARD_COMMAND command, PSD_CARD_DATA data)
     *SD0_BKSR = data->blocksize;
     *SD0_BYCR = data->blocks * data->blocksize;
   }
-  
+
   //Load the SD interface command argument and command register
   *SD0_CAGR = command->cmdarg;
   *SD0_CMDR = command->cmdidx | cmdval;
@@ -477,7 +475,7 @@ int32 sd_card_send_command(PSD_CARD_COMMAND command, PSD_CARD_DATA data)
   {
     goto out;
   }
-  
+
   //See if data is involved
   if(data)
   {
@@ -511,18 +509,17 @@ int32 sd_card_send_command(PSD_CARD_COMMAND command, PSD_CARD_DATA data)
       }
     }
   }
+
+  //Get the short response (48) bits 
+  command->response[0] = *SD0_RESP0;
+  command->response[1] = *SD0_RESP1;
   
-  //Check if response is 136 bits
+  //Check if expected response is 136 bits
 	if(command->resp_type & MMC_RSP_136)
   {
-		command->response[0] = *SD0_RESP3;
-		command->response[1] = *SD0_RESP2;
-		command->response[2] = *SD0_RESP1;
-		command->response[3] = *SD0_RESP0;
-	}
-  else
-  {
-		command->response[0] = *SD0_RESP0;
+    //Get the remainder of the response bits if so
+		command->response[2] = *SD0_RESP2;
+		command->response[3] = *SD0_RESP3;
 	}
 
 out:
