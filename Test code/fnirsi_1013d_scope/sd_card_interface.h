@@ -65,6 +65,7 @@
 
 #define SD_CKCR_CCLK_ENB                 0x00010000
 #define SD_CKCR_CCLK_CTRL                0x00020000
+#define SD_CKCR_CCLK_CLR_DIV             0xFFFFFF00
 
 
 #define SD_BWDR_1_BIT_WIDTH              0x00000000
@@ -119,19 +120,24 @@
 #define SD_RINT_INTERRUPT_ERROR_BITS     (SD_RINT_END_BIT_ERROR | SD_RINT_START_BIT_ERROR | SD_RINT_HARDWARE_LOCKED | SD_RINT_FIFO_RUN_ERROR | SD_RINT_VOLTAGE_CHANGE_DONE | SD_RINT_DATA_TIMEOUT | SD_RINT_RESP_TIMEOUT | SD_RINT_DATA_CRC_ERROR | SD_RINT_RESP_CRC_ERROR | SD_RINT_RESP_ERROR)
 
 
-#define MMC_RSP_PRESENT                  0x00000001
-#define MMC_RSP_136                      0x00000002
-#define MMC_RSP_CRC                      0x00000004
-#define MMC_RSP_BUSY                     0x00000008
+#define SD_RESPONSE_NONE                 0x00000000
+#define SD_RESPONSE_PRESENT              0x00000001
+#define SD_RESPONSE_136                  0x00000002
+#define SD_RESPONSE_CRC                  0x00000004
+#define SD_RESPONSE_BUSY                 0x00000008
 
 
 
-#define MMC_DATA_READ                              1
-#define MMC_DATA_WRITE                            2
+#define SD_DATA_READ                              1
+#define SD_DATA_WRITE                             2
+
+#define SD_CARD_TYPE_NONE                         0
+#define SD_CARD_TYPE_SDHC                         1
+#define SD_CARD_TYPE_SDSC                         2
+#define SD_CARD_TYPE_MMC                          3
 
 
-
-
+#define SD_NOT_CAPABLE                            1
 #define SD_OK                                     0
 #define SD_ERROR                                 -1
 #define SD_ERROR_TIMEOUT                         -2
@@ -162,10 +168,16 @@ struct tagSD_CARD_DATA
 //----------------------------------------------------------------------------------------------------------------------------------
 
 
-int sd_card_init(void);
+int32 sd_card_init(void);
+
+int32 sd_card_get_specifications(void);
+
+int32 sd_card_set_clock_and_bus(int32 usewidebus);
+
+int32 sd_card_check_switchable_function(void);
 
 int32 sd_card_clk_init(uint32 frequency);
-
+int32 sd_card_change_clk(uint32 frequency);
 int32 sd_card_update_clock(void);
 
 int32 sd_card_send_command(PSD_CARD_COMMAND command, PSD_CARD_DATA data);

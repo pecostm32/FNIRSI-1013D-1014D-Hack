@@ -9,19 +9,30 @@
 //----------------------------------------------------------------------------------------------------------------------------------
 
 //need some global variables for type of card indication
-uint32 cardtype = 0;
+uint32 cardtype = SD_CARD_TYPE_NONE;
 uint32 cardrca = 0;
-uint32 cidnumbers[4] = { 0, 0, 0, 0 };
+
+uint32 cardblocksize = 512;
+uint32 cardblocks = 0;
+uint32 cardkb = 0;
+
+uint32 cardcid[4] = { 0, 0, 0, 0 };
+uint32 cardcsd[4] = { 0, 0, 0, 0 };
+
+SD_CARD_COMMAND sd_command;
+SD_CARD_DATA    sd_data;
+
+uint32 sd_buffer[1024];  //4KB data buffer. Defined as uint32 to assure dword alignment
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-int sd_card_init(void)
+int32 sd_card_init(void)
 {
-  SD_CARD_COMMAND command;
   int32 result;
   
-  //Clear the command structure
-  memset(&command, 0, sizeof(SD_CARD_COMMAND));
+  //Clear the command and data structure
+  memset(&sd_command, 0, sizeof(SD_CARD_COMMAND));
+  memset(&sd_data, 0, sizeof(SD_CARD_DATA));
   
   //Configure the port F IO pins since the SD card is connected there
   *PORT_F_CFG_REG = 0xFF222222;
@@ -42,7 +53,7 @@ int sd_card_init(void)
   *SD0_HWRST &= ~SD_HWRST_ACTIVE;
   
   //Wait a while for the device to be reset
-  sd_card_delay(500);
+  sd_card_delay(50);
 
   //Make the SD card interface active again
   *SD0_HWRST |= SD_HWRST_ACTIVE;
@@ -78,19 +89,19 @@ int sd_card_init(void)
   sd_card_delay(50);
   
   //Send reset command to the card
-  command.cmdidx    = 0;
-  command.cmdarg    = 0;
-  command.resp_type = 0;
-  sd_card_send_command(&command, 0);
+  sd_command.cmdidx    = 0;
+  sd_command.cmdarg    = 0;
+  sd_command.resp_type = SD_RESPONSE_NONE;
+  sd_card_send_command(&sd_command, 0);
 
   //Wait a while for the card to reset
   sd_card_delay(50);
   
   //Send card interface condition command to the card
-  command.cmdidx    = 8;
-  command.cmdarg    = 0x00000155;        //31:12 reserved (0x00000), 11:8 supply voltage (0x1 = 2.7 - 3.6V), 7:0 check pattern (0x55)
-  command.resp_type = 5;
-  result = sd_card_send_command(&command, 0);
+  sd_command.cmdidx    = 8;
+  sd_command.cmdarg    = 0x00000155;        //31:12 reserved (0x00000), 11:8 supply voltage (0x1 = 2.7 - 3.6V), 7:0 check pattern (0x55)
+  sd_command.resp_type = SD_RESPONSE_CRC | SD_RESPONSE_PRESENT;
+  result = sd_card_send_command(&sd_command, 0);
   
   //Check if version 2.00 or later SD memory card
   //On result OK (0) it probably is a SDSC, SDHC or SDXC card
@@ -100,53 +111,53 @@ int sd_card_init(void)
     //Response should match the given command arg
     //Card could be not usable???
     
-    //Send some initialization commands until the card is ready?????
+    //Get the card type
     do
     {
       //Send application specific command follows command to the card
-      command.cmdidx    = 55;
-      command.cmdarg    = 0;
-      command.resp_type = 5;
-      sd_card_send_command(&command, 0);
+      sd_command.cmdidx    = 55;
+      sd_command.cmdarg    = 0;
+      sd_command.resp_type = SD_RESPONSE_CRC | SD_RESPONSE_PRESENT;
+      sd_card_send_command(&sd_command, 0);
 
       //Send host capacity support information command
-      command.cmdidx    = 41;
-      command.cmdarg    = 0x40FF8000;                      //Need to figure out these settings
-      command.resp_type = 7;
-      result = sd_card_send_command(&command, 0);
+      sd_command.cmdidx    = 41;
+      sd_command.cmdarg    = 0x40FF8000;                      //Need to figure out these settings
+      sd_command.resp_type = SD_RESPONSE_CRC | SD_RESPONSE_136 | SD_RESPONSE_PRESENT;
+      result = sd_card_send_command(&sd_command, 0);
       
     //0 means still initializing  
-    } while((command.response[3] & 0x80000000) == 0);
+    } while((sd_command.response[3] & 0x80000000) == 0);
 
     //Check card capacity status. 1 means SDHC or SDXC. 0 means SDSC
-    if(command.response[3] & 0x40000000)
+    if(sd_command.response[3] & 0x40000000)
     {
       //Signal TYPE_SD_HIGH...
-      cardtype = 1;
+      cardtype = SD_CARD_TYPE_SDHC;
     }
     else
     {
       //Signal TYPE_SD_LOW...
-      cardtype = 2;
+      cardtype = SD_CARD_TYPE_SDSC;
     }
   }
   else
   {
     //Version 1.1 or earlier card
     //Send reset command to the card
-    command.cmdidx    = 0;
-    command.cmdarg    = 0;
-    command.resp_type = 0;
-    sd_card_send_command(&command, 0);
+    sd_command.cmdidx    = 0;
+    sd_command.cmdarg    = 0;
+    sd_command.resp_type = SD_RESPONSE_NONE;
+    sd_card_send_command(&sd_command, 0);
 
     //Wait a wile for the card to reset
     sd_card_delay(500);
     
     //Send application specific command follows command to the card
-    command.cmdidx    = 55;
-    command.cmdarg    = 0;
-    command.resp_type = 5;
-    result = sd_card_send_command(&command, 0);
+    sd_command.cmdidx    = 55;
+    sd_command.cmdarg    = 0;
+    sd_command.resp_type = SD_RESPONSE_CRC | SD_RESPONSE_PRESENT;
+    result = sd_card_send_command(&sd_command, 0);
     
     //Check if there was a timeout condition
     //In the original code the wrong value is used. The sunxi code uses -ETIMEDOUT (0xFFFFFF68). In the scope code they check on ETIMEDOUT (0x98)
@@ -154,75 +165,75 @@ int sd_card_init(void)
     if(result == SD_ERROR_TIMEOUT)
     {
       //Send reset command to the card
-      command.cmdidx    = 0;
-      command.cmdarg    = 0;
-      command.resp_type = 0;
-      sd_card_send_command(&command, 0);
+      sd_command.cmdidx    = 0;
+      sd_command.cmdarg    = 0;
+      sd_command.resp_type = SD_RESPONSE_NONE;
+      sd_card_send_command(&sd_command, 0);
     
       //Wait a wile for the card to reset
       sd_card_delay(50);
 
       //Send multi media card command to the card
-      command.cmdidx    = 1;
-      command.cmdarg    = 0x80FF8000;                           //Need to figure out these settings
-      command.resp_type = 5;
-      result = sd_card_send_command(&command, 0);
+      sd_command.cmdidx    = 1;
+      sd_command.cmdarg    = 0x80FF8000;                           //Need to figure out these settings
+      sd_command.resp_type = SD_RESPONSE_CRC | SD_RESPONSE_PRESENT;
+      result = sd_card_send_command(&sd_command, 0);
 
       //On timeout there is no valid card inserted
       if(result == SD_ERROR_TIMEOUT)
       {
         //No valid card so signal this in the type variable
-        cardtype = 0;
+        cardtype = SD_CARD_TYPE_NONE;
         
         return(SD_ERROR);
       }
 
       //Wait for the card to become active
-      while((command.response[3] & 0x80000000) == 0)
+      while((sd_command.response[3] & 0x80000000) == 0)
       {
         //Send multi media card command to the card
-        command.cmdidx    = 1;
-        command.cmdarg    = 0x80FF8000;                           //Need to figure out these settings
-        command.resp_type = 5;
-        sd_card_send_command(&command, 0);
+        sd_command.cmdidx    = 1;
+        sd_command.cmdarg    = 0x80FF8000;                           //Need to figure out these settings
+        sd_command.resp_type = SD_RESPONSE_CRC | SD_RESPONSE_PRESENT;
+        sd_card_send_command(&sd_command, 0);
       }
 
       //Signal TYPE_MMC...
-      cardtype = 3;
+      cardtype = SD_CARD_TYPE_MMC;
     }
     else if(result)
     {
       //No valid card so signal this in the type variable
-      cardtype = 0;
+      cardtype = SD_CARD_TYPE_NONE;
 
       return(SD_ERROR);
     }
     else
     {
       //Send host capacity support information command
-      command.cmdidx    = 41;
-      command.cmdarg    = 0x00FF8000;                      //Need to figure out these settings
-      command.resp_type = 7;
-      result = sd_card_send_command(&command, 0);
+      sd_command.cmdidx    = 41;
+      sd_command.cmdarg    = 0x00FF8000;                      //Need to figure out these settings
+      sd_command.resp_type = SD_RESPONSE_CRC | SD_RESPONSE_136 | SD_RESPONSE_PRESENT;
+      result = sd_card_send_command(&sd_command, 0);
 
       //Wait for the card to become active
-      while((command.response[3] & 0x80000000) == 0)
+      while((sd_command.response[3] & 0x80000000) == 0)
       {
         //Send application specific command follows command to the card
-        command.cmdidx    = 55;
-        command.cmdarg    = 0;
-        command.resp_type = 5;
-        sd_card_send_command(&command, 0);
+        sd_command.cmdidx    = 55;
+        sd_command.cmdarg    = 0;
+        sd_command.resp_type = SD_RESPONSE_CRC | SD_RESPONSE_PRESENT;
+        sd_card_send_command(&sd_command, 0);
        
         //Send host capacity support information command
-        command.cmdidx    = 41;
-        command.cmdarg    = 0x80FF8000;                      //Need to figure out these settings
-        command.resp_type = 7;
-        result = sd_card_send_command(&command, 0);
+        sd_command.cmdidx    = 41;
+        sd_command.cmdarg    = 0x80FF8000;                      //Need to figure out these settings
+        sd_command.resp_type = SD_RESPONSE_CRC | SD_RESPONSE_136 | SD_RESPONSE_PRESENT;
+        result = sd_card_send_command(&sd_command, 0);
       }      
       
       //Signal TYPE_SD_LOW...
-      cardtype = 2;
+      cardtype = SD_CARD_TYPE_SDSC;
     }
   }
   
@@ -230,40 +241,40 @@ int sd_card_init(void)
   if(cardtype)
   {
     //Send get CID numbers command to the card
-    command.cmdidx    = 2;
-    command.cmdarg    = 0;
-    command.resp_type = 7;
-    sd_card_send_command(&command, 0);
+    sd_command.cmdidx    = 2;
+    sd_command.cmdarg    = 0;
+    sd_command.resp_type = SD_RESPONSE_CRC | SD_RESPONSE_136 | SD_RESPONSE_PRESENT;
+    sd_card_send_command(&sd_command, 0);
   
     //Save the numbers
-    cidnumbers[0] = command.response[3];
-    cidnumbers[1] = command.response[2];
-    cidnumbers[2] = command.response[1];
-    cidnumbers[3] = command.response[0];
+    cardcid[0] = sd_command.response[3];
+    cardcid[1] = sd_command.response[2];
+    cardcid[2] = sd_command.response[1];
+    cardcid[3] = sd_command.response[0];
     
     //Check if the card is a mmc type
-    if(cardtype == 3)
+    if(cardtype == SD_CARD_TYPE_MMC)
     {
       //Send publish RCA command to the card
-      command.cmdidx    = 3;
-      command.cmdarg    = 0x10000;
-      command.resp_type = 7;
-      result = sd_card_send_command(&command, 0);
+      sd_command.cmdidx    = 3;
+      sd_command.cmdarg    = 0x10000;
+      sd_command.resp_type = SD_RESPONSE_CRC | SD_RESPONSE_136 | SD_RESPONSE_PRESENT;
+      result = sd_card_send_command(&sd_command, 0);
       
       if(result)
       {
         return(SD_ERROR);
       }
       
-      command.response[3] = 0x10000;
+      sd_command.response[3] = 0x10000;
     }
     else
     {
       //Send publish RCA command to the card
-      command.cmdidx    = 3;
-      command.cmdarg    = 0;
-      command.resp_type = 7;
-      result = sd_card_send_command(&command, 0);
+      sd_command.cmdidx    = 3;
+      sd_command.cmdarg    = 0;
+      sd_command.resp_type = SD_RESPONSE_CRC | SD_RESPONSE_136 | SD_RESPONSE_PRESENT;
+      result = sd_card_send_command(&sd_command, 0);
       
       if(result)
       {
@@ -271,10 +282,306 @@ int sd_card_init(void)
       }
     }
     
-    cardrca = command.response[3];
+    cardrca = sd_command.response[3];
+  }
+
+  //Get the card specifications  
+  if(sd_card_get_specifications())
+  {
+    //Signal error on failure
+    return(SD_ERROR);
+  }
+
+  //Set the card clock to 48MHz and use the 4 bit bus if supported
+  return(sd_card_set_clock_and_bus(1));
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+int32 sd_card_get_specifications(void)
+{
+  int32 result;
+  
+  //Send get card specific data command to the card
+  sd_command.cmdidx    = 9;
+  sd_command.cmdarg    = cardrca;
+  sd_command.resp_type = SD_RESPONSE_CRC | SD_RESPONSE_136 | SD_RESPONSE_PRESENT;
+  result = sd_card_send_command(&sd_command, 0);
+  
+  //Check if card not selected
+  if(result)
+  {
+    return(result);
+  }
+  
+  //Save the CSD
+  cardcsd[0] = sd_command.response[3];
+  cardcsd[1] = sd_command.response[2];
+  cardcsd[2] = sd_command.response[1];
+  cardcsd[3] = sd_command.response[0];
+  
+  //Check the version of the CSD_STRUCTURE
+  if(((cardcsd[0] & 0xC0000000) == 0) || (cardtype == SD_CARD_TYPE_MMC))
+  {
+    //Version 1.0 or MMC card
+    //Card size is calculated based on (C_SIZE + 1) * (2^(C_SIZE_MULT + 2)) * (2^READ_BL_LEN)
+    //Response bits 73:64, 49:47, 83:80
+    //Number of 512 byte blocks the card has
+    cardblocks = ((((cardcsd[1] & 0x03FF) << 2) | (cardcsd[2] >> 30)) + 1) << (((cardcsd[2] >> 15) & 0x07) + 2) << ((cardcsd[1] >> 16) & 0x0F) >> 9;
+    
+    //Number of KBytes the card has
+    cardkb = cardblocks * 2;
+  }
+  else
+  {
+    //Version 2.0 or higher type card
+    //Number of 512 byte blocks the card has
+    cardblocks = ((((cardcsd[1] & 0x03F) << 16) | (cardcsd[2] >> 16)) + 1) * 512;
+    
+    //Number of KBytes the card has
+    cardkb = cardblocks * 2;
+  }
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  return(SD_OK);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+int32 sd_card_set_clock_and_bus(int32 usewidebus)
+{
+  int32 result;
+  
+  //Send select card command to the card
+  sd_command.cmdidx    = 7;
+  sd_command.cmdarg    = cardrca;
+  sd_command.resp_type = SD_RESPONSE_CRC | SD_RESPONSE_PRESENT;
+  result = sd_card_send_command(&sd_command, 0);
+  
+  //Check if card not selected
+  if(result)
+  {
+    return(result);
+  }
+
+  //This code can be simplified since parts of the code for the two types are the same
+  //The usewidebus select could also be dropped since it is always used with this (only called from init function!!!
+  
+  //For SDHC cards perform some dedicated steps
+  if(cardtype == SD_CARD_TYPE_SDHC)
+  {
+    //Send application specific command follows command to the card
+    sd_command.cmdidx    = 55;
+    sd_command.cmdarg    = cardrca;
+    sd_command.resp_type = SD_RESPONSE_CRC | SD_RESPONSE_PRESENT;
+    result = sd_card_send_command(&sd_command, 0);
+
+    //Fail if card does not respond properly    
+    if(result)
+    {
+      return(result);
+    }
+    
+    //Prepare data buffer for reading
+    sd_data.blocks    = 1;
+    sd_data.blocksize = 8;
+    sd_data.flags     = SD_DATA_READ;
+    sd_data.data      = (uint8 *)sd_buffer;
+    
+    //Send read sd configuration register command
+    sd_command.cmdidx    = 51;
+    sd_command.cmdarg    = 0;
+    sd_command.resp_type = SD_RESPONSE_CRC | SD_RESPONSE_PRESENT;
+    result = sd_card_send_command(&sd_command, &sd_data);
+    
+    //Fail if card does not respond properly    
+    if(result)
+    {
+      return(result);
+    }
+    
+    //Check on the specification version (SD_SPEC) being 2
+    if((*sd_data.data & 0x0F) == 2)
+    {
+      //See if the card allows switching to high speed mode
+      if(sd_card_check_switchable_function() == SD_OK)
+      {
+        //Yes so switch it to 48MHz
+        if((result = sd_card_change_clk(48000000)))
+        {
+          //When this failed signal that
+          return(result);
+        }
+      }
+    }
+
+    //Check if 4 bit bus should be used
+    if(usewidebus)
+    {
+      //Send application specific command follows command to the card
+      sd_command.cmdidx    = 55;
+      sd_command.cmdarg    = cardrca;
+      sd_command.resp_type = SD_RESPONSE_CRC | SD_RESPONSE_PRESENT;
+      result = sd_card_send_command(&sd_command, 0);
+
+      //Fail if card does not respond properly    
+      if(result)
+      {
+        return(result);
+      }
+      
+      //Send set bus width command
+      sd_command.cmdidx    = 6;
+      sd_command.cmdarg    = 2;
+      sd_command.resp_type = SD_RESPONSE_CRC | SD_RESPONSE_PRESENT;
+      result = sd_card_send_command(&sd_command, 0);
+
+      //Fail if card does not respond properly    
+      if(result)
+      {
+        return(result);
+      }
+    }
+  }
+  //Check if SDSC type and set clock for it if so
+  else if(cardtype == SD_CARD_TYPE_SDSC)
+  {
+    //Yes so switch it to 48MHz
+    if((result = sd_card_change_clk(48000000)))
+    {
+      //When this failed signal that
+      return(result);
+    }
+    
+    //Check if 4 bit bus should be used
+    if(usewidebus)
+    {
+      //Send application specific command follows command to the card
+      sd_command.cmdidx    = 55;
+      sd_command.cmdarg    = cardrca;
+      sd_command.resp_type = SD_RESPONSE_CRC | SD_RESPONSE_PRESENT;
+      result = sd_card_send_command(&sd_command, 0);
+
+      //Fail if card does not respond properly    
+      if(result)
+      {
+        return(result);
+      }
+      
+      //Send set bus width command
+      sd_command.cmdidx    = 6;
+      sd_command.cmdarg    = 2;
+      sd_command.resp_type = SD_RESPONSE_CRC | SD_RESPONSE_PRESENT;
+      result = sd_card_send_command(&sd_command, 0);
+
+      //Fail if card does not respond properly    
+      if(result)
+      {
+        return(result);
+      }
+    }
+  }
+  
+  //Check if 4 bit bus should be used
+  if(usewidebus)
+  {
+    //Switch to 4 bit bus width
+    *SD0_BWDR = 1;
+  }
+  
+  //Send set block size to 512 bytes command
+  sd_command.cmdidx    = 16;
+  sd_command.cmdarg    = 0x200;
+  sd_command.resp_type = SD_RESPONSE_BUSY | SD_RESPONSE_CRC | SD_RESPONSE_PRESENT;
+  result = sd_card_send_command(&sd_command, 0);
+
+  //Fail if card does not respond properly    
+  if(result)
+  {
+    return(result);
+  }
+  
+  //Send deselect card command to the card
+  sd_command.cmdidx    = 7;
+  sd_command.cmdarg    = 0;
+  sd_command.resp_type = SD_RESPONSE_NONE;
+  result = sd_card_send_command(&sd_command, 0);
+  
+  //Check if card not selected
+  if(result)
+  {
+    return(result);
   }
   
   return(SD_OK);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+int32 sd_card_check_switchable_function(void)
+{
+  int32 result;
+  
+  //Prepare data buffer for reading
+  sd_data.blocks    = 1;
+  sd_data.blocksize = 64;
+  sd_data.flags     = SD_DATA_READ;
+  sd_data.data      = (uint8 *)sd_buffer;
+
+  //Send read sd configuration register command
+  sd_command.cmdidx    = 6;
+  sd_command.cmdarg    = 0x00FFFF01;
+  sd_command.resp_type = SD_RESPONSE_CRC | SD_RESPONSE_PRESENT;
+  result = sd_card_send_command(&sd_command, &sd_data);
+
+  //Fail if card does not respond properly    
+  if(result)
+  {
+    return(result);
+  }
+  
+  //Check if capable of switching
+  if((sd_data.data[0] | sd_data.data[1]) && ((sd_data.data[28] | sd_data.data[29]) == 0))
+  {
+    //Need to check if this needs to be done again!!!! (Check if not modified in any way by other code)
+    //Prepare data buffer for reading
+    sd_data.blocks    = 1;
+    sd_data.blocksize = 64;
+    sd_data.flags     = SD_DATA_READ;
+    sd_data.data      = (uint8 *)sd_buffer;
+
+    //Can also reduce on the setting of the other two variables since they are already set before!!!
+    //Send read sd configuration register command with additional bit in argument
+    sd_command.cmdidx    = 6;
+    sd_command.cmdarg    = 0x80FFFF01;
+    sd_command.resp_type = SD_RESPONSE_CRC | SD_RESPONSE_PRESENT;
+    result = sd_card_send_command(&sd_command, &sd_data);
+    
+    //Fail if card does not respond properly    
+    if(result)
+    {
+      return(result);
+    }
+
+    //Check again if still capable???
+    if((sd_data.data[0] | sd_data.data[1]) && ((sd_data.data[28] | sd_data.data[29]) == 0))
+    {
+      return(SD_OK);
+    }
+  }
+  
+  return(SD_NOT_CAPABLE);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -363,6 +670,38 @@ int32 sd_card_clk_init(uint32 frequency)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+int32 sd_card_change_clk(uint32 frequency)
+{
+  //Disable the card clock
+  *SD0_CKCR &= ~SD_CKCR_CCLK_ENB;
+  
+  //Update the interface
+  if(sd_card_update_clock() == SD_OK)
+  {
+    //No error then set the new clock value
+    if(sd_card_clk_init(frequency) == SD_OK)
+    {
+      //Still no error then clear the card clock divider
+      *SD0_CKCR &= SD_CKCR_CCLK_CLR_DIV;
+      
+      //Re-enable the clock
+      *SD0_CKCR |= SD_CKCR_CCLK_ENB;
+      
+      //Update the interface again
+      if(sd_card_update_clock() == SD_OK)
+      {
+        //On success return success
+        return(SD_OK);
+      }
+    }
+  }
+  
+  //Failed so signal that
+  return(SD_ERROR);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 int32 sd_card_update_clock(void)
 {
   uint32 timeout;
@@ -412,17 +751,17 @@ int32 sd_card_send_command(PSD_CARD_COMMAND command, PSD_CARD_DATA data)
     cmdval |= SD_CMD_SEND_INIT_SEQ;
   }
   
-  if(command->resp_type & MMC_RSP_PRESENT)
+  if(command->resp_type & SD_RESPONSE_PRESENT)
   {
 		cmdval |= SD_CMD_RESP_EXPIRE;
   }
   
-  if(command->resp_type & MMC_RSP_136)
+  if(command->resp_type & SD_RESPONSE_136)
   {
 		cmdval |= SD_CMD_LONG_RESPONSE;
   }
 
-  if(command->resp_type & MMC_RSP_CRC)
+  if(command->resp_type & SD_RESPONSE_CRC)
   {
 		cmdval |= SD_CMD_CHK_RESPONSE_CRC;
   }
@@ -439,7 +778,7 @@ int32 sd_card_send_command(PSD_CARD_COMMAND command, PSD_CARD_DATA data)
     
     cmdval |= (SD_CMD_DATA_EXPIRE | SD_CMD_WAIT_PRE_OVER);
     
-    if(data->flags & MMC_DATA_WRITE)
+    if(data->flags & SD_DATA_WRITE)
     {
       cmdval |= SD_CMD_WRITE;
     }
@@ -493,7 +832,7 @@ int32 sd_card_send_command(PSD_CARD_COMMAND command, PSD_CARD_DATA data)
   }
 
   //Check if card is allowed to send busy
-  if(command->resp_type & MMC_RSP_BUSY)
+  if(command->resp_type & SD_RESPONSE_BUSY)
   {
     //Setup for max 2 second wait
     timeout = timer0_get_ticks() + 2000;
@@ -515,7 +854,7 @@ int32 sd_card_send_command(PSD_CARD_COMMAND command, PSD_CARD_DATA data)
   command->response[1] = *SD0_RESP1;
   
   //Check if expected response is 136 bits
-	if(command->resp_type & MMC_RSP_136)
+	if(command->resp_type & SD_RESPONSE_136)
   {
     //Get the remainder of the response bits if so
 		command->response[2] = *SD0_RESP2;
@@ -552,7 +891,7 @@ int32 sd_send_data(PSD_CARD_DATA data)
   uint32  timeout;
   
   //Check if data being read
-  if(data->flags & MMC_DATA_READ)
+  if(data->flags & SD_DATA_READ)
   {
     //If so check on fifo empty status
     status_bit = SD_STATUS_FIFO_EMPTY;
