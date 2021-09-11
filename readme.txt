@@ -143,3 +143,9 @@ but the display flickers when this is done. Need to improve on this trace displa
 buffer to build it in and then copy to the main buffer to make it more steady.
 
 Switching down to 50nS/div kills the program, but this most likely has to do with the fact that the 50nS processing is only partialy implemented.
+
+----------------------------------------------------------------------------------------------------------
+11-SEPTEMBER-2021
+Been busy with the SD card part of the code and managed to get FatFs into the mix and filled in the functions for talking to the card. Need to fill in the
+file operations on top of FatFs and the connections with the user interface. A fair amount of work, but with most of the FatFs functions identified it
+won't be to hard to do.
