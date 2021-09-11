@@ -6,8 +6,11 @@
                    projectFiles="true">
       <itemPath>arm32.h</itemPath>
       <itemPath>ccu_control.h</itemPath>
+      <itemPath>diskio.h</itemPath>
       <itemPath>display_control.h</itemPath>
       <itemPath>display_lib.h</itemPath>
+      <itemPath>ff.h</itemPath>
+      <itemPath>ffconf.h</itemPath>
       <itemPath>fnirsi_1013d_scope.h</itemPath>
       <itemPath>font_structs.h</itemPath>
       <itemPath>fpga_control.h</itemPath>
@@ -31,8 +34,10 @@
                    displayName="Source Files"
                    projectFiles="true">
       <itemPath>ccu_control.c</itemPath>
+      <itemPath>diskio.c</itemPath>
       <itemPath>display_control.c</itemPath>
       <itemPath>display_lib.c</itemPath>
+      <itemPath>ff.c</itemPath>
       <itemPath>fnirsi_1013d_scope.c</itemPath>
       <itemPath>font_0.c</itemPath>
       <itemPath>font_2.c</itemPath>
@@ -42,6 +47,7 @@
       <itemPath>fpga_control.c</itemPath>
       <itemPath>icons.c</itemPath>
       <itemPath>interrupt.c</itemPath>
+      <itemPath>memcmp.s</itemPath>
       <itemPath>memcpy.s</itemPath>
       <itemPath>memset.s</itemPath>
       <itemPath>scope_functions.c</itemPath>
@@ -100,6 +106,10 @@
       </item>
       <item path="ccu_control.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="diskio.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="diskio.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="display_control.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="display_control.h" ex="false" tool="3" flavor2="0">
@@ -107,6 +117,12 @@
       <item path="display_lib.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="display_lib.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="ff.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="ff.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="ffconf.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="fnirsi_1013d_scope.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -135,6 +151,8 @@
       <item path="interrupt.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="interrupt.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="memcmp.s" ex="false" tool="4" flavor2="0">
       </item>
       <item path="memcpy.s" ex="false" tool="4" flavor2="0">
       </item>
@@ -209,6 +227,10 @@
       </item>
       <item path="ccu_control.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="diskio.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="diskio.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="display_control.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="display_control.h" ex="false" tool="3" flavor2="0">
@@ -216,6 +238,12 @@
       <item path="display_lib.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="display_lib.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="ff.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="ff.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="ffconf.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="fnirsi_1013d_scope.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -244,6 +272,8 @@
       <item path="interrupt.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="interrupt.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="memcmp.s" ex="false" tool="4" flavor2="0">
       </item>
       <item path="memcpy.s" ex="false" tool="4" flavor2="0">
       </item>

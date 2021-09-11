@@ -12,9 +12,14 @@
 uint32 cardtype = SD_CARD_TYPE_NONE;
 uint32 cardrca = 0;
 
-uint32 cardblocksize = 512;
-uint32 cardblocks = 0;
-uint32 cardkb = 0;
+uint32 cardsectorsize = 512;
+uint32 cardsectors = 0;
+uint32 cardsize = 0;
+
+uint8 cardmid = 0;
+uint8 cardpnm[5];
+
+uint32 cardpsn = 0;
 
 uint32 cardcid[4] = { 0, 0, 0, 0 };
 uint32 cardcsd[4] = { 0, 0, 0, 0 };
@@ -293,7 +298,155 @@ int32 sd_card_init(void)
   }
 
   //Set the card clock to 48MHz and use the 4 bit bus if supported
-  return(sd_card_set_clock_and_bus(1));
+  if(sd_card_set_clock_and_bus(1))
+  {
+    //Signal error on failure
+    return(SD_ERROR);
+  }
+
+  return(SD_OK);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+int32 sd_card_read(uint32 sector, uint32 blocks, uint8 *buffer)
+{
+  int32 result;
+  
+  //Check if valid buffer given. Needs to be on dword alignment
+  if((buffer == 0) || ((uint32)buffer & 0x00000003))
+    return(SD_ERROR_INVALID_BUFFER);
+  
+  //Check if last bytes to read in range of the card sectors
+  if((sector + blocks - 1) > cardsectors)
+    return(SD_ERROR_SECTOR_OUT_OF_RANGE);
+  
+  //Send card select command
+  sd_command.cmdidx    = 7;
+  sd_command.cmdarg    = cardrca;
+  sd_command.resp_type = SD_RESPONSE_BUSY | SD_RESPONSE_CRC | SD_RESPONSE_PRESENT;
+  result = sd_card_send_command(&sd_command, 0);
+
+  //Only continue when card selected without errors
+  if(result == SD_OK)
+  {
+    //Prepare data buffer for reading
+    sd_data.blocks    = blocks;
+    sd_data.blocksize = 512;
+    sd_data.flags     = SD_DATA_READ;
+    sd_data.data      = buffer;
+    
+    //Send read command based on number of blocks
+    if(blocks == 1)
+    {
+      //Set read single block command
+      sd_command.cmdidx = 17;
+    }
+    else
+    {
+      //Set read multiple blocks command
+      sd_command.cmdidx = 18;
+    }
+    
+    //Indicate which sector to start reading from
+    if(cardtype != SD_CARD_TYPE_SDHC)
+    {
+      //For non HC type cards use the byte address
+      sd_command.cmdarg = sector << 9;
+    }
+    else
+    {
+      //For HC type card use the sector address
+      sd_command.cmdarg = sector;
+    }
+    
+    //Card allowed to be busy.
+    sd_command.resp_type = SD_RESPONSE_BUSY | SD_RESPONSE_CRC | SD_RESPONSE_PRESENT;
+    result = sd_card_send_command(&sd_command, &sd_data);
+    
+    //Deselect the card if all went well
+    if(result == SD_OK)
+    {
+      //Send deselect card command to the card
+      sd_command.cmdidx    = 7;
+      sd_command.cmdarg    = 0;
+      sd_command.resp_type = SD_RESPONSE_NONE;
+      result = sd_card_send_command(&sd_command, 0);
+    }
+  }
+  
+  return(result);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+int32 sd_card_write(uint32 sector, uint32 blocks, uint8 *buffer)
+{
+  int32 result;
+  
+  //Check if valid buffer given. Needs to be on dword alignment
+  if((buffer == 0) || ((uint32)buffer & 0x00000003))
+    return(SD_ERROR_INVALID_BUFFER);
+  
+  //Check if last bytes to read in range of the card sectors
+  if((sector + blocks - 1) > cardsectors)
+    return(SD_ERROR_SECTOR_OUT_OF_RANGE);
+  
+  //Send card select command
+  sd_command.cmdidx    = 7;
+  sd_command.cmdarg    = cardrca;
+  sd_command.resp_type = SD_RESPONSE_BUSY | SD_RESPONSE_CRC | SD_RESPONSE_PRESENT;
+  result = sd_card_send_command(&sd_command, 0);
+
+  //Only continue when card selected without errors
+  if(result == SD_OK)
+  {
+    //Prepare data buffer for reading
+    sd_data.blocks    = blocks;
+    sd_data.blocksize = 512;
+    sd_data.flags     = SD_DATA_READ;
+    sd_data.data      = buffer;
+    
+    //Send read command based on number of blocks
+    if(blocks == 1)
+    {
+      //Set write single block command
+      sd_command.cmdidx = 24;
+    }
+    else
+    {
+      //Set write multiple blocks command
+      sd_command.cmdidx = 25;
+    }
+    
+    //Indicate which sector to start reading from
+    if(cardtype != SD_CARD_TYPE_SDHC)
+    {
+      //For non HC type cards use the byte address
+      sd_command.cmdarg = sector << 9;
+    }
+    else
+    {
+      //For HC type card use the sector address
+      sd_command.cmdarg = sector;
+    }
+    
+    //Card allowed to be busy.
+    sd_command.resp_type = SD_RESPONSE_BUSY | SD_RESPONSE_CRC | SD_RESPONSE_PRESENT;
+    result = sd_card_send_command(&sd_command, &sd_data);
+    
+    //Deselect the card if all went well
+    if(result == SD_OK)
+    {
+      //Send deselect card command to the card
+      sd_command.cmdidx    = 7;
+      sd_command.cmdarg    = 0;
+      sd_command.resp_type = SD_RESPONSE_NONE;
+      result = sd_card_send_command(&sd_command, 0);
+    }
+  }
+  
+  return(result);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -308,7 +461,7 @@ int32 sd_card_get_specifications(void)
   sd_command.resp_type = SD_RESPONSE_CRC | SD_RESPONSE_136 | SD_RESPONSE_PRESENT;
   result = sd_card_send_command(&sd_command, 0);
   
-  //Check if card not selected
+  //Check if card failed
   if(result)
   {
     return(result);
@@ -327,32 +480,54 @@ int32 sd_card_get_specifications(void)
     //Card size is calculated based on (C_SIZE + 1) * (2^(C_SIZE_MULT + 2)) * (2^READ_BL_LEN)
     //Response bits 73:64, 49:47, 83:80
     //Number of 512 byte blocks the card has
-    cardblocks = ((((cardcsd[1] & 0x03FF) << 2) | (cardcsd[2] >> 30)) + 1) << (((cardcsd[2] >> 15) & 0x07) + 2) << ((cardcsd[1] >> 16) & 0x0F) >> 9;
+    cardsectors = ((((cardcsd[1] & 0x03FF) << 2) | (cardcsd[2] >> 30)) + 1) << (((cardcsd[2] >> 15) & 0x07) + 2) << ((cardcsd[1] >> 16) & 0x0F) >> 9;
     
     //Number of KBytes the card has
-    cardkb = cardblocks * 2;
+    cardsize = cardsectors >> 2;
   }
   else
   {
     //Version 2.0 or higher type card
-    //Number of 512 byte blocks the card has
-    cardblocks = ((((cardcsd[1] & 0x03F) << 16) | (cardcsd[2] >> 16)) + 1) * 512;
-    
     //Number of KBytes the card has
-    cardkb = cardblocks * 2;
+    cardsize = ((((cardcsd[1] & 0x03F) << 16) | (cardcsd[2] >> 16)) + 1) * 512;
+    
+    //Number of 512 byte blocks the card has
+    cardsectors = cardsize * 2;
+  }
+
+  //Send get card identification data command to the card
+  sd_command.cmdidx    = 10;
+  sd_command.cmdarg    = cardrca;
+  sd_command.resp_type = SD_RESPONSE_CRC | SD_RESPONSE_136 | SD_RESPONSE_PRESENT;
+  result = sd_card_send_command(&sd_command, 0);
+  
+  //Check if card failed
+  if(result)
+  {
+    return(result);
   }
   
+  //Save the CID
+  cardcid[0] = sd_command.response[3];
+  cardcid[1] = sd_command.response[2];
+  cardcid[2] = sd_command.response[1];
+  cardcid[3] = sd_command.response[0];
   
+  //Decode the CID
+  //Get the manufacturer ID
+  cardmid = cardcid[0] >> 24;
   
+  //Get the product name
+  cardpnm[0] = cardcid[0] & 0xFF;
+  cardpnm[1] = (cardcid[1] >> 24) & 0xFF;
+  cardpnm[2] = (cardcid[1] >> 16) & 0xFF;
+  cardpnm[3] = (cardcid[1] >> 8) & 0xFF;
+  cardpnm[4] = cardcid[1] & 0xFF;
   
-  
-  
-  
-  
-  
-  
-  
-  
+  //Get the product serial number
+  cardpsn = (cardcid[2] << 8) | ((cardcid[3] >> 24) & 0xFF);
+
+  //The original code uses data from it seems an invalid location so this is my interpretation of what is needed, if needed at all.
   
   return(SD_OK);
 }

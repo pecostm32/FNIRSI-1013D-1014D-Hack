@@ -16,6 +16,7 @@
 #include "statemachine.h"
 
 #include "sd_card_interface.h"
+#include "ff.h"
 
 #include "arm32.h"
 
@@ -46,6 +47,8 @@ extern FONTDATA font_3;
 
 int main(void)
 {
+  FATFS fs;
+  
   //Initialize the clock system
   sys_clock_init();
   
@@ -99,10 +102,9 @@ int main(void)
     display_set_fg_color(0x00000000);
     display_fill_rect(0, 0, 800, 480);
   
-  //Setup and check SD card
-  if(sd_card_init())
+  //Setup and check SD card on file system present
+  if(f_mount(&fs, "0", 1))
   {
-
     //Display the message in red
     display_set_fg_color(0x00FF0000);
     display_set_font(&font_3);

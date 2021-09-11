@@ -141,6 +141,8 @@
 #define SD_OK                                     0
 #define SD_ERROR                                 -1
 #define SD_ERROR_TIMEOUT                         -2
+#define SD_ERROR_INVALID_BUFFER                  -3
+#define SD_ERROR_SECTOR_OUT_OF_RANGE             -4
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -167,8 +169,11 @@ struct tagSD_CARD_DATA
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-
 int32 sd_card_init(void);
+
+int32 sd_card_read(uint32 sector, uint32 blocks, uint8 *buffer);
+
+int32 sd_card_write(uint32 sector, uint32 blocks, uint8 *buffer);
 
 int32 sd_card_get_specifications(void);
 

@@ -23,4 +23,17 @@ void sys_clock_init(void)
   //Wait for the PLL to become stable, but not endlessly
   while(time && ((*CCU_PLL_CPU_CTRL & CCU_PLL_LOCKED) == 0))
     time--;
+  
+  //Disable the peripheral PLL to be able to change it
+  *CCU_PLL_PERIPH_CTRL = 0;
+  
+  //Set the peripheral PLL to 576MHz to allow the SD card clock to become 48MHz
+  *CCU_PLL_PERIPH_CTRL = CCU_PLL_ENABLE | CCU_PLL_PERIPH_24M_OUT_EN | CCU_PLL_PERIPH_FACTOR_N(24);
+  
+  //Max checks on PLL becoming stable
+  time = 4000;
+  
+  //Wait for the PLL to become stable, but not endlessly
+  while(time && ((*CCU_PLL_PERIPH_CTRL & CCU_PLL_LOCKED) == 0))
+    time--;
 }

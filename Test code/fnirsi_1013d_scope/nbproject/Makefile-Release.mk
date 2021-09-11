@@ -36,8 +36,10 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/ccu_control.o \
+	${OBJECTDIR}/diskio.o \
 	${OBJECTDIR}/display_control.o \
 	${OBJECTDIR}/display_lib.o \
+	${OBJECTDIR}/ff.o \
 	${OBJECTDIR}/fnirsi_1013d_scope.o \
 	${OBJECTDIR}/font_0.o \
 	${OBJECTDIR}/font_2.o \
@@ -47,6 +49,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/fpga_control.o \
 	${OBJECTDIR}/icons.o \
 	${OBJECTDIR}/interrupt.o \
+	${OBJECTDIR}/memcmp.o \
 	${OBJECTDIR}/memcpy.o \
 	${OBJECTDIR}/memset.o \
 	${OBJECTDIR}/scope_functions.o \
@@ -89,6 +92,11 @@ ${OBJECTDIR}/ccu_control.o: ccu_control.c
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/ccu_control.o ccu_control.c
 
+${OBJECTDIR}/diskio.o: diskio.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/diskio.o diskio.c
+
 ${OBJECTDIR}/display_control.o: display_control.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
@@ -98,6 +106,11 @@ ${OBJECTDIR}/display_lib.o: display_lib.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/display_lib.o display_lib.c
+
+${OBJECTDIR}/ff.o: ff.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/ff.o ff.c
 
 ${OBJECTDIR}/fnirsi_1013d_scope.o: fnirsi_1013d_scope.c
 	${MKDIR} -p ${OBJECTDIR}
@@ -143,6 +156,10 @@ ${OBJECTDIR}/interrupt.o: interrupt.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/interrupt.o interrupt.c
+
+${OBJECTDIR}/memcmp.o: memcmp.s
+	${MKDIR} -p ${OBJECTDIR}
+	$(AS) $(ASFLAGS) -o ${OBJECTDIR}/memcmp.o memcmp.s
 
 ${OBJECTDIR}/memcpy.o: memcpy.s
 	${MKDIR} -p ${OBJECTDIR}

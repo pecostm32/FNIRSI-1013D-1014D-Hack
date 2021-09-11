@@ -166,6 +166,13 @@
 
 #define CCU_BSRR1_DEBE_RST                      0x00001000
 
+//--------------------------------------------------------------------------------------
+//SD MMC settings
+
+#define CCU_SDMMC0_CLK_SRC_OSC24M               0x00000000
+#define CCU_SDMMC0_CLK_SRC_PLL_PERIPH           0x01000000
+
+#define CCU_SDMMC0_CLK_ENABLE                   0x80000000
 
 //--------------------------------------------------------------------------------------
 //LCD clock settings
