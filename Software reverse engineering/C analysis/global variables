@@ -1,9 +1,16 @@
 
+====================================================================================================================================
+Picture and waveform data
 
 
+0x80192ee2   type select for picture or wafeform. Used in loading the list file for the specified type
+
+0x802F19CE   start of list file buffer 400000 bytes in size
+
+0x8035A97E   start of a 2000 byte buffer for storing system file data
 
 
-
+====================================================================================================================================
 
 
 0x8019d5a0   channel1 enable
@@ -13,6 +20,9 @@
 0x8019d5a4   channel1 fft enable
 
 0x8019d5a6   ?? used in trigger level and channel offset calculations. is a short that holds the screen offset of the trace
+
+
+0x8019d5a9   ?? some flag checked on in short tb display for channel 1
 
 0x8019d5aa   timebase time/div
 0x8019d5ab   copy of the timebase time/div
@@ -26,13 +36,19 @@
 
 0x8019d5b2   ?? used in trigger level and channel offset calculations. is a short that holds the screen offset of the trace
 
+0x8019d5b5   ?? some flag checked on in short tb display for channel 2
 
 0x8019d5b6   move speed
 
-0x8019d5b7   some flag used in triggering????
-0x8019d5b8   some flag used in triggering????
+0x8019d5b7   some flag used in triggering????   1
+0x8019d5b8   some flag used in triggering????   2
 
-0x8019d5be   some flag used in triggering????
+0x8019d5ba   ??????  shorts???  some positions x and y??? or buffer indexes sample start and end
+
+0x8019d5bc   ??????
+
+
+0x8019d5be   some flag used in triggering????    4
 
 0x8019d5c1   trigger mode
 0x8019d5c2   trigger edge
@@ -58,7 +74,7 @@
 0x8019d5e4   system ok flag             needs to be 0x1432
 
 
-0x8019d5e8   some flag checked in signal processing
+0x8019d5e8   some flag checked in signal processing. Only set to 1 in perform_auto_set. Most of the time it will be 0  (Is set to 0 in configuraton data reset)
 
 
 0x8019D5EA   short Channel 1 signal average  (Timebase 50S/div - 100mS/div)  Actualy start of channel 1 trace data buffer (12000 bytes, 6000 samples)
@@ -86,9 +102,25 @@
 
 //Measurement settings base address
 0x801FA24C
+
 +0x000  List of enabled measures items
   |
 +0x017
+
+
++0xe4   channel 1 max value
++0xe6   channel 1 min value
++0xea   channel 1 max plus (min / 2)
++0xe8   channel 1 peakpeak
++0xec   channel 1 average
+
++0xee   channel 2 max value
++0xf0   channel 2 min value
++0xf2   channel 2 max plus (min / 2)
++0xf4   channel 2 peakpeak
++0xf6   channel 2 average
+
+
 
 
 +0x100  Channel1 Vmax    ??
@@ -129,6 +161,7 @@
 
 
 0x8036137f  x-y mode display
+
 
 
 
