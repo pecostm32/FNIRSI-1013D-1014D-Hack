@@ -1,0 +1,12 @@
+It looks like the function
+
+some_sd_card_stuff_5 is the starting point for communication with the SD card.
+It initializes the sd card interface and does a lot of other things.
+
+This function is called from 4 locations in the code:
+  some_sd_card_stuff_4
+  check_sd_card          This is in the main startup to see if the SD card is present and functional
+  FUN_800337c4           This seems to be a function to select a file or open a file.
+  FUN_80033ea4
+
+For what I understand of it there is a file system handler on top of the SD card layer.
