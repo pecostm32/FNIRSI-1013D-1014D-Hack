@@ -31,20 +31,21 @@ void setup_view_mode_screen(void)
   save_system_setup(DAT_8002c574);                    //0x80356EE6  Memory location to save all the important scope variables??  scope_save_setup()
 
   pcVar4 = DAT_8002c578;                              //0x8035A97E
-  *DAT_8002c578 = '\0';                               //store byte
-  pcVar4[10] = '\x01';                                //same
-  *(undefined2 *)(pcVar4 + 2) = 0xb4;                 //store short
-  *(undefined2 *)(pcVar4 + 4) = 0x75;                 //same
-  *(undefined2 *)(pcVar4 + 6) = 2;                    //same
-  *(undefined2 *)(pcVar4 + 8) = 2;                    //same
+  *DAT_8002c578 = '\0';                               //store byte     This is mode. 0 no select active, 1 select active
+  pcVar4[10] = '\x01';                                //same           Active page indicator. Decremented on page down and incremented on page up
 
-  memclear((uint)(pcVar4 + 0xd),0x10);                //clear 16 bytes from 0x8035A98B
+  *(undefined2 *)(pcVar4 + 2) = 0xb4;                 //store short    Coordinates of item to draw???  xend
+  *(undefined2 *)(pcVar4 + 4) = 0x75;                 //same                                           yend
+  *(undefined2 *)(pcVar4 + 6) = 2;                    //same                                           xstart
+  *(undefined2 *)(pcVar4 + 8) = 2;                    //same                                           ystart
+
+  memclear((uint)(pcVar4 + 0xd),0x10);                //clear 16 bytes from 0x8035A98B   These are item selected flags
 
   display_file_select_menu();                         //scope_setup_right_file_menu()
 
   load_selected_list_file();                          //scope_load_list_file()
 
-  FUN_8002b9bc();                                     //display the thumbnails
+  display_thumbnails();                               //display the thumbnails   0x8035A98A is set after this function. Is last item indicator. Is index into system file
 
   piVar5 = Global_Frame_Buffer_Pointer;
 
@@ -53,7 +54,7 @@ void setup_view_mode_screen(void)
 LAB_8002bed0:
   do
   {
-    iVar13 = handle_view_mode_touch();   //touch handler for this part????? returns 1 - 6 for button touch
+    iVar13 = handle_view_mode_touch();   //touch handler for this part????? returns 1 - 6 for button touch, 7 - 22 for items
 
     iVar16 = DAT_8002c570;   //0x8019D5A0
   } while (iVar13 == 0);
@@ -89,13 +90,13 @@ LAB_8002bed0:
   {
     bVar3 = !bVar3;
 
-    FUN_800106a4(0);
+    display_highlight_select_button(0);
 
     *pcVar4 = '\0';
 
     if (!bVar3)
     {
-      FUN_800107f4(0);
+      display_highlight_select_all_button(0);
       iVar13 = DAT_8002c584;
       iVar16 = Screen_Frame_Buffer_2;
       uVar15 = 0;
@@ -113,9 +114,9 @@ LAB_8002bed0:
 
     *pcVar4 = '\x01';
 
-    FUN_800107f4();
+    display_highlight_select_all_button(1);
 
-    FUN_80000868(pcVar4 + 0xd,0x10,1);
+    memset(pcVar4 + 0xd,0x10,1);  //Different type of memset, since count becomes for value
 
     display_selected_sign();
   }
@@ -134,11 +135,11 @@ LAB_8002bed0:
         *pcVar4 = '\0';
       }
 
-      FUN_800107f4(0);
+      display_highlight_select_all_button(0);
 
       if (*pcVar4 == '\0')
       {
-        FUN_800106a4(0);
+        display_highlight_select_button(0);
 
         count = DAT_8002c584;
         iVar16 = Screen_Frame_Buffer_2;
@@ -154,7 +155,7 @@ LAB_8002bed0:
       }
       else
       {
-        FUN_800106a4(1);
+        display_highlight_select_button(1);
       }
 
       goto LAB_8002c1ac;
@@ -170,8 +171,8 @@ LAB_8002bed0:
           {
             *pcVar4 = '\0';
 
-            FUN_800106a4(0);
-            FUN_800107f4(0);
+            display_highlight_select_button(0);
+            display_highlight_select_all_button(0);
 
             iVar13 = DAT_8002c584;
             iVar16 = Screen_Frame_Buffer_2;
@@ -202,8 +203,8 @@ LAB_8002bed0:
           {
             *pcVar4 = '\0';
 
-            FUN_800106a4(0);
-            FUN_800107f4(0);
+            display_highlight_select_button(0);
+            display_highlight_select_all_button(0);
 
             iVar13 = DAT_8002c584;
             iVar16 = Screen_Frame_Buffer_2;
@@ -220,7 +221,7 @@ LAB_8002bed0:
 
           pcVar4[10] = pcVar4[10] + '\x01';
 
-          FUN_8002b9bc();
+          display_thumbnails();
         }
       }
 
@@ -265,51 +266,64 @@ LAB_8002bed0:
 
       do
       {
-        iVar16 = FUN_80022fd0();
+        iVar16 = check_delete_confirmation();
       } while (iVar16 == 2);
 
       if (iVar16 == 0)
       {
-        display_selected_sign();
+        display_selected_sign();  //Does this rebuild the complete screen????
         goto LAB_8002c1ac;
       }
 
-      FUN_800106a4(0);
-      FUN_800107f4(0);
+      //Do delete of the selected files
+      display_highlight_select_button(0);  //Something with the file select menu bitmap???
+      display_highlight_select_all_button(0);  //Something with the file select menu bitmap???
 
       uVar14 = 0;
 
       load_selected_system_file();
 
-      FUN_8000b2ac();
+      setup_filename_list();
 
       uVar15 = 0;
 
       do
       {
+        //Walk through the selected list
         if (pcVar4[uVar15 + 0xd] != '\0')
         {
-          uVar1 = (uint)(byte)pcVar4[10] * 0x10 + -0x10 + uVar15 & 0xffff;
+          uVar1 = (uint)(byte)pcVar4[10] * 0x10 + -0x10 + uVar15 & 0xffff;  //((Page number * 16) - 16) + index
+
           iVar16 = uVar1 - uVar14;
-          uVar14 = uVar14 + 1 & 0xff;
-          if ((byte)pcVar4[0xc] <= uVar1) break;
-          FUN_8000bb04(*(undefined2 *)(pcVar4 + iVar16 * 2 + 0x1e));
-          f_unlink(pcVar4 + uVar1 * 0xf + 0x7ee);
+
+          uVar14 = uVar14 + 1 & 0xff;  //Count of selected items
+
+          //Some setup to detect how many items are available???
+          if ((byte)pcVar4[0xc] <= uVar1)
+            break;
+
+          //Delete the file in the system list???
+          remove_item_from_list(*(undefined2 *)(pcVar4 + iVar16 * 2 + 0x1e));
+
+          //Delete the file on the disk
+          f_unlink(pcVar4 + uVar1 * 0xf + 0x7ee);  //Input is a pointer to the filename set in a list
         }
 
         uVar15 = uVar15 + 1 & 0xfffeffff;
 
       } while (uVar15 < 0x10);
 
+      //Clear the selected list
       memclear((uint)(pcVar4 + 0xd),0x10);
 
-      FUN_8002c8f4();
-      FUN_800261b4();
+
+      save_selected_system_file();
+      save_selected_list_file();
 
       load_selected_system_file();
 
-      FUN_8000b2ac();
-      FUN_8002b9bc();
+      setup_filename_list();
+      display_thumbnails();
 
       *pcVar4 = '\0';
 
@@ -317,79 +331,110 @@ LAB_8002bed0:
     }
   }
 
+//Actual item touched
 LAB_8002c1ac:
-  puVar7 = PTR_DAT_8002c59c;
+  puVar7 = PTR_DAT_8002c59c;    //0x80192ee2
   puVar6 = PTR_DAT_8002c598;
-  if (iVar13 - 7U < 0x10) {
-    if (*pcVar4 == '\0') {
+
+  if (iVar13 - 7U < 0x10)  //Check if valid touch, which is not needed since it can't be a higher value!!!!
+  {
+    if (*pcVar4 == '\0')  //Check the mode. On 0 open the touched item
+    {
       uVar14 = ((uint)(byte)pcVar4[10] * 0x10 + iVar13) - 0x17;
       uVar15 = uVar14 & 0xffff;
       *(short *)(PTR_DAT_8002c598 + 2) = (short)(uVar14 * 0x10000 >> 0x10);
-      if (*puVar7 == '\0') {
+
+      if (*puVar7 == '\0')  //0x80192ee2 view item mode 0 is picture, 1 is waveform
+      {
         iVar16 = 1;
         *puVar6 = 1;
         puVar6[4] = 1;
         puVar6[5] = 0;
-        display_return_delete_menu();
-        if (iVar16 == 0) {
+
+        iVar16 = display_picture();
+
+        //File exists if 0 is returned, so display the bitmap again?? and wait for touch
+        if (iVar16 == 0)
+        {
           uVar10 = convert_color(0);
           uVar11 = convert_color(DAT_8002c590);
           set_screen_to_global_pointer();
           puVar6 = PTR_BITMAP_RETURN_DELETE_MENU_8002c5ac;
           uVar15 = 0x1a4;
-          do {
+          do
+          {
             iVar16 = 800;
             puVar17 = (ushort *)(*piVar5 + uVar15 * 0x640);
             puVar18 = (ushort *)(puVar6 + uVar15 * 0xc80 + -0x148200);
-            do {
+
+            do
+            {
               uVar8 = *puVar18;
               uVar12 = uVar11;
-              if ((uVar8 != 0) && (uVar12 = uVar8, uVar8 == 0xf800)) {
+              if ((uVar8 != 0) && (uVar12 = uVar8, uVar8 == 0xf800))
+              {
                 uVar12 = uVar10;
               }
+
               iVar16 = iVar16 + -1;
               *puVar17 = uVar12;
               puVar17 = puVar17 + 1;
               puVar18 = puVar18 + 2;
             } while (iVar16 != 0);
+
             uVar15 = uVar15 + 1 & 0xfffeffff;
           } while (uVar15 < 0x1e0);
+
           set_frame_to_global_pointer();
-          display_confirm_delete_menu();
+
+          handle_picture_touch();  //in this function. Allows for selection of prev or next image or delete this image or return.
         }
       }
       else
       {
+        //Item valid??? or needed for last item???
         if ((byte)pcVar4[0xc] <= uVar15)
         {
-          if (uVar15 == 0) goto LAB_8002c4f0;
+          if (uVar15 == 0)
+            goto LAB_8002c4f0;
+
           uVar15 = uVar15 - 1;
           *(short *)(puVar6 + 2) = (short)uVar15;
         }
 
+        //Open selected file
         iVar16 = f_open(auStack592,pcVar4 + (uVar15 & 0xffff) * 0xf + 0x7ee,1);
 
+        //File not available
         if (iVar16 == 4)
         {
           load_selected_system_file();
-          FUN_8000b2ac();
-          FUN_8000bb04(*(undefined2 *)(pcVar4 + (uint)*(ushort *)(puVar6 + 2) * 2 + 0x1e));
+          setup_filename_list();
+          remove_item_from_list(*(undefined2 *)(pcVar4 + (uint)*(ushort *)(puVar6 + 2) * 2 + 0x1e));
+
+          //Delete the file
           f_unlink(pcVar4 + (uint)*(ushort *)(puVar6 + 2) * 0xf + 0x7ee);
-          FUN_8002c8f4();
-          FUN_800261b4();
+
+          save_selected_system_file();
+          save_selected_list_file();
+
           load_selected_system_file();
-          FUN_8000b2ac();
+          setup_filename_list();
           f_close(auStack592);
         }
         else
         {
           f_lseek(auStack592,0);
-          f_read(auStack592,DAT_8002c5a4,DAT_8002c5a0,NULL);
-          f_close(auStack592);
-          iVar16 = DAT_8002c570;
-          *(undefined *)(DAT_8002c570 + 0x43) = 1;
 
-          restore_system_setup(DAT_8002c5a4);
+          f_read(auStack592,DAT_8002c5a4,DAT_8002c5a0,NULL);
+
+          f_close(auStack592);
+
+          iVar16 = DAT_8002c570;  //0x8019D5A0
+
+          *(undefined *)(DAT_8002c570 + 0x43) = 1;  //Set view mode to waveform
+
+          restore_system_setup(DAT_8002c5a4);   //Load setup data from this file
 
           *(undefined *)(iVar16 + 0x18) = 1;
           *(undefined *)(iVar16 + 0x17) = 1;
@@ -403,14 +448,15 @@ LAB_8002c1ac:
           display_trace_data();
           cVar2 = *(char *)(iVar16 + 0x43);
 
-          while (cVar2 != '\0')
+          while (cVar2 != '\0')   //Stay in the waveform view as long as it is set to waveform view.
           {
+            //timebase setting
             if (*(byte *)(iVar16 + 10) < 9)
-            {
-              FUN_8002b68c();
+            {  //Long time base 50S - 100mS
+              FUN_8002b68c();          //long time base trace drawing
             }
             else
-            {
+            {  //Short time base 50mS - 10nS
               display_trace_data();
             }
 
@@ -428,10 +474,11 @@ LAB_8002c4f0:
       display_file_select_menu();
 
 LAB_8002c510:
-      FUN_8002b9bc();
+      display_thumbnails();
     }
     else
     {
+      //On mode 1 update the selected signs
       display_selected_sign();
     }
   }

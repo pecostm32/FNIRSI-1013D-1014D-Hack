@@ -1,6 +1,18 @@
 
 // WARNING: Unknown calling convention yet parameter storage is locked
 
+//Return 1 - 6   for the buttons in the right menu bar
+//Return 7 - 22  for the possible view items
+
+
+//0x8035A97E    first byte needs to be not zero
+
+//0x8035A988    10th byte holds a value that is multiplied by 16 and then subtracted with 16 - 1 depending on which item and compared with the value in the 12th byte. Only if lower the item is touched
+//
+//0x8035A98A    12th byte has some meaning
+//              from 13th byte up to 28th byte are flags to signal item is selected (1 is selected, 0 not. These are toggles on touch)
+
+
 int handle_view_mode_touch(void)
 
 {
@@ -18,98 +30,155 @@ int handle_view_mode_touch(void)
   bool bVar11;
   
   tp_i2c_read_status();
-  pcVar4 = DAT_80022bbc;
-  puVar3 = PTR_DAT_80022bb8;
-  uVar5 = (uint)*(ushort *)(PTR_DAT_80022bb8 + 2);
-  if ((uVar5 - 0x2db < 0x45) && (uVar2 = *(ushort *)(PTR_DAT_80022bb8 + 4), uVar2 != 0)) {
-    if (uVar2 < 0x50) {
-      cVar1 = *PTR_DAT_80022bb8;
-      while (cVar1 != '\0') {
+
+  pcVar4 = DAT_80022bbc;          //0x8035A97E   start of system file data. First 30 bytes are not loaded from the file. File data starts at 0x8035A99C (LSB, MSB combo per file)
+
+  puVar3 = PTR_DAT_80022bb8;      //0x80192f02
+
+  uVar5 = (uint)*(ushort *)(PTR_DAT_80022bb8 + 2);  //xpos
+
+  if ((uVar5 - 0x2db < 0x45) && (uVar2 = *(ushort *)(PTR_DAT_80022bb8 + 4), uVar2 != 0))
+  {
+    if (uVar2 < 0x50)
+    {
+      cVar1 = *PTR_DAT_80022bb8;  //0x80192f02
+
+      while (cVar1 != '\0')       //Wait for touch release
+      {
         tp_i2c_read_status();
         cVar1 = *puVar3;
       }
-      FUN_8002b0f4();             //wait for touch release
-      return 1;
+
+      wait_for_touch_release();
+      return 1;   //Return button touched
     }
-    if (0x50 < uVar2) {
-      if (uVar2 < 0xa0) {
+
+    if (0x50 < uVar2)
+    {
+      if (uVar2 < 0xa0)
+      {
         cVar1 = *PTR_DAT_80022bb8;
-        while (cVar1 != '\0') {
+
+        while (cVar1 != '\0')
+        {
           tp_i2c_read_status();
           cVar1 = *puVar3;
         }
-        FUN_8002b0f4();
-        return 2;
+
+        wait_for_touch_release();
+        return 2;  //Select all button touched
       }
-      if (0xa0 < uVar2) {
-        if (uVar2 < 0xf0) {
+
+      if (0xa0 < uVar2)
+      {
+        if (uVar2 < 0xf0)
+        {
           cVar1 = *PTR_DAT_80022bb8;
-          while (cVar1 != '\0') {
+
+          while (cVar1 != '\0')
+          {
             tp_i2c_read_status();
             cVar1 = *puVar3;
           }
-          FUN_8002b0f4();
-          return 3;
+
+          wait_for_touch_release();
+          return 3;  //Select button touched
         }
-        if (0xf0 < uVar2) {
-          if (uVar2 < 0x140) {
+
+        if (0xf0 < uVar2)
+        {
+          if (uVar2 < 0x140)
+          {
             cVar1 = *PTR_DAT_80022bb8;
-            while (cVar1 != '\0') {
+
+            while (cVar1 != '\0')
+            {
               tp_i2c_read_status();
               cVar1 = *puVar3;
             }
-            FUN_8002b0f4();
-            return 4;
+
+            wait_for_touch_release();
+            return 4;  //Delete button touched
           }
-          if (0x140 < uVar2) {
+
+          if (0x140 < uVar2)
+          {
             bVar10 = 399 < uVar2;
-            if (!bVar10) {
+
+            if (!bVar10)
+            {
               cVar1 = *PTR_DAT_80022bb8;
-              while (cVar1 != '\0') {
+
+              while (cVar1 != '\0')
+              {
                 tp_i2c_read_status();
                 cVar1 = *puVar3;
               }
-              FUN_8002b0f4();
-              return 5;
+
+              wait_for_touch_release();
+              return 5;  //Page up button touched
             }
-            if (uVar2 != 400) {
+
+            if (uVar2 != 400)
+            {
               bVar10 = 0x1df < uVar2;
             }
-            if (!bVar10) {
+
+            if (!bVar10)
+            {
               cVar1 = *PTR_DAT_80022bb8;
-              while (cVar1 != '\0') {
+
+              while (cVar1 != '\0')
+              {
                 tp_i2c_read_status();
                 cVar1 = *puVar3;
               }
-              FUN_8002b0f4();
-              return 6;
+
+              wait_for_touch_release();
+              return 6;  //Page down button touched
             }
           }
         }
       }
     }
   }
+
   uVar8 = uVar5 - 1;
-  if ((uVar8 < 0xb3) && (*(ushort *)(PTR_DAT_80022bb8 + 4) != 0 && *(ushort *)(PTR_DAT_80022bb8 + 4) < 0x75)) {
+
+//This can be handled in a loop with the use of either a table with coordinates or just calculating the coordinates to check against
+//No need to check on a per item base if there are items. Do that check once.
+//Only loop through the available items eliminating the need for a check if an item is present.
+
+  if ((uVar8 < 0xb3) && (*(ushort *)(PTR_DAT_80022bb8 + 4) != 0 && *(ushort *)(PTR_DAT_80022bb8 + 4) < 0x75))
+  {
     cVar1 = *PTR_DAT_80022bb8;
-    while (cVar1 != '\0') {
+
+    while (cVar1 != '\0')
+    {
       tp_i2c_read_status();
       cVar1 = *puVar3;
     }
-    FUN_8002b0f4();
-    if ((ushort)((ushort)(byte)pcVar4[10] * 0x10 - 0x10) < (ushort)(byte)pcVar4[0xc]) {
-      if (*pcVar4 != '\0') {
-        if (pcVar4[0xd] == '\0') {
+
+    wait_for_touch_release();
+
+    if ((ushort)((ushort)(byte)pcVar4[10] * 0x10 - 0x10) < (ushort)(byte)pcVar4[0xc])
+    {
+      if (*pcVar4 != '\0')
+      {
+        if (pcVar4[0xd] == '\0')
+        {
           pcVar4[0xd] = '\x01';
         }
-        else {
+        else
+        {
           pcVar4[0xd] = '\0';
         }
       }
       return 7;
     }
   }
-  else {
+  else
+  {
     uVar7 = uVar5 - 0xb7;
     if ((uVar7 < 0xb3) && (*(ushort *)(PTR_DAT_80022bb8 + 4) != 0 && *(ushort *)(PTR_DAT_80022bb8 + 4) < 0x75)) {
       cVar1 = *PTR_DAT_80022bb8;
@@ -117,7 +186,7 @@ int handle_view_mode_touch(void)
         tp_i2c_read_status();
         cVar1 = *puVar3;
       }
-      FUN_8002b0f4();
+      wait_for_touch_release();
       if ((ushort)((ushort)(byte)pcVar4[10] * 0x10 - 0xf) < (ushort)(byte)pcVar4[0xc]) {
         if (*pcVar4 != '\0') {
           if (pcVar4[0xe] == '\0') {
@@ -138,7 +207,7 @@ int handle_view_mode_touch(void)
           tp_i2c_read_status();
           cVar1 = *puVar3;
         }
-        FUN_8002b0f4();
+        wait_for_touch_release();
         if ((ushort)((ushort)(byte)pcVar4[10] * 0x10 - 0xe) < (ushort)(byte)pcVar4[0xc]) {
           if (*pcVar4 != '\0') {
             if (pcVar4[0xf] == '\0') {
@@ -159,7 +228,7 @@ int handle_view_mode_touch(void)
             tp_i2c_read_status();
             cVar1 = *puVar3;
           }
-          FUN_8002b0f4();
+          wait_for_touch_release();
           if ((ushort)((ushort)(byte)pcVar4[10] * 0x10 - 0xd) < (ushort)(byte)pcVar4[0xc]) {
             if (*pcVar4 != '\0') {
               if (pcVar4[0x10] == '\0') {
@@ -179,7 +248,7 @@ int handle_view_mode_touch(void)
               tp_i2c_read_status();
               cVar1 = *puVar3;
             }
-            FUN_8002b0f4();
+            wait_for_touch_release();
             if ((ushort)((ushort)(byte)pcVar4[10] * 0x10 - 0xc) < (ushort)(byte)pcVar4[0xc]) {
               if (*pcVar4 != '\0') {
                 if (pcVar4[0x11] == '\0') {
@@ -199,7 +268,7 @@ int handle_view_mode_touch(void)
                 tp_i2c_read_status();
                 cVar1 = *puVar3;
               }
-              FUN_8002b0f4();
+              wait_for_touch_release();
               if ((ushort)((ushort)(byte)pcVar4[10] * 0x10 - 0xb) < (ushort)(byte)pcVar4[0xc]) {
                 if (*pcVar4 != '\0') {
                   if (pcVar4[0x12] == '\0') {
@@ -219,7 +288,7 @@ int handle_view_mode_touch(void)
                   tp_i2c_read_status();
                   cVar1 = *puVar3;
                 }
-                FUN_8002b0f4();
+                wait_for_touch_release();
                 if ((ushort)((ushort)(byte)pcVar4[10] * 0x10 - 10) < (ushort)(byte)pcVar4[0xc]) {
                   if (*pcVar4 != '\0') {
                     if (pcVar4[0x13] == '\0') {
@@ -239,7 +308,7 @@ int handle_view_mode_touch(void)
                     tp_i2c_read_status();
                     cVar1 = *puVar3;
                   }
-                  FUN_8002b0f4();
+                  wait_for_touch_release();
                   if ((ushort)((ushort)(byte)pcVar4[10] * 0x10 - 9) < (ushort)(byte)pcVar4[0xc]) {
                     if (*pcVar4 != '\0') {
                       if (pcVar4[0x14] == '\0') {
@@ -267,7 +336,7 @@ int handle_view_mode_touch(void)
                         tp_i2c_read_status();
                         cVar1 = *puVar3;
                       }
-                      FUN_8002b0f4();
+                      wait_for_touch_release();
                       if ((ushort)(byte)pcVar4[0xc] <= (ushort)((ushort)(byte)pcVar4[10] * 0x10 - 8)) {
                         return 0;
                       }
@@ -296,7 +365,7 @@ int handle_view_mode_touch(void)
                         tp_i2c_read_status();
                         cVar1 = *puVar3;
                       }
-                      FUN_8002b0f4();
+                      wait_for_touch_release();
                       if ((ushort)(byte)pcVar4[0xc] <= (ushort)((ushort)(byte)pcVar4[10] * 0x10 - 7)) {
                         return 0;
                       }
@@ -325,7 +394,7 @@ int handle_view_mode_touch(void)
                         tp_i2c_read_status();
                         cVar1 = *puVar3;
                       }
-                      FUN_8002b0f4();
+                      wait_for_touch_release();
                       if ((ushort)(byte)pcVar4[0xc] <= (ushort)((ushort)(byte)pcVar4[10] * 0x10 - 6)) {
                         return 0;
                       }
@@ -354,7 +423,7 @@ int handle_view_mode_touch(void)
                         tp_i2c_read_status();
                         cVar1 = *puVar3;
                       }
-                      FUN_8002b0f4();
+                      wait_for_touch_release();
                       if ((ushort)(byte)pcVar4[0xc] <= (ushort)((ushort)(byte)pcVar4[10] * 0x10 - 5)) {
                         return 0;
                       }
@@ -394,7 +463,7 @@ int handle_view_mode_touch(void)
                             tp_i2c_read_status();
                             cVar1 = *puVar3;
                           }
-                          FUN_8002b0f4();
+                          wait_for_touch_release();
                           if ((ushort)((ushort)(byte)pcVar4[10] * 0x10 - 1) < (ushort)(byte)pcVar4[0xc]) {
                             if (*pcVar4 != '\0') {
                               if (pcVar4[0x1c] == '\0') {
@@ -414,7 +483,7 @@ int handle_view_mode_touch(void)
                           tp_i2c_read_status();
                           cVar1 = *puVar3;
                         }
-                        FUN_8002b0f4();
+                        wait_for_touch_release();
                         if ((ushort)((ushort)(byte)pcVar4[10] * 0x10 - 2) < (ushort)(byte)pcVar4[0xc]) {
                           if (*pcVar4 != '\0') {
                             if (pcVar4[0x1b] == '\0') {
@@ -434,7 +503,7 @@ int handle_view_mode_touch(void)
                         tp_i2c_read_status();
                         cVar1 = *puVar3;
                       }
-                      FUN_8002b0f4();
+                      wait_for_touch_release();
                       if ((ushort)((ushort)(byte)pcVar4[10] * 0x10 - 3) < (ushort)(byte)pcVar4[0xc]) {
                         if (*pcVar4 != '\0') {
                           if (pcVar4[0x1a] == '\0') {
@@ -454,7 +523,7 @@ int handle_view_mode_touch(void)
                       tp_i2c_read_status();
                       cVar1 = *puVar3;
                     }
-                    FUN_8002b0f4();
+                    wait_for_touch_release();
                     if ((ushort)((ushort)(byte)pcVar4[10] * 0x10 - 4) < (ushort)(byte)pcVar4[0xc]) {
                       if (*pcVar4 != '\0') {
                         if (pcVar4[0x19] == '\0') {
