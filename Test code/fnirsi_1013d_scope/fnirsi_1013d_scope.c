@@ -57,13 +57,13 @@ int main(void)
   arm32_dcache_enable();
   
   //Clear the interrupt variables
-  memset(interrupthandlers, 0, 256);
+//  memset(interrupthandlers, 0, 256);
   
   //Setup timer interrupt
-  timer0_setup();
+ // timer0_setup();
   
   //Enable interrupts only once. In the original code it is done on more then one location.
-  arm32_interrupt_enable();
+//  arm32_interrupt_enable();
   
   //Initialize SPI for flash (PORT C + SPI0)
   sys_spi_flash_init();
@@ -101,7 +101,8 @@ int main(void)
     //Clear the display
     display_set_fg_color(0x00000000);
     display_fill_rect(0, 0, 800, 480);
-  
+
+#if 0    
   //Setup and check SD card on file system present
   if(f_mount(&fs, "0", 1))
   {
@@ -113,11 +114,16 @@ int main(void)
     //On error just hang
     while(1);
   }
-
+#endif
   
   
   
+  scope_setup_right_file_menu();
   
+  scope_select_all_button(1);
+  scope_select_button(1);
+  
+  while(1);
   
   
   scopesettings.rightmenustate = 0;

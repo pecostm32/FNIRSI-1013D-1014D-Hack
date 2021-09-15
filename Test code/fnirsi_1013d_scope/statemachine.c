@@ -719,9 +719,14 @@ void handle_main_menu_touch(void)
           //Wait until touch is released
           tp_i2c_wait_for_touch_release();
 
-          //Show and handle the picture view here
+          //Signal viewing of pictures
+          viewtype = VIEW_TYPE_PICTURE;
           
-          //Close menu and switch to picture view screen
+          //Switch to picture view screen
+          scope_setup_view_screen();
+          
+//        FUN_8000a750();          //Restart the scope function
+//        setup_main_screen();          
           
         }
         //Check if on waveform view
@@ -733,9 +738,15 @@ void handle_main_menu_touch(void)
           //Wait until touch is released
           tp_i2c_wait_for_touch_release();
 
-          //Show and handle the waveform view here
+          //Signal viewing of pictures
+          viewtype = VIEW_TYPE_WAVEFORM;
+          
+          //Switch to picture view screen
+          scope_setup_view_screen();
 
-          //Close menu and switch to waveform view screen
+//        FUN_8000a750();          //Restart the scope function
+//        setup_main_screen();          
+          
         }
         //Check if on USB connection
         else if((ytouch >= 225) && (ytouch <= 278))
@@ -1610,10 +1621,11 @@ void handle_right_basic_menu_touch(void)
 /*    
     //This needs to be done for save picture
     FUN_80025f2c();
-    if ((pcVar5[0x43] != '\0') && (*PTR_DAT_80020300 == '\x01'))
+    if ((pcVar5[0x43] != '\0') && (*PTR_DAT_80020300 == '\x01'))  //wave view mode, so viewing a wave file and 0x80192ee2 which is type of view selected. 1 being wave???
     {
+      //seems as something that is not needed
       FUN_8002c8e4();
-      some_sd_card_stuff_3();
+      load_selected_list_file();
     }
 */
   }

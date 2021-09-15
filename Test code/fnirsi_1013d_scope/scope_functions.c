@@ -83,6 +83,24 @@ void scope_setup_main_screen(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+void scope_setup_view_screen(void)
+{
+  
+  scope_save_setup(0);  //need a save location here or see if it can be just a single global location
+                        //In the original code 2 locations are used. Has to do with waveform view.
+                        //A better setup would be to use pointers and structures, to avoid copying the data
+  
+  
+  scope_setup_right_file_menu();
+  
+  
+  scope_load_list_file();
+  
+  
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 void scope_setup_right_control_menu(void)
 {
   //Setup for clearing right menu bar
@@ -137,6 +155,51 @@ void scope_setup_right_control_menu(void)
       scope_show_grid_button(0);
     }
   }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_setup_right_file_menu(void)
+{
+  int32 y;
+  
+  //Set black color for background
+  display_set_fg_color(0x00000000);
+
+  //Clear the right menu bar
+  display_fill_rect(730, 0, 70, 480);
+
+  //Grey color for separators
+  display_set_fg_color(0x007F7F7F);
+  
+  //Draw the button separators
+  for(y=80;y<480;y+=80)
+  {
+    //A 48 pixel long line
+    display_draw_horz_line(y, 741, 789);
+  }
+
+  //White color for text
+  display_set_fg_color(0x00FFFFFF);
+  
+  //Display the texts with this font
+  display_set_font(&font_3);
+  
+  //Some buttons have two lines of text
+  display_text(747, 34, "return");
+  
+  display_text(746, 104, "select");
+  display_text(758, 119, "all");
+  
+  display_text(746, 191, "select");
+  
+  display_text(746, 271, "delete");
+
+  display_text(750, 343, "page");
+  display_text(758, 358, "up");
+
+  display_text(750, 422, "page");
+  display_text(748, 440, "down");
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -851,6 +914,79 @@ void scope_ch2_sensitivity_control(int type,int mode)
   display_set_fg_color(0x00000000);
   display_set_font(&font_2);
   display_text(756, 324, "CH2");
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_select_all_button(int mode)
+{
+  //Check if inactive or active mode
+  if(mode == 0)
+  {
+    //Black color for inactive button
+    display_set_fg_color(0x00000000);
+  }
+  else
+  {
+    //White for activated button
+    display_set_fg_color(0x00FFFFFF);
+  }
+
+  //Draw the body of the button
+  display_fill_rect(737, 100, 55, 40);
+  
+  //Check if inactive or active mode
+  if(mode == 0)
+  {
+    //White text color for inactive button
+    display_set_fg_color(0x00FFFFFF);
+  }
+  else
+  {
+    //Black text color for activated button
+    display_set_fg_color(0x00000000);
+  }
+  
+  //Display the text
+  display_set_font(&font_3);
+  display_text(746, 104, "select");
+  display_text(758, 119, "all");
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_select_button(int mode)
+{
+  //Check if inactive or active mode
+  if(mode == 0)
+  {
+    //Black color for inactive button
+    display_set_fg_color(0x00000000);
+  }
+  else
+  {
+    //White for activated button
+    display_set_fg_color(0x00FFFFFF);
+  }
+
+  //Draw the body of the button
+  display_fill_rect(737, 180, 55, 40);
+  
+  //Check if inactive or active mode
+  if(mode == 0)
+  {
+    //White text color for inactive button
+    display_set_fg_color(0x00FFFFFF);
+  }
+  else
+  {
+    //Black text color for activated button
+    display_set_fg_color(0x00000000);
+  }
+  
+  //Display the text
+  display_set_font(&font_3);
+  display_text(746, 191, "select");
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -4135,7 +4271,7 @@ void scope_get_short_timebase_data(void)
   }
   else
   {
-    //Get correction value for the time base range 200nS/div - 10nS/div
+    //Get correction value for the time base range 250nS/div - 10nS/div
     signaladjust = timebase_adjusters[scopesettings.timeperdiv - 25];
     
     //Check if need to add or subtract
@@ -4170,12 +4306,10 @@ void scope_get_short_timebase_data(void)
       count = 1500;
     }
     
-    //It seems it actually needs this. Using a fixed command 0x20 without the call to the special chip makes the trace garbage
+    //It seems it actually needs this. Using a fixed command 0x20 with or without the call to the special chip makes the trace garbage
     //Get the FPGA command to read from based on the trigger channel
     command = fpga_read_parameter_ic(0x0C, scopesettings.triggerchannel);
   
-//    command = 20;
-    
     //Read the bytes into a trace buffer
     fpga_read_trace_data(command, channel1tracebuffer1, count);
 
@@ -5498,6 +5632,22 @@ void scope_display_cursor_measurements(void)
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void scope_display_measurements(void)
+{
+  
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_save_setup(void *location)
+{
+  //Simplest setup here is to put all important data in a struct and make it such that a pointer is used to point to the active one
+  //This way no memory needs to be copied
+  //Needs a bit of a re write but will improve things a lot
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_load_list_file(void)
 {
   
 }

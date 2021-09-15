@@ -11,11 +11,17 @@
 
 void scope_setup_display_lib(void);
 
+//----------------------------------------------------------------------------------------------------------------------------------
+
 void scope_setup_main_screen(void);
-  
+
+void scope_setup_view_screen(void);
+
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void scope_setup_right_control_menu(void);
+
+void scope_setup_right_file_menu(void);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 // Right side bar functions
@@ -36,6 +42,9 @@ void scope_50_percent_trigger_button(int mode);
 void scope_show_grid_button(int mode);
 void scope_ch1_sensitivity_control(int type, int mode);
 void scope_ch2_sensitivity_control(int type, int mode);
+
+void scope_select_all_button(int mode);
+void scope_select_button(int mode);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 // Top bar functions
@@ -162,6 +171,16 @@ void scope_display_channel_trace(uint16 *buffer, uint16 xpos, uint16 count, uint
 void scope_display_cursor_measurements(void);
 
 void scope_display_measurements(void);
+
+//----------------------------------------------------------------------------------------------------------------------------------
+// File display functions
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_save_setup(void *location);
+
+void scope_restore_setup(void *location);
+
+void scope_load_list_file(void);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
