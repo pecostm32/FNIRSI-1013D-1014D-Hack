@@ -146,6 +146,13 @@ Switching down to 50nS/div kills the program, but this most likely has to do wit
 
 ----------------------------------------------------------------------------------------------------------
 11-SEPTEMBER-2021
-Been busy with the SD card part of the code and managed to get FatFs into the mix and filled in the functions for talking to the card. Need to fill in the
-file operations on top of FatFs and the connections with the user interface. A fair amount of work, but with most of the FatFs functions identified it
-won't be to hard to do.
+Been busy with the SD card part of the code and managed to get FatFs into the mix and filled in the functions for talking to the card.
+Need to fill in the file operations on top of FatFs and the connections with the user interface. A fair amount of work, but with most 
+of the FatFs functions identified it won't be to hard to do.
+
+----------------------------------------------------------------------------------------------------------
+15-SEPTEMBER-2021
+Started with the implementation of the picture and wavefrom view part of the code.
+Most of the original code on this subject has been analyzed now and judged as crap, so my version will differ in code, but will try to
+match the functionality and looks as close as possible.
+
