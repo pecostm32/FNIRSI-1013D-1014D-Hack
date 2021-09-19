@@ -12,12 +12,12 @@
 //1   LSB file number
 //2   Channel 1 trace offset
 //3   Channel 2 trace offset
-//4   trigger level screen offset      (useless in this context)
-//5   trigger position screen offset   (useless in this context)
+//4   trigger level screen offset
+//5   trigger position screen offset
 //6   Channel 1 enable
 //7   Channel 2 enable
-//8   trace position                   (useless in this context)
-//9   trace sample start offset        (useless in this context)
+//8   trace position
+//9   trace sample start offset
 //10  xy display mode
 
 
@@ -37,7 +37,7 @@ void create_thumbnail(int filenumber, int dataindex)
   
   puVar3 = DAT_800253b4;   //0x8019D5A0  base of settings
 
-  iVar2 = DAT_800253b0;    //0x802F19CE
+  iVar2 = DAT_800253b0;    //0x802F19CE   start of thumbnail data
 
   iVar9 = DAT_800253b0 + param_2;  //0ffset into thumbnail buffer
 

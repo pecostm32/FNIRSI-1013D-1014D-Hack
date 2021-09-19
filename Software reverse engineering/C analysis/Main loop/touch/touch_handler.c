@@ -111,25 +111,25 @@ LAB_8001a410:
 
     if (cVar1 == '\x04')
     {
-      FUN_8001a9c0();
+      FUN_8001a9c0();   //target 0x801fa4e0 time cursor left
     }
     else
     {
       if (cVar1 == '\x05')
       {
-        FUN_8001a860();
+        FUN_8001a860();  //right
       }
       else
       {
         if (cVar1 == '\x06')
         {
-          FUN_8001aa6c();
+          FUN_8001aa6c(); //volt top
         }
         else
         {
           if (cVar1 == '\a')
           {
-            FUN_8001a910();
+            FUN_8001a910();//volt bottom
           }
         }
       }
@@ -177,6 +177,7 @@ LAB_8001a410:
         }
       }
 
+//This bit handles trigger level
       iVar11 = 1;
 
       iVar9 = FUN_80017790();    //check on valid touch
@@ -243,6 +244,8 @@ LAB_8001a410:
       return;
     }
 
+
+//The rest is only active when running and time base 10 and up (50mS/div - 10nS/div)
     if ((*(char *)(iVar8 + 0x3a) != '\0') && (*(byte *)(iVar8 + 10) < 9))
     {
       return;

@@ -34,10 +34,10 @@ void setup_view_mode_screen(void)
   *DAT_8002c578 = '\0';                               //store byte     This is mode. 0 no select active, 1 select active
   pcVar4[10] = '\x01';                                //same           Active page indicator. Decremented on page down and incremented on page up
 
-  *(undefined2 *)(pcVar4 + 2) = 0xb4;                 //store short    Coordinates of item to draw???  xend
-  *(undefined2 *)(pcVar4 + 4) = 0x75;                 //same                                           yend
-  *(undefined2 *)(pcVar4 + 6) = 2;                    //same                                           xstart
-  *(undefined2 *)(pcVar4 + 8) = 2;                    //same                                           ystart
+  *(undefined2 *)(pcVar4 + 2) = 0xb4;                 //store short    Coordinates of item to draw???  xend      0x8035A980   Will use defines in my code
+  *(undefined2 *)(pcVar4 + 4) = 0x75;                 //same                                           yend      0x8035A982
+  *(undefined2 *)(pcVar4 + 6) = 2;                    //same                                           xstart    0x8035A984
+  *(undefined2 *)(pcVar4 + 8) = 2;                    //same                                           ystart    0x8035A988
 
   memclear((uint)(pcVar4 + 0xd),0x10);                //clear 16 bytes from 0x8035A98B   These are item selected flags
 
@@ -80,7 +80,9 @@ LAB_8002bed0:
 
     *(undefined2 *)PTR_DAT_8002c5b4 = 0;   //0x80192eaa  disp_xpos = 0 so trace starts from beginning
 
-    setup_main_screen();                   //Rebuild the scope screen
+//So best to also do restart of the scope here instead of after return from this function.
+
+    setup_main_screen();                   //Rebuild the scope screen. also done after return from this function.
 
     *Global_Frame_Buffer_Pointer = Start_Of_Screen_Mem;
     return;

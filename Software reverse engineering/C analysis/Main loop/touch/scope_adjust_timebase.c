@@ -104,24 +104,34 @@ void scope_adjust_timebase(void)
 
   //backed up time base * some number * -3 + backed up time base is zero?????
   //0xAAAAAAAB
-  if ((uint)((ulonglong)(uint)*(byte *)(iVar3 + 0xb) * (ulonglong)DAT_8001af94 >> 0x21) * -3 + (uint)*(byte *)(iVar3 + 0xb) == 0) //  ((backup / 3) * -3) - backup;
+  if ((uint)((ulonglong)(uint)*(byte *)(iVar3 + 0xb) * (ulonglong)DAT_8001af94 >> 0x21) * -3 + (uint)*(byte *)(iVar3 + 0xb) == 0) //  ((backup / 3) * -3) + backup;
   {
+
+//  if (((((ulonglong)backup * (ulonglong)0xAAAAAAAB) >> 0x21) * -3) + backup) == 0)
+
+//  if((backup % 3) == 0)
+
+
+    //check on old setting being 12, 15, 18, ect
+
+    //if((backuptimebase % 3) == 0)
+
     //New setting less then previous setting
     if (*(byte *)(iVar3 + 10) < *(byte *)(iVar3 + 0xb))
     {
       //Get the difference between them
       cVar5 = *(char *)(iVar3 + 0xb) - *(char *)(iVar3 + 10);
 
-      if (cVar5 != '\x01')
+      if (cVar5 != '\x01')      //True for 0,2,3
       {
-        if (cVar5 != '\x02')
+        if (cVar5 != '\x02')    //true for 0,3
           goto joined_r0x8001af30;
 
         uVar8 = 10;
-        goto LAB_8001ae10;
+        goto LAB_8001ae10;      //true for 2
       }
 
-LAB_8001af40:
+LAB_8001af40:  //true for 1
       *(undefined2 *)PTR_DAT_8001af98 = 5;    //0x80192ec4 ???? variable
       goto set_in_fpga;
     }
@@ -165,7 +175,7 @@ LAB_8001ae18:
   {
     if ((uint)*(byte *)(iVar3 + 0xb) + (uint)((ulonglong)(uint)*(byte *)(iVar3 + 0xb) * (ulonglong)DAT_8001af94 >> 0x21) * -3 != 1)
     {
-      if ((uint)((ulonglong)(uint)*(byte *)(iVar3 + 0xb) * (ulonglong)DAT_8001af94 >> 0x21) * -3 + (uint)*(byte *)(iVar3 + 0xb) == 2)
+      if ((uint)((ulonglong)(uint)*(byte *)(iVar3 + 0xb) * (ulonglong)DAT_8001af94 >> 0x21) * -3 + (uint)*(byte *)(iVar3 + 0xb) == 2) //backup % 3 == 2
       {
         if (*(byte *)(iVar3 + 10) < *(byte *)(iVar3 + 0xb))
         {

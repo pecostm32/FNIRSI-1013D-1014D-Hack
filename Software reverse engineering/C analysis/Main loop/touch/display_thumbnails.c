@@ -3,10 +3,10 @@ void FUN_8002b9bc(void)
 
 {
   uint uVar1;
-  ushort uVar2;
-  ushort uVar3;
-  ushort uVar4;
-  ushort uVar5;
+  ushort xend_uVar2;
+  ushort yend_uVar3;
+  ushort xstart_uVar4;
+  ushort ystart_uVar5;
   ushort uVar6;
   short sVar7;
   short sVar8;
@@ -27,20 +27,20 @@ void FUN_8002b9bc(void)
   uint uVar23;
   uint uVar24;
   uint uVar25;
-  uint uVar26;
+  uint yend_uVar26;
   int *in_r12;
   uint local_58;
   
   local_58 = 0;
-  uVar2 = *(ushort *)(DAT_8002be10 + 2);   //0x8035A97E  Data set before system file data
-  uVar3 = *(ushort *)(DAT_8002be10 + 4);
-  uVar26 = (uint)uVar3;
-  uVar4 = *(ushort *)(DAT_8002be10 + 6);
-  uVar5 = *(ushort *)(DAT_8002be10 + 8);
+  xend_uVar2 = *(ushort *)(DAT_8002be10 + 2);   //0x8035A97E  Data set before system file data
+  yend_uVar3 = *(ushort *)(DAT_8002be10 + 4);
+  yend_uVar26 = (uint)yend_uVar3;
+  xstart_uVar4 = *(ushort *)(DAT_8002be10 + 6);
+  ystart_uVar5 = *(ushort *)(DAT_8002be10 + 8);
 
-  load_selected_system_file();
+  load_selected_system_file();  //Need to get the number of available items in this function
 
-  setup_filename_list();
+  setup_filename_list();  //This is not needed when file names are made on the fly
 
   set_frame_to_global_pointer();
 
@@ -66,17 +66,18 @@ void FUN_8002b9bc(void)
 
   do
   {
-    uVar24 = 0;
-    sVar9 = (short)uVar23;
+    uVar24 = 0;                //xposition
+    sVar9 = (short)uVar23;     //yposition
 
     do  //loop through this untill uVar24 > 700 (some xpos??)
     {
+      //page number is used here
       uVar1 = local_58 + (uint)*(byte *)(DAT_8002be10 + 10) * 0x10 + -0x10 & 0xffff;   //0x8035A97E  ??? system file data is loaded to this address + 0x1E (2000 bytes)
 
       if (*(byte *)(DAT_8002be10 + 0xc) <= uVar1)
         break;
 
-      if (uVar26 != 0)  //bytes 4 and 5 from system file
+      if (yend_uVar26 != 0)  //fixed value set in setup_view_screen function
       {
         in_r12 = Global_Frame_Buffer_Pointer;
       }
@@ -85,22 +86,26 @@ void FUN_8002b9bc(void)
       local_58 = local_58 + 1 & 0xfffeffff;  //point to next entry in system file
       uVar22 = 0;
 
-      if (uVar26 != 0)
+
+      //Clear part of the screen, as if they never heard of memset and do not understand what display_fill_rect does!!!!
+      //So not needed
+      if (yend_uVar26 != 0)
       {
         do
         {
-          if (uVar2 != 0)
+          if (xend_uVar2 != 0)
           {
-            iVar17 = *in_r12 + ((uint)uVar4 + (uVar22 + uVar5 + uVar23) * 800 + uVar24) * 2;
+            iVar17 = *in_r12 + ((uint)xstart_uVar4 + (uVar22 + ystart_uVar5 + uVar23) * 800 + uVar24) * 2;
             puVar21 = (undefined2 *)(iVar17 + 0x63e);
-            uVar10 = (uint)(uVar2 >> 1);
+            uVar10 = (uint)(xend_uVar2 >> 1);
 
-            if ((uVar2 & 1) != 0)
+            if ((xend_uVar2 & 1) != 0)
             {
               puVar21 = (undefined2 *)(iVar17 + 0x640);
               *puVar21 = 0;
             }
 
+            //Do two pixels per loop
             while (uVar10 != 0)
             {
               puVar21[1] = 0;
@@ -111,16 +116,21 @@ void FUN_8002b9bc(void)
           }
 
           uVar22 = uVar22 + 1 & 0xfffeffff;
-        } while (uVar22 < uVar26);
+        } while (uVar22 < yend_uVar26);
       }
 
-      FUN_8000b9c4(*(undefined2 *)(DAT_8002be10 + uVar1 * 2 + 0x1e));   //?????????
+      //uVar1 is item number and times two gives an index into the system file number list file
+      //This function loads the selected files thumbnail data from the thumbnail list
+      //Seems there is no fixed relation between the indexes in the two files
+      get_thumbnail_data(*(undefined2 *)(DAT_8002be10 + uVar1 * 2 + 0x1e));
 
-      psVar18 = DAT_8002be38;
-      psVar20 = DAT_8002be34;
+      psVar18 = DAT_8002be38;   //0x801AEF2A
+      psVar20 = DAT_8002be34;   //0x801C374A
 
+      //Check if xy mode
       if (*(char *)(DAT_8002be30 + 7) == '\0')
       {
+        //Not then offset the sample in y direction
         iVar17 = 0x57;
         *DAT_8002be38 = *DAT_8002be34 + sVar9;
         sVar7 = psVar20[1];
@@ -140,7 +150,7 @@ void FUN_8002b9bc(void)
       }
       else
       {
-        memcpy(DAT_8002be38,DAT_8002be34,0x160);
+        memcpy(DAT_8002be38,DAT_8002be34,0x160);  //352 bytes means only 176 byte samples
       }
 
       psVar20 = DAT_8002be3c;
@@ -174,12 +184,12 @@ void FUN_8002b9bc(void)
         if (*pcVar16 != '\0') //channel 1
         {
           //Some drawing function???????
-          FUN_80012a64(*(ushort *)(pcVar16 + 0x1a) + uVar25 & 0xfffeffff,0,*(short *)(pcVar16 + 0x1c) + -4,DAT_8002be38,DAT_8002be54);
+          display_thumbnail_trace(*(ushort *)(pcVar16 + 0x1a) + uVar25 & 0xfffeffff, 0, *(short *)(pcVar16 + 0x1c) + -4, DAT_8002be38, DAT_8002be54);  //0x801AEF2A  0x00FFFF00
         }
 
         if (pcVar16[0xc] != '\0')  //channel 2
         {
-          FUN_80012a64(*(ushort *)(pcVar16 + 0x1a) + uVar25 & 0xfffeffff,0,*(short *)(pcVar16 + 0x1c) + -4,DAT_8002be5c,DAT_8002be58);
+          display_thumbnail_trace(*(ushort *)(pcVar16 + 0x1a) + uVar25 & 0xfffeffff, 0, *(short *)(pcVar16 + 0x1c) + -4, DAT_8002be5c, DAT_8002be58);   //0x801AF0BA  0x0000FFFF
         }
       }
       else
@@ -187,6 +197,7 @@ void FUN_8002b9bc(void)
         set_display_fg_color(DAT_8002be40);
         pcVar16 = DAT_8002be44;
 
+        //At the time of taking the snapshot it is possible there is no valid data yet. So for this a check is done on sample count
         if (*(ushort *)(DAT_8002be44 + 0x1c) < 5)
         {
           *(undefined2 *)(DAT_8002be44 + 0x1c) = 5;
@@ -198,10 +209,11 @@ void FUN_8002b9bc(void)
         {
           do
           {
-            puVar19 = (ushort *)(DAT_8002be38 + uVar22);
-            in_r12 = (int *)(*puVar19 + uVar25);
+            puVar19 = (ushort *)(DAT_8002be38 + uVar22);         //0x801AEF2A + sample
+            in_r12 = (int *)(*puVar19 + uVar25);                 //uVar25 = uVar24 + 4  is x start position. Channel1 data + x start pos
 
-            display_draw_line((int)in_r12 + 0x1b,(uint)puVar19[200],uVar25 + puVar19[1] + 0x1b,(uint)puVar19[0xc9]);
+            //xstart, ystart, xend, yend
+            display_draw_line((int)in_r12 + 0x1b, (uint)puVar19[200], uVar25 + puVar19[1] + 0x1b, (uint)puVar19[201]);
 
             uVar22 = uVar22 + 1 & 0xfffeffff;
           } while ((int)uVar22 < (int)(*(ushort *)(DAT_8002be44 + 0x1c) - 5));
@@ -210,16 +222,16 @@ void FUN_8002b9bc(void)
 
       set_display_fg_color(DAT_8002be18);
 
-      display_draw_rect((uVar4 + (short)uVar24) - 1,(uVar5 + sVar9) - 1,uVar4 + uVar2 + (short)uVar24,uVar5 + uVar3 + sVar9);
+      display_draw_rect((xstart_uVar4 + (short)uVar24) - 1,(ystart_uVar5 + sVar9) - 1,xstart_uVar4 + xend_uVar2 + (short)uVar24,ystart_uVar5 + yend_uVar3 + sVar9);
 
-      uVar24 = (uint)uVar2 + (uint)uVar4 + uVar24 & 0xfffcffff;
+      uVar24 = (uint)xend_uVar2 + (uint)xstart_uVar4 + uVar24 & 0xfffcffff;
     } while (uVar24 < 700);
 
-    if ((*(byte *)(DAT_8002be10 + 0xc) <= uVar1) || (uVar23 = uVar26 + uVar5 + uVar23 & 0xfffcffff, DAT_8002be48 <= uVar23))
+    if ((*(byte *)(DAT_8002be10 + 0xc) <= uVar1) || (uVar23 = yend_uVar26 + ystart_uVar5 + uVar23 & 0xfffcffff, DAT_8002be48 <= uVar23))
     {
       copy_rect_to_screen(0,0,(ushort)DAT_8002be14 + 0xfa,(ushort)DAT_8002be14);
 
-      iVar17 = DAT_8002be50;
+      iVar17 = DAT_8002be50;  //0x000005B4
       iVar13 = Screen_Frame_Buffer_2;
       piVar15 = Global_Frame_Buffer_Pointer;
       uVar23 = 0;

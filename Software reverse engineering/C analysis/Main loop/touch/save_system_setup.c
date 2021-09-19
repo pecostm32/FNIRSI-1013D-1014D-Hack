@@ -378,6 +378,9 @@ void save_system_setup(void *buffer)
   }
 
 
+
+
+
 //From here on down it is FUN_80000730
   puVar7 = (undefined4 *)((int)buffer + 0x2134);
   puVar20 = (undefined4 *)((int)puVar7 - (int)DAT_8000204c);
