@@ -8,6 +8,57 @@
 #include "types.h"
 #include "font_structs.h"
 #include "fnirsi_1013d_scope.h"
+#include "ff.h"
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Defines
+//----------------------------------------------------------------------------------------------------------------------------------
+
+#define VIEW_ITEM_XSTART                  2
+#define VIEW_ITEM_YSTART                  0
+#define VIEW_ITEM_WIDTH                 182
+#define VIEW_ITEM_HEIGHT                120
+
+#define VIEW_ITEM_XNEXT                 182
+#define VIEW_ITEM_YNEXT                 120
+
+#define VIEW_ITEM_XLAST                 720
+
+#define VIEW_THUMBNAIL_DATA_SIZE     400000
+#define VIEW_FILE_NUMBER_DATA_SIZE     2000
+
+#define VIEW_MAX_ITEMS                 1000
+
+#define VIEW_ITEMS_PER_PAGE              16
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Typedefs
+//----------------------------------------------------------------------------------------------------------------------------------
+
+typedef struct tagThumbnailData         THUMBNAILDATA,        *PTHUMBNAILDATA;
+
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Structs
+//----------------------------------------------------------------------------------------------------------------------------------
+
+struct tagThumbnailData
+{
+  uint8 filenumbermsb;
+  uint8 filenumberlsb;
+  uint8 channel1traceoffset;
+  uint8 channel2traceoffset;
+  uint8 triggerlevelscreenoffset;
+  uint8 triggerpositiononscreen;
+  uint8 channel1enable;
+  uint8 channel2enable;
+  uint8 traceposition;
+  uint8 tracesamples;
+  uint8 xydisplaymode;
+  uint8 reserved[9];
+  uint8 channel1data[180];
+  uint8 channel2data[200];
+};
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Touch data
@@ -43,6 +94,9 @@ extern uint8 calibrationopen;
 //----------------------------------------------------------------------------------------------------------------------------------
 
 extern SCOPESETTINGS scopesettings;
+
+extern SCOPESETTINGS savedscopesettings1;
+extern SCOPESETTINGS savedscopesettings2;
 
 extern MEASUREMENTS channel1measurements;
 extern MEASUREMENTS channel2measurements;
@@ -125,6 +179,27 @@ extern const uint8 zoom_select_settings[][7];
 //----------------------------------------------------------------------------------------------------------------------------------
 
 extern uint16 prevxtouch;
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Data for picture and waveform view mode
+//----------------------------------------------------------------------------------------------------------------------------------
+
+extern FIL viewfp;
+
+extern uint8 viewtype;
+
+extern uint8 viewselectmode;
+extern uint8 viewpage;
+extern uint8 viewpages;
+extern uint8 viewitemsonpage;
+
+extern uint16 viewavailableitems;
+
+extern uint8 viewitemselected[];
+
+extern uint32 viewthumbnaildata[];
+
+extern uint32 viewfilenumberdata[];
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Display data

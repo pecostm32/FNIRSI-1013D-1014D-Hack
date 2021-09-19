@@ -907,6 +907,7 @@ uint32 fpga_read_parameter_ic(uint8 id, uint32 value)
     fpga_write_parameter_ic(id, value);
     
     //Need a delay here. In the scope it is delay(500) but not sure what the base of the delay is
+    //This one is actually needed to allow the parameter ic to respond. Tweaked with a scope attached to make sure no resend is done
     fpga_delay(500);
     
     //Reset counter

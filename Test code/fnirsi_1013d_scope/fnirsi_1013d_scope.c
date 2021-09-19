@@ -20,6 +20,8 @@
 
 #include "arm32.h"
 
+#include "variables.h"
+
 #include <string.h>
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -57,13 +59,13 @@ int main(void)
   arm32_dcache_enable();
   
   //Clear the interrupt variables
-//  memset(interrupthandlers, 0, 256);
+  memset(interrupthandlers, 0, 256);
   
   //Setup timer interrupt
- // timer0_setup();
+  timer0_setup();
   
   //Enable interrupts only once. In the original code it is done on more then one location.
-//  arm32_interrupt_enable();
+  arm32_interrupt_enable();
   
   //Initialize SPI for flash (PORT C + SPI0)
   sys_spi_flash_init();
@@ -90,10 +92,15 @@ int main(void)
   havetouch = 0;
   xtouch = 0;
   ytouch = 0;
+  
+  viewtype = 0;
 
   //Setup the touch panel interface
   tp_i2c_setup();
-  
+
+  //Setup and check SD card on file system present
+  if(f_mount(&fs, "0", 1))
+  {
     //Show SD card error message on failure
     //Set max screen brightness
     fpga_set_backlight_brightness(0xEA60);
@@ -102,10 +109,6 @@ int main(void)
     display_set_fg_color(0x00000000);
     display_fill_rect(0, 0, 800, 480);
 
-#if 0    
-  //Setup and check SD card on file system present
-  if(f_mount(&fs, "0", 1))
-  {
     //Display the message in red
     display_set_fg_color(0x00FF0000);
     display_set_font(&font_3);
@@ -114,17 +117,6 @@ int main(void)
     //On error just hang
     while(1);
   }
-#endif
-  
-  
-  
-  scope_setup_right_file_menu();
-  
-  scope_select_all_button(1);
-  scope_select_button(1);
-  
-  while(1);
-  
   
   scopesettings.rightmenustate = 0;
   scopesettings.waveviewmode = 0;

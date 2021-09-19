@@ -5379,8 +5379,11 @@ FRESULT f_read(FIL* fp, void* buff, UINT btr, UINT* br)
         }
 #endif
 #endif
-        rcnt = SS(fs) * cc;        //Number of bytes transferred
-        continue;
+        //Number of bytes transferred
+        rcnt = SS(fs) * cc;
+        
+        //Continue after update of counters and pointers. Original code uses for loop and continue
+        goto read_update;
       }
 
 #if !FF_FS_TINY
@@ -5425,11 +5428,12 @@ FRESULT f_read(FIL* fp, void* buff, UINT btr, UINT* br)
 #endif
 
     //Update counters and pointers
+read_update:    
     btr -= rcnt;
     rbuff += rcnt;
     fp->fptr += rcnt;
 
-    //Returned bytes read only when variable is given
+    //Return bytes read, only when variable is given
     if(br)
      *br += rcnt;
   }
@@ -5602,8 +5606,11 @@ FRESULT f_write(FIL* fp, const void* buff, UINT btw, UINT* bw)
         }
 #endif
 #endif
-        wcnt = SS(fs) * cc;    //Number of bytes transferred
-        continue;
+        //Number of bytes transferred
+        wcnt = SS(fs) * cc;
+        
+        //Continue with update of counter and pointers
+        goto write_update;
       }
 
 #if FF_FS_TINY
@@ -5648,6 +5655,7 @@ FRESULT f_write(FIL* fp, const void* buff, UINT btw, UINT* bw)
 #endif
 
     //Update counters and pointers
+write_update:
     btw -= wcnt;
     wbuff += wcnt;
     fp->fptr += wcnt;

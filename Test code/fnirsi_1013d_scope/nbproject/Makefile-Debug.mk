@@ -40,6 +40,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/display_control.o \
 	${OBJECTDIR}/display_lib.o \
 	${OBJECTDIR}/ff.o \
+	${OBJECTDIR}/ffunicode.o \
 	${OBJECTDIR}/fnirsi_1013d_scope.o \
 	${OBJECTDIR}/font_0.o \
 	${OBJECTDIR}/font_2.o \
@@ -111,6 +112,11 @@ ${OBJECTDIR}/ff.o: ff.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/ff.o ff.c
+
+${OBJECTDIR}/ffunicode.o: ffunicode.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/ffunicode.o ffunicode.c
 
 ${OBJECTDIR}/fnirsi_1013d_scope.o: fnirsi_1013d_scope.c
 	${MKDIR} -p ${OBJECTDIR}

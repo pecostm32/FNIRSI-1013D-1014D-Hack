@@ -23,6 +23,8 @@ void handle_right_volts_div_menu_touch(void);
 
 void handle_measures_menu_touch(void);
 
+void handle_view_mode_touch(void);
+
 void close_open_sub_menus(void);
 
 //----------------------------------------------------------------------------------------------------------------------------------

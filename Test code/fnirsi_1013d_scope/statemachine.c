@@ -2006,7 +2006,7 @@ const TOUCHCOORDS measures_item_touch_coords[2][12] =
     {482, 543, 413, 476}, {545, 605, 413, 476}, {607, 667, 413, 476}, {669, 729, 413, 476},
   },
   {
-    //CHhannel 2 coordinates are on the left
+    //Channel 2 coordinates are on the left
     {232, 293, 289, 349}, {295, 355, 289, 349}, {357, 417, 289, 349}, {418, 480, 289, 349},
     {232, 293, 351, 411}, {295, 355, 351, 411}, {357, 417, 351, 411}, {418, 480, 351, 411},
     {232, 293, 413, 476}, {295, 355, 413, 476}, {357, 417, 413, 476}, {418, 480, 413, 476},
@@ -2084,6 +2084,69 @@ void handle_measures_menu_touch(void)
         tp_i2c_wait_for_touch_release();
         
         return;
+      }
+    }
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void handle_view_mode_touch(void)
+{
+  //Stay in this mode as long as the return is not touched
+  while(1)
+  {
+    //Read the touch panel status
+    tp_i2c_read_status();
+  
+    //Check if the panel is touched
+    if(havetouch)
+    {
+      //Check if touch is in right menu area.
+      if((xtouch >= 730))
+      {
+        //Check if the return button is touched
+        if((ytouch >= 4) && (ytouch <= 76))
+        {
+          //Need to restore the original scope data and fpga settings
+          
+          
+          //Reset the screen to the normal scope screen
+          scope_setup_main_screen();
+          
+          return;
+        }
+        //Else check if the select all button is touched
+        else if((ytouch >= 84) && (ytouch <= 156))
+        {
+          
+        }
+        //Else check if the select button is touched
+        else if((ytouch >= 164) && (ytouch <= 236))
+        {
+          
+        }
+        //Else check if the delete button is touched
+        else if((ytouch >= 244) && (ytouch <= 316))
+        {
+          
+        }
+        //Else check if the page up button is touched
+        else if((ytouch >= 324) && (ytouch <= 396))
+        {
+          
+        }
+        //Else check if the page down button is touched
+        else if((ytouch >= 404) && (ytouch <= 476))
+        {
+          
+        }
+      }
+      else
+      {
+      
+    //Need a loop to check on the separate items being touched. At max 16 items.
+    //Similar to function above
       }
     }
   }

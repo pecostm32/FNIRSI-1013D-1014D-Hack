@@ -1,7 +1,6 @@
 //----------------------------------------------------------------------------------------------------------------------------------
 
-#include "types.h"
-#include "fnirsi_1013d_scope.h"
+#include "variables.h"
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Touch data
@@ -32,8 +31,6 @@ uint8 screenbrightnessopen = 0;
 uint8 gridbrightnessopen = 0;
 uint8 calibrationopen = 0;
 
-uint8 viewtype = 0;                        //At 0x80192EE2 in original code
-
 //----------------------------------------------------------------------------------------------------------------------------------
 //Display data
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -47,6 +44,9 @@ uint16 displaybuffer2[SCREEN_SIZE];
 //----------------------------------------------------------------------------------------------------------------------------------
 
 SCOPESETTINGS scopesettings;
+
+SCOPESETTINGS savedscopesettings1;
+SCOPESETTINGS savedscopesettings2;
 
 MEASUREMENTS channel1measurements;
 MEASUREMENTS channel2measurements;
@@ -121,6 +121,28 @@ uint16 previous_bottom_volt_cursor_position;
 //----------------------------------------------------------------------------------------------------------------------------------
 
 uint16 prevxtouch = 0;
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Data for picture and waveform view mode
+//----------------------------------------------------------------------------------------------------------------------------------
+
+FIL viewfp;                         //Since files are not opened concurrent using a global file pointer
+
+uint8 viewtype = 0;                 //At 0x80192EE2 in original code
+
+uint8 viewselectmode;               //In original code this is at 0x8035A97E. Signals if either the select all or the select button is active
+uint8 viewpage;                     //In original code this is at 0x8035A97F. Is the page number of the current items on the screen. 16 items per page
+uint8 viewpages;                    //Not in original code, but when only calculated once code gets simpler
+uint8 viewitemsonpage;              //The original code works differently in validating the number of items on a page
+
+uint16 viewavailableitems;          //Also done differently in the original code
+
+uint8 viewitemselected[16];         //In original code this is at 0x8035A98B. Flags to signal if an item is selected or not
+
+
+uint32 viewthumbnaildata[VIEW_THUMBNAIL_DATA_SIZE / 4];      //In original code at 0x802F19CE. 400000 bytes, but to make sure it is dword aligned declared as uint32
+
+uint32 viewfilenumberdata[VIEW_FILE_NUMBER_DATA_SIZE / 4];   //In original code at 0x8035A99C. 2000 bytes, but to make sure it is dword aligned declared as uint32
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Predefined data

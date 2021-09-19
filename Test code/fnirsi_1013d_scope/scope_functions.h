@@ -6,6 +6,7 @@
 //----------------------------------------------------------------------------------------------------------------------------------
 
 #include "fnirsi_1013d_scope.h"
+#include "variables.h"
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -176,11 +177,16 @@ void scope_display_measurements(void);
 // File display functions
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_save_setup(void *location);
+void scope_save_setup(PSCOPESETTINGS settings);
 
-void scope_restore_setup(void *location);
+void scope_restore_setup(PSCOPESETTINGS settings);
 
 void scope_load_list_file(void);
+void scope_load_system_file(void);
+
+void scope_display_thumbnails(void);
+
+void scope_display_thumbnail_data(uint32 xpos, uint32 ypos, PTHUMBNAILDATA thumbnaildata, uint32 channel);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

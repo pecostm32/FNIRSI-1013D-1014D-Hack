@@ -2,10 +2,12 @@
 
 #include "types.h"
 #include "scope_functions.h"
+#include "statemachine.h"
 #include "touchpanel.h"
 #include "timer.h"
 #include "fpga_control.h"
 #include "display_lib.h"
+#include "ff.h"
 
 #include "variables.h"
 
@@ -85,18 +87,38 @@ void scope_setup_main_screen(void)
 
 void scope_setup_view_screen(void)
 {
+  //Set scope run state to running to have it sample fresh data on exit
+  scopesettings.runstate = 0;
   
-  scope_save_setup(0);  //need a save location here or see if it can be just a single global location
-                        //In the original code 2 locations are used. Has to do with waveform view.
-                        //A better setup would be to use pointers and structures, to avoid copying the data
+  //Save the current settings
+  //This is no longer needed since the thumbnail displaying does not use the settings data anymore
+  //Only needed for waveform display, since that makes use of the actual waveform functions and main touch handler
+  //scope_save_setup(&savedscopesettings1);
   
+  //Initialize the view mode variables
+  //Used for indicating if select all or select button is active
+  viewselectmode = 0;
   
+  //Start at first page. In the original code they start with 1 and subtract from the multiplied with 16 to get the correct file number index
+  viewpage = 0;
+  
+  //Clear the item selected flags
+  memset(viewitemselected, 0, 16);
+  
+  //Display the file actions menu on the right side of the screen
   scope_setup_right_file_menu();
   
-  
+  //Load the thumbnail file for the current view type
   scope_load_list_file();
   
+  //Load in the used file numbers for this view type
+  scope_load_system_file();
   
+  //Display the available thumbnails for the current view type
+  scope_display_thumbnails();
+  
+  //Handle touch for this part of the user interface
+  handle_view_mode_touch();
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -5638,17 +5660,396 @@ void scope_display_measurements(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_save_setup(void *location)
+void scope_save_setup(PSCOPESETTINGS settings)
 {
   //Simplest setup here is to put all important data in a struct and make it such that a pointer is used to point to the active one
   //This way no memory needs to be copied
   //Needs a bit of a re write but will improve things a lot
+  
+  //For now just copy the settings to the given struct
+  memcpy(settings, &scopesettings, sizeof(SCOPESETTINGS));
+  
+  //No idea what this is for, but it is done in the original code
+  fpga_read_parameter_ic(0x15, 0x18);
+  
+  //In the original code the measurements and the trace data are copied too
 }
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+const char list_file_name[2][14] =
+{
+  { "/piclist.sys" },
+  { "/wavelist.sys" }
+};
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void scope_load_list_file(void)
 {
+  int32 result;
+  
+  //The original code is crap, so improved on it here
+  //This code still needs more error handling with user feedback, but it will do for now
+  
+  //Try to open the thumbnail file for this view type
+  result = f_open(&viewfp, list_file_name[viewtype & 0x01], FA_READ);
+
+  //Check the result
+  if(result == FR_OK)
+  {
+    //Opened ok, so read the thumbnail data
+    f_read(&viewfp, viewthumbnaildata, VIEW_THUMBNAIL_DATA_SIZE, 0);
+    
+    //Close the file
+    f_close(&viewfp);
+  }
+  //Failure then check if file does not exist
+  else if(result == FR_NO_FILE)
+  {
+    //Clear the thumbnail memory for a fresh file
+    memset(viewthumbnaildata, 0, VIEW_THUMBNAIL_DATA_SIZE);
+    
+    //Need the file so create it
+    result = f_open(&viewfp, list_file_name[viewtype & 0x01], FA_CREATE_NEW | FA_WRITE | FA_READ);
+    
+    //Check if file is created ok
+    if(result == FR_OK)
+    {
+      //Write the empty list to the file
+      f_write(&viewfp, viewthumbnaildata, VIEW_THUMBNAIL_DATA_SIZE, 0);
+    
+      //Close the file
+      f_close(&viewfp);
+    }
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+const char system_file_name[2][17] =
+{
+  { "/pic_system.sys" },
+  { "/wave_system.sys" }
+};
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_load_system_file(void)
+{
+  int32   result;
+  uint16 *ptr;
+  
+  //The original code is crap, so improved on it here
+  //This code still needs more error handling with user feedback, but it will do for now
+
+  //No items available yet
+  viewavailableitems = 0;
+  viewitemsonpage = 0;
+  
+  //Try to open the thumbnail file for this view type
+  result = f_open(&viewfp, system_file_name[viewtype & 0x01], FA_READ);
+  
+  //Check the result
+  if(result == FR_OK)
+  {
+    //Opened ok, so read the file number data
+    f_read(&viewfp, viewfilenumberdata, VIEW_FILE_NUMBER_DATA_SIZE, 0);
+
+    //Close the file
+    f_close(&viewfp);
+    
+    //Count how many items are available
+    //The file contains shorts
+    ptr = (uint16 *)viewfilenumberdata;
+    
+    //A zero indicates no more entries. Make sure not to check beyond buffer size
+    while(*ptr && (viewavailableitems < VIEW_MAX_ITEMS))
+    {
+      //One more item available
+      viewavailableitems++;
+      
+      //Point to next entry
+      ptr++;
+    }
+    
+    //Calculate the number of pages available, based on number of items per page. 0 means 1 page
+    viewpages = viewavailableitems / VIEW_ITEMS_PER_PAGE;
+    
+    //Determine the available items for the current page
+    if(viewpage < viewpages)
+    {
+      //Not on the last page so full set available
+      viewitemsonpage = VIEW_ITEMS_PER_PAGE;
+    }
+    else
+    {
+      //For the last page the remainder of items are available
+      viewitemsonpage = viewavailableitems % VIEW_ITEMS_PER_PAGE;
+    }
+  }
+  //Failure then check if file does not exist
+  else if(result == FR_NO_FILE)
+  {
+    //Clear the file number memory for a fresh file
+    memset(viewfilenumberdata, 0, VIEW_FILE_NUMBER_DATA_SIZE);
+    
+    //Need the file so create it
+    result = f_open(&viewfp, system_file_name[viewtype & 0x01], FA_CREATE_NEW | FA_WRITE | FA_READ);
+    
+    //Check if file is created ok
+    if(result == FR_OK)
+    {
+      //Write the empty list to the file
+      f_write(&viewfp, viewfilenumberdata, VIEW_FILE_NUMBER_DATA_SIZE, 0);
+    
+      //Close the file
+      f_close(&viewfp);
+    }
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_display_thumbnails(void)
+{
+  //Point to the file numbers
+  uint16 *fnptr = (uint16 *)viewfilenumberdata;
+
+  //Point to the thumbnail data
+  PTHUMBNAILDATA thumbnaildata = (PTHUMBNAILDATA)viewthumbnaildata;
+  
+  //Flag for signaling thumbnail found
+  uint32 found = 0;
+    
+  //Determine the first index based on the current page
+  uint32 index = viewpage * VIEW_ITEMS_PER_PAGE;
+  
+  //Determine the last index based on the available items on the current page
+  uint32 lastindex = index + viewitemsonpage;
+  
+  //Start with first item for drawing
+  uint32 xpos = VIEW_ITEM_XSTART;
+  uint32 ypos = VIEW_ITEM_YSTART;
+  
+  //Set black color for background
+  display_set_fg_color(0x00000000);
+
+  //Clear the thumbnail display area
+  display_fill_rect(0, 0, 730, 480);
+  
+  //Set grey color for menu separator
+  display_set_fg_color(0x00202020);
+  
+  //Separate the thumbnails from the menu bar
+  display_draw_vert_line(730, 0, 479);
+  
+  //Draw the available items on the screen
+  while(index < lastindex)
+  {
+    //Examining the original code makes believe there can be a mismatch between the two files so it is necessary to search for
+    //the thumbnail for this file number. The original code uses a function for this and copies the data to buffers.
+    //Here it is done directly from the source data
+    
+    //Get the thumbnail data for the current file
+    while(thumbnaildata < (PTHUMBNAILDATA)(viewthumbnaildata + VIEW_THUMBNAIL_DATA_SIZE))
+    {
+      //Check if the file number of this thumbnail matches the current file number
+      if(((thumbnaildata->filenumbermsb << 8) | thumbnaildata->filenumberlsb) == fnptr[index])
+      {
+        //If so signal found
+        found = 1;
+        break;
+      }
+      
+      //Select the next thumbnail set
+      thumbnaildata++;
+    }
+    
+    //Check if thumbnail found
+    if(found)
+    {
+      //Display the thumbnail
+      //Need to make a distinction between normal display and xy display mode
+      if(thumbnaildata->xydisplaymode == 0)
+      {
+        //Normal mode
+        //Set the x start position based on trace position and skip three pixels.
+        //Trace position can be > 0 when zoomed in stop mode 
+        uint32 x = xpos + thumbnaildata->traceposition + 3;
+        
+        //Check if channel 1 is enabled
+        if(thumbnaildata->channel1enable)
+        {
+          scope_display_thumbnail_data(x, ypos, thumbnaildata, 0);
+        }
+        
+        //Check if channel 2 is enabled
+        if(thumbnaildata->channel2enable)
+        {
+          scope_display_thumbnail_data(x, ypos, thumbnaildata, 1);
+        }
+      }
+      else
+      {
+        //xy display mode so set the trace color for it
+        display_set_fg_color(XYMODE_COLOR);
+        
+        //A minimum of 2 would also do, but the original code uses 5.
+        //It does not check on a maximum of samples, which is needed because channel 1 is limited to 180 samples and channel 2 to 200 samples
+        //Check on a minimum of 5 samples
+        if(thumbnaildata->tracesamples < 5)
+        {
+          //If not set to zero for a single line drawing
+          thumbnaildata->tracesamples = 0;
+        }
+        else
+        {
+          //If more then 5 take 5 samples of
+          thumbnaildata->tracesamples -= 5;
+        }
+        
+        //Check on maximum samples allowed
+        if(thumbnaildata->tracesamples > 176)
+        {
+          thumbnaildata->tracesamples = 176;
+        }
+
+        //Point to the data of the two channels
+        uint8 *channel1data = thumbnaildata->channel1data;
+        uint8 *channel2data = thumbnaildata->channel2data;
+        
+        //Start with first sample
+        uint32 sample = 0;
+        
+        //Center the xy display
+        uint32 x = xpos + 29;
+      
+        //Keep the samples in registers
+        register uint32 x1, x2, y1, y2;
+        
+        //Load the first samples
+        x1 = *channel1data + x;
+        y1 = *channel2data + ypos;
+        
+        //Point to the next samples
+        channel1data++;
+        channel2data++;
+        
+        //Draw the trace
+        while(sample < thumbnaildata->tracesamples)
+        {
+          //Get second samples
+          x2 = *channel1data + x;
+          y2 = *channel2data + ypos;
+          
+          //Draw all the lines
+          display_draw_line(x1, y1, x2, y2);
+          
+          //Swap the samples
+          x1 = x2;
+          y1 = y2;
+          
+          //Point to the next samples
+          channel1data++;
+          channel2data++;
+          
+          //One sample done
+          sample++;
+        }
+      }
+    }
+    else
+    {
+      //Display thumbnail not found
+      //This is not in the original code
+      //Display the message in red and with font_0
+      display_set_fg_color(0x00FF0000);
+      display_set_font(&font_0);
+      display_text(xpos + 15, ypos + 50, "THUMBNAIL NOT FOUND");
+    }
+    
+    //Set grey color for item border
+    display_set_fg_color(0x00202020);
+    
+    //Draw the border
+    display_draw_rect(xpos, ypos, VIEW_ITEM_WIDTH, VIEW_ITEM_HEIGHT);
+    
+    //Skip to next coordinates
+    xpos += VIEW_ITEM_XNEXT;
+    
+    //Check if next row needs to be used
+    if(xpos > VIEW_ITEM_XLAST)
+    {
+      //Reset x position to beginning of row
+      xpos = VIEW_ITEM_XSTART;
+      
+      //Bump y position to next row
+      ypos += VIEW_ITEM_YNEXT;
+    }
+    
+    //Select next index
+    index++;
+    
+    //Reset the thumbnail data pointer and found flag
+    thumbnaildata = (PTHUMBNAILDATA)viewthumbnaildata;
+    found = 0;
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//The original code uses the display_trace function for this but that needs preprocessing of the data, so separate function used here
+
+void scope_display_thumbnail_data(uint32 xpos, uint32 ypos, PTHUMBNAILDATA thumbnaildata, uint32 channel)
+{
+  register uint32 index = 0;
+  register uint32 sample1, sample2;
+  register uint32 count = thumbnaildata->tracesamples - 4;
+  register uint8 *channeldata;
+  
+  //Check if count not out of range
+  if(count > 176)
+  {
+    //Limit on the number of displayable pixels
+    count = 176;
+  }
+  
+  //Initialize based on the channel
+  if(channel == 0)
+  {
+    //Use channel 1 trace color
+    display_set_fg_color(CHANNEL1_COLOR);
+    
+    //Point to the data for this trace
+    channeldata = thumbnaildata->channel1data;
+  }
+  else
+  {
+    //Use channel 2 trace color
+    display_set_fg_color(CHANNEL2_COLOR);
+    
+    //Point to the data for this trace
+    channeldata = thumbnaildata->channel2data;
+  }
+  
+  //Get the first sample
+  sample1 = channeldata[index++] + ypos;
+  
+  //Do while the samples last
+  while(index < count)
+  {
+    //Get the second sample
+    sample2 = channeldata[index++] + ypos;
+
+    //Draw the line for these samples
+    display_draw_line(xpos, sample1, xpos + 1, sample2);
+    
+    //Skip to next position
+    xpos++;
+    
+    //Swap the samples
+    sample1 = sample2;
+  }
   
 }
 

@@ -38,6 +38,7 @@
       <itemPath>display_control.c</itemPath>
       <itemPath>display_lib.c</itemPath>
       <itemPath>ff.c</itemPath>
+      <itemPath>ffunicode.c</itemPath>
       <itemPath>fnirsi_1013d_scope.c</itemPath>
       <itemPath>font_0.c</itemPath>
       <itemPath>font_2.c</itemPath>
@@ -123,6 +124,8 @@
       <item path="ff.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="ffconf.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="ffunicode.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="fnirsi_1013d_scope.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -244,6 +247,8 @@
       <item path="ff.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="ffconf.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="ffunicode.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="fnirsi_1013d_scope.c" ex="false" tool="0" flavor2="0">
       </item>
