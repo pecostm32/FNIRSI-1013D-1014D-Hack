@@ -2091,8 +2091,21 @@ void handle_measures_menu_touch(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+const TOUCHCOORDS view_item_touch_coords[16] =
+{
+  {  4, 178,   4, 116}, {186, 360,   4, 116}, {368, 542,   4, 116}, {550, 726,   4, 116},
+  {  4, 178, 124, 236}, {186, 360, 124, 236}, {368, 542, 124, 236}, {550, 726, 124, 236},
+  {  4, 178, 244, 356}, {186, 360, 244, 356}, {368, 542, 244, 356}, {550, 726, 244, 356},
+  {  4, 178, 364, 476}, {186, 360, 364, 476}, {368, 542, 364, 476}, {550, 726, 364, 476},
+};
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 void handle_view_mode_touch(void)
 {
+  int32 index;
+  int32 found;
+  
   //Stay in this mode as long as the return is not touched
   while(1)
   {
@@ -2108,7 +2121,35 @@ void handle_view_mode_touch(void)
         //Check if the return button is touched
         if((ytouch >= 4) && (ytouch <= 76))
         {
+          //Make sure view mode is normal
+          scopesettings.waveviewmode = 0;
+          
+          //And resume with auto trigger mode
+          scopesettings.triggermode = 0;
+          
           //Need to restore the original scope data and fpga settings
+
+          //Is also part of startup, so could be done with a function
+          //Set the volts per div for each channel based on the loaded scope settings
+          fpga_set_channel_1_voltperdiv();
+          fpga_set_channel_2_voltperdiv();
+
+          //These are not done in the original code
+          //Set the channels AC or DC coupling based on the loaded scope settings
+          fpga_set_channel_1_coupling();
+          fpga_set_channel_2_coupling();
+
+          //Setup the trigger system in the FPGA based on the loaded scope settings
+          fpga_set_trigger_timebase();
+          fpga_set_trigger_channel();
+          fpga_set_trigger_edge();
+          fpga_set_trigger_level();
+          fpga_set_trigger_mode();
+
+          //Set channel screen offsets
+          fpga_set_channel_1_offset();
+          fpga_set_channel_2_offset();
+          
           
           
           //Reset the screen to the normal scope screen
@@ -2119,36 +2160,248 @@ void handle_view_mode_touch(void)
         //Else check if the select all button is touched
         else if((ytouch >= 84) && (ytouch <= 156))
         {
+          //Deselect the possibly highlighted select button
+          scope_select_button(0);
           
+          //Depending on the state take action
+          if((viewselectmode == VIEW_SELECT_NONE) || (viewselectmode == VIEW_SELECT_INDIVIDUAL))
+          {
+            //Highlight the button
+            scope_select_all_button(1);
+
+            //Switch to all items selected mode
+            viewselectmode = VIEW_SELECT_ALL;
+            
+            //Make sure all selected signs are displayed
+            for(index=0;index<viewitemsonpage;index++)
+            {
+              //Check if the selected sign is not selected
+              if(viewitemselected[index] == VIEW_ITEM_NOT_SELECTED)
+              {
+                //If so make sure it gets displayed
+                viewitemselected[index] = VIEW_ITEM_SELECTED_NOT_DISPLAYED;
+              }
+            }
+          }
+          else
+          {
+            //Make sure the button is no longer highlighted
+            scope_select_all_button(0);
+
+            //Switch to all items deselected mode
+            viewselectmode = VIEW_SELECT_NONE;
+            
+            //Not in a selected mode any more so clear the active selected signs
+            for(index=0;index<viewitemsonpage;index++)
+            {
+              //Check if the selected sign is actually displayed
+              if(viewitemselected[index] == VIEW_ITEM_SELECTED_DISPLAYED)
+              {
+                //If so make sure it gets cleared
+                viewitemselected[index] = VIEW_ITEM_NOT_SELECTED_DISPLAYED;
+              }
+            }
+          }
+          
+          //Update the selected signs
+          scope_display_selected_signs();
         }
         //Else check if the select button is touched
         else if((ytouch >= 164) && (ytouch <= 236))
         {
+          //Deselect the possibly highlighted select all button
+          scope_select_all_button(0);
+
+          //Check if all items are selected or select mode is on
+          if(viewselectmode)
+          {
+            //Make sure the select button is not highlighted
+            scope_select_button(0);
+
+            //Switch to all items deselected mode
+            viewselectmode = VIEW_SELECT_NONE;
+
+            //Not in a selected mode any more so clear the active selected signs
+            for(index=0;index<viewitemsonpage;index++)
+            {
+              //Check if the selected sign is actually displayed
+              if(viewitemselected[index] == VIEW_ITEM_SELECTED_DISPLAYED)
+              {
+                //If so make sure it gets cleared
+                viewitemselected[index] = VIEW_ITEM_NOT_SELECTED_DISPLAYED;
+              }
+            }
+          }
+          else
+          {
+            //Nothing selected so switch to individual select mode
+            viewselectmode = VIEW_SELECT_INDIVIDUAL;
+            
+            //Highlight the select button
+            scope_select_button(1);
+          }
           
+          //Update the selected signs
+          scope_display_selected_signs();
         }
         //Else check if the delete button is touched
         else if((ytouch >= 244) && (ytouch <= 316))
         {
+         
+          
+          //Fill in delete here!!!!
+          
+          
+          //On exit of the touch handlers the display needs to be redrawn
+          //Also take care of page management if current page is no longer valid due to deleted items
+          //So create a single function for this
+          
           
         }
         //Else check if the page up button is touched
         else if((ytouch >= 324) && (ytouch <= 396))
         {
+          //Check if there is a previous page
+          if(viewpage > 0)
+          {
+            //Clear the select mode
+            viewselectmode = 0;
+            
+            //Deselect the possibly highlighted buttons
+            scope_select_all_button(0);
+            scope_select_button(0);
+
+            //Clear the item selected flags
+            memset(viewitemselected, 0, VIEW_ITEMS_PER_PAGE);
+            
+            //Select the previous page
+            viewpage--;
           
+            //Display the previous page of thumbnails
+            scope_display_thumbnails();
+          }
         }
         //Else check if the page down button is touched
         else if((ytouch >= 404) && (ytouch <= 476))
         {
+          //Check if there is a next page
+          if(viewpage < viewpages)
+          {
+            //Clear the select mode
+            viewselectmode = 0;
+            
+            //Deselect the possibly highlighted buttons
+            scope_select_all_button(0);
+            scope_select_button(0);
+
+            //Clear the item selected flags
+            memset(viewitemselected, 0, VIEW_ITEMS_PER_PAGE);
+            
+            //Select the next page
+            viewpage++;
           
+            //Display the next page of thumbnails
+            scope_display_thumbnails();
+          }
         }
       }
       else
       {
-      
-    //Need a loop to check on the separate items being touched. At max 16 items.
-    //Similar to function above
+        //Start with no item touched yet and check on first item
+        found = 0;
+        index = 0;
+
+        //Do until found or last available item checked
+        while(index < viewitemsonpage)
+        {
+          //Check if touch is on this item
+          if((xtouch >= view_item_touch_coords[index].x1) && (xtouch <= view_item_touch_coords[index].x2) &&
+             (ytouch >= view_item_touch_coords[index].y1) && (ytouch <= view_item_touch_coords[index].y2))
+          {
+            //Signal item found
+            found = 1;
+            
+            //Quit the loop when found
+            break;
+          }
+
+          //Next item
+          index++;
+        }
+        
+        //Check if touch was on one of the available items
+        if(found)
+        {
+          //Check if in a select mode
+          if(viewselectmode)
+          {
+            //Yes, so toggle the select on this item
+            if(viewitemselected[index] == VIEW_ITEM_SELECTED_DISPLAYED)
+            {
+              //If displayed make sure it gets cleared
+              viewitemselected[index] = VIEW_ITEM_NOT_SELECTED_DISPLAYED;
+            }
+            else
+            {
+              //If not make sure it gets displayed
+              viewitemselected[index] = VIEW_ITEM_SELECTED_NOT_DISPLAYED;
+            }
+            
+            //Update the selected signs
+            //Could improve on this with a single sign update function
+            scope_display_selected_signs();
+          }
+          else
+          {
+            //Not in select mode so display the touched item depending on what type it is
+            if(viewtype == VIEW_TYPE_PICTURE)
+            {
+              //Get the file name based on the current index. (needs to be saved to allow select on next and previous image)
+              
+              //Load the picture and display it
+              
+              //Draw the bottom menu bar
+              //Four buttons no touch indicators
+              //Need an input to signal display and capture underneath, redisplay capture, redisplay menu
+              
+              //Handle the touch
+              //toggle display of bottom menu bar
+              //return to the main view screen
+              //display previous image
+              //display next image
+              //delete current image
+              
+              //Selecting another image across a page boundary does not change the main page, so on return the active page is not changed.
+              
+              //A delete does modify the page content though because the total number of items is reduced
+              //If more items are deleted the the active page had it returns to an empty page. I think in this case it should decrement the active page
+              //Can easily be detected since available items will be reduced
+              
+              
+              //The same happens when all items on a page are deleted!!!
+              
+              
+              
+              //Need the icons for the bottom menu bar. Return arrow is same as waveform return
+              
+              
+            }
+            else
+            {
+              
+            }
+            
+            //On exit of the touch handlers the display needs to be redrawn
+            //Also take care of page management if current page is no longer valid due to deleted items
+            //So create a single function for this
+            
+          }
+        }
       }
     }
+    
+    //Need to wait for touch to release before checking again
+    tp_i2c_wait_for_touch_release();
   }
 }
 

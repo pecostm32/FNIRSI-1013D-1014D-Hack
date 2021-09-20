@@ -93,7 +93,7 @@ int main(void)
   xtouch = 0;
   ytouch = 0;
   
-  viewtype = 0;
+  viewtype = VIEW_TYPE_PICTURE;
 
   //Setup the touch panel interface
   tp_i2c_setup();

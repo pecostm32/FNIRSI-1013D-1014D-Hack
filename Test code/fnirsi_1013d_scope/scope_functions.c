@@ -105,6 +105,10 @@ void scope_setup_view_screen(void)
   //Clear the item selected flags
   memset(viewitemselected, 0, 16);
   
+  //Set storage buffer for screen capture under selected signs and messages
+  display_set_destination_buffer(displaybuffer2);
+  display_set_source_buffer(displaybuffer2);
+  
   //Display the file actions menu on the right side of the screen
   scope_setup_right_file_menu();
   
@@ -222,6 +226,13 @@ void scope_setup_right_file_menu(void)
 
   display_text(750, 422, "page");
   display_text(748, 440, "down");
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_setup_bottom_file_menu(int mode)
+{
+  
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -1089,7 +1100,7 @@ void scope_main_return_button(int mode)
   }
 
   //Display the icon with the set colors
-  display_copy_icon_use_colors(return_arrow_icon, 20, 6, 40, 25);
+  display_copy_icon_use_colors(return_arrow_icon, 20, 5, 41, 27);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -5693,7 +5704,7 @@ void scope_load_list_file(void)
   //This code still needs more error handling with user feedback, but it will do for now
   
   //Try to open the thumbnail file for this view type
-  result = f_open(&viewfp, list_file_name[viewtype & 0x01], FA_READ);
+  result = f_open(&viewfp, list_file_name[viewtype & VIEW_TYPE_MASK], FA_READ);
 
   //Check the result
   if(result == FR_OK)
@@ -5711,7 +5722,7 @@ void scope_load_list_file(void)
     memset(viewthumbnaildata, 0, VIEW_THUMBNAIL_DATA_SIZE);
     
     //Need the file so create it
-    result = f_open(&viewfp, list_file_name[viewtype & 0x01], FA_CREATE_NEW | FA_WRITE | FA_READ);
+    result = f_open(&viewfp, list_file_name[viewtype & VIEW_TYPE_MASK], FA_CREATE_NEW | FA_WRITE | FA_READ);
     
     //Check if file is created ok
     if(result == FR_OK)
@@ -5748,7 +5759,7 @@ void scope_load_system_file(void)
   viewitemsonpage = 0;
   
   //Try to open the thumbnail file for this view type
-  result = f_open(&viewfp, system_file_name[viewtype & 0x01], FA_READ);
+  result = f_open(&viewfp, system_file_name[viewtype & VIEW_TYPE_MASK], FA_READ);
   
   //Check the result
   if(result == FR_OK)
@@ -5775,18 +5786,6 @@ void scope_load_system_file(void)
     
     //Calculate the number of pages available, based on number of items per page. 0 means 1 page
     viewpages = viewavailableitems / VIEW_ITEMS_PER_PAGE;
-    
-    //Determine the available items for the current page
-    if(viewpage < viewpages)
-    {
-      //Not on the last page so full set available
-      viewitemsonpage = VIEW_ITEMS_PER_PAGE;
-    }
-    else
-    {
-      //For the last page the remainder of items are available
-      viewitemsonpage = viewavailableitems % VIEW_ITEMS_PER_PAGE;
-    }
   }
   //Failure then check if file does not exist
   else if(result == FR_NO_FILE)
@@ -5795,7 +5794,7 @@ void scope_load_system_file(void)
     memset(viewfilenumberdata, 0, VIEW_FILE_NUMBER_DATA_SIZE);
     
     //Need the file so create it
-    result = f_open(&viewfp, system_file_name[viewtype & 0x01], FA_CREATE_NEW | FA_WRITE | FA_READ);
+    result = f_open(&viewfp, system_file_name[viewtype & VIEW_TYPE_MASK], FA_CREATE_NEW | FA_WRITE | FA_READ);
     
     //Check if file is created ok
     if(result == FR_OK)
@@ -5824,6 +5823,18 @@ void scope_display_thumbnails(void)
     
   //Determine the first index based on the current page
   uint32 index = viewpage * VIEW_ITEMS_PER_PAGE;
+  
+  //Determine the available items for the current page
+  if(viewpage < viewpages)
+  {
+    //Not on the last page so full set available
+    viewitemsonpage = VIEW_ITEMS_PER_PAGE;
+  }
+  else
+  {
+    //For the last page the remainder of items are available
+    viewitemsonpage = viewavailableitems % VIEW_ITEMS_PER_PAGE;
+  }
   
   //Determine the last index based on the available items on the current page
   uint32 lastindex = index + viewitemsonpage;
@@ -6051,6 +6062,62 @@ void scope_display_thumbnail_data(uint32 xpos, uint32 ypos, PTHUMBNAILDATA thumb
     sample1 = sample2;
   }
   
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_display_selected_signs(void)
+{
+  uint32 index = 0;
+  uint32 xpos = VIEW_ITEM_SELECTED_XSTART;
+  uint32 ypos = VIEW_ITEM_SELECTED_YSTART;
+
+  //Set the colors for displaying the selected sign. White sign on blue background
+  display_set_fg_color(0x00FFFFFF);
+  display_set_bg_color(0x000000FF);
+  
+  //Can't have more selects than items on the page  
+  while(index < viewitemsonpage)
+  {
+    //Handle the current item based on its state
+    switch(viewitemselected[index])
+    {
+      case VIEW_ITEM_SELECTED_NOT_DISPLAYED:
+        //Make a copy of the screen under the selected sign location
+        display_copy_rect_from_screen(xpos, ypos, 30, 30);
+        
+        //Display the selected sign
+        display_copy_icon_use_colors(select_sign_icon, xpos, ypos, 30, 30);
+        
+        //Switch to displayed state
+        viewitemselected[index] = VIEW_ITEM_SELECTED_DISPLAYED;
+        break;
+
+      case VIEW_ITEM_NOT_SELECTED_DISPLAYED:
+        //Restore the screen on the selected sign location
+        display_copy_rect_to_screen(xpos, ypos, 30, 30);
+        
+        //Switch to not selected state
+        viewitemselected[index] = VIEW_ITEM_NOT_SELECTED;
+        break;
+    }
+    
+    //Skip to next coordinates
+    xpos += VIEW_ITEM_XNEXT;
+    
+    //Check if next row needs to be used
+    if(xpos > VIEW_ITEM_XLAST)
+    {
+      //Reset x position to beginning of selected row
+      xpos = VIEW_ITEM_SELECTED_XSTART;
+      
+      //Bump y position to next row
+      ypos += VIEW_ITEM_YNEXT;
+    }
+    
+    //Select next index
+    index++;
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

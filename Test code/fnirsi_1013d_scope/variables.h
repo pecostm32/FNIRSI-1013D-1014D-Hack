@@ -5,6 +5,8 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+#include <string.h>
+
 #include "types.h"
 #include "font_structs.h"
 #include "fnirsi_1013d_scope.h"
@@ -30,6 +32,30 @@
 #define VIEW_MAX_ITEMS                 1000
 
 #define VIEW_ITEMS_PER_PAGE              16
+
+#define VIEW_TYPE_MASK                    1
+
+#define VIEW_TYPE_PICTURE                 0
+#define VIEW_TYPE_WAVEFORM                1
+
+#define VIEW_ITEM_SELECTED_XSTART        77
+#define VIEW_ITEM_SELECTED_YSTART        45
+
+//States for displaying the selected signs
+#define VIEW_ITEM_NOT_SELECTED            0
+#define VIEW_ITEM_SELECTED_NOT_DISPLAYED  1
+#define VIEW_ITEM_SELECTED_DISPLAYED      2
+#define VIEW_ITEM_NOT_SELECTED_DISPLAYED  3
+
+//States for select mode
+#define VIEW_SELECT_NONE                  0
+#define VIEW_SELECT_ALL                   1
+#define VIEW_SELECT_INDIVIDUAL            2
+
+//States for bottom file menu displaying
+#define VIEW_BOTTON_MENU_INIT             3
+#define VIEW_BOTTON_MENU_SHOW             1
+#define VIEW_BOTTON_MENU_HIDE             0
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Typedefs
@@ -233,6 +259,13 @@ extern const uint8 trigger_50_percent_icon[];
 extern const uint8 baseline_calibration_icon[];
 extern const uint8 x_y_mode_display_icon[];
 extern const uint8 return_arrow_icon[];
+extern const uint8 left_pointer_icon[];
+extern const uint8 right_pointer_icon[];
+extern const uint8 top_pointer_icon[];
+extern const uint8 select_sign_icon[];
+extern const uint8 waste_bin_icon[];
+extern const uint8 previous_picture_icon[];
+extern const uint8 next_picture_icon[];
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

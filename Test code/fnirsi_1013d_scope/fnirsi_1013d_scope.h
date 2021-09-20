@@ -12,6 +12,7 @@
 typedef struct tagTouchCoords         TOUCHCOORDS,        *PTOUCHCOORDS;
 typedef struct tagScopeSettings       SCOPESETTINGS,      *PSCOPESETTINGS;
 typedef struct tagChannelSettings     CHANNELSETTINGS,    *PCHANNELSETTINGS;
+typedef struct tagMeasurements        MEASUREMENTS,       *PMEASUREMENTS;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -33,6 +34,15 @@ struct tagChannelSettings
   uint8  fftenable;
 
   uint16 traceoffset;   //No idea if this is correct. Found at 0x8019d5a6 and 0x8019d5b2 in the original code
+};
+
+struct tagMeasurements
+{
+  int16 max;
+  int16 min;
+  int16 maxplushalfmin;
+  int16 peakpeak;
+  int16 avg;
 };
 
 struct tagScopeSettings
@@ -66,7 +76,7 @@ struct tagScopeSettings
   uint8 updatescreen;        //0x8019D5D7 in original code
   uint8 batterychargelevel;
   uint8 batterycharging;
-  uint8 runstate;
+  uint8 runstate;            //0x8019D5DA in original code
   
   uint8 screenbrightness;
   uint8 gridbrightness;

@@ -25,6 +25,10 @@ void scope_setup_right_control_menu(void);
 void scope_setup_right_file_menu(void);
 
 //----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_setup_bottom_file_menu(int mode);
+
+//----------------------------------------------------------------------------------------------------------------------------------
 // Right side bar functions
 //----------------------------------------------------------------------------------------------------------------------------------
   
@@ -187,6 +191,8 @@ void scope_load_system_file(void);
 void scope_display_thumbnails(void);
 
 void scope_display_thumbnail_data(uint32 xpos, uint32 ypos, PTHUMBNAILDATA thumbnaildata, uint32 channel);
+
+void scope_display_selected_signs(void);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

@@ -128,8 +128,7 @@ uint16 prevxtouch = 0;
 
 FIL viewfp;                         //Since files are not opened concurrent using a global file pointer
 
-uint8 viewtype = 0;                 //At 0x80192EE2 in original code
-
+uint8 viewtype = VIEW_TYPE_PICTURE; //At 0x80192EE2 in original code
 uint8 viewselectmode;               //In original code this is at 0x8035A97E. Signals if either the select all or the select button is active
 uint8 viewpage;                     //In original code this is at 0x8035A97F. Is the page number of the current items on the screen. 16 items per page
 uint8 viewpages;                    //Not in original code, but when only calculated once code gets simpler
