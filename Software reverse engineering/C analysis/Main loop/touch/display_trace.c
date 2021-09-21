@@ -352,9 +352,6 @@ void display_trace(uint xstart,uint offset,uint samples,byte *buffer,uint color)
           bVar11 = (uVar9 - uVar8 & 1) == 0;
           puVar4 = (ushort *)(*piVar1 + ((xstart + uVar8 * 800 + uVar3) - offset) * 2);
           puVar6 = puVar4 + -800;
-    
-    //Point to the data for this trace
-    channeldata = thumbnaildata->channel1data;
 
           if (bVar11)
           {

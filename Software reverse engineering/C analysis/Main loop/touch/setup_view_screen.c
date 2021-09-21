@@ -67,6 +67,9 @@ LAB_8002bed0:
 
     *(undefined *)(iVar16 + 0x21) = 0;        //trigger mode to auto
 
+    //They missed channel coupling here, but the scope does handle it correctly, so it is done at some other point in the code
+    //and this might not be needed at all.
+
     set_fpga_channel1_voltperdiv();
     set_fpga_channel2_voltperdiv();
     set_fpga_trigger_timebase();
@@ -208,7 +211,7 @@ LAB_8002bed0:
             display_highlight_select_button(0);
             display_highlight_select_all_button(0);
 
-            iVar13 = DAT_8002c584;
+            iVar13 = DAT_8002c584;    //0x000005B4
             iVar16 = Screen_Frame_Buffer_2;
             uVar15 = 0;
 
@@ -278,8 +281,8 @@ LAB_8002bed0:
       }
 
       //Do delete of the selected files
-      display_highlight_select_button(0);  //Something with the file select menu bitmap???
-      display_highlight_select_all_button(0);  //Something with the file select menu bitmap???
+      display_highlight_select_button(0);
+      display_highlight_select_all_button(0);
 
       uVar14 = 0;
 
@@ -391,6 +394,9 @@ LAB_8002c1ac:
 
           handle_picture_touch();  //in this function. Allows for selection of prev or next image or delete this image or return.
         }
+
+        //Need some error message to indicate file does not exist with a touch confirm to return
+
       }
       else
       {
@@ -409,7 +415,7 @@ LAB_8002c1ac:
 
         //File not available
         if (iVar16 == 4)
-        {
+        { //This needs to be done in scope_load_trace_data(index)
           load_selected_system_file();
           setup_filename_list();
           remove_item_from_list(*(undefined2 *)(pcVar4 + (uint)*(ushort *)(puVar6 + 2) * 2 + 0x1e));
@@ -428,7 +434,7 @@ LAB_8002c1ac:
         {
           f_lseek(auStack592,0);
 
-          f_read(auStack592,DAT_8002c5a4,DAT_8002c5a0,NULL);
+          f_read(auStack592,DAT_8002c5a4,DAT_8002c5a0,NULL);    //    0x00003A98 = 15000 (saved system setup data is 16000 bytes!!!)
 
           f_close(auStack592);
 
@@ -442,12 +448,20 @@ LAB_8002c1ac:
           *(undefined *)(iVar16 + 0x17) = 1;
           *(undefined *)(iVar16 + 0x43) = 1;
           *(undefined *)(iVar16 + 0x3a) = 1;
-          display_run_stop_text(0);
+
+          display_run_stop_text(0);  //Already done in setup_main_screen()
+
           set_frame_to_global_pointer();
-          set_display_fg_color(0);
-          display_fill_rect(2,0x2f,(ushort)DAT_8002c5a8 + 0xfb,(ushort)DAT_8002c5a8);
+
+          set_display_fg_color(0);    //Black for background clear
+
+          display_fill_rect(2,0x2f,(ushort)DAT_8002c5a8 + 0xfb,(ushort)DAT_8002c5a8);  //Clear center part of screen. Done in trace displaying???
+
           setup_main_screen();
+
           display_trace_data();
+
+
           cVar2 = *(char *)(iVar16 + 0x43);
 
           while (cVar2 != '\0')   //Stay in the waveform view as long as it is set to waveform view.
@@ -455,7 +469,7 @@ LAB_8002c1ac:
             //timebase setting
             if (*(byte *)(iVar16 + 10) < 9)
             {  //Long time base 50S - 100mS
-              FUN_8002b68c();          //long time base trace drawing
+              view_mode_display_trace();          //long time base trace drawing
             }
             else
             {  //Short time base 50mS - 10nS

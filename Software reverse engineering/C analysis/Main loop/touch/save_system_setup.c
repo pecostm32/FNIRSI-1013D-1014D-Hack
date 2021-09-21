@@ -53,7 +53,7 @@ void save_system_setup(void *buffer)
     pbVar2[0x17] = 1;               //triggerflag1
   }
 
-  //Data is saved as shorts. "arrrrrch"
+  //Data is saved as shorts.
 
   *(ushort *)buffer = (ushort)pbVar2[0x3a];                        //run mode
 
@@ -77,14 +77,14 @@ void save_system_setup(void *buffer)
   *(ushort *)((int)buffer + 0x1c) = (ushort)pbVar2[0x22];          //trigger edge
   *(ushort *)((int)buffer + 0x1e) = (ushort)pbVar2[0x23];          //trigger channel
 
-  *(ushort *)((int)buffer + 0x20) = (ushort)pbVar2[0x38];          //battery charge level "uuuhmpfff"
+  *(ushort *)((int)buffer + 0x20) = (ushort)pbVar2[0x38];          //battery charge level. Is used to display the state of when picture or waveform was taken
 
   *(ushort *)((int)buffer + 0x22) = (ushort)pbVar2[0x42];          //right menu mode
 
   *(ushort *)((int)buffer + 0x24) = (ushort)pbVar2[0x18];          //triggerflag2
   *(ushort *)((int)buffer + 0x26) = (ushort)pbVar2[0x17];          //triggerflag1
 
-  *(undefined2 *)((int)buffer + 0x28) = *(undefined2 *)(pbVar2 + 0x1a);  //disp_x_start. Also a bit nonsense to save this since on return the scope is restarted
+  *(undefined2 *)((int)buffer + 0x28) = *(undefined2 *)(pbVar2 + 0x1a);  //disp_x_start.
 
   puVar10 = PTR_DAT_80002024;    //0x80192ece
   iVar21 = DAT_8000201c;         //0x80361378
@@ -98,7 +98,7 @@ void save_system_setup(void *buffer)
     sVar4 = *(short *)(pbVar2 + 0x1c);           //disp_sample_count
   }
 
-  *(short *)((int)buffer + 0x2a) = sVar4;   //time base dependend save of info that is not needed
+  *(short *)((int)buffer + 0x2a) = sVar4;   //time base dependent save of info that is not needed
 
 
   iVar25 = DAT_80002020;                     //0x801FA24C  base address of measurement settings
@@ -258,8 +258,8 @@ void save_system_setup(void *buffer)
 
   if (bVar32 || (int)puVar20 < 0 != bVar33)
   {
-    //Copy shorts ?????
-    FUN_80000730((int)buffer + 1000,DAT_80002038,DAT_8000203c);
+    //Copy bytes when buffers do not overlap???
+    FUN_80000730((int)buffer + 1000,DAT_80002038,DAT_8000203c);  //3000 bytes
   }
   else
   {
@@ -274,7 +274,7 @@ void save_system_setup(void *buffer)
     } while (puVar7 < puVar16);
   }
 
-  iVar21 = DAT_80002040;
+  iVar21 = DAT_80002040;   //0x801AD7BA
   puVar7 = (undefined4 *)((int)buffer + (2000 - DAT_80002040));
   bVar32 = puVar7 == NULL;
   puVar20 = puVar7;
@@ -294,7 +294,7 @@ void save_system_setup(void *buffer)
 
   if (bVar32 || (int)puVar20 < 0 != bVar33)
   {
-    FUN_80000730((int)buffer + 4000,DAT_80002040,iVar25);
+    FUN_80000730((int)buffer + 4000,DAT_80002040,iVar25);   //again 3000 bytes
   }
   else
   {
@@ -330,7 +330,7 @@ void save_system_setup(void *buffer)
 
   if (bVar32 || (int)uVar17 < 0 != bVar33)
   {
-    FUN_80000730((int)buffer + 7000,DAT_80002044,puVar16);
+    FUN_80000730((int)buffer + 7000,DAT_80002044,puVar16);   //0x801C374A  1500 bytes   = channel1ypoints
   }
   else
   {
@@ -345,7 +345,7 @@ void save_system_setup(void *buffer)
     } while (uVar8 < uVar3);
   }
 
-  puVar20 = DAT_8000204c;
+  puVar20 = DAT_8000204c;                                      //0x801C3F1A
   uVar8 = (int)buffer + (0x109a - (int)DAT_8000204c);
   bVar32 = uVar8 == 0;
   uVar17 = uVar8;
@@ -382,7 +382,7 @@ void save_system_setup(void *buffer)
 
 
 //From here on down it is FUN_80000730
-  puVar7 = (undefined4 *)((int)buffer + 0x2134);
+  puVar7 = (undefined4 *)((int)buffer + 0x2134);                    //8500
   puVar20 = (undefined4 *)((int)puVar7 - (int)DAT_8000204c);
   bVar32 = puVar20 == NULL;
 
