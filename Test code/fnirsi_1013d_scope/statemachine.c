@@ -2353,48 +2353,65 @@ void handle_view_mode_touch(void)
           }
           else
           {
-            //Not in select mode so display the touched item depending on what type it is
-            if(viewtype == VIEW_TYPE_PICTURE)
-            {
-              //Get the file name based on the current index. (needs to be saved to allow select on next and previous image)
-              
-              //Load the picture and display it
-              
-              //Draw the bottom menu bar
-              //Four buttons no touch indicators
-              //Need an input to signal display and capture underneath, redisplay capture, redisplay menu
-              
-              //Handle the touch
-              //toggle display of bottom menu bar
-              //return to the main view screen
-              //display previous image
-              //display next image
-              //delete current image
-              
-              //Selecting another image across a page boundary does not change the main page, so on return the active page is not changed.
-              
-              //A delete does modify the page content though because the total number of items is reduced
-              //If more items are deleted the the active page had it returns to an empty page. I think in this case it should decrement the active page
-              //Can easily be detected since available items will be reduced
-              
-              
-              //The same happens when all items on a page are deleted!!!
-              
-              
-              
-              //Need the icons for the bottom menu bar. Return arrow is same as waveform return
-              
-              
-            }
-            else
-            {
-              
-            }
+            //Load the data into the system and display the traces for both picture and waveform since they use the same setup
+            //Use the file extension based on viewtype
             
+            //Read back of data can be done directly from f_read into the dedicated buffers. Just need to make sure they are 32 bit aligned
+            
+            //Try to load the trace data for the file indicated by the index and the current view type
+            if(scope_load_trace_data(index) == VIEW_TRACE_LOAD_OK)
+            {
+
+
+              //then perform needed actions based on viewtype
+
+              //Not in select mode so display the touched item depending on what type it is
+              if(viewtype == VIEW_TYPE_PICTURE)
+              {
+                //Get the file name based on the current index. (needs to be saved to allow select on next and previous image)
+
+                //Load the picture and display it
+                //Makes use of the same data as in wave files so make a single function for that and combine things to be more efficient
+
+                //Draw the bottom menu bar
+                //Four buttons no touch indicators
+                //Need an input to signal display and capture underneath, redisplay capture, redisplay menu
+
+                //Handle the touch
+                //toggle display of bottom menu bar
+                //return to the main view screen
+                //display previous image
+                //display next image
+                //delete current image
+
+                //Selecting another image across a page boundary does not change the main page, so on return the active page is not changed.
+
+                //A delete does modify the page content though because the total number of items is reduced
+                //If more items are deleted the the active page had it returns to an empty page. I think in this case it should decrement the active page
+                //Can easily be detected since available items will be reduced
+
+
+                //The same happens when all items on a page are deleted!!!
+
+
+
+                //Need the icons for the bottom menu bar. Return arrow is same as waveform return
+
+
+              }
+              else
+              {
+
+                //waveform view needs to be handled here
+                //Normal touch needs to be scanned and if a change that can be handled is detected the trace needs to be updated
+                
+              }
+            }
+
             //On exit of the touch handlers the display needs to be redrawn
+            //This is also needed when the file did not open and is removed from the lists
             //Also take care of page management if current page is no longer valid due to deleted items
             //So create a single function for this
-            
           }
         }
       }

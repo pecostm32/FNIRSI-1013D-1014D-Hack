@@ -92,7 +92,8 @@ void scope_setup_view_screen(void)
   
   //Save the current settings
   //This is no longer needed since the thumbnail displaying does not use the settings data anymore
-  //Only needed for waveform display, since that makes use of the actual waveform functions and main touch handler
+  //Only needed for picture and waveform display, since that makes use of the actual waveform functions and main touch handler
+  //Need two separate function sets. One for saving and restoring the settings as is, and one for saving to and loading from a file buffer
   //scope_save_setup(&savedscopesettings1);
   
   //Initialize the view mode variables
@@ -5513,7 +5514,7 @@ void scope_display_trace_data(void)
         //Copy the new points to the previous one
         disp_ch1_prev_y = disp_ch1_y;
 
-        //Save in a point array for????
+        //Save in a point array for picture and waveform save
         channel1ypoints[disp_xpos] = disp_ch1_y;
       }
     }
@@ -5612,7 +5613,7 @@ void scope_display_trace_data(void)
       disp_ch1_prev_y = disp_ch1_y;
       disp_ch2_prev_y = disp_ch2_y;
       
-      //Save in a point array for????
+      //Save in a point array for picture and waveform save
       channel1ypoints[disp_xpos] = disp_ch1_y;
       channel2ypoints[disp_xpos] = disp_ch2_y;
     }
@@ -5671,6 +5672,8 @@ void scope_display_measurements(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+//Need two functions. One for just saving the settings and one for loading the settings from a file buffer.
+
 void scope_save_setup(PSCOPESETTINGS settings)
 {
   //Simplest setup here is to put all important data in a struct and make it such that a pointer is used to point to the active one
@@ -5684,6 +5687,56 @@ void scope_save_setup(PSCOPESETTINGS settings)
   fpga_read_parameter_ic(0x15, 0x18);
   
   //In the original code the measurements and the trace data are copied too
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+const char view_file_extension[2][5] =
+{
+  { ".bmp" },
+  { ".wav" }
+};
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//In the original code they setup a list with all the available file names and index into that list when a file is used
+//Here the file name is made on the fly when needed
+
+void scope_print_file_name(uint32 filenumber)
+{
+  char    b[12];
+  uint32  i = 12;   //Start beyond the array since the index is pre decremented
+  uint32  s;
+
+  //For file number 0 no need to do the work
+  if(filenumber == 0)
+  {
+    //Value is zero so just set a 0 character
+    b[--i] = '0';
+  }
+  else
+  {
+    //Process the digits
+    while(filenumber)
+    {
+      //Set current digit to decreased index
+      b[--i] = (filenumber % 10) + '0';
+
+      //Take of the current digit
+      filenumber /= 10;
+    }
+  }
+
+  //Determine the size of the decimal part
+  s = 12 - i;
+  
+  //Start the filename with a /  (Not sure why, but it seems to work)
+  viewfilename[0] = '/';
+
+  //Copy in the decimal file number
+  memcpy(&viewfilename[1], &b[i], s);
+  
+  //Add the extension
+  memcpy(&viewfilename[s + 1], view_file_extension[viewtype & VIEW_TYPE_MASK], 5);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -5805,6 +5858,54 @@ void scope_load_system_file(void)
       //Close the file
       f_close(&viewfp);
     }
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+int32 scope_load_trace_data(uint32 index)
+{
+  //Point to the file numbers
+  uint16 *fnptr = (uint16 *)viewfilenumberdata;
+  
+  uint32 result;
+  
+  //Set the current index for this file
+  viewcurrentindex = index + (viewpage * VIEW_ITEMS_PER_PAGE);
+
+  //Setup the file name for this view item  
+  scope_print_file_name(fnptr[viewcurrentindex]);
+  
+  //Try to open the file for reading
+  result = f_open(&viewfp, viewfilename, FA_READ);
+  
+  //Check if file opened ok
+  if(result == FR_OK)
+  {
+    //Load the data to the needed buffers
+    
+    //first 1000 bytes contain settings. Data is contained in shorts even if source was byte. Need a buffer for this and need to copy the settings to the scopesettings struct
+    
+    //The next 3000 bytes are signal data for channel 1. This data needs to be loaded to channel1tracebuffer4
+    
+    //The following 3000 bytes are signal data for channel 2. This data needs to be loaded to channel2tracebuffer4
+    
+    //The next 1500 bytes are for channel1ypoints
+
+    //The remaining 1500 bytes are for channel2ypoints
+    
+    
+  //on success load the data to the needed locations
+  //build the main screen (set the correct modes for the different view types)
+  //display the trace data
+
+    return(VIEW_TRACE_LOAD_OK);
+  }
+  else
+  {
+    //on failure remove it from the lists and update the list files and return error
+    
+    return(VIEW_TRACE_LOAD_ERROR);
   }
 }
 

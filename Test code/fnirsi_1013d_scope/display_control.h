@@ -33,12 +33,24 @@
 #define DEBE_LAY_SIZE          ((volatile uint32 *)(0x01E60808))    //Not present in the manual but used in the scope software and set to the same value as DEBE_LAY0_SIZE
 
 #define DEBE_LAY0_SIZE         ((volatile uint32 *)(0x01E60810))
+#define DEBE_LAY1_SIZE         ((volatile uint32 *)(0x01E60814))
+#define DEBE_LAY2_SIZE         ((volatile uint32 *)(0x01E60818))
+#define DEBE_LAY3_SIZE         ((volatile uint32 *)(0x01E6081C))
 
 #define DEBE_LAY0_LINEWIDTH    ((volatile uint32 *)(0x01E60840))
+#define DEBE_LAY1_LINEWIDTH    ((volatile uint32 *)(0x01E60844))
+#define DEBE_LAY2_LINEWIDTH    ((volatile uint32 *)(0x01E60848))
+#define DEBE_LAY3_LINEWIDTH    ((volatile uint32 *)(0x01E6084C))
 
-#define DEBE_LAY0_FB_ADDR1     ((volatile uint32 *)(0x01E60850))
+#define DEBE_LAY0_FB_ADDR1L    ((volatile uint32 *)(0x01E60850))
+#define DEBE_LAY0_FB_ADDR2L    ((volatile uint32 *)(0x01E60854))
+#define DEBE_LAY0_FB_ADDR3L    ((volatile uint32 *)(0x01E60858))
+#define DEBE_LAY0_FB_ADDR4L    ((volatile uint32 *)(0x01E6085C))
 
-#define DEBE_LAY0_FB_ADDR2     ((volatile uint32 *)(0x01E60860))    //Not present in the manual but used in the scope to set the top 3 bits of the frame buffer address
+#define DEBE_LAY0_FB_ADDR1H    ((volatile uint32 *)(0x01E60860))    //Not present in the manual but used in the scope to set the top 3 bits of the frame buffer address
+#define DEBE_LAY0_FB_ADDR2H    ((volatile uint32 *)(0x01E60864))
+#define DEBE_LAY0_FB_ADDR3H    ((volatile uint32 *)(0x01E60868))
+#define DEBE_LAY0_FB_ADDR4H    ((volatile uint32 *)(0x01E6086C))
 
 
 #define DEBE_REGBUFF_CTRL      ((volatile uint32 *)(0x01E60870))

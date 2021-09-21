@@ -57,6 +57,9 @@
 #define VIEW_BOTTON_MENU_SHOW             1
 #define VIEW_BOTTON_MENU_HIDE             0
 
+#define VIEW_TRACE_LOAD_OK                0
+#define VIEW_TRACE_LOAD_ERROR             1
+
 //----------------------------------------------------------------------------------------------------------------------------------
 //Typedefs
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -212,12 +215,16 @@ extern uint16 prevxtouch;
 
 extern FIL viewfp;
 
+extern char viewfilename[32];
+
 extern uint8 viewtype;
 
 extern uint8 viewselectmode;
 extern uint8 viewpage;
 extern uint8 viewpages;
 extern uint8 viewitemsonpage;
+
+extern uint16 viewcurrentindex;
 
 extern uint16 viewavailableitems;
 

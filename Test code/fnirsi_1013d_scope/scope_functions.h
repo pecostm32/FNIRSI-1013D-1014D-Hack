@@ -185,8 +185,12 @@ void scope_save_setup(PSCOPESETTINGS settings);
 
 void scope_restore_setup(PSCOPESETTINGS settings);
 
+void scope_print_file_name(uint32 filenumber);
+
 void scope_load_list_file(void);
 void scope_load_system_file(void);
+
+int32 scope_load_trace_data(uint32 index);
 
 void scope_display_thumbnails(void);
 
