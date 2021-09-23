@@ -722,12 +722,8 @@ void handle_main_menu_touch(void)
           //Signal viewing of pictures
           viewtype = VIEW_TYPE_PICTURE;
           
-          //Switch to picture view screen
+          //Switch to picture view screen and stay there until return is pressed
           scope_setup_view_screen();
-          
-//        FUN_8000a750();          //Restart the scope function
-//        setup_main_screen();          
-          
         }
         //Check if on waveform view
         else if((ytouch >= 166) && (ytouch <= 223))
@@ -741,12 +737,8 @@ void handle_main_menu_touch(void)
           //Signal viewing of pictures
           viewtype = VIEW_TYPE_WAVEFORM;
           
-          //Switch to picture view screen
+          //Switch to picture view screen and stay there until return is pressed
           scope_setup_view_screen();
-
-//        FUN_8000a750();          //Restart the scope function
-//        setup_main_screen();          
-          
         }
         //Check if on USB connection
         else if((ytouch >= 225) && (ytouch <= 278))
@@ -2121,40 +2113,6 @@ void handle_view_mode_touch(void)
         //Check if the return button is touched
         if((ytouch >= 4) && (ytouch <= 76))
         {
-          //Make sure view mode is normal
-          scopesettings.waveviewmode = 0;
-          
-          //And resume with auto trigger mode
-          scopesettings.triggermode = 0;
-          
-          //Need to restore the original scope data and fpga settings
-
-          //Is also part of startup, so could be done with a function
-          //Set the volts per div for each channel based on the loaded scope settings
-          fpga_set_channel_1_voltperdiv();
-          fpga_set_channel_2_voltperdiv();
-
-          //These are not done in the original code
-          //Set the channels AC or DC coupling based on the loaded scope settings
-          fpga_set_channel_1_coupling();
-          fpga_set_channel_2_coupling();
-
-          //Setup the trigger system in the FPGA based on the loaded scope settings
-          fpga_set_trigger_timebase();
-          fpga_set_trigger_channel();
-          fpga_set_trigger_edge();
-          fpga_set_trigger_level();
-          fpga_set_trigger_mode();
-
-          //Set channel screen offsets
-          fpga_set_channel_1_offset();
-          fpga_set_channel_2_offset();
-          
-          
-          
-          //Reset the screen to the normal scope screen
-          scope_setup_main_screen();
-          
           return;
         }
         //Else check if the select all button is touched
@@ -2247,16 +2205,59 @@ void handle_view_mode_touch(void)
         //Else check if the delete button is touched
         else if((ytouch >= 244) && (ytouch <= 316))
         {
-         
-          
-          //Fill in delete here!!!!
-          
-          
+          //Need to see if there are items selected for delete
+          if(viewselectmode)
+          {
+            //A select mode is active so check the list to see if there are items selected
+            //This is not done in the original code. Activate the single select mode and without selecting an item press delete. The confirm menu is shown
+            for(index=0,found=0;index<viewitemsonpage;index++)
+            {
+              //Check if the current item is selected
+              if(viewitemselected[index] == VIEW_ITEM_SELECTED_DISPLAYED)
+              {
+                //Signal there is at least one item to delete
+                found = 1;
+                break;
+              }
+            }
+            
+            //Check if there is an item to delete
+            if(found)
+            {
+              //Ask the user if the item should be deleted
+              if(handle_confirm_delete() == VIEW_CONFIRM_DELETE_YES)
+              {
+                //User opted for delete so do this for the selected items
+                for(index=0,found=0;index<viewitemsonpage;index++)
+                {
+                  //Check if the current item is selected
+                  if(viewitemselected[index] == VIEW_ITEM_SELECTED_DISPLAYED)
+                  {
+                    //Set the current index for this file
+                    viewcurrentindex = index + (viewpage * VIEW_ITEMS_PER_PAGE);
+                    
+                    //Remove the current item from the lists and delete the item from disk
+                    scope_remove_item_from_lists();
+                  }
+                }
+                
+                //Save the list files
+                scope_save_list_file();
+                scope_save_system_file();
+                
+                //Clear the select flags
+                memset(viewitemselected, VIEW_ITEM_NOT_SELECTED, VIEW_ITEMS_PER_PAGE);
+                
+                //Redisplay the thumbnails
+                scope_display_thumbnails();
+
           //On exit of the touch handlers the display needs to be redrawn
           //Also take care of page management if current page is no longer valid due to deleted items
           //So create a single function for this
-          
-          
+                
+              }
+            }            
+          }
         }
         //Else check if the page up button is touched
         else if((ytouch >= 324) && (ytouch <= 396))
@@ -2353,36 +2354,112 @@ void handle_view_mode_touch(void)
           }
           else
           {
-            //Load the data into the system and display the traces for both picture and waveform since they use the same setup
-            //Use the file extension based on viewtype
+            //Need to wait for touch to release before opening the selected item
+            tp_i2c_wait_for_touch_release();
             
-            //Read back of data can be done directly from f_read into the dedicated buffers. Just need to make sure they are 32 bit aligned
+            //Set the current index for this file
+            viewcurrentindex = index + (viewpage * VIEW_ITEMS_PER_PAGE);
             
-            //Try to load the trace data for the file indicated by the index and the current view type
-            if(scope_load_trace_data(index) == VIEW_TRACE_LOAD_OK)
+            //Try to load the trace data for the file indicated by the current index and view type
+            if(scope_load_trace_data() == VIEW_TRACE_LOAD_OK)
             {
-
-
-              //then perform needed actions based on viewtype
-
-              //Not in select mode so display the touched item depending on what type it is
+              //Loaded ok, so take action based on the type of the opened item
               if(viewtype == VIEW_TYPE_PICTURE)
               {
-                //Get the file name based on the current index. (needs to be saved to allow select on next and previous image)
-
-                //Load the picture and display it
-                //Makes use of the same data as in wave files so make a single function for that and combine things to be more efficient
-
-                //Draw the bottom menu bar
-                //Four buttons no touch indicators
-                //Need an input to signal display and capture underneath, redisplay capture, redisplay menu
-
+                //On init draw the bottom menu bar with a save of the background
+                scope_setup_bottom_file_menu(VIEW_BOTTON_MENU_INIT);
+                
                 //Handle the touch
-                //toggle display of bottom menu bar
-                //return to the main view screen
+                handle_picture_view_touch();
+              }
+              else
+              {
+
+                //waveform view needs to be handled here
+                //Normal touch needs to be scanned and if a change that can be handled is detected the trace needs to be updated
+                while(scopesettings.waveviewmode)
+                {
+                  touch_handler();
+                  
+                  //Need to check on changes or just redraw the display every loop???
+                  
+                }
+                
+                
+              }
+            }
+
+            //On exit of the touch handlers the display needs to be redrawn
+            //This is also needed when the file did not open and is removed from the lists
+            //Also take care of page management if current page is no longer valid due to deleted items
+            //So create a single function for this
+            
+            //Display the file actions menu on the right side of the screen
+            scope_setup_right_file_menu();
+            
+            //Display the available thumbnails for the current view type
+            scope_display_thumbnails();
+            
+
+          }
+        }
+      }
+    }
+    
+    //Need to wait for touch to release before checking again
+    tp_i2c_wait_for_touch_release();
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void handle_picture_view_touch(void)
+{
+  //Stay in this mode as long as the return is not touched
+  while(1)
+  {
+    //Read the touch panel status
+    tp_i2c_read_status();
+  
+    //Check if the panel is touched
+    if(havetouch)
+    {
+      //Check if bottom view menu is shown
+      if(viewbottommenustate == VIEW_BOTTON_MENU_SHOW)
+      {
+        //Check if touch outside of the menu bar
+        if(ytouch < 420)
+        {
+          //Toggle the menu visibility
+          viewbottommenustate ^= VIEW_BOTTON_MENU_SHOW;
+          
+          //Update accordingly
+          scope_setup_bottom_file_menu(viewbottommenustate);
+        }
+        else
+        {
+          //Check if in return button region
+          if((xtouch > 4) && (xtouch < 196))
+          {
+            //Just return
+            return;
+          }
+        }
+      }
+      else
+      {
+        //If not shown, show it again
+        scope_setup_bottom_file_menu(VIEW_BOTTON_MENU_SHOW);
+      }
+    }
+    
+    //Need to wait for touch to release before checking again
+    tp_i2c_wait_for_touch_release();
+  }
+                
+                //delete current image
                 //display previous image
                 //display next image
-                //delete current image
 
                 //Selecting another image across a page boundary does not change the main page, so on return the active page is not changed.
 
@@ -2393,33 +2470,79 @@ void handle_view_mode_touch(void)
 
                 //The same happens when all items on a page are deleted!!!
 
+  
+}
 
+//----------------------------------------------------------------------------------------------------------------------------------
 
-                //Need the icons for the bottom menu bar. Return arrow is same as waveform return
-
-
-              }
-              else
-              {
-
-                //waveform view needs to be handled here
-                //Normal touch needs to be scanned and if a change that can be handled is detected the trace needs to be updated
-                
-              }
-            }
-
-            //On exit of the touch handlers the display needs to be redrawn
-            //This is also needed when the file did not open and is removed from the lists
-            //Also take care of page management if current page is no longer valid due to deleted items
-            //So create a single function for this
-          }
-        }
+int32 handle_confirm_delete(void)
+{
+  int32 choice = 0;
+  
+  //Save the screen rectangle where the menu will be displayed
+  display_copy_rect_from_screen(310, 192, 180, 96);
+  
+  //display the confirm delete menu
+  //Draw the background in grey
+  display_set_fg_color(0x00202020);
+  display_fill_rect(310, 192, 180, 96);
+  
+  //Draw the border in a lighter grey
+  display_set_fg_color(0x00303030);
+  display_draw_rect(310, 192, 180, 96);
+  
+  //Draw the buttons
+  display_fill_rect(320, 228, 74, 50);
+  display_fill_rect(405, 228, 74, 50);
+  
+  //White color for text and use font_3
+  display_set_fg_color(0x00FFFFFF);
+  display_set_font(&font_3);
+  display_text(340, 204, "Confirm to delete?");
+  display_text(348, 246, "NO");
+  display_text(431, 246, "YES");
+  
+  //wait for touch
+  while(1)
+  {
+    //Read the touch panel status
+    tp_i2c_read_status();
+  
+    //Check if the panel is touched
+    if(havetouch)
+    {
+      //Check if touch is on "NO"
+      if((xtouch >= 324) && (xtouch <= 390) && (ytouch >= 230) && (ytouch <= 276))
+      {
+        //Set the chosen option
+        choice = VIEW_CONFIRM_DELETE_NO;
+        
+        //Done so quit the loop
+        break;
+      }
+      //Else check if touch on "YES"
+      else if((xtouch >= 409) && (xtouch <= 475) && (ytouch >= 230) && (ytouch <= 276))
+      {
+        //Set the chosen option
+        choice = VIEW_CONFIRM_DELETE_YES;
+        
+        //Done so quit the loop
+        break;
       }
     }
     
     //Need to wait for touch to release before checking again
     tp_i2c_wait_for_touch_release();
   }
+  
+  //Need to wait for touch to release before returning
+  tp_i2c_wait_for_touch_release();
+
+  //Restore the original screen
+  display_copy_rect_to_screen(310, 192, 180, 96);
+  
+  //return the choice
+  return(choice);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

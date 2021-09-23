@@ -89,12 +89,13 @@ void scope_setup_view_screen(void)
 {
   //Set scope run state to running to have it sample fresh data on exit
   scopesettings.runstate = 0;
+
+  //This is different to the original since the thumbnail displaying does not use the settings data anymore
+  //Only when picture and waveform display is used the settings are overwritten, since it makes use of the actual waveform functions and main touch handler
+  //Created two separate function sets. One for saving and restoring the settings as is, and one for saving to and loading from a file buffer
   
   //Save the current settings
-  //This is no longer needed since the thumbnail displaying does not use the settings data anymore
-  //Only needed for picture and waveform display, since that makes use of the actual waveform functions and main touch handler
-  //Need two separate function sets. One for saving and restoring the settings as is, and one for saving to and loading from a file buffer
-  //scope_save_setup(&savedscopesettings1);
+  scope_save_setup(&savedscopesettings1);
   
   //Initialize the view mode variables
   //Used for indicating if select all or select button is active
@@ -104,7 +105,7 @@ void scope_setup_view_screen(void)
   viewpage = 0;
   
   //Clear the item selected flags
-  memset(viewitemselected, 0, 16);
+  memset(viewitemselected, VIEW_ITEM_NOT_SELECTED, VIEW_ITEMS_PER_PAGE);
   
   //Set storage buffer for screen capture under selected signs and messages
   display_set_destination_buffer(displaybuffer2);
@@ -124,6 +125,53 @@ void scope_setup_view_screen(void)
   
   //Handle touch for this part of the user interface
   handle_view_mode_touch();
+  
+  //Restore the current settings
+  scope_restore_setup(&savedscopesettings1);
+
+
+  //Make sure view mode is normal
+  scopesettings.waveviewmode = 0;
+
+  //And resume with auto trigger mode
+  scopesettings.triggermode = 0;
+
+  //Need to restore the original scope data and fpga settings
+
+  //Is also part of startup, so could be done with a function
+  //Set the volts per div for each channel based on the loaded scope settings
+  fpga_set_channel_1_voltperdiv();
+  fpga_set_channel_2_voltperdiv();
+
+  //These are not done in the original code
+  //Set the channels AC or DC coupling based on the loaded scope settings
+  fpga_set_channel_1_coupling();
+  fpga_set_channel_2_coupling();
+
+  //Setup the trigger system in the FPGA based on the loaded scope settings
+  fpga_set_trigger_timebase();
+  fpga_set_trigger_channel();
+  fpga_set_trigger_edge();
+  fpga_set_trigger_level();
+  fpga_set_trigger_mode();
+
+  //Set channel screen offsets
+  fpga_set_channel_1_offset();
+  fpga_set_channel_2_offset();
+
+
+
+  //Reset the screen to the normal scope screen
+  scope_setup_main_screen();
+
+  
+  //Restart the scope at this point in the code
+  
+          
+//        FUN_8000a750();          //Restart the scope function
+//        setup_main_screen();          
+          
+  
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -233,7 +281,44 @@ void scope_setup_right_file_menu(void)
 
 void scope_setup_bottom_file_menu(int mode)
 {
+  //Check if background needs to be saved
+  if(mode == VIEW_BOTTON_MENU_INIT)
+  {
+    //Save the screen rectangle where the menu will be displayed
+    display_copy_rect_from_screen(0, 420, 800, 60);
+  }
   
+  //Check if it needs to be drawn
+  if(mode & VIEW_BOTTON_MENU_SHOW)
+  {
+    //Draw the background in grey
+    display_set_fg_color(0x00202020);
+    display_fill_rect(0, 420, 800, 60);
+   
+    //Draw the three separator lines in black
+    display_set_fg_color(0x00000000);
+    display_draw_vert_line(200, 423, 477);
+    display_draw_vert_line(400, 423, 477);
+    display_draw_vert_line(600, 423, 477);
+
+    //Draw the icons in white    
+    display_set_fg_color(0x00FFFFFF);
+    display_copy_icon_fg_color(return_arrow_icon,      79, 436, 41, 27);
+    display_copy_icon_fg_color(waste_bin_icon,        284, 433, 31, 33);
+    display_copy_icon_fg_color(previous_picture_icon, 483, 438, 33, 24);
+    display_copy_icon_fg_color(next_picture_icon,     683, 438, 33, 24);
+    
+    //Signal menu is visible
+    viewbottommenustate = VIEW_BOTTON_MENU_SHOW;
+  }
+  else
+  {
+    //Hide the menu bar
+    display_copy_rect_to_screen(0, 420, 800, 60);
+    
+    //Signal menu is not visible
+    viewbottommenustate = VIEW_BOTTON_MENU_HIDE;
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -3979,6 +4064,7 @@ void scope_get_long_timebase_data(void)
   uint32 curticks;
   uint32 signaladjust;
   uint32 temp1, temp2;
+  uint16 *ptr;
   
   //Send the time base command for the longer settings
   fpga_set_long_timebase();
@@ -4088,16 +4174,19 @@ skip_delay:
     temp1 <<= 1;
   }
   
+  //Destination buffer is declared as uint32 to be able to use it with file functions, so need to cast it to uint16 pointer here
+  ptr = (uint16 *)channel1tracebuffer4;
+  
   //Check if outside displayable range??
   if(temp1 > 401)
   {
     //Keep it on max allowed
-    channel1tracebuffer4[0] = 401;                    //At address 0x801AC04A in original code
+    *ptr = 401;                    //At address 0x801AC04A in original code
   }
   else
   {
     //Else store it again in an other location
-    channel1tracebuffer4[0] = temp1;
+    *ptr = temp1;
   }
   
   //Some fractional scaling on the signal to fit it on screen???
@@ -4121,17 +4210,20 @@ skip_delay:
     //Only on highest sensitivity
     temp1 <<= 1;
   }
+
+  //Destination buffer is declared as uint32 to be able to use it with file functions, so need to cast it to uint16 pointer here
+  ptr = (uint16 *)channel2tracebuffer4;
   
   //Check if outside displayable range??
   if(temp1 > 401)
   {
     //Keep it on max allowed
-    channel2tracebuffer4[0] = 401;               //At address 0x801AD7BA in original code
+    *ptr = 401;               //At address 0x801AD7BA in original code
   }
   else
   {
     //Else store it again in an other location
-    channel2tracebuffer4[0] = temp1;
+    *ptr = temp1;
   }
 }
 
@@ -4418,27 +4510,27 @@ void scope_get_short_timebase_data(void)
     if(scopesettings.channel1.voltperdiv == 6)
     {
       //Adjust data in buffer 4 to be twice the magnitude
-      scope_double_data(channel1tracebuffer4, count);
+      scope_double_data((uint16 *)channel1tracebuffer4, count);
       
       //Adjust the data for trace offset???
-      scope_offset_data(channel1tracebuffer4, count, scopesettings.channel1.traceoffset);
+      scope_offset_data((uint16 *)channel1tracebuffer4, count, scopesettings.channel1.traceoffset);
     }
 
     //Limit the data to max range
-    scope_limit_data(channel1tracebuffer4, count);   //In the original they process 2500 samples no matter what
+    scope_limit_data((uint16 *)channel1tracebuffer4, count);   //In the original they process 2500 samples no matter what
     
     //Do additional handling for time base range 50mS/div - 500nS/div
     if(scopesettings.timeperdiv < 25)
     {
       //Filter the data
-      scope_filter_data(channel1tracebuffer4, count - 2);    //In the original they do 2998 samples no matter what
+      scope_filter_data((uint16 *)channel1tracebuffer4, count - 2);    //In the original they do 2998 samples no matter what
     }
     
     //Calculate some of the basic measurements like min, max, average, peak peak an another one (max + (min >> 1))???
-    scope_calculate_min_max_avg(channel1tracebuffer4, &channel1measurements);
+    scope_calculate_min_max_avg((uint16 *)channel1tracebuffer4, &channel1measurements);
     
     //Check on signal being large enough and otherwise clear it with some noise
-    //scope_evaluate_trace_data(channel1tracebuffer4, &channel1measurements, scopesettings.channel1.voltperdiv, scopesettings.channel1.traceoffset);
+    //scope_evaluate_trace_data((uint16 *)channel1tracebuffer4, &channel1measurements, scopesettings.channel1.voltperdiv, scopesettings.channel1.traceoffset);
     
     //SKip for now
     //And if some variable is 0 call another one
@@ -5310,6 +5402,7 @@ void scope_display_trace_data(void)
   uint32 xpos1;
   uint32 xpos2;
   uint32 dy;
+  uint16 *ptr;
  
   //Reset some flags if display touched for trace and cursor movement and stopped or in auto or normal mode
   if((touchstate) && ((scopesettings.triggermode != 1) || (scopesettings.runstate)))
@@ -5371,7 +5464,7 @@ void scope_display_trace_data(void)
         if(scopesettings.xymodedisplay == 0)
         {
           //Draw the trace on the screen
-          scope_display_channel_trace(channel1tracebuffer4, disp_x_start, disp_sample_count, CHANNEL1_COLOR);
+          scope_display_channel_trace((uint16 *)channel1tracebuffer4, disp_x_start, disp_sample_count, CHANNEL1_COLOR);
         }
       }
       
@@ -5451,8 +5544,11 @@ void scope_display_trace_data(void)
     //Check if channel 1 is enabled
     if(scopesettings.channel1.enable)
     {
+      //Destination buffer is declared as uint32 to be able to use it with file functions, so need to cast it to uint16 pointer here
+      ptr = (uint16 *)channel1tracebuffer4;
+
       //Get the current sample for channel 1 coming up from the bottom of the screen
-      disp_ch1_y = 449 - channel1tracebuffer4[0];
+      disp_ch1_y = 449 - *ptr;
       
       //Check if it is within displayable region
       if(disp_ch1_y < 47)
@@ -5514,16 +5610,22 @@ void scope_display_trace_data(void)
         //Copy the new points to the previous one
         disp_ch1_prev_y = disp_ch1_y;
 
+        //Destination buffer is declared as uint32 to be able to use it with file functions, so need to cast it to uint16 pointer here
+        ptr = (uint16 *)channel1ypoints;
+        
         //Save in a point array for picture and waveform save
-        channel1ypoints[disp_xpos] = disp_ch1_y;
+        ptr[disp_xpos] = disp_ch1_y;
       }
     }
 
     //Check if channel 2 is enabled
     if(scopesettings.channel2.enable)
     {
+      //Destination buffer is declared as uint32 to be able to use it with file functions, so need to cast it to uint16 pointer here
+      ptr = (uint16 *)channel2tracebuffer4;
+
       //Get the current sample for channel 1 coming up from the bottom of the screen
-      disp_ch2_y = 449 - channel2tracebuffer4[0];
+      disp_ch2_y = 449 - *ptr;
       
       //Check if it is within displayable region
       if(disp_ch2_y < 47)
@@ -5585,8 +5687,11 @@ void scope_display_trace_data(void)
         //Copy the new points to the previous one
         disp_ch2_prev_y = disp_ch2_y;
 
-        //Save in a point array for????
-        channel2ypoints[disp_xpos] = disp_ch2_y;
+        //Destination buffer is declared as uint32 to be able to use it with file functions, so need to cast it to uint16 pointer here
+        ptr = (uint16 *)channel2ypoints;
+        
+        //Save in a point array for picture and waveform save
+        ptr[disp_xpos] = disp_ch2_y;
       }
     }
 
@@ -5612,10 +5717,18 @@ void scope_display_trace_data(void)
       //Copy the new points to the previous one
       disp_ch1_prev_y = disp_ch1_y;
       disp_ch2_prev_y = disp_ch2_y;
+
+      //Destination buffer is declared as uint32 to be able to use it with file functions, so need to cast it to uint16 pointer here
+      ptr = (uint16 *)channel1ypoints;
       
       //Save in a point array for picture and waveform save
-      channel1ypoints[disp_xpos] = disp_ch1_y;
-      channel2ypoints[disp_xpos] = disp_ch2_y;
+      ptr[disp_xpos] = disp_ch1_y;
+      
+      //Destination buffer is declared as uint32 to be able to use it with file functions, so need to cast it to uint16 pointer here
+      ptr = (uint16 *)channel2ypoints;
+      
+      //Save in a point array for picture and waveform save
+      ptr[disp_xpos] = disp_ch2_y;
     }
 
     //Redraw the signal center, trigger level and trigger position pointers to be on top of the signals
@@ -5671,22 +5784,259 @@ void scope_display_measurements(void)
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
-
-//Need two functions. One for just saving the settings and one for loading the settings from a file buffer.
+//Simplest setup here is to put all important data in a struct and make it such that a pointer is used to point to the active one
+//This way no memory needs to be copied
+//Needs a bit of a re write but might improve things a bit
+//Depends on how the pointer setup effects the main code
 
 void scope_save_setup(PSCOPESETTINGS settings)
 {
-  //Simplest setup here is to put all important data in a struct and make it such that a pointer is used to point to the active one
-  //This way no memory needs to be copied
-  //Needs a bit of a re write but will improve things a lot
-  
   //For now just copy the settings to the given struct
   memcpy(settings, &scopesettings, sizeof(SCOPESETTINGS));
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_restore_setup(PSCOPESETTINGS settings)
+{
+  //For now just copy the settings from the given struct
+  memcpy(&scopesettings, settings, sizeof(SCOPESETTINGS));
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//These functions are for handling the settings to and from file
+
+void scope_prepare_setup_for_file(void)
+{
+  uint16 *ptr = (uint16 *)viewfilesetupdata;
+  uint32 index;
+  uint32 channel;
   
+  //No idea yet why this is done and what triggerflag4 is for
+  if(scopesettings.triggerflag4)
+  {
+    //But these flags ensure the display is redrawn on trace displaying
+    scopesettings.triggerflag2 = 1;
+    scopesettings.triggerflag1 = 1;
+  }
+  
+  //Best to clear the buffer first since not all bytes are used
+  //Can't use sizeof due to variables being declared as extern
+  memset((uint8 *)viewfilesetupdata, 0, 1000);
+  
+  //Copy the different settings to the file
+  ptr[0]  = scopesettings.runstate;
+  
+  ptr[1]  = scopesettings.channel1.enable;
+  ptr[2]  = scopesettings.channel1.voltperdiv;
+  ptr[3]  = scopesettings.channel1.fftenable;
+  ptr[4]  = scopesettings.channel1.coupling;
+  ptr[5]  = scopesettings.channel1.magnification;
+  
+  ptr[6]  = scopesettings.channel2.enable;
+  ptr[7]  = scopesettings.channel2.voltperdiv;
+  ptr[8]  = scopesettings.channel2.fftenable;
+  ptr[9]  = scopesettings.channel2.coupling;
+  ptr[10] = scopesettings.channel2.magnification;
+
+  ptr[11] = scopesettings.timeperdiv;
+  
+  ptr[12] = scopesettings.movespeed;
+  
+  ptr[13] = scopesettings.triggermode;
+  ptr[14] = scopesettings.triggeredge;
+  ptr[15] = scopesettings.triggerchannel;
+  
+  ptr[16] = scopesettings.batterychargelevel;
+  
+  ptr[17] = scopesettings.rightmenustate;
+
+  ptr[18] = scopesettings.triggerflag2;
+  ptr[19] = scopesettings.triggerflag1;
+
+  ptr[20] = disp_x_start;
+
+  //For time base settings 50S - 100mS per div disp_xpos is used as sample count
+  if(scopesettings.timeperdiv < 9)
+  {
+    ptr[21] = disp_xpos;
+  }
+  else
+  {
+    ptr[21] = disp_sample_count;
+  }
+
+  //These are still unknown variables so set to zero for now
+  ptr[22] = 0;
+  ptr[23] = 0;
+  ptr[24] = 0;
+  ptr[25] = 0;
+  
+  ptr[26] = scopesettings.timeperdivbackup;
+  
+  ptr[27] = scopesettings.waveviewmode;
+  
+  ptr[40] = scopesettings.triggerposition;
+  ptr[41] = scopesettings.triggeroffset;       //Is this one the correct one or should it be triggerlevel
+  
+  ptr[42] = scopesettings.channel1.traceoffset;
+  ptr[43] = scopesettings.channel2.traceoffset;
+
+  ptr[60] = scopesettings.screenbrightness;
+  ptr[61] = scopesettings.gridbrightness;
+  ptr[62] = scopesettings.alwaystrigger50;
+  ptr[63] = scopesettings.xymodedisplay;
+  
+  //Point to the location in the buffer where the measurement states are set
+  //Since the buffer is declared as uint32 the index will be based on that and the cast is needed for the assignment to the pointer
+  //Need to verify this
+  ptr = (uint16 *)&viewfilesetupdata[40];
+  
+  //Save the measurements enable states
+  for(channel=0;channel<2;channel++)
+  {
+    //12 measurements per channel
+    for(index=0;index<12;index++)
+    {
+      //Copy the current measurement state and point to the next one
+      *ptr++ = scopesettings.measuresstate[channel][index];
+    }
+  }
+  
+  //The measurement values need to be copied in, but these seem to be 32 bits. With the buffer being 32 bit variables this is easy to do,
+  //but I don't have these variables yet so skipped for now
+  
+  //Then the list of measurement numbers for display is copied in. The plan is to use a different setup in my code so also skipped
+  
+  
+  //Point to the location in the buffer where the remaining parameters are copied
+  //Since the buffer is declared as uint32 the index will be based on that and the cast is needed for the assignment to the pointer
+  //Need to verify this
+  ptr = (uint16 *)&viewfilesetupdata[100];
+  
+  ptr[0] = scopesettings.batterycharging;
+  ptr[1] = scopesettings.batterychargelevel;   //Already copied in earlier so not really needed
+  
+  //Not sure what these two are for so set to zero for now.
+  ptr[2] = 0;
+  ptr[3] = 0;
+
   //No idea what this is for, but it is done in the original code
   fpga_read_parameter_ic(0x15, 0x18);
   
-  //In the original code the measurements and the trace data are copied too
+  //In the original code the sample buffers are saved here
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_restore_setup_form_file(void)
+{
+  uint16 *ptr = (uint16 *)viewfilesetupdata;
+  uint32 index;
+  uint32 channel;
+  
+  //Copy the different settings to the file
+  scopesettings.runstate = ptr[0];
+  
+  scopesettings.channel1.enable        = ptr[1];
+  scopesettings.channel1.voltperdiv    = ptr[2];
+  scopesettings.channel1.fftenable     = ptr[3];
+  scopesettings.channel1.coupling      = ptr[4];
+  scopesettings.channel1.magnification = ptr[5];
+  
+  scopesettings.channel2.enable        = ptr[6];
+  scopesettings.channel2.voltperdiv    = ptr[7];
+  scopesettings.channel2.fftenable     = ptr[8];
+  scopesettings.channel2.coupling      = ptr[9];
+  scopesettings.channel2.magnification = ptr[10];
+
+  scopesettings.timeperdiv = ptr[11];
+  
+  scopesettings.movespeed = ptr[12];
+  
+  scopesettings.triggermode    = ptr[13];
+  scopesettings.triggeredge    = ptr[14];
+  scopesettings.triggerchannel = ptr[15];
+  
+  scopesettings.batterychargelevel = ptr[16];
+  
+  scopesettings.rightmenustate = ptr[17];
+
+  scopesettings.triggerflag2 = ptr[18];
+  scopesettings.triggerflag1 = ptr[19];
+
+  disp_x_start = ptr[20];
+
+  //For time base settings 50S - 100mS per div disp_xpos is used as sample count
+  if(scopesettings.timeperdiv < 9)
+  {
+    disp_xpos = ptr[21];
+  }
+  else
+  {
+    disp_sample_count = ptr[21];
+  }
+
+  //These are still unknown variables so set to zero for now
+  //ptr[22] = 0;
+  //ptr[23] = 0;
+  //ptr[24] = 0;
+  //ptr[25] = 0;
+  
+  scopesettings.timeperdivbackup = ptr[26];
+  
+  scopesettings.waveviewmode = ptr[27];
+  
+  scopesettings.triggerposition = ptr[40];
+  scopesettings.triggeroffset   = ptr[41];       //Is this one the correct one or should it be triggerlevel
+  
+  scopesettings.channel1.traceoffset = ptr[42];
+  scopesettings.channel2.traceoffset = ptr[43];
+
+  scopesettings.screenbrightness = ptr[60];
+  scopesettings.gridbrightness   = ptr[61];
+  scopesettings.alwaystrigger50  = ptr[62];
+  scopesettings.xymodedisplay    = ptr[63];
+  
+  //Point to the location in the buffer where the measurement states are set
+  //Since the buffer is declared as uint32 the index will be based on that and the cast is needed for the assignment to the pointer
+  //Need to verify this
+  ptr = (uint16 *)&viewfilesetupdata[40];
+  
+  //Save the measurements enable states
+  for(channel=0;channel<2;channel++)
+  {
+    //12 measurements per channel
+    for(index=0;index<12;index++)
+    {
+      //Copy the current measurement state and point to the next one
+      scopesettings.measuresstate[channel][index] = *ptr++;
+    }
+  }
+  
+  //The measurement values need to be copied in, but these seem to be 32 bits. With the buffer being 32 bit variables this is easy to do,
+  //but I don't have these variables yet so skipped for now
+  
+  //Then the list of measurement numbers for display is copied in. The plan is to use a different setup in my code so also skipped
+  
+  
+  //Point to the location in the buffer where the remaining parameters are copied
+  //Since the buffer is declared as uint32 the index will be based on that and the cast is needed for the assignment to the pointer
+  //Need to verify this
+  ptr = (uint16 *)&viewfilesetupdata[100];
+  
+  scopesettings.batterycharging    = ptr[0];
+  scopesettings.batterychargelevel = ptr[1];   //Already copied in earlier so not really needed
+  
+  //Not sure what these two are for so set to zero for now.
+  //ptr[2] = 0;
+  //ptr[3] = 0;
+
+  //No idea what this is for, but it is done in the original code
+  //In the original code there might be an error, since for waveform view the r1 register (parameter input) is not set in this function
+  fpga_read_parameter_ic(0x15, 0x18);
+  
+  //In the original code the sample buffers are restored here
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -5811,7 +6161,7 @@ void scope_load_system_file(void)
   viewavailableitems = 0;
   viewitemsonpage = 0;
   
-  //Try to open the thumbnail file for this view type
+  //Try to open the file number file for this view type
   result = f_open(&viewfp, system_file_name[viewtype & VIEW_TYPE_MASK], FA_READ);
   
   //Check the result
@@ -5863,15 +6213,122 @@ void scope_load_system_file(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-int32 scope_load_trace_data(uint32 index)
+void scope_save_list_file(void)
+{
+  int32   result;
+  
+  //In the original code they try to create the file if open fails, but that is already done in the load function
+  //and that is always called before a save is done, and the USB functionality is only operational when started via the menu
+  //so the file can't be deleted in the meantime
+  
+  //Try to open the thumbnail file for this view type
+  result = f_open(&viewfp, list_file_name[viewtype & VIEW_TYPE_MASK], FA_WRITE);
+  
+  //Only if the file is opened write to it
+  if(result == FR_OK)
+  {
+    //Write the list to the file
+    f_write(&viewfp, viewthumbnaildata, VIEW_THUMBNAIL_DATA_SIZE, 0);
+
+    //Close the file
+    f_close(&viewfp);
+  }
+  else
+  {
+    //Show an error on the screen
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_save_system_file(void)
+{
+  int32   result;
+  
+  //In the original code they try to create the file if open fails, but that is already done in the load function
+  //and that is always called before a save is done, and the USB functionality is only operational when started via the menu
+  //so the file can't be deleted in the meantime
+  
+  //Try to open the file number file for this view type
+  result = f_open(&viewfp, system_file_name[viewtype & VIEW_TYPE_MASK], FA_WRITE);
+  
+  //Only if the file is opened write to it
+  if(result == FR_OK)
+  {
+    //Write the list to the file
+    f_write(&viewfp, viewfilenumberdata, VIEW_FILE_NUMBER_DATA_SIZE, 0);
+
+    //Close the file
+    f_close(&viewfp);
+  }
+  else
+  {
+    //Show an error on the screen
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_remove_item_from_lists(void)
 {
   //Point to the file numbers
   uint16 *fnptr = (uint16 *)viewfilenumberdata;
+  uint16 *dptr = &fnptr[viewcurrentindex];
+  uint16 *sptr = &fnptr[viewcurrentindex + 1];
+  uint16 *eptr = &fnptr[VIEW_MAX_ITEMS];
   
+  //Get the file number for matching the item in the thumbnail list
+  uint16 filenumber = fnptr[viewcurrentindex];
+  
+  //Point to the thumbnail data
+  PTHUMBNAILDATA thumbnaildata = (PTHUMBNAILDATA)viewthumbnaildata;
+  
+  //The original code does this two at a time, which requires a check to see if there is an odd number of items to copy
+  //Another method can be with memcpy and calculate the number of bytes that need to be moved
+  //This solution only does the needed items, and with a max of 1000 items it does not really matter that much
+  
+  //Remove the item by shifting the others down
+  while((sptr < eptr) && (*sptr))
+  {
+    //Copy the next item down
+    *dptr++ = *sptr++;
+  }
+  
+  //Clear the last entry
+  *dptr = 0;
+  
+  //Locate the thumbnail data for the current file number
+  while(thumbnaildata < (PTHUMBNAILDATA)(viewthumbnaildata + VIEW_THUMBNAIL_DATA_SIZE))
+  {
+    //Check if the file number of this thumbnail matches the current file number
+    if(((thumbnaildata->filenumbermsb << 8) | thumbnaildata->filenumberlsb) == filenumber)
+    {
+      //If found, clear the file number
+      thumbnaildata->filenumbermsb = 0;
+      thumbnaildata->filenumberlsb = 0;
+
+      //Done so quit the loop
+      break;
+    }
+
+    //Select the next thumbnail set
+    thumbnaildata++;
+  }
+
+  //Setup the file name for this view item  
+  scope_print_file_name(fnptr[viewcurrentindex]);
+  
+  //Delete the file from the SD card
+  f_unlink(viewfilename);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+int32 scope_load_trace_data(void)
+{
+  //Point to the file numbers
+  uint16 *fnptr = (uint16 *)viewfilenumberdata;
   uint32 result;
-  
-  //Set the current index for this file
-  viewcurrentindex = index + (viewpage * VIEW_ITEMS_PER_PAGE);
 
   //Setup the file name for this view item  
   scope_print_file_name(fnptr[viewcurrentindex]);
@@ -5882,31 +6339,72 @@ int32 scope_load_trace_data(uint32 index)
   //Check if file opened ok
   if(result == FR_OK)
   {
-    //Load the data to the needed buffers
-    
-    //first 1000 bytes contain settings. Data is contained in shorts even if source was byte. Need a buffer for this and need to copy the settings to the scopesettings struct
-    
-    //The next 3000 bytes are signal data for channel 1. This data needs to be loaded to channel1tracebuffer4
-    
-    //The following 3000 bytes are signal data for channel 2. This data needs to be loaded to channel2tracebuffer4
-    
-    //The next 1500 bytes are for channel1ypoints
-
-    //The remaining 1500 bytes are for channel2ypoints
-    
-    
-  //on success load the data to the needed locations
-  //build the main screen (set the correct modes for the different view types)
+    //Checks on correct number of bytes read might be needed
+    //Load the setup data to the file setup data buffer
+    if(f_read(&viewfp, (uint8 *)viewfilesetupdata, 1000, 0) == FR_OK)
+    {
+      //Copy the loaded data to the settings
+      scope_restore_setup_form_file();
+      
+      //Load the channel 1 sample data
+      if(f_read(&viewfp, (uint8 *)channel1tracebuffer4, 3000, 0) == FR_OK)
+      {
+        //Load the channel 2 sample data
+        if(f_read(&viewfp, (uint8 *)channel2tracebuffer4, 3000, 0) == FR_OK)
+        {
+          //Load the channel 1 display data
+          if(f_read(&viewfp, (uint8 *)channel1ypoints, 1500, 0) == FR_OK)
+          {
+            //Load the channel 2 display data
+            if(f_read(&viewfp, (uint8 *)channel2ypoints, 1500, 0) == FR_OK)
+            {
+              //File is no longer needed so close it
+              f_close(&viewfp);
+              
+              //For waveform type view some variables need to be set to force the normal display in waveform view
+              if(viewtype == VIEW_TYPE_WAVEFORM)
+              {
+                scopesettings.triggerflag1 = 1;
+                scopesettings.triggerflag2 = 1;
+                scopesettings.runstate = 1;
+                scopesettings.waveviewmode = 1;
+              }
+              
+              //Show the normal scope screen
+              scope_setup_main_screen();
+              
   //display the trace data
+              
+              //For now just a clean screen
+              //Clear the trace portion of the screen
+              display_set_fg_color(0x00000000);
+              display_fill_rect(2, 46, 728, 432);
 
-    return(VIEW_TRACE_LOAD_OK);
-  }
-  else
-  {
-    //on failure remove it from the lists and update the list files and return error
+              
+              //Everything loaded ok
+              return(VIEW_TRACE_LOAD_OK);
+            }
+          }
+        }
+      }
+    }
     
-    return(VIEW_TRACE_LOAD_ERROR);
+    //At this point something went wrong so close the file
+    f_close(&viewfp);
   }
+  
+  //Need to clear the screen and display an error occurred. Either for a short time, or wait for touch
+  
+  //on failure remove it from the lists and update the list files and return an error occurred
+
+  //Remove the current item from the lists and delete the item from disk
+  scope_remove_item_from_lists();
+  
+  //Save the list files
+  scope_save_list_file();
+  scope_save_system_file();
+  
+  return(VIEW_TRACE_LOAD_ERROR);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

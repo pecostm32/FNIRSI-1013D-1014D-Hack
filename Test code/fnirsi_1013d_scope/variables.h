@@ -53,12 +53,16 @@
 #define VIEW_SELECT_INDIVIDUAL            2
 
 //States for bottom file menu displaying
-#define VIEW_BOTTON_MENU_INIT             3
-#define VIEW_BOTTON_MENU_SHOW             1
+#define VIEW_BOTTON_MENU_INIT             3     //This is a combination of init and show, so show needs to be 1
+#define VIEW_BOTTON_MENU_SHOW             1     //Needs to be 1 / 0 for the show and hide since an exor is used to toggle the modes
 #define VIEW_BOTTON_MENU_HIDE             0
 
 #define VIEW_TRACE_LOAD_OK                0
 #define VIEW_TRACE_LOAD_ERROR             1
+
+#define VIEW_CONFIRM_DELETE_NO            1
+#define VIEW_CONFIRM_DELETE_YES           2
+
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Typedefs
@@ -133,18 +137,18 @@ extern MEASUREMENTS channel2measurements;
 extern uint16 channel1tracebuffer1[];
 extern uint16 channel1tracebuffer2[];
 extern uint16 channel1tracebuffer3[];
-extern uint16 channel1tracebuffer4[];
+extern uint32 channel1tracebuffer4[];
 
 extern uint16 channel2tracebuffer1[];
 extern uint16 channel2tracebuffer2[];
 extern uint16 channel2tracebuffer3[];
-extern uint16 channel2tracebuffer4[];
+extern uint32 channel2tracebuffer4[];
 
 extern uint16 temptracebuffer1[];
 extern uint16 temptracebuffer2[];
 
-extern uint16 channel1ypoints[];
-extern uint16 channel2ypoints[];
+extern uint32 channel1ypoints[];
+extern uint32 channel2ypoints[];
 
 extern uint16 disp_xpos;
 
@@ -224,6 +228,8 @@ extern uint8 viewpage;
 extern uint8 viewpages;
 extern uint8 viewitemsonpage;
 
+extern uint8 viewbottommenustate;
+
 extern uint16 viewcurrentindex;
 
 extern uint16 viewavailableitems;
@@ -233,6 +239,8 @@ extern uint8 viewitemselected[];
 extern uint32 viewthumbnaildata[];
 
 extern uint32 viewfilenumberdata[];
+
+extern uint32 viewfilesetupdata[];
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Display data

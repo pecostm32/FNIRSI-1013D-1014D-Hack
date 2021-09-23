@@ -36,6 +36,7 @@ struct tagChannelSettings
   uint16 traceoffset;   //No idea if this is correct. Found at 0x8019d5a6 and 0x8019d5b2 in the original code
 };
 
+//Should these be 32 bit wide???
 struct tagMeasurements
 {
   int16 max;

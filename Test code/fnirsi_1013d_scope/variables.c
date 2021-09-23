@@ -55,19 +55,23 @@ MEASUREMENTS channel2measurements;
 uint16 channel1tracebuffer1[3000];    //In original code at 0x8019D5EA
 uint16 channel1tracebuffer2[3000];    //Not used in original code???
 uint16 channel1tracebuffer3[3000];    //Target buffer for processed trace data. In original code at 0x801A916A
-uint16 channel1tracebuffer4[3000];    //In original code at 0x801AC04A
+
+//declared as uint32 for use with file functions, but used with shorts (3000)
+uint32 channel1tracebuffer4[1500];    //In original code at 0x801AC04A
 
 uint16 channel2tracebuffer1[3000];    //In original code at 0x801A04CA
 uint16 channel2tracebuffer2[3000];    //In original code at 0x801A1C3A
 uint16 channel2tracebuffer3[3000];    //In original code at 0x801AA8DA
-uint16 channel2tracebuffer4[3000];    //In original code at 0x801AD7BA
+
+//declared as uint32 for use with file functions, but used with shorts (3000)
+uint32 channel2tracebuffer4[1500];    //In original code at 0x801AD7BA
 
 uint16 temptracebuffer1[6000];         //In original code at 0x801AEF26
 uint16 temptracebuffer2[6000];         //In original code at 0x801B8B60
 
-
-uint16 channel1ypoints[1000];          //At 0x801C374A in original code
-uint16 channel2ypoints[1000];          //At 0x801C374A + 2000 in original code   = 0x801C3F1A
+//declared as uint32 for use with file functions, but used with shorts (1000)
+uint32 channel1ypoints[500];          //At 0x801C374A in original code
+uint32 channel2ypoints[500];          //At 0x801C374A + 2000 in original code   = 0x801C3F1A
 
 uint16 disp_xpos = 0;                  //In original code at 0x80192EAA
 
@@ -129,7 +133,7 @@ uint16 prevxtouch = 0;
 
 FIL viewfp;                         //Since files are not opened concurrent using a global file pointer
 
-char viewfilename[32];
+char viewfilename[32];              //The original code uses a large buffer to create all the needed file names in. Here the file name is created when needed
 
 uint8 viewtype = VIEW_TYPE_PICTURE; //At 0x80192EE2 in original code
 uint8 viewselectmode;               //In original code this is at 0x8035A97E. Signals if either the select all or the select button is active
@@ -137,7 +141,9 @@ uint8 viewpage;                     //In original code this is at 0x8035A97F. Is
 uint8 viewpages;                    //Not in original code, but when only calculated once code gets simpler
 uint8 viewitemsonpage;              //The original code works differently in validating the number of items on a page
 
-uint16 viewcurrentindex;
+uint8 viewbottommenustate;          //At 0x80192EE4 in original code
+
+uint16 viewcurrentindex;            //Used for selecting previous or next item when viewing an item
 
 uint16 viewavailableitems;          //Also done differently in the original code
 
@@ -146,6 +152,9 @@ uint8 viewitemselected[16];         //In original code this is at 0x8035A98B. Fl
 uint32 viewthumbnaildata[VIEW_THUMBNAIL_DATA_SIZE / 4];      //In original code at 0x802F19CE. 400000 bytes, but to make sure it is dword aligned declared as uint32
 
 uint32 viewfilenumberdata[VIEW_FILE_NUMBER_DATA_SIZE / 4];   //In original code at 0x8035A99C. 2000 bytes, but to make sure it is dword aligned declared as uint32
+
+                                    //The original code uses a large buffer to load all the data into and writes it in one go to a file. This requires a lot of extra memory
+uint32 viewfilesetupdata[250];      //Not in original code. 1000 bytes for storing the system settings to save to file or to load from file
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Predefined data

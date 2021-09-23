@@ -181,16 +181,28 @@ void scope_display_measurements(void);
 // File display functions
 //----------------------------------------------------------------------------------------------------------------------------------
 
+//These two functions are for save guarding the operational settings when switched to a view mode
+//This differs from the original code where they save more data and prepare it for writing to file
 void scope_save_setup(PSCOPESETTINGS settings);
-
 void scope_restore_setup(PSCOPESETTINGS settings);
+
+//These two functions are for the system settings, preparing for and restoring from file
+void scope_prepare_setup_for_file(void);
+void scope_restore_setup_form_file(void);
 
 void scope_print_file_name(uint32 filenumber);
 
+//See if these can be combined to one function. Think this can be done
 void scope_load_list_file(void);
 void scope_load_system_file(void);
 
-int32 scope_load_trace_data(uint32 index);
+//See if these can be combined to one function
+void scope_save_list_file(void);
+void scope_save_system_file(void);
+
+void scope_remove_item_from_lists(void);
+
+int32 scope_load_trace_data(void);
 
 void scope_display_thumbnails(void);
 
