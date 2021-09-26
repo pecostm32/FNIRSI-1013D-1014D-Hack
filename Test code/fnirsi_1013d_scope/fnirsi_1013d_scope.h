@@ -83,6 +83,7 @@ struct tagScopeSettings
   uint8 gridbrightness;
   uint8 alwaystrigger50;
   uint8 xymodedisplay;
+  uint8 confirmationmode;
   
   uint8 timecursorsenable;
   uint8 voltcursorsenable;

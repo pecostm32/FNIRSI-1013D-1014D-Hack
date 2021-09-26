@@ -401,13 +401,13 @@ int32 sd_card_write(uint32 sector, uint32 blocks, uint8 *buffer)
   //Only continue when card selected without errors
   if(result == SD_OK)
   {
-    //Prepare data buffer for reading
+    //Prepare data buffer for writing
     sd_data.blocks    = blocks;
     sd_data.blocksize = 512;
-    sd_data.flags     = SD_DATA_READ;
+    sd_data.flags     = SD_DATA_WRITE;
     sd_data.data      = buffer;
     
-    //Send read command based on number of blocks
+    //Send write command based on number of blocks
     if(blocks == 1)
     {
       //Set write single block command

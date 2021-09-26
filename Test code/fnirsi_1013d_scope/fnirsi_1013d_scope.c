@@ -26,30 +26,15 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-extern uint8  havetouch;
-extern uint16 xtouch;
-extern uint16 ytouch;
-
-extern uint8 touchstate;
-
-extern uint8 systemsettingsmenuopen;
-extern uint8 screenbrightnessopen;
-extern uint8 gridbrightnessopen;
-extern uint8 calibrationopen;
-
-extern uint16 maindisplaybuffer[];
-
-extern SCOPESETTINGS scopesettings;
-
 extern IRQHANDLERFUNCION interrupthandlers[];
-
-extern FONTDATA font_3;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 int main(void)
 {
-  FATFS fs;
+  //Initialize data in BSS section
+  memset(&BSS_START, 0, &BSS_END - &BSS_START);
+  
   
   //Initialize the clock system
   sys_clock_init();
@@ -77,7 +62,7 @@ int main(void)
   fpga_set_backlight_brightness(0x0000);
   
   //Initialize display (PORT D + DEBE)
-  sys_init_display(SCREEN_WIDTH, SCREEN_HEIGHT, maindisplaybuffer);
+  sys_init_display(SCREEN_WIDTH, SCREEN_HEIGHT, (uint16 *)maindisplaybuffer);
   
   //Setup the display library for the scope hardware
   scope_setup_display_lib();
@@ -98,7 +83,7 @@ int main(void)
   //Setup the touch panel interface
   tp_i2c_setup();
 
-  //Setup and check SD card on file system present
+  //Setup and check SD card on file system being present
   if(f_mount(&fs, "0", 1))
   {
     //Show SD card error message on failure
@@ -117,6 +102,7 @@ int main(void)
     //On error just hang
     while(1);
   }
+  
   
   scopesettings.rightmenustate = 0;
   scopesettings.waveviewmode = 0;
@@ -164,6 +150,8 @@ int main(void)
   scopesettings.gridbrightness = 46;
   scopesettings.alwaystrigger50 = 1;
   scopesettings.xymodedisplay = 0;
+  
+  scopesettings.confirmationmode = 1;
   
   scopesettings.timecursorsenable = 0;
   scopesettings.timecursor1position = 78;

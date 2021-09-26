@@ -52,6 +52,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/interrupt.o \
 	${OBJECTDIR}/memcmp.o \
 	${OBJECTDIR}/memcpy.o \
+	${OBJECTDIR}/memmove.o \
 	${OBJECTDIR}/memset.o \
 	${OBJECTDIR}/scope_functions.o \
 	${OBJECTDIR}/sd_card_interface.o \
@@ -170,6 +171,10 @@ ${OBJECTDIR}/memcmp.o: memcmp.s
 ${OBJECTDIR}/memcpy.o: memcpy.s
 	${MKDIR} -p ${OBJECTDIR}
 	$(AS) $(ASFLAGS) -o ${OBJECTDIR}/memcpy.o memcpy.s
+
+${OBJECTDIR}/memmove.o: memmove.s
+	${MKDIR} -p ${OBJECTDIR}
+	$(AS) $(ASFLAGS) -o ${OBJECTDIR}/memmove.o memmove.s
 
 ${OBJECTDIR}/memset.o: memset.s
 	${MKDIR} -p ${OBJECTDIR}

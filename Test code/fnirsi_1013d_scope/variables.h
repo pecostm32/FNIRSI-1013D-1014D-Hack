@@ -28,6 +28,7 @@
 
 #define VIEW_THUMBNAIL_DATA_SIZE     400000
 #define VIEW_FILE_NUMBER_DATA_SIZE     2000
+#define VIEW_SETUP_DATA_SIZE           1000
 
 #define VIEW_MAX_ITEMS                 1000
 
@@ -63,13 +64,20 @@
 #define VIEW_CONFIRM_DELETE_NO            1
 #define VIEW_CONFIRM_DELETE_YES           2
 
+#define PICTURE_DATA_SIZE                 (800 * 480 * 2)                              //trace data
+#define PICTURE_PIXEL_OFFSET              (70 + 15000)                                 //Bitmap header + trace data
+#define PICTURE_FILE_SIZE                 (PICTURE_PIXEL_OFFSET + PICTURE_DATA_SIZE)  //Bitmap header + trace data + pixel data
+
+#define MESSAGE_SAVE_SUCCESSFUL           0
+#define MESSAGE_FILE_CREATE_FAILED        1
+#define MESSAGE_FILE_OPEN_FAILED          2
+#define MESSAGE_FILE_WRITE_FAILED         3
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Typedefs
 //----------------------------------------------------------------------------------------------------------------------------------
 
 typedef struct tagThumbnailData         THUMBNAILDATA,        *PTHUMBNAILDATA;
-
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Structs
@@ -92,6 +100,13 @@ struct tagThumbnailData
   uint8 channel1data[180];
   uint8 channel2data[200];
 };
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Linker variables
+//----------------------------------------------------------------------------------------------------------------------------------
+
+extern uint8 BSS_START;
+extern uint8 BSS_END;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Touch data
@@ -125,6 +140,8 @@ extern uint8 calibrationopen;
 //----------------------------------------------------------------------------------------------------------------------------------
 //Scope data
 //----------------------------------------------------------------------------------------------------------------------------------
+
+extern FATFS fs;
 
 extern SCOPESETTINGS scopesettings;
 
@@ -205,7 +222,9 @@ extern const uint16 signal_adjusters[];
 
 extern const uint16 timebase_adjusters[];
 
-extern const uint8 zoom_select_settings[][7];
+extern const uint8 zoom_select_settings[3][7];
+
+extern const uint8 bmpheader[70];
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //For touch filtering on slider movement
@@ -219,7 +238,7 @@ extern uint16 prevxtouch;
 
 extern FIL viewfp;
 
-extern char viewfilename[32];
+extern char viewfilename[];
 
 extern uint8 viewtype;
 
@@ -234,21 +253,23 @@ extern uint16 viewcurrentindex;
 
 extern uint16 viewavailableitems;
 
-extern uint8 viewitemselected[];
+extern uint8 viewitemselected[VIEW_ITEMS_PER_PAGE];
 
-extern uint32 viewthumbnaildata[];
+extern uint32 viewthumbnaildata[VIEW_THUMBNAIL_DATA_SIZE / 4];
 
-extern uint32 viewfilenumberdata[];
+extern uint32 viewfilenumberdata[VIEW_FILE_NUMBER_DATA_SIZE / 4];
 
-extern uint32 viewfilesetupdata[];
+extern uint32 viewfilesetupdata[VIEW_SETUP_DATA_SIZE / 4];
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Display data
 //----------------------------------------------------------------------------------------------------------------------------------
 
-extern uint16 maindisplaybuffer[];
-extern uint16 displaybuffer1[];
-extern uint16 displaybuffer2[];
+//This first buffer is defined as 32 bits to be able to write it to file
+extern uint32 maindisplaybuffer[SCREEN_SIZE / 2];
+
+extern uint16 displaybuffer1[SCREEN_SIZE];
+extern uint16 displaybuffer2[SCREEN_SIZE];
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Fonts
@@ -273,6 +294,7 @@ extern const uint8 grid_brightness_icon[];
 extern const uint8 trigger_50_percent_icon[];
 extern const uint8 baseline_calibration_icon[];
 extern const uint8 x_y_mode_display_icon[];
+extern const uint8 confirmation_icon[];
 extern const uint8 return_arrow_icon[];
 extern const uint8 left_pointer_icon[];
 extern const uint8 right_pointer_icon[];

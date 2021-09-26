@@ -92,7 +92,7 @@ void scope_trigger_mode_select(void);
 void scope_trigger_edge_select(void);
 void scope_trigger_channel_select(void);
 
-void scope_open_system_settings_menu(void);
+void scope_open_system_settings_menu(void);    //Add notification confirmation option!!
 void scope_system_settings_screen_brightness_item(int mode);
 void scope_system_settings_screen_brightness_value(void);
 void scope_system_settings_grid_brightness_item(int mode);
@@ -100,6 +100,7 @@ void scope_system_settings_grid_brightness_value(void);
 void scope_system_settings_trigger_50_item(void);
 void scope_system_settings_calibration_item(int mode);
 void scope_system_settings_x_y_mode_item(void);
+void scope_system_settings_confirmation_item(void);
 
 void scope_open_calibration_start_text(void);
 void scope_show_calibrating_text(void);
@@ -188,27 +189,32 @@ void scope_restore_setup(PSCOPESETTINGS settings);
 
 //These two functions are for the system settings, preparing for and restoring from file
 void scope_prepare_setup_for_file(void);
-void scope_restore_setup_form_file(void);
+void scope_restore_setup_from_file(void);
 
 void scope_print_file_name(uint32 filenumber);
 
-//See if these can be combined to one function. Think this can be done
-void scope_load_list_file(void);
-void scope_load_system_file(void);
+void scope_load_list_files(void);                      //Add error handling!!
+void scope_save_list_files(void);                      //Add error handling!!
 
-//See if these can be combined to one function
-void scope_save_list_file(void);
-void scope_save_system_file(void);
+void scope_save_view_item_file(int32 type);            //Need to finish this one. verify the working
 
 void scope_remove_item_from_lists(void);
 
-int32 scope_load_trace_data(void);
+int32 scope_load_trace_data(void);                     //Need to finish this one
 
-void scope_display_thumbnails(void);
+void scope_count_and_display_thumbnails(void);
+
+void scope_display_thumbnails(void);                   //Add displaying the file number or name to this function
 
 void scope_display_thumbnail_data(uint32 xpos, uint32 ypos, PTHUMBNAILDATA thumbnaildata, uint32 channel);
 
+void scope_create_thumbnail(void);                     //Need to finish this one
+
+int32 scope_display_picture_item(void);                //Need to finish this one
+
 void scope_display_selected_signs(void);
+
+void scope_display_file_status_message(int32 msgid);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

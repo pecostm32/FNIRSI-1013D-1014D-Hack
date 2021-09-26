@@ -192,7 +192,7 @@ void scan_for_touch(void)
   }
   
   //Draw directly to screen
-  display_set_screen_buffer(maindisplaybuffer);
+  display_set_screen_buffer((uint16 *)maindisplaybuffer);
 
   //Scan for where the touch is applied
   if((xtouch <= 730) && (ytouch <= 46))
@@ -701,7 +701,7 @@ void handle_main_menu_touch(void)
 
             //Save the screen under the menu
             display_set_destination_buffer(displaybuffer2);
-            display_copy_rect_from_screen(150, 46, 244, 294);
+            display_copy_rect_from_screen(150, 46, 244, 353);
             
             //Show the system settings menu
             scope_open_system_settings_menu();
@@ -755,7 +755,7 @@ void handle_main_menu_touch(void)
         }
       }
       //Check on system settings menu opened and being touched
-      else if(systemsettingsmenuopen && (xtouch >= 150) && (xtouch <= 394) && (ytouch >= 46) && (ytouch <= 340))
+      else if(systemsettingsmenuopen && (xtouch >= 150) && (xtouch <= 394) && (ytouch >= 46) && (ytouch <= 399))
       {
         //Check if on screen brightness
         if((ytouch >= 47) && (ytouch <= 103))
@@ -853,6 +853,21 @@ void handle_main_menu_touch(void)
           //Show the state
           scope_display_slide_button(326, 299, scopesettings.xymodedisplay);
         }
+        //check on notification confirmation
+        else if((ytouch >= 341) && (ytouch <= 398))
+        {
+          //Close any of the sub menus if open
+          close_open_sub_menus();
+          
+          //Wait until touch is released
+          tp_i2c_wait_for_touch_release();
+
+          //Toggle the notification confirmation mode
+          scopesettings.confirmationmode ^= 1;
+  
+          //Show the state
+          scope_display_slide_button(326, 358, scopesettings.confirmationmode);
+        }
       }
       //Check on screen brightness slider opened and being touched
       else if(screenbrightnessopen && (xtouch >= 395) && (xtouch <= 726) && (ytouch >= 46) && (ytouch <= 104))
@@ -920,7 +935,7 @@ void handle_main_menu_touch(void)
         {
           //Restore the screen under the system settings menu when done
           display_set_source_buffer(displaybuffer2);
-          display_copy_rect_to_screen(150, 46, 244, 294);
+          display_copy_rect_to_screen(150, 46, 244, 353);
           
           //Clear the flag so it will be opened next time
           systemsettingsmenuopen = 0;
@@ -1482,6 +1497,7 @@ void handle_right_basic_menu_touch(void)
     else
     {
       //Page up so highlight that button if touched
+      //Button text is not right, should be previous waveform
       scope_page_up_button(1);
 
       //Wait until touch is released
@@ -1489,10 +1505,20 @@ void handle_right_basic_menu_touch(void)
 
       //Button back to inactive state
       scope_page_up_button(0);
+      
+      //Check if not on first item
+      if(viewcurrentindex > 0)
+      {
+        //Select the previous one
+        viewcurrentindex--;
 
-      //Some waveform counter needs to be checked and decremented
-      //Previous waveform needs to be displayed
-      //waveform_select_file
+        //Load the waveform data for the newly selected item
+        if(scope_load_trace_data() == VIEW_TRACE_LOAD_ERROR)
+        {
+          //On error signal need to return to main item view mode
+          scopesettings.waveviewmode = 0;
+        }
+      }
     }
   }
   //Check if auto set or page down button is touched
@@ -1522,6 +1548,7 @@ void handle_right_basic_menu_touch(void)
     else
     {
       //Page down so highlight that button if touched
+      //Button text is incorrect, should be next waveform
       scope_page_down_button(1);
 
       //Wait until touch is released
@@ -1530,9 +1557,20 @@ void handle_right_basic_menu_touch(void)
       //Button back to inactive state
       scope_page_down_button(0);
 
-      //Some waveform counter needs to be checked and incremented
-      //Next waveforms needs to be displayed
-      //waveform_select_file
+      //Check if not on last item
+      //Index starts on zero, available items on 1
+      if(viewcurrentindex < (viewavailableitems - 1))
+      {
+        //Select the next one
+        viewcurrentindex++;
+
+        //Load the waveform data for the newly selected item
+        if(scope_load_trace_data() == VIEW_TRACE_LOAD_ERROR)
+        {
+          //On error signal need to return to main item view mode
+          scopesettings.waveviewmode = 0;
+        }
+      }
     }
   }
   //Check if time cursor button is touched
@@ -1610,16 +1648,9 @@ void handle_right_basic_menu_touch(void)
 
     //Button back to inactive state
     scope_save_picture_button(0);
-/*    
-    //This needs to be done for save picture
-    FUN_80025f2c();
-    if ((pcVar5[0x43] != '\0') && (*PTR_DAT_80020300 == '\x01'))  //wave view mode, so viewing a wave file and 0x80192ee2 which is type of view selected. 1 being wave???
-    {
-      //seems as something that is not needed
-      FUN_8002c8e4();
-      load_selected_list_file();
-    }
-*/
+    
+    //Save the picture on the SD card
+    scope_save_view_item_file(VIEW_TYPE_PICTURE);
   }
   //Check if save or delete wave button is touched
   else if((ytouch >= 423) && (ytouch <= 477))
@@ -1635,10 +1666,9 @@ void handle_right_basic_menu_touch(void)
 
       //Button back to inactive state
       scope_save_wave_button(0);
-/*
-      //This needs to be done for save wave
-      FUN_80025c38();
-*/
+    
+      //Save the waveform on the SD card
+      scope_save_view_item_file(VIEW_TYPE_WAVEFORM);
     }
     else
     {
@@ -1650,24 +1680,43 @@ void handle_right_basic_menu_touch(void)
 
       //Button back to inactive state
       scope_delete_wave_button(0);
-/*
-      //This needs to be done for delete wave      
-      iVar25 = FUN_8002b8e8();
-      if(iVar25 == 0)
+      
+      //Ask user for confirmation of the delete
+      if(handle_confirm_delete() == VIEW_CONFIRM_DELETE_YES)
       {
-        FUN_8002ca8c();
-      }
-      else
-      {
-        FUN_8002ca34();
-        iVar25 = FUN_8002ca8c();
-        
-        if (iVar25 != 0)  //Last wave deleted then back to normal view mode
+        //Need to remove this item from the lists
+        scope_remove_item_from_lists();
+
+        //save the lists
+        scope_save_list_files();
+
+        //The number of available items needs to be reduced by one
+        viewavailableitems--;
+
+        //No more items available then return
+        if(viewavailableitems == 0)
         {
-          pcVar5[0x43] = '\0';
+          //Signal need to return to main item view mode
+          scopesettings.waveviewmode = 0;
+        }
+        else
+        {
+          //Then need to see if there is a next image to display or the previous one needs to be used
+          if(viewcurrentindex >= viewavailableitems)
+          {
+            //Use the last available one
+            //Index starts on zero, available items on 1
+            viewcurrentindex = viewavailableitems - 1;
+          }
+
+          //Load the waveform data for the newly selected item
+          if(scope_load_trace_data() == VIEW_TRACE_LOAD_ERROR)
+          {
+            //On error signal need to return to main item view mode
+            scopesettings.waveviewmode = 0;
+          }
         }
       }
-*/
     }
   }
 }
@@ -2242,19 +2291,18 @@ void handle_view_mode_touch(void)
                 }
                 
                 //Save the list files
-                scope_save_list_file();
-                scope_save_system_file();
+                scope_save_list_files();
                 
                 //Clear the select flags
                 memset(viewitemselected, VIEW_ITEM_NOT_SELECTED, VIEW_ITEMS_PER_PAGE);
                 
-                //Redisplay the thumbnails
-                scope_display_thumbnails();
-
-          //On exit of the touch handlers the display needs to be redrawn
-          //Also take care of page management if current page is no longer valid due to deleted items
-          //So create a single function for this
+                //Clear the select state and the button highlights
+                viewselectmode = VIEW_SELECT_NONE;
+                scope_select_all_button(0);
+                scope_select_button(0);
                 
+                //Redisplay the thumbnails
+                scope_count_and_display_thumbnails();
               }
             }            
           }
@@ -2366,7 +2414,7 @@ void handle_view_mode_touch(void)
               //Loaded ok, so take action based on the type of the opened item
               if(viewtype == VIEW_TYPE_PICTURE)
               {
-                //On init draw the bottom menu bar with a save of the background
+                //On initialization draw the bottom menu bar with a save of the background
                 scope_setup_bottom_file_menu(VIEW_BOTTON_MENU_INIT);
                 
                 //Handle the touch
@@ -2379,6 +2427,7 @@ void handle_view_mode_touch(void)
                 //Normal touch needs to be scanned and if a change that can be handled is detected the trace needs to be updated
                 while(scopesettings.waveviewmode)
                 {
+                  //Use the main touch handler for waveform view
                   touch_handler();
                   
                   //Need to check on changes or just redraw the display every loop???
@@ -2389,18 +2438,11 @@ void handle_view_mode_touch(void)
               }
             }
 
-            //On exit of the touch handlers the display needs to be redrawn
-            //This is also needed when the file did not open and is removed from the lists
-            //Also take care of page management if current page is no longer valid due to deleted items
-            //So create a single function for this
-            
             //Display the file actions menu on the right side of the screen
             scope_setup_right_file_menu();
             
             //Display the available thumbnails for the current view type
-            scope_display_thumbnails();
-            
-
+            scope_count_and_display_thumbnails();
           }
         }
       }
@@ -2444,6 +2486,78 @@ void handle_picture_view_touch(void)
             //Just return
             return;
           }
+          //Check if in delete button region
+          else if((xtouch > 204) && (xtouch < 396))
+          {
+            //Ask user for confirmation of the delete
+            if(handle_confirm_delete() == VIEW_CONFIRM_DELETE_YES)
+            {
+              //Need to remove this item from the lists
+              scope_remove_item_from_lists();
+
+              //save the lists
+              scope_save_list_files();
+
+              //The number of available items needs to be reduced by one
+              viewavailableitems--;
+
+              //No more items available then return
+              if(viewavailableitems == 0)
+              {
+                return;
+              }
+
+              //Then need to see if there is a next image to display or the previous one needs to be used
+              if(viewcurrentindex >= viewavailableitems)
+              {
+                //Use the last available one
+                //Index starts on zero, available items on 1
+                viewcurrentindex = viewavailableitems - 1;
+              }
+
+              //Display the new picture item
+              if(scope_display_picture_item() == VIEW_TRACE_LOAD_ERROR)
+              {
+                //On error return to main view
+                return;
+              }
+            }
+          }
+          //Check if in previous item button region
+          else if((xtouch > 404) && (xtouch < 596))
+          {
+            //Check if not on first item
+            if(viewcurrentindex > 0)
+            {
+              //Select the previous one
+              viewcurrentindex--;
+              
+              //Display the new picture item
+              if(scope_display_picture_item() == VIEW_TRACE_LOAD_ERROR)
+              {
+                //On error return to main view
+                return;
+              }
+            }
+          }
+          //Check if in next item button region
+          else if((xtouch > 604) && (xtouch < 796))
+          {
+            //Check if not on last item
+            //Index starts on zero, available items on 1
+            if(viewcurrentindex < (viewavailableitems - 1))
+            {
+              //Select the next one
+              viewcurrentindex++;
+              
+              //Display the new picture item
+              if(scope_display_picture_item() == VIEW_TRACE_LOAD_ERROR)
+              {
+                //On error return to main view
+                return;
+              }
+            }
+          }
         }
       }
       else
@@ -2456,21 +2570,6 @@ void handle_picture_view_touch(void)
     //Need to wait for touch to release before checking again
     tp_i2c_wait_for_touch_release();
   }
-                
-                //delete current image
-                //display previous image
-                //display next image
-
-                //Selecting another image across a page boundary does not change the main page, so on return the active page is not changed.
-
-                //A delete does modify the page content though because the total number of items is reduced
-                //If more items are deleted the the active page had it returns to an empty page. I think in this case it should decrement the active page
-                //Can easily be detected since available items will be reduced
-
-
-                //The same happens when all items on a page are deleted!!!
-
-  
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -2529,10 +2628,10 @@ int32 handle_confirm_delete(void)
         //Done so quit the loop
         break;
       }
-    }
     
-    //Need to wait for touch to release before checking again
-    tp_i2c_wait_for_touch_release();
+      //Need to wait for touch to release before checking again
+      tp_i2c_wait_for_touch_release();
+    }
   }
   
   //Need to wait for touch to release before returning

@@ -19,7 +19,7 @@ void scope_setup_display_lib(void)
 {
   display_set_bg_color(0x00000000);
   
-  display_set_screen_buffer(maindisplaybuffer);
+  display_set_screen_buffer((uint16 *)maindisplaybuffer);
   
   display_set_dimensions(SCREEN_WIDTH, SCREEN_HEIGHT);
   
@@ -114,14 +114,11 @@ void scope_setup_view_screen(void)
   //Display the file actions menu on the right side of the screen
   scope_setup_right_file_menu();
   
-  //Load the thumbnail file for the current view type
-  scope_load_list_file();
-  
-  //Load in the used file numbers for this view type
-  scope_load_system_file();
+  //Load the list files for the current view type
+  scope_load_list_files();
   
   //Display the available thumbnails for the current view type
-  scope_display_thumbnails();
+  scope_count_and_display_thumbnails();
   
   //Handle touch for this part of the user interface
   handle_view_mode_touch();
@@ -1834,7 +1831,7 @@ void scope_open_main_menu(void)
   
   //Set source and target for getting it on the actual screen
   display_set_source_buffer(displaybuffer1);
-  display_set_screen_buffer(maindisplaybuffer);
+  display_set_screen_buffer((uint16 *)maindisplaybuffer);
 
   //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
   display_slide_top_rect_onto_screen(0, 46, 149, 233, 63039);
@@ -2057,7 +2054,7 @@ void scope_open_channel1_menu(void)
   
   //Set source and target for getting it on the actual screen
   display_set_source_buffer(displaybuffer1);
-  display_set_screen_buffer(maindisplaybuffer);
+  display_set_screen_buffer((uint16 *)maindisplaybuffer);
 
   //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
   display_slide_top_rect_onto_screen(161, 46, 183, 252, 69906);
@@ -2418,7 +2415,7 @@ void scope_open_channel2_menu(void)
   
   //Set source and target for getting it on the actual screen
   display_set_source_buffer(displaybuffer1);
-  display_set_screen_buffer(maindisplaybuffer);
+  display_set_screen_buffer((uint16 *)maindisplaybuffer);
 
   //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
   display_slide_top_rect_onto_screen(288, 46, 183, 252, 69906);
@@ -2776,7 +2773,7 @@ void scope_open_trigger_menu(void)
   
   //Set source and target for getting it on the actual screen
   display_set_source_buffer(displaybuffer1);
-  display_set_screen_buffer(maindisplaybuffer);
+  display_set_screen_buffer((uint16 *)maindisplaybuffer);
 
   //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
   display_slide_top_rect_onto_screen(560, 46, 172, 186, 56415);
@@ -3027,6 +3024,8 @@ void scope_trigger_channel_select(void)
 
 void scope_open_system_settings_menu(void)
 {
+  int y;
+  
   //Setup the menu in a separate buffer to be able to slide it onto the screen
   display_set_screen_buffer(displaybuffer1);
   
@@ -3034,34 +3033,36 @@ void scope_open_system_settings_menu(void)
   display_set_fg_color(0x00181818);
   
   //Fill the background
-  display_fill_rect(150, 46, 244, 294);
+  display_fill_rect(150, 46, 244, 353);
 
   //Draw the edge in a lighter grey
   display_set_fg_color(0x00333333);
   
   //Draw the edge
-  display_draw_rect(150, 46, 244, 294);
+  display_draw_rect(150, 46, 244, 353);
   
-  //Four black lines between the settings
+  //Five black lines between the settings
   display_set_fg_color(0x00000000);
-  display_draw_horz_line(104, 159, 385);
-  display_draw_horz_line(163, 159, 385);
-  display_draw_horz_line(222, 159, 385);
-  display_draw_horz_line(281, 159, 385);
-
+  
+  for(y=104;y<350;y+=59)
+  {
+    display_draw_horz_line(y, 159, 385);
+  }
+  
   //Display the menu items  
   scope_system_settings_screen_brightness_item(0);
   scope_system_settings_grid_brightness_item(0);
   scope_system_settings_trigger_50_item();
   scope_system_settings_calibration_item(0);
   scope_system_settings_x_y_mode_item();
+  scope_system_settings_confirmation_item();
   
   //Set source and target for getting it on the actual screen
   display_set_source_buffer(displaybuffer1);
-  display_set_screen_buffer(maindisplaybuffer);
+  display_set_screen_buffer((uint16 *)maindisplaybuffer);
 
   //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
-  display_slide_left_rect_onto_screen(150, 46, 244, 294, 63039);
+  display_slide_left_rect_onto_screen(150, 46, 244, 353, 63039);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -3266,6 +3267,26 @@ void scope_system_settings_x_y_mode_item(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+void scope_system_settings_confirmation_item(void)
+{
+  //Set the colors for white foreground and grey background
+  display_set_fg_color(0x00FFFFFF);
+  display_set_bg_color(0x00181818);
+
+  //Display the icon with the set colors
+  display_copy_icon_use_colors(confirmation_icon, 171, 356, 24, 24);
+  
+  //Display the text
+  display_set_font(&font_3);
+  display_text(217, 354, "Notification");
+  display_text(213, 370, "confirmation");
+  
+  //Show the state
+  scope_display_slide_button(326, 358, scopesettings.confirmationmode);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 void scope_open_calibration_start_text(void)
 {
   //Save the screen under the baseline calibration start text
@@ -3295,7 +3316,7 @@ void scope_open_calibration_start_text(void)
   
   //Set source and target for getting it on the actual screen
   display_set_source_buffer(displaybuffer1);
-  display_set_screen_buffer(maindisplaybuffer);
+  display_set_screen_buffer((uint16 *)maindisplaybuffer);
 
   //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
   display_slide_left_rect_onto_screen(395, 222, 199, 59, 63039);
@@ -3403,7 +3424,7 @@ void scope_open_measures_menu(void)
   
   //Set source and target for getting it on the actual screen
   display_set_source_buffer(displaybuffer1);
-  display_set_screen_buffer(maindisplaybuffer);
+  display_set_screen_buffer((uint16 *)maindisplaybuffer);
 
   //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
   display_slide_right_rect_onto_screen(231, 263, 499, 214, 75646);
@@ -3553,7 +3574,7 @@ void scope_open_slider(uint16 xpos, uint16 ypos, uint8 position)
   
   //Set source and target for getting it on the actual screen
   display_set_source_buffer(displaybuffer1);
-  display_set_screen_buffer(maindisplaybuffer);
+  display_set_screen_buffer((uint16 *)maindisplaybuffer);
 
   //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
   display_slide_left_rect_onto_screen(xpos, ypos, 331, 58, 63039);
@@ -4298,7 +4319,7 @@ void scope_get_short_timebase_data(void)
 
     //Copy it to the actual screen buffer
     display_set_source_buffer(displaybuffer1);
-    display_set_screen_buffer(maindisplaybuffer);
+    display_set_screen_buffer((uint16 *)maindisplaybuffer);
     display_copy_rect_to_screen(2, 46, 728, 432);
   }
   
@@ -5496,7 +5517,7 @@ void scope_display_trace_data(void)
 
       //Copy it to the actual screen buffer
       display_set_source_buffer(displaybuffer1);
-      display_set_screen_buffer(maindisplaybuffer);
+      display_set_screen_buffer((uint16 *)maindisplaybuffer);
       display_copy_rect_to_screen(2, 46, 728, 432);
     }
   }
@@ -5534,12 +5555,12 @@ void scope_display_trace_data(void)
 
       //Copy it to the actual screen buffer
       display_set_source_buffer(displaybuffer1);
-      display_set_screen_buffer(maindisplaybuffer);
+      display_set_screen_buffer((uint16 *)maindisplaybuffer);
       display_copy_rect_to_screen(2, 46, 728, 432);
     }
 
     //Draw the traces directly to the screen
-    display_set_screen_buffer(maindisplaybuffer);
+    display_set_screen_buffer((uint16 *)maindisplaybuffer);
     
     //Check if channel 1 is enabled
     if(scopesettings.channel1.enable)
@@ -5821,8 +5842,7 @@ void scope_prepare_setup_for_file(void)
   }
   
   //Best to clear the buffer first since not all bytes are used
-  //Can't use sizeof due to variables being declared as extern
-  memset((uint8 *)viewfilesetupdata, 0, 1000);
+  memset((uint8 *)viewfilesetupdata, 0, sizeof(viewfilesetupdata));
   
   //Copy the different settings to the file
   ptr[0]  = scopesettings.runstate;
@@ -5929,7 +5949,7 @@ void scope_prepare_setup_for_file(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_restore_setup_form_file(void)
+void scope_restore_setup_from_file(void)
 {
   uint16 *ptr = (uint16 *)viewfilesetupdata;
   uint32 index;
@@ -6079,7 +6099,7 @@ void scope_print_file_name(uint32 filenumber)
   //Determine the size of the decimal part
   s = 12 - i;
   
-  //Start the filename with a /  (Not sure why, but it seems to work)
+  //Start the filename with a /  (Not sure why it is done, but it seems to work. By default I think it will already be in the main directory.)
   viewfilename[0] = '/';
 
   //Copy in the decimal file number
@@ -6097,13 +6117,20 @@ const char list_file_name[2][14] =
   { "/wavelist.sys" }
 };
 
+const char system_file_name[2][17] =
+{
+  { "/pic_system.sys" },
+  { "/wave_system.sys" }
+};
+
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_load_list_file(void)
+void scope_load_list_files(void)
 {
   int32 result;
   
   //The original code is crap, so improved on it here
+  //It also uses two separate functions for loading the lists
   //This code still needs more error handling with user feedback, but it will do for now
   
   //Try to open the thumbnail file for this view type
@@ -6137,29 +6164,6 @@ void scope_load_list_file(void)
       f_close(&viewfp);
     }
   }
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-const char system_file_name[2][17] =
-{
-  { "/pic_system.sys" },
-  { "/wave_system.sys" }
-};
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-void scope_load_system_file(void)
-{
-  int32   result;
-  uint16 *ptr;
-  
-  //The original code is crap, so improved on it here
-  //This code still needs more error handling with user feedback, but it will do for now
-
-  //No items available yet
-  viewavailableitems = 0;
-  viewitemsonpage = 0;
   
   //Try to open the file number file for this view type
   result = f_open(&viewfp, system_file_name[viewtype & VIEW_TYPE_MASK], FA_READ);
@@ -6172,23 +6176,6 @@ void scope_load_system_file(void)
 
     //Close the file
     f_close(&viewfp);
-    
-    //Count how many items are available
-    //The file contains shorts
-    ptr = (uint16 *)viewfilenumberdata;
-    
-    //A zero indicates no more entries. Make sure not to check beyond buffer size
-    while(*ptr && (viewavailableitems < VIEW_MAX_ITEMS))
-    {
-      //One more item available
-      viewavailableitems++;
-      
-      //Point to next entry
-      ptr++;
-    }
-    
-    //Calculate the number of pages available, based on number of items per page. 0 means 1 page
-    viewpages = viewavailableitems / VIEW_ITEMS_PER_PAGE;
   }
   //Failure then check if file does not exist
   else if(result == FR_NO_FILE)
@@ -6213,16 +6200,17 @@ void scope_load_system_file(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_save_list_file(void)
+void scope_save_list_files(void)
 {
-  int32   result;
+  int32 result;
   
+  //The original code uses two separate functions for loading the lists
   //In the original code they try to create the file if open fails, but that is already done in the load function
   //and that is always called before a save is done, and the USB functionality is only operational when started via the menu
   //so the file can't be deleted in the meantime
   
   //Try to open the thumbnail file for this view type
-  result = f_open(&viewfp, list_file_name[viewtype & VIEW_TYPE_MASK], FA_WRITE);
+  result = f_open(&viewfp, list_file_name[viewtype & VIEW_TYPE_MASK], FA_CREATE_ALWAYS | FA_WRITE);
   
   //Only if the file is opened write to it
   if(result == FR_OK)
@@ -6237,20 +6225,9 @@ void scope_save_list_file(void)
   {
     //Show an error on the screen
   }
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-void scope_save_system_file(void)
-{
-  int32   result;
-  
-  //In the original code they try to create the file if open fails, but that is already done in the load function
-  //and that is always called before a save is done, and the USB functionality is only operational when started via the menu
-  //so the file can't be deleted in the meantime
   
   //Try to open the file number file for this view type
-  result = f_open(&viewfp, system_file_name[viewtype & VIEW_TYPE_MASK], FA_WRITE);
+  result = f_open(&viewfp, system_file_name[viewtype & VIEW_TYPE_MASK], FA_CREATE_ALWAYS | FA_WRITE);
   
   //Only if the file is opened write to it
   if(result == FR_OK)
@@ -6264,6 +6241,197 @@ void scope_save_system_file(void)
   else
   {
     //Show an error on the screen
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//In the original code there are two separate functions for saving a picture or a waveform
+//Since they are very similar in the basis I only made one function that handles all the tasks
+//including restoring the data when a picture was made in waveform view mode.
+//Another change is how a file number is obtained. Instead of probing the file system with every possible file until one is found that does not exist
+//I use the file number list to get the first free number.
+
+void scope_save_view_item_file(int32 type)
+{
+  uint32  newnumber;
+  uint32  filenumber;
+  uint32  result = FR_OK;
+  uint16 *dptr;
+  uint16 *sptr;
+  
+  //Point to the thumbnail data
+  PTHUMBNAILDATA thumbnaildata = (PTHUMBNAILDATA)viewthumbnaildata;
+  
+  //Point to the file numbers
+  uint16 *fnptr = (uint16 *)viewfilenumberdata;
+
+  //Set the end pointer  
+  uint16 *eptr = &fnptr[VIEW_MAX_ITEMS];
+  
+  //Save the current view type to be able to determine if the list files need to be reloaded
+  uint32 currentviewtype = viewtype;
+  
+  //Switch to the given type
+  viewtype = type;
+  
+  //Load the list files for this type. Needed for finding the file name and to add the thumbnail
+  scope_load_list_files();
+
+  //Find the first free file number
+  //Most likely a more efficient solution for this problem exists, but this beats the original code where they try if a file number is free on the SD card with f_open
+  for(newnumber=1;newnumber<VIEW_MAX_ITEMS;newnumber++)
+  {
+    //Start at the beginning of the list
+    fnptr = (uint16 *)viewfilenumberdata;
+    
+    //Go through the list to see if the current number is in the list
+    while((*fnptr) && (fnptr < eptr))
+    {
+      //Check if this number is in the list
+      if(*fnptr == newnumber)
+      {
+        //Found it, so quit the loop
+        break;
+      }
+      
+      //Select the next number entry
+      fnptr++;
+    }
+    
+    //Check if not found
+    if(*fnptr != newnumber)
+    {
+      //Can use this number since it is not in the list
+      break;
+    }
+  }
+
+  //Source is the entry before the last valid
+  sptr = eptr - 2;
+
+  //Destination is the last valid
+  dptr = eptr - 1;
+  
+  //Bump all the entries in the list up
+  while(dptr > (uint16 *)viewfilenumberdata)
+  {
+    *dptr-- = *sptr--;
+  }
+  
+  //Fill in the new number
+  *dptr = newnumber;
+  
+  //Find a free entry in the thumbnail list
+  while(thumbnaildata < (PTHUMBNAILDATA)(((uint8 *)viewthumbnaildata) + VIEW_THUMBNAIL_DATA_SIZE))
+  {
+    //Get the file number from the current thumbnail
+    filenumber = (thumbnaildata->filenumbermsb << 8) | thumbnaildata->filenumberlsb;
+    
+    //Check if the file number of this thumbnail is zero (not used) or matches the new file number
+    if((filenumber == 0) || (filenumber == newnumber))
+    {
+      //If so create the thumbnail and quit the loop
+      //This means that if there is no free slot or the new number is not found there will not be a thumbnail for it.
+      //My version signals this.
+      scope_create_thumbnail();
+      break;
+    }
+
+    //Select the next thumbnail set
+    thumbnaildata++;
+  }
+  
+  //save the amended lists
+  scope_save_list_files();
+
+  //Setup the filename
+  scope_print_file_name(newnumber);
+  
+  //Open the new file. On failure signal this and quit
+  result = f_open(&viewfp, viewfilename, FA_CREATE_NEW | FA_WRITE);
+
+  //Check if file opened without problems
+  if(result == FR_OK)
+  {
+    //For pictures the bitmap header needs to be written
+    if(type == VIEW_TYPE_PICTURE)
+    {
+      //Write the bitmap header
+      result = f_write(&viewfp, bmpheader, sizeof(bmpheader), 0);  //This one seems to fail. The file is 512 bytes and an error is displayed
+    }
+
+    //Check if still ok to proceed
+    if(result == FR_OK)
+    {
+      //Save the settings for the trace portion of the data and write them to the file
+      scope_prepare_setup_for_file();
+
+      //Write the setup data to the file
+      if((result = f_write(&viewfp, viewfilesetupdata, sizeof(viewfilesetupdata), 0)) == FR_OK) //But part of this data is in the file
+      {
+        //Write the trace data to the file
+        //Save the channel 1 sample data
+        if((result = f_write(&viewfp, (uint8 *)channel1tracebuffer4, 3000, 0)) == FR_OK)
+        {
+          //Save the channel 2 sample data
+          if((result = f_write(&viewfp, (uint8 *)channel2tracebuffer4, 3000, 0)) == FR_OK)
+          {
+            //Save the channel 1 display data
+            if((result = f_write(&viewfp, (uint8 *)channel1ypoints, 1500, 0)) == FR_OK)
+            {
+              //Save the channel 2 display data
+              if((result = f_write(&viewfp, (uint8 *)channel2ypoints, 1500, 0)) == FR_OK)
+              {
+                //Finish with an empty blob of data to reach the needed file size
+                //Clear part of the thumbnail data for this. Is reloaded anyway so does not matter
+                memset((uint8 *)viewthumbnaildata, 0, 5000);
+                
+                //Save it to the file
+                if((result = f_write(&viewfp, (uint8 *)viewthumbnaildata, 5000, 0)) == FR_OK)
+                {
+                  //For pictures extra code is needed to write the pixel data to the file
+                  if(type == VIEW_TYPE_PICTURE)
+                  {
+                    //Write the pixel data
+                    result = f_write(&viewfp, (uint8 *)maindisplaybuffer, PICTURE_DATA_SIZE, 0);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    //Close the file
+    f_close(&viewfp);
+
+    //Check if all went well
+    if(result == FR_OK)
+    {
+      //Show the saved successful message
+      scope_display_file_status_message(MESSAGE_SAVE_SUCCESSFUL);
+    }
+    else
+    {
+      //Signal unable to write to the file
+      scope_display_file_status_message(MESSAGE_FILE_WRITE_FAILED);
+    }
+  }
+  else
+  {
+    //Signal unable to create the file
+    scope_display_file_status_message(MESSAGE_FILE_OPEN_FAILED);
+  }
+  
+  //When a picture is saved while viewing a waveform reload the waveform lists
+  if((type == VIEW_TYPE_PICTURE) && (currentviewtype == VIEW_TYPE_WAVEFORM) && (scopesettings.waveviewmode == 1))
+  {
+    //Restore the previous viewtype
+    viewtype = currentviewtype;
+    
+    //Load the lists
+    scope_load_list_files();
   }
 }
 
@@ -6298,7 +6466,7 @@ void scope_remove_item_from_lists(void)
   *dptr = 0;
   
   //Locate the thumbnail data for the current file number
-  while(thumbnaildata < (PTHUMBNAILDATA)(viewthumbnaildata + VIEW_THUMBNAIL_DATA_SIZE))
+  while(thumbnaildata < (PTHUMBNAILDATA)(((uint8 *)viewthumbnaildata) + VIEW_THUMBNAIL_DATA_SIZE))
   {
     //Check if the file number of this thumbnail matches the current file number
     if(((thumbnaildata->filenumbermsb << 8) | thumbnaildata->filenumberlsb) == filenumber)
@@ -6315,8 +6483,8 @@ void scope_remove_item_from_lists(void)
     thumbnaildata++;
   }
 
-  //Setup the file name for this view item  
-  scope_print_file_name(fnptr[viewcurrentindex]);
+  //Setup the file name for this file
+  scope_print_file_name(filenumber);
   
   //Delete the file from the SD card
   f_unlink(viewfilename);
@@ -6344,7 +6512,7 @@ int32 scope_load_trace_data(void)
     if(f_read(&viewfp, (uint8 *)viewfilesetupdata, 1000, 0) == FR_OK)
     {
       //Copy the loaded data to the settings
-      scope_restore_setup_form_file();
+      scope_restore_setup_from_file();
       
       //Load the channel 1 sample data
       if(f_read(&viewfp, (uint8 *)channel1tracebuffer4, 3000, 0) == FR_OK)
@@ -6378,7 +6546,7 @@ int32 scope_load_trace_data(void)
               //For now just a clean screen
               //Clear the trace portion of the screen
               display_set_fg_color(0x00000000);
-              display_fill_rect(2, 46, 728, 432);
+              display_fill_rect(2, 46, 728, 434);
 
               
               //Everything loaded ok
@@ -6401,10 +6569,51 @@ int32 scope_load_trace_data(void)
   scope_remove_item_from_lists();
   
   //Save the list files
-  scope_save_list_file();
-  scope_save_system_file();
+  scope_save_list_files();
   
   return(VIEW_TRACE_LOAD_ERROR);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_count_and_display_thumbnails(void)
+{
+  uint16 *ptr;
+
+  //Count how many items are available
+  //The file contains shorts
+  ptr = (uint16 *)viewfilenumberdata;
+
+  //No items available yet
+  viewavailableitems = 0;
+  viewpages = 0;
+  
+  //A zero indicates no more entries. Make sure not to check beyond buffer size
+  while(*ptr && (viewavailableitems < VIEW_MAX_ITEMS))
+  {
+    //One more item available
+    viewavailableitems++;
+
+    //Point to next entry
+    ptr++;
+  }
+
+  //Calculate the number of pages available, based on number of items per page. 0 means 1 page
+  //available items starts with 1 and with 16 items it would result in pages being 1, so need to subtract 1 before dividing
+  if(viewavailableitems)
+  {
+    viewpages = (viewavailableitems - 1) / VIEW_ITEMS_PER_PAGE;
+  }
+  
+  //Need to check if the current page is still valid
+  if(viewpage > viewpages)
+  {
+    //Page no longer valid then use last page
+    viewpage = viewpages;
+  }
+  
+  //Display the thumbnails
+  scope_display_thumbnails();
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -6462,7 +6671,7 @@ void scope_display_thumbnails(void)
     //Here it is done directly from the source data
     
     //Get the thumbnail data for the current file
-    while(thumbnaildata < (PTHUMBNAILDATA)(viewthumbnaildata + VIEW_THUMBNAIL_DATA_SIZE))
+    while(thumbnaildata < (PTHUMBNAILDATA)(((uint8 *)viewthumbnaildata) + VIEW_THUMBNAIL_DATA_SIZE))
     {
       //Check if the file number of this thumbnail matches the current file number
       if(((thumbnaildata->filenumbermsb << 8) | thumbnaildata->filenumberlsb) == fnptr[index])
@@ -6665,6 +6874,30 @@ void scope_display_thumbnail_data(uint32 xpos, uint32 ypos, PTHUMBNAILDATA thumb
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+void scope_create_thumbnail(void)
+{
+  
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+int32 scope_display_picture_item(void)
+{
+  //Display the new item
+  if(scope_load_trace_data() == VIEW_TRACE_LOAD_ERROR)
+  {
+    //Return on an error
+    return(VIEW_TRACE_LOAD_ERROR);
+  }
+
+  //And draw the bottom menu bar with a save of the background
+  scope_setup_bottom_file_menu(VIEW_BOTTON_MENU_INIT);
+  
+  return(VIEW_TRACE_LOAD_OK);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 void scope_display_selected_signs(void)
 {
   uint32 index = 0;
@@ -6717,6 +6950,82 @@ void scope_display_selected_signs(void)
     //Select next index
     index++;
   }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_display_file_status_message(int32 msgid)
+{
+  uint32 checkconfirmation = scopesettings.confirmationmode;
+  
+  //Save the screen rectangle where the message will be displayed
+  display_copy_rect_from_screen(310, 210, 180, 60);
+  
+  //Draw the background in grey
+  display_set_fg_color(0x00202020);
+  display_fill_rect(310, 210, 180, 60);
+  
+  //Draw the border in a lighter grey
+  display_set_fg_color(0x00303030);
+  display_draw_rect(310, 210, 180, 60);
+
+  //White color for text and use font_3
+  display_set_fg_color(0x00FFFFFF);
+  display_set_font(&font_3);
+  
+  switch(msgid)
+  {
+   case MESSAGE_SAVE_SUCCESSFUL:
+     display_text(320, 220, "File saved successfully");
+     
+     //Don't wait for confirmation in case of success
+     checkconfirmation = 0;
+     break;
+
+   case MESSAGE_FILE_CREATE_FAILED:
+     display_text(320, 220, "Failed to create file");
+     break;
+
+   case MESSAGE_FILE_OPEN_FAILED:
+     display_text(320, 220, "Failed to open file");
+     break;
+
+   case MESSAGE_FILE_WRITE_FAILED:
+     display_text(320, 220, "Failed to write to file");
+     break;
+  }
+
+  //Display the file name in question
+  display_text(320, 245, viewfilename);
+  
+  //Maybe wait for touch to continue in case of an error message
+  if(checkconfirmation)
+  {
+    //wait for touch
+    while(1)
+    {
+      //Read the touch panel status
+      tp_i2c_read_status();
+
+      //Check if the panel is touched
+      if(havetouch)
+      {
+        //Done so quit the loop
+        break;
+      }
+    }
+  
+    //Need to wait for touch to release before returning
+    tp_i2c_wait_for_touch_release();
+  }
+  else
+  {
+    //Wait for half a second
+    timer0_delay(500);
+  }
+  
+  //Restore the original screen
+  display_copy_rect_to_screen(310, 210, 180, 60);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

@@ -50,6 +50,7 @@
       <itemPath>interrupt.c</itemPath>
       <itemPath>memcmp.s</itemPath>
       <itemPath>memcpy.s</itemPath>
+      <itemPath>memmove.s</itemPath>
       <itemPath>memset.s</itemPath>
       <itemPath>scope_functions.c</itemPath>
       <itemPath>sd_card_interface.c</itemPath>
@@ -158,6 +159,8 @@
       <item path="memcmp.s" ex="false" tool="4" flavor2="0">
       </item>
       <item path="memcpy.s" ex="false" tool="4" flavor2="0">
+      </item>
+      <item path="memmove.s" ex="false" tool="4" flavor2="0">
       </item>
       <item path="memset.s" ex="false" tool="4" flavor2="0">
       </item>
@@ -281,6 +284,8 @@
       <item path="memcmp.s" ex="false" tool="4" flavor2="0">
       </item>
       <item path="memcpy.s" ex="false" tool="4" flavor2="0">
+      </item>
+      <item path="memmove.s" ex="false" tool="4" flavor2="0">
       </item>
       <item path="memset.s" ex="false" tool="4" flavor2="0">
       </item>

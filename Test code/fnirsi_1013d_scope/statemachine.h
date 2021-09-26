@@ -23,11 +23,12 @@ void handle_right_volts_div_menu_touch(void);
 
 void handle_measures_menu_touch(void);
 
-void handle_view_mode_touch(void);       //need to finish this function (delete and return from item view) Check the comments!!
+void handle_view_mode_touch(void);       //need to finish this function (trace display for waveform view) Check the comments!!
+                                         //waveform view functionality also needs to be added to handle_right_basic_menu_touch
 
-void handle_picture_view_touch(void);    //Need to finish this function (delete, previous and next item)
+void handle_picture_view_touch(void);
 
-int32 handle_confirm_delete(void);       //See if different font needed for yes and no, or even the confirm text. Check on positions!!!!
+int32 handle_confirm_delete(void);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

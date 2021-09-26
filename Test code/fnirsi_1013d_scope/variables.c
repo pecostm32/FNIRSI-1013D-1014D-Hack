@@ -35,13 +35,17 @@ uint8 calibrationopen = 0;
 //Display data
 //----------------------------------------------------------------------------------------------------------------------------------
 
-uint16 maindisplaybuffer[SCREEN_SIZE];
+//This first buffer is defined as 32 bits to be able to write it to file
+uint32 maindisplaybuffer[SCREEN_SIZE / 2];
+
 uint16 displaybuffer1[SCREEN_SIZE];
 uint16 displaybuffer2[SCREEN_SIZE];
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Scope data
 //----------------------------------------------------------------------------------------------------------------------------------
+
+FATFS fs;
 
 SCOPESETTINGS scopesettings;
 
@@ -147,14 +151,14 @@ uint16 viewcurrentindex;            //Used for selecting previous or next item w
 
 uint16 viewavailableitems;          //Also done differently in the original code
 
-uint8 viewitemselected[16];         //In original code this is at 0x8035A98B. Flags to signal if an item is selected or not
+uint8 viewitemselected[VIEW_ITEMS_PER_PAGE];                 //In original code this is at 0x8035A98B. Flags to signal if an item is selected or not
 
 uint32 viewthumbnaildata[VIEW_THUMBNAIL_DATA_SIZE / 4];      //In original code at 0x802F19CE. 400000 bytes, but to make sure it is dword aligned declared as uint32
 
 uint32 viewfilenumberdata[VIEW_FILE_NUMBER_DATA_SIZE / 4];   //In original code at 0x8035A99C. 2000 bytes, but to make sure it is dword aligned declared as uint32
 
-                                    //The original code uses a large buffer to load all the data into and writes it in one go to a file. This requires a lot of extra memory
-uint32 viewfilesetupdata[250];      //Not in original code. 1000 bytes for storing the system settings to save to file or to load from file
+                                                          //The original code uses a large buffer to load all the data into and writes it in one go to a file. This requires a lot of extra memory
+uint32 viewfilesetupdata[VIEW_SETUP_DATA_SIZE / 4];      //Not in original code. 1000 bytes for storing the system settings to save to file or to load from file
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Predefined data
@@ -170,5 +174,91 @@ const uint8 zoom_select_settings[3][7] =
   { 8,  7, 6, 0, 1, 9, 4 },
   { 8,  7, 5, 0, 1, 3, 4 }
 };
+
+//Setup the bitmap header
+//Consist of basic bitmap header followed by a DIB header (BITMAPINFOHEADER + BITMAPV3INFOHEADER)
+//Could probably do with BITMAPV2INFOHEADER but the original uses V3
+//The bitmap height is using a negative value for reversing the top to bottom lines. This allows just writing the frame buffer to the file
+const uint8 bmpheader[70] = 
+{
+  //Header identifier
+  'B', 'M',
+  
+  //Size of the file in bytes
+   PICTURE_FILE_SIZE        & 0xFF,
+  (PICTURE_FILE_SIZE >>  8) & 0xFF,
+  (PICTURE_FILE_SIZE >> 16) & 0xFF,
+  (PICTURE_FILE_SIZE >> 24) & 0xFF,
+
+  //Reserved
+  0, 0, 0, 0, 
+  
+  //Offset to the pixel array
+   PICTURE_PIXEL_OFFSET        & 0xFF,
+  (PICTURE_PIXEL_OFFSET >>  8) & 0xFF,
+  (PICTURE_PIXEL_OFFSET >> 16) & 0xFF,
+  (PICTURE_PIXEL_OFFSET >> 24) & 0xFF,
+  
+  //Size of DIB header
+  56, 0, 0, 0,
+  
+  //Bitmap width in pixels
+   800        & 0xFF,
+  (800 >>  8) & 0xFF,
+  (800 >> 16) & 0xFF,
+  (800 >> 24) & 0xFF,
+
+  //Bitmap height in pixels
+   -480        & 0xFF,
+  (-480 >>  8) & 0xFF,
+  (-480 >> 16) & 0xFF,
+  (-480 >> 24) & 0xFF,
+  
+  //Number of color planes
+  1, 0,
+  
+  //Number of bits per pixel
+  16, 0,
+  
+  //Compression method (BI_BITFIELDS)
+  3, 0, 0, 0,
+
+  //Pixel array size
+   PICTURE_DATA_SIZE        & 0xFF,
+  (PICTURE_DATA_SIZE >>  8) & 0xFF,
+  (PICTURE_DATA_SIZE >> 16) & 0xFF,
+  (PICTURE_DATA_SIZE >> 24) & 0xFF,
+
+  //Horizontal resolution
+  0, 0, 0, 0,
+
+  //Vertical resolution
+  0, 0, 0, 0,
+
+  //Number of colors in the pallete
+  0, 0, 0, 0,
+
+  //Number of colors important
+  0, 0, 0, 0,
+  
+  //Mask fields for BI_BITFIELDS compression
+  //Red mask 0x0000F800
+  0, 0xF8, 0, 0,
+  
+  //Green mask 0x000007E0
+  0xE0, 7, 0, 0,
+
+  //Blue mask 0x0000001F
+  0x1F, 0, 0, 0,
+
+  //Alpha mask 0x00000000
+  0, 0, 0, 0,
+};
+
+
+    
+    
+    
+    
 
 //----------------------------------------------------------------------------------------------------------------------------------
