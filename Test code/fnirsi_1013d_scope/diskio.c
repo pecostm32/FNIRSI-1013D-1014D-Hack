@@ -84,22 +84,11 @@ DRESULT disk_read(BYTE pdrv, BYTE *buff, LBA_t sector, UINT count)
   //Check if the SD card device is addressed
   if(pdrv == DEV_SD)
   {
-    //Check if buffer is valid and dword aligned
-    if((buff) && (((uint32)buff & 0x00000003) == 0))
+    //Read the data from the card
+    if(sd_card_read(sector, count, buff) != SD_OK)
     {
-      //Read the data from the card
-      if(sd_card_read(sector, count, buff) != SD_OK)
-      {
-        //Error while reading
-        return(RES_ERROR);
-      }
-    }
-    else
-    {
-      //In the original code they allocate a larger buffer and copy the data.
-      //Best to make sure the data is aligned before
-      //Buffer miss aligned 
-      return(RES_PARERR);
+      //Error while reading
+      return(RES_ERROR);
     }
   }
   else
@@ -134,22 +123,11 @@ DRESULT disk_write(BYTE pdrv, const BYTE *buff, LBA_t sector, UINT count)
   //Check if the SD card device is addressed
   if(pdrv == DEV_SD)
   {
-    //Check if buffer is valid and dword aligned
-    if((buff) && (((uint32)buff & 0x00000003) == 0))
+    //Write the data to the card
+    if(sd_card_write(sector, count, (BYTE *)buff) != SD_OK)
     {
-      //Write the data to the card
-      if(sd_card_write(sector, count, (BYTE *)buff) != SD_OK)
-      {
-        //Error while writing
-        return(RES_ERROR);
-      }
-    }
-    else
-    {
-      //In the original code they allocate a larger buffer and copy the data.
-      //Best to make sure the data is aligned before
-      //Buffer miss aligned 
-      return(RES_PARERR);
+      //Error while writing
+      return(RES_ERROR);
     }
   }
   else

@@ -6357,7 +6357,7 @@ void scope_save_view_item_file(int32 type)
     if(type == VIEW_TYPE_PICTURE)
     {
       //Write the bitmap header
-      result = f_write(&viewfp, bmpheader, sizeof(bmpheader), 0);  //This one seems to fail. The file is 512 bytes and an error is displayed
+      result = f_write(&viewfp, bmpheader, sizeof(bmpheader), 0);
     }
 
     //Check if still ok to proceed
@@ -6367,7 +6367,7 @@ void scope_save_view_item_file(int32 type)
       scope_prepare_setup_for_file();
 
       //Write the setup data to the file
-      if((result = f_write(&viewfp, viewfilesetupdata, sizeof(viewfilesetupdata), 0)) == FR_OK) //But part of this data is in the file
+      if((result = f_write(&viewfp, viewfilesetupdata, sizeof(viewfilesetupdata), 0)) == FR_OK)
       {
         //Write the trace data to the file
         //Save the channel 1 sample data
@@ -6414,6 +6414,27 @@ void scope_save_view_item_file(int32 type)
     }
     else
     {
+      char textbuffer[64];
+
+      //White color for text and use font_3
+      display_set_fg_color(0x00FFFFFF);
+      display_set_font(&font_3);
+
+      if(result < 10)
+      {
+        textbuffer[0] = result + '0';
+        textbuffer[1] = 0;
+        display_text(20, 60, textbuffer);
+      }
+      else if(result < 100)
+      {
+        textbuffer[0] = (result / 10) + '0';
+        textbuffer[1] = (result % 10) + '0';
+        textbuffer[2] = 0;
+        display_text(20, 60, textbuffer);
+      }
+
+      
       //Signal unable to write to the file
       scope_display_file_status_message(MESSAGE_FILE_WRITE_FAILED);
     }
@@ -6507,6 +6528,13 @@ int32 scope_load_trace_data(void)
   //Check if file opened ok
   if(result == FR_OK)
   {
+    //For pictures the bitmap header needs to be skipped
+    if(viewtype == VIEW_TYPE_PICTURE)
+    {
+      //SKip the first 70 bytes, which form the bitmap header
+      f_lseek(&viewfp, 70);
+    }
+    
     //Checks on correct number of bytes read might be needed
     //Load the setup data to the file setup data buffer
     if(f_read(&viewfp, (uint8 *)viewfilesetupdata, 1000, 0) == FR_OK)
@@ -6975,24 +7003,32 @@ void scope_display_file_status_message(int32 msgid)
   
   switch(msgid)
   {
-   case MESSAGE_SAVE_SUCCESSFUL:
-     display_text(320, 220, "File saved successfully");
+    case MESSAGE_SAVE_SUCCESSFUL:
+      display_text(320, 220, "File saved successfully");
      
-     //Don't wait for confirmation in case of success
-     checkconfirmation = 0;
-     break;
+      //Don't wait for confirmation in case of success
+      checkconfirmation = 0;
+      break;
 
-   case MESSAGE_FILE_CREATE_FAILED:
-     display_text(320, 220, "Failed to create file");
-     break;
+    case MESSAGE_FILE_CREATE_FAILED:
+      display_text(320, 220, "Failed to create file");
+      break;
 
-   case MESSAGE_FILE_OPEN_FAILED:
-     display_text(320, 220, "Failed to open file");
-     break;
+    case MESSAGE_FILE_OPEN_FAILED:
+      display_text(320, 220, "Failed to open file");
+      break;
 
-   case MESSAGE_FILE_WRITE_FAILED:
-     display_text(320, 220, "Failed to write to file");
-     break;
+    case MESSAGE_FILE_WRITE_FAILED:
+      display_text(320, 220, "Failed to write to file");
+      break;
+
+    case MESSAGE_FILE_READ_FAILED:
+      display_text(320, 220, "Failed to read from file");
+      break;
+
+    case MESSAGE_FILE_SEEK_FAILED:
+      display_text(320, 220, "Failed to seek in file");
+      break;
   }
 
   //Display the file name in question

@@ -313,8 +313,8 @@ int32 sd_card_read(uint32 sector, uint32 blocks, uint8 *buffer)
 {
   int32 result;
   
-  //Check if valid buffer given. Needs to be on dword alignment
-  if((buffer == 0) || ((uint32)buffer & 0x00000003))
+  //Check if valid buffer given
+  if(buffer == 0)
     return(SD_ERROR_INVALID_BUFFER);
   
   //Check if last bytes to read in range of the card sectors
@@ -384,8 +384,8 @@ int32 sd_card_write(uint32 sector, uint32 blocks, uint8 *buffer)
 {
   int32 result;
   
-  //Check if valid buffer given. Needs to be on dword alignment
-  if((buffer == 0) || ((uint32)buffer & 0x00000003))
+  //Check if valid buffer given
+  if(buffer == 0)
     return(SD_ERROR_INVALID_BUFFER);
   
   //Check if last bytes to read in range of the card sectors
@@ -944,13 +944,6 @@ int32 sd_card_send_command(PSD_CARD_COMMAND command, PSD_CARD_DATA data)
   //Check if there is data in the mix
   if(data)
   {
-    //Check if buffer is 32 bit aligned
-    if((uint32)data->data & 3)
-    {
-      error = SD_ERROR;
-      goto out;
-    }
-    
     cmdval |= (SD_CMD_DATA_EXPIRE | SD_CMD_WAIT_PRE_OVER);
     
     if(data->flags & SD_DATA_WRITE)
@@ -1061,7 +1054,6 @@ int32 sd_send_data(PSD_CARD_DATA data)
 {
   uint32  reading;
   uint32  status_bit;
-  uint32 *buffer = (uint32 *)data->data;
   uint32  count;
   uint32  timeout;
   
@@ -1101,33 +1093,148 @@ int32 sd_send_data(PSD_CARD_DATA data)
   //Setup timeout for checking against the timer ticks
   timeout += timer0_get_ticks();
 
-  while(count)
+    //To solve buffer alignment problem this part needs to be improved upon
+    //The original code used malloc to get a really big buffer and copy the data into that
+    //Another way of doing it would be to modify the code here to have three handling parts
+    //1 for if the data is byte aligned (bit 1 being either 0 or 1 and bit 0 being 1)
+    //2 for if the data is short aligned (bit 1 being 1 and bit 0 being 0)
+    //3 for if the data is dword aligned (bit 1 being 0 and bit 0 being 0)
+    
+    //This can be done in the sd_card_send_command function calling three different send_data functions
+  
+  
+  //Handle the data based on alignment
+  switch((int32)data->data & 3)
   {
-    //Wait for the fifo to be ready
-    while(*SD0_STAR & status_bit)
-    {
-      //Check on timeout
-      if(timer0_get_ticks() > timeout)
+    //32 bit aligned
+    case 0:
       {
-        return(SD_ERROR_TIMEOUT);
+        uint32 *buffer = (uint32 *)data->data;
+        
+        //Process all the words
+        while(count)
+        {
+          //Wait for the fifo to be ready
+          while(*SD0_STAR & status_bit)
+          {
+            //Check on timeout
+            if(timer0_get_ticks() > timeout)
+            {
+              return(SD_ERROR_TIMEOUT);
+            }
+          }
+
+          //Check if reading or writing of data
+          if(reading)
+          {
+            //Reading so get data from the fifo
+            *buffer = *SD0_FIFO;
+          }
+          else
+          {
+            //Writing so write to the fifo
+            *SD0_FIFO = *buffer;
+          }
+
+          //Update pointer and counter
+          buffer++;
+          count--;
+        }
       }
-    }
-    
-    //Check if reading or writing of data
-    if(reading)
-    {
-      //Reading so get data from the fifo
-      *buffer = *SD0_FIFO;
-    }
-    else
-    {
-      //Writing so write to the fifo
-      *SD0_FIFO = *buffer;
-    }
-    
-    //Update pointer and counter
-    buffer++;
-    count--;
+      break;
+
+    //16 bit aligned
+    case 2:
+      {
+        uint16 *buffer = (uint16 *)data->data;
+        uint32  dwdata;
+        
+        //Process all the words
+        while(count)
+        {
+          //Wait for the fifo to be ready
+          while(*SD0_STAR & status_bit)
+          {
+            //Check on timeout
+            if(timer0_get_ticks() > timeout)
+            {
+              return(SD_ERROR_TIMEOUT);
+            }
+          }
+
+          //Check if reading or writing of data
+          if(reading)
+          {
+            //Reading so get data from the fifo
+            dwdata = *SD0_FIFO;
+            
+            //Copy the data into the buffer
+            buffer[0] =  dwdata        & 0xFFFF;
+            buffer[1] = (dwdata >> 16) & 0xFFFF;
+          }
+          else
+          {
+            //Gather the data for 32 bit writing into the fifo
+            dwdata = buffer[0] | (buffer[1] << 16);
+            
+            //Writing so write to the fifo
+            *SD0_FIFO = dwdata;
+          }
+
+          //Update pointer and counter
+          buffer += 2;
+          count--;
+        }
+      }
+      break;
+      
+    //8 bit aligned
+    case 1:
+    case 3:
+      {
+        uint8  *buffer = (uint8 *)data->data;
+        uint32  dwdata;
+        
+        //Process all the words
+        while(count)
+        {
+          //Wait for the fifo to be ready
+          while(*SD0_STAR & status_bit)
+          {
+            //Check on timeout
+            if(timer0_get_ticks() > timeout)
+            {
+              return(SD_ERROR_TIMEOUT);
+            }
+          }
+
+          //Check if reading or writing of data
+          if(reading)
+          {
+            //Reading so get data from the fifo
+            dwdata = *SD0_FIFO;
+            
+            //Copy the data into the buffer
+            buffer[0] =  dwdata         & 0xFF;
+            buffer[1] = (dwdata >>  8)  & 0xFF;
+            buffer[2] = (dwdata >> 16)  & 0xFF;
+            buffer[3] = (dwdata >> 24)  & 0xFF;
+          }
+          else
+          {
+            //Gather the data for 32 bit writing into the fifo
+            dwdata = buffer[0] | (buffer[1] << 8) | (buffer[2] << 16) | (buffer[3] << 24);
+            
+            //Writing so write to the fifo
+            *SD0_FIFO = dwdata;
+          }
+
+          //Update pointer and counter
+          buffer += 4;
+          count--;
+        }
+      }
+      break;
   }
   
   //All went well so return ok

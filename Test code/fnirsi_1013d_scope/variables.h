@@ -72,6 +72,8 @@
 #define MESSAGE_FILE_CREATE_FAILED        1
 #define MESSAGE_FILE_OPEN_FAILED          2
 #define MESSAGE_FILE_WRITE_FAILED         3
+#define MESSAGE_FILE_READ_FAILED          4
+#define MESSAGE_FILE_SEEK_FAILED          5
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Typedefs

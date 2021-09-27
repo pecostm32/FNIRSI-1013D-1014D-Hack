@@ -200,7 +200,7 @@ void scope_save_view_item_file(int32 type);            //Need to finish this one
 
 void scope_remove_item_from_lists(void);
 
-int32 scope_load_trace_data(void);                     //Need to finish this one
+int32 scope_load_trace_data(void);                     //Need to finish this one, add error handling, see save function
 
 void scope_count_and_display_thumbnails(void);
 
@@ -210,7 +210,7 @@ void scope_display_thumbnail_data(uint32 xpos, uint32 ypos, PTHUMBNAILDATA thumb
 
 void scope_create_thumbnail(void);                     //Need to finish this one
 
-int32 scope_display_picture_item(void);                //Need to finish this one
+int32 scope_display_picture_item(void);
 
 void scope_display_selected_signs(void);
 
