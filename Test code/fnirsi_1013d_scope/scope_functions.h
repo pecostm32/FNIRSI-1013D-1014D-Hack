@@ -196,11 +196,11 @@ void scope_print_file_name(uint32 filenumber);
 void scope_load_list_files(void);                      //Add error handling!!
 void scope_save_list_files(void);                      //Add error handling!!
 
-void scope_save_view_item_file(int32 type);            //Need to finish this one. verify the working
+void scope_save_view_item_file(int32 type);
 
 void scope_remove_item_from_lists(void);
 
-int32 scope_load_trace_data(void);                     //Need to finish this one, add error handling, see save function
+int32 scope_load_trace_data(void);                     //Need to finish this one. Trace data displaying!!!
 
 void scope_count_and_display_thumbnails(void);
 

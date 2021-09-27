@@ -4309,7 +4309,7 @@ void scope_get_short_timebase_data(void)
       
     //Clear the trace portion of the screen
     display_set_fg_color(0x00000000);
-    display_fill_rect(2, 46, 728, 432);
+    display_fill_rect(2, 46, 728, 434);
     
     //Draw the grid lines and dots based on the grid brightness setting
     scope_draw_grid();
@@ -4320,7 +4320,7 @@ void scope_get_short_timebase_data(void)
     //Copy it to the actual screen buffer
     display_set_source_buffer(displaybuffer1);
     display_set_screen_buffer((uint16 *)maindisplaybuffer);
-    display_copy_rect_to_screen(2, 46, 728, 432);
+    display_copy_rect_to_screen(2, 46, 728, 434);
   }
   
   //Send check on triggered command to the FPGA
@@ -5445,7 +5445,7 @@ void scope_display_trace_data(void)
     {
       //Clear the trace portion of the screen
       display_set_fg_color(0x00000000);
-      display_fill_rect(2, 46, 728, 432);
+      display_fill_rect(2, 46, 728, 434);
 
       //Draw the grid lines and dots based on the grid brightness setting
       scope_draw_grid();
@@ -5518,7 +5518,7 @@ void scope_display_trace_data(void)
       //Copy it to the actual screen buffer
       display_set_source_buffer(displaybuffer1);
       display_set_screen_buffer((uint16 *)maindisplaybuffer);
-      display_copy_rect_to_screen(2, 46, 728, 432);
+      display_copy_rect_to_screen(2, 46, 728, 434);
     }
   }
   else
@@ -5545,7 +5545,7 @@ void scope_display_trace_data(void)
 
       //Clear the trace portion of the screen
       display_set_fg_color(0x00000000);
-      display_fill_rect(2, 46, 728, 432);
+      display_fill_rect(2, 46, 728, 434);
 
       //Draw the grid lines and dots based on the grid brightness setting
       scope_draw_grid();
@@ -5556,7 +5556,7 @@ void scope_display_trace_data(void)
       //Copy it to the actual screen buffer
       display_set_source_buffer(displaybuffer1);
       display_set_screen_buffer((uint16 *)maindisplaybuffer);
-      display_copy_rect_to_screen(2, 46, 728, 432);
+      display_copy_rect_to_screen(2, 46, 728, 434);
     }
 
     //Draw the traces directly to the screen
@@ -6099,28 +6099,25 @@ void scope_print_file_name(uint32 filenumber)
   //Determine the size of the decimal part
   s = 12 - i;
   
-  //Start the filename with a /  (Not sure why it is done, but it seems to work. By default I think it will already be in the main directory.)
-  viewfilename[0] = '/';
-
   //Copy in the decimal file number
-  memcpy(&viewfilename[1], &b[i], s);
+  memcpy(viewfilename, &b[i], s);
   
   //Add the extension
-  memcpy(&viewfilename[s + 1], view_file_extension[viewtype & VIEW_TYPE_MASK], 5);
+  memcpy(&viewfilename[s], view_file_extension[viewtype & VIEW_TYPE_MASK], 5);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-const char list_file_name[2][14] =
+const char list_file_name[2][13] =
 {
-  { "/piclist.sys" },
-  { "/wavelist.sys" }
+  { "piclist.sys" },
+  { "wavelist.sys" }
 };
 
-const char system_file_name[2][17] =
+const char system_file_name[2][16] =
 {
-  { "/pic_system.sys" },
-  { "/wave_system.sys" }
+  { "pic_system.sys" },
+  { "wave_system.sys" }
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -6255,7 +6252,7 @@ void scope_save_view_item_file(int32 type)
 {
   uint32  newnumber;
   uint32  filenumber;
-  uint32  result = FR_OK;
+  uint32  result;
   uint16 *dptr;
   uint16 *sptr;
   
@@ -6313,6 +6310,7 @@ void scope_save_view_item_file(int32 type)
   dptr = eptr - 1;
   
   //Bump all the entries in the list up
+  //Compiler converts this to memmove
   while(dptr > (uint16 *)viewfilenumberdata)
   {
     *dptr-- = *sptr--;
@@ -6414,27 +6412,6 @@ void scope_save_view_item_file(int32 type)
     }
     else
     {
-      char textbuffer[64];
-
-      //White color for text and use font_3
-      display_set_fg_color(0x00FFFFFF);
-      display_set_font(&font_3);
-
-      if(result < 10)
-      {
-        textbuffer[0] = result + '0';
-        textbuffer[1] = 0;
-        display_text(20, 60, textbuffer);
-      }
-      else if(result < 100)
-      {
-        textbuffer[0] = (result / 10) + '0';
-        textbuffer[1] = (result % 10) + '0';
-        textbuffer[2] = 0;
-        display_text(20, 60, textbuffer);
-      }
-
-      
       //Signal unable to write to the file
       scope_display_file_status_message(MESSAGE_FILE_WRITE_FAILED);
     }
@@ -6445,7 +6422,7 @@ void scope_save_view_item_file(int32 type)
     scope_display_file_status_message(MESSAGE_FILE_OPEN_FAILED);
   }
   
-  //When a picture is saved while viewing a waveform reload the waveform lists
+  //When a picture is saved while viewing a waveform, reload the waveform lists
   if((type == VIEW_TYPE_PICTURE) && (currentviewtype == VIEW_TYPE_WAVEFORM) && (scopesettings.waveviewmode == 1))
   {
     //Restore the previous viewtype
@@ -6508,7 +6485,7 @@ void scope_remove_item_from_lists(void)
   scope_print_file_name(filenumber);
   
   //Delete the file from the SD card
-  f_unlink(viewfilename);
+  f_unlink(viewfilename);                   //Need error handling with message here
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -6532,66 +6509,83 @@ int32 scope_load_trace_data(void)
     if(viewtype == VIEW_TYPE_PICTURE)
     {
       //SKip the first 70 bytes, which form the bitmap header
-      f_lseek(&viewfp, 70);
+      result = f_lseek(&viewfp, 70);
     }
     
-    //Checks on correct number of bytes read might be needed
-    //Load the setup data to the file setup data buffer
-    if(f_read(&viewfp, (uint8 *)viewfilesetupdata, 1000, 0) == FR_OK)
+    //Check if still ok to proceed
+    if(result == FR_OK)
     {
-      //Copy the loaded data to the settings
-      scope_restore_setup_from_file();
-      
-      //Load the channel 1 sample data
-      if(f_read(&viewfp, (uint8 *)channel1tracebuffer4, 3000, 0) == FR_OK)
+      //Checks on correct number of bytes read might be needed
+      //Load the setup data to the file setup data buffer
+      if((result = f_read(&viewfp, (uint8 *)viewfilesetupdata, 1000, 0)) == FR_OK)
       {
-        //Load the channel 2 sample data
-        if(f_read(&viewfp, (uint8 *)channel2tracebuffer4, 3000, 0) == FR_OK)
-        {
-          //Load the channel 1 display data
-          if(f_read(&viewfp, (uint8 *)channel1ypoints, 1500, 0) == FR_OK)
-          {
-            //Load the channel 2 display data
-            if(f_read(&viewfp, (uint8 *)channel2ypoints, 1500, 0) == FR_OK)
-            {
-              //File is no longer needed so close it
-              f_close(&viewfp);
-              
-              //For waveform type view some variables need to be set to force the normal display in waveform view
-              if(viewtype == VIEW_TYPE_WAVEFORM)
-              {
-                scopesettings.triggerflag1 = 1;
-                scopesettings.triggerflag2 = 1;
-                scopesettings.runstate = 1;
-                scopesettings.waveviewmode = 1;
-              }
-              
-              //Show the normal scope screen
-              scope_setup_main_screen();
-              
-  //display the trace data
-              
-              //For now just a clean screen
-              //Clear the trace portion of the screen
-              display_set_fg_color(0x00000000);
-              display_fill_rect(2, 46, 728, 434);
+        //Copy the loaded data to the settings
+        scope_restore_setup_from_file();
 
-              
-              //Everything loaded ok
-              return(VIEW_TRACE_LOAD_OK);
+        //Load the channel 1 sample data
+        if((result = f_read(&viewfp, (uint8 *)channel1tracebuffer4, 3000, 0)) == FR_OK)
+        {
+          //Load the channel 2 sample data
+          if((result = f_read(&viewfp, (uint8 *)channel2tracebuffer4, 3000, 0)) == FR_OK)
+          {
+            //Load the channel 1 display data
+            if((result = f_read(&viewfp, (uint8 *)channel1ypoints, 1500, 0)) == FR_OK)
+            {
+              //Load the channel 2 display data
+              if((result = f_read(&viewfp, (uint8 *)channel2ypoints, 1500, 0)) == FR_OK)
+              {
+                //For waveform type view some variables need to be set to force the normal display in waveform view
+                if(viewtype == VIEW_TYPE_WAVEFORM)
+                {
+                  scopesettings.triggerflag1 = 1;
+                  scopesettings.triggerflag2 = 1;
+                  scopesettings.runstate = 1;
+                  scopesettings.waveviewmode = 1;
+                }
+
+                //Show the normal scope screen
+                scope_setup_main_screen();
+
+    //display the trace data
+
+                //For now just a clean screen
+                //Clear the trace portion of the screen
+                display_set_fg_color(0x00000000);
+                display_fill_rect(2, 46, 728, 434);
+              }
             }
           }
         }
       }
     }
+    else
+    {
+      //Signal unable to seek the file
+      scope_display_file_status_message(MESSAGE_FILE_SEEK_FAILED);
+    }
     
-    //At this point something went wrong so close the file
+    //Done with the file so close it
     f_close(&viewfp);
+    
+    //Check if one of the writes failed
+    if(result != FR_OK)
+    {
+      //Signal unable to write to the file
+      scope_display_file_status_message(MESSAGE_FILE_WRITE_FAILED);
+    }
   }
-  
-  //Need to clear the screen and display an error occurred. Either for a short time, or wait for touch
-  
-  //on failure remove it from the lists and update the list files and return an error occurred
+  else
+  {
+    //Signal unable to create the file
+    scope_display_file_status_message(MESSAGE_FILE_OPEN_FAILED);
+  }
+
+  //Check if all went well
+  if(result == FR_OK)
+  {
+    //Tell it to the caller
+    return(VIEW_TRACE_LOAD_OK);
+  }
 
   //Remove the current item from the lists and delete the item from disk
   scope_remove_item_from_lists();
@@ -6659,26 +6653,7 @@ void scope_display_thumbnails(void)
     
   //Determine the first index based on the current page
   uint32 index = viewpage * VIEW_ITEMS_PER_PAGE;
-  
-  //Determine the available items for the current page
-  if(viewpage < viewpages)
-  {
-    //Not on the last page so full set available
-    viewitemsonpage = VIEW_ITEMS_PER_PAGE;
-  }
-  else
-  {
-    //For the last page the remainder of items are available
-    viewitemsonpage = viewavailableitems % VIEW_ITEMS_PER_PAGE;
-  }
-  
-  //Determine the last index based on the available items on the current page
-  uint32 lastindex = index + viewitemsonpage;
-  
-  //Start with first item for drawing
-  uint32 xpos = VIEW_ITEM_XSTART;
-  uint32 ypos = VIEW_ITEM_YSTART;
-  
+
   //Set black color for background
   display_set_fg_color(0x00000000);
 
@@ -6691,156 +6666,191 @@ void scope_display_thumbnails(void)
   //Separate the thumbnails from the menu bar
   display_draw_vert_line(730, 0, 479);
   
-  //Draw the available items on the screen
-  while(index < lastindex)
+  //Check if there are items to display
+  if(viewavailableitems)
   {
-    //Examining the original code makes believe there can be a mismatch between the two files so it is necessary to search for
-    //the thumbnail for this file number. The original code uses a function for this and copies the data to buffers.
-    //Here it is done directly from the source data
-    
-    //Get the thumbnail data for the current file
-    while(thumbnaildata < (PTHUMBNAILDATA)(((uint8 *)viewthumbnaildata) + VIEW_THUMBNAIL_DATA_SIZE))
+    //Determine the available items for the current page
+    if(viewpage < viewpages)
     {
-      //Check if the file number of this thumbnail matches the current file number
-      if(((thumbnaildata->filenumbermsb << 8) | thumbnaildata->filenumberlsb) == fnptr[index])
-      {
-        //If so signal found
-        found = 1;
-        break;
-      }
-      
-      //Select the next thumbnail set
-      thumbnaildata++;
+      //Not on the last page so full set available
+      viewitemsonpage = VIEW_ITEMS_PER_PAGE;
     }
-    
-    //Check if thumbnail found
-    if(found)
+    else
     {
-      //Display the thumbnail
-      //Need to make a distinction between normal display and xy display mode
-      if(thumbnaildata->xydisplaymode == 0)
+      //Get the remainder of items for the last page
+      uint32 nofitems = viewavailableitems % VIEW_ITEMS_PER_PAGE;
+      
+      //See if a fraction of the max items per page is available
+      if(nofitems)
       {
-        //Normal mode
-        //Set the x start position based on trace position and skip three pixels.
-        //Trace position can be > 0 when zoomed in stop mode 
-        uint32 x = xpos + thumbnaildata->traceposition + 3;
-        
-        //Check if channel 1 is enabled
-        if(thumbnaildata->channel1enable)
+        //If so only display these
+        viewitemsonpage = nofitems;
+      }
+      else
+      {
+        //If the remainder is zero there are max number of items on the last page
+        viewitemsonpage = VIEW_ITEMS_PER_PAGE;
+      }
+    }
+
+    //Determine the last index based on the available items on the current page
+    uint32 lastindex = index + viewitemsonpage;
+
+    //Start with first item for drawing
+    uint32 xpos = VIEW_ITEM_XSTART;
+    uint32 ypos = VIEW_ITEM_YSTART;
+
+    //Draw the available items on the screen
+    while(index < lastindex)
+    {
+      //Examining the original code makes believe there can be a mismatch between the two files so it is necessary to search for
+      //the thumbnail for this file number. The original code uses a function for this and copies the data to buffers.
+      //Here it is done directly from the source data
+
+      //Get the thumbnail data for the current file
+      while(thumbnaildata < (PTHUMBNAILDATA)(((uint8 *)viewthumbnaildata) + VIEW_THUMBNAIL_DATA_SIZE))
+      {
+        //Check if the file number of this thumbnail matches the current file number
+        if(((thumbnaildata->filenumbermsb << 8) | thumbnaildata->filenumberlsb) == fnptr[index])
         {
-          scope_display_thumbnail_data(x, ypos, thumbnaildata, 0);
+          //If so signal found
+          found = 1;
+          break;
         }
-        
-        //Check if channel 2 is enabled
-        if(thumbnaildata->channel2enable)
+
+        //Select the next thumbnail set
+        thumbnaildata++;
+      }
+
+      //Check if thumbnail found
+      if(found)
+      {
+        //Display the thumbnail
+        //Need to make a distinction between normal display and xy display mode
+        if(thumbnaildata->xydisplaymode == 0)
         {
-          scope_display_thumbnail_data(x, ypos, thumbnaildata, 1);
+          //Normal mode
+          //Set the x start position based on trace position and skip three pixels.
+          //Trace position can be > 0 when zoomed in stop mode 
+          uint32 x = xpos + thumbnaildata->traceposition + 3;
+
+          //Check if channel 1 is enabled
+          if(thumbnaildata->channel1enable)
+          {
+            scope_display_thumbnail_data(x, ypos, thumbnaildata, 0);
+          }
+
+          //Check if channel 2 is enabled
+          if(thumbnaildata->channel2enable)
+          {
+            scope_display_thumbnail_data(x, ypos, thumbnaildata, 1);
+          }
+        }
+        else
+        {
+          //xy display mode so set the trace color for it
+          display_set_fg_color(XYMODE_COLOR);
+
+          //A minimum of 2 would also do, but the original code uses 5.
+          //It does not check on a maximum of samples, which is needed because channel 1 is limited to 180 samples and channel 2 to 200 samples
+          //Check on a minimum of 5 samples
+          if(thumbnaildata->tracesamples < 5)
+          {
+            //If not set to zero for a single line drawing
+            thumbnaildata->tracesamples = 0;
+          }
+          else
+          {
+            //If more then 5 take 5 samples of
+            thumbnaildata->tracesamples -= 5;
+          }
+
+          //Check on maximum samples allowed
+          if(thumbnaildata->tracesamples > 176)
+          {
+            thumbnaildata->tracesamples = 176;
+          }
+
+          //Point to the data of the two channels
+          uint8 *channel1data = thumbnaildata->channel1data;
+          uint8 *channel2data = thumbnaildata->channel2data;
+
+          //Start with first sample
+          uint32 sample = 0;
+
+          //Center the xy display
+          uint32 x = xpos + 29;
+
+          //Keep the samples in registers
+          register uint32 x1, x2, y1, y2;
+
+          //Load the first samples
+          x1 = *channel1data + x;
+          y1 = *channel2data + ypos;
+
+          //Point to the next samples
+          channel1data++;
+          channel2data++;
+
+          //Draw the trace
+          while(sample < thumbnaildata->tracesamples)
+          {
+            //Get second samples
+            x2 = *channel1data + x;
+            y2 = *channel2data + ypos;
+
+            //Draw all the lines
+            display_draw_line(x1, y1, x2, y2);
+
+            //Swap the samples
+            x1 = x2;
+            y1 = y2;
+
+            //Point to the next samples
+            channel1data++;
+            channel2data++;
+
+            //One sample done
+            sample++;
+          }
         }
       }
       else
       {
-        //xy display mode so set the trace color for it
-        display_set_fg_color(XYMODE_COLOR);
-        
-        //A minimum of 2 would also do, but the original code uses 5.
-        //It does not check on a maximum of samples, which is needed because channel 1 is limited to 180 samples and channel 2 to 200 samples
-        //Check on a minimum of 5 samples
-        if(thumbnaildata->tracesamples < 5)
-        {
-          //If not set to zero for a single line drawing
-          thumbnaildata->tracesamples = 0;
-        }
-        else
-        {
-          //If more then 5 take 5 samples of
-          thumbnaildata->tracesamples -= 5;
-        }
-        
-        //Check on maximum samples allowed
-        if(thumbnaildata->tracesamples > 176)
-        {
-          thumbnaildata->tracesamples = 176;
-        }
-
-        //Point to the data of the two channels
-        uint8 *channel1data = thumbnaildata->channel1data;
-        uint8 *channel2data = thumbnaildata->channel2data;
-        
-        //Start with first sample
-        uint32 sample = 0;
-        
-        //Center the xy display
-        uint32 x = xpos + 29;
-      
-        //Keep the samples in registers
-        register uint32 x1, x2, y1, y2;
-        
-        //Load the first samples
-        x1 = *channel1data + x;
-        y1 = *channel2data + ypos;
-        
-        //Point to the next samples
-        channel1data++;
-        channel2data++;
-        
-        //Draw the trace
-        while(sample < thumbnaildata->tracesamples)
-        {
-          //Get second samples
-          x2 = *channel1data + x;
-          y2 = *channel2data + ypos;
-          
-          //Draw all the lines
-          display_draw_line(x1, y1, x2, y2);
-          
-          //Swap the samples
-          x1 = x2;
-          y1 = y2;
-          
-          //Point to the next samples
-          channel1data++;
-          channel2data++;
-          
-          //One sample done
-          sample++;
-        }
+        //Display thumbnail not found
+        //This is not in the original code
+        //Display the message in red and with font_0
+        display_set_fg_color(0x00FF0000);
+        display_set_font(&font_0);
+        display_text(xpos + 15, ypos + 50, "THUMBNAIL NOT FOUND");
       }
+
+      //Set grey color for item border
+      display_set_fg_color(0x00202020);
+
+      //Draw the border
+      display_draw_rect(xpos, ypos, VIEW_ITEM_WIDTH, VIEW_ITEM_HEIGHT);
+
+      //Skip to next coordinates
+      xpos += VIEW_ITEM_XNEXT;
+
+      //Check if next row needs to be used
+      if(xpos > VIEW_ITEM_XLAST)
+      {
+        //Reset x position to beginning of row
+        xpos = VIEW_ITEM_XSTART;
+
+        //Bump y position to next row
+        ypos += VIEW_ITEM_YNEXT;
+      }
+
+      //Select next index
+      index++;
+
+      //Reset the thumbnail data pointer and found flag
+      thumbnaildata = (PTHUMBNAILDATA)viewthumbnaildata;
+      found = 0;
     }
-    else
-    {
-      //Display thumbnail not found
-      //This is not in the original code
-      //Display the message in red and with font_0
-      display_set_fg_color(0x00FF0000);
-      display_set_font(&font_0);
-      display_text(xpos + 15, ypos + 50, "THUMBNAIL NOT FOUND");
-    }
-    
-    //Set grey color for item border
-    display_set_fg_color(0x00202020);
-    
-    //Draw the border
-    display_draw_rect(xpos, ypos, VIEW_ITEM_WIDTH, VIEW_ITEM_HEIGHT);
-    
-    //Skip to next coordinates
-    xpos += VIEW_ITEM_XNEXT;
-    
-    //Check if next row needs to be used
-    if(xpos > VIEW_ITEM_XLAST)
-    {
-      //Reset x position to beginning of row
-      xpos = VIEW_ITEM_XSTART;
-      
-      //Bump y position to next row
-      ypos += VIEW_ITEM_YNEXT;
-    }
-    
-    //Select next index
-    index++;
-    
-    //Reset the thumbnail data pointer and found flag
-    thumbnaildata = (PTHUMBNAILDATA)viewthumbnaildata;
-    found = 0;
   }
 }
 

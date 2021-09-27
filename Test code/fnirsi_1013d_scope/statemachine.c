@@ -2273,11 +2273,12 @@ void handle_view_mode_touch(void)
             //Check if there is an item to delete
             if(found)
             {
-              //Ask the user if the item should be deleted
+              //Ask the user if the items should be deleted
               if(handle_confirm_delete() == VIEW_CONFIRM_DELETE_YES)
               {
                 //User opted for delete so do this for the selected items
-                for(index=0,found=0;index<viewitemsonpage;index++)
+                //Start with the last item on the page to avoid problems with the file number list being modified
+                for(index=viewitemsonpage-1;index>=0;index--)
                 {
                   //Check if the current item is selected
                   if(viewitemselected[index] == VIEW_ITEM_SELECTED_DISPLAYED)
