@@ -55,7 +55,7 @@ LAB_8000a5b0:                                         //12, 13
 
 LAB_8000a5bc:
 
-  uVar4 = check_port_pin(DAT_8000a6ac,0xc);           //Battery charge detect
+  uVar4 = check_port_pin(DAT_8000a6ac,0xc);           //Battery charge detect  0x01C20890, 12
 
   puVar2 = PTR_DAT_8000a6b0;                          //0x80192ed4  some global variable, some accumulator??
 
@@ -83,8 +83,15 @@ LAB_8000a5bc:
   //0x80361378 Some base pointer
 
   //Some fractional addition to the adc value
-  //            result from scan                                         byte from 0x8036137A                                          0x068DB8BB
+  //            result from scan                                         byte from 0x8036137A = screen brightness setting                         0x068DB8BB
   uVar4 = (uint)bVar3 + (uint)((ulonglong)(uint)((int)(short)(ushort)*(byte *)(DAT_8000a6b4 + 2) * (int)(short)((ushort)bVar3 * 10)) * (ulonglong)DAT_8000a6b8 >> 0x28);  //High result byte logical shifted right an extra 8
+
+//(100 * 630 * 109951163) / 1099511627776
+//63000
+// F618
+
+//1/10000
+
 
   //At max the value will gain 6. (63 from the adc, 100 for the brightness)
   //Adds 4 when bat is full and screen is on max.
@@ -152,6 +159,52 @@ LAB_8000a5bc:
 
   display_battery_status();
 }
+
+
+
+
+uchar read_keyadc_data(void)
+
+{
+  return (uchar)((byte)*KEYADC_DATA & 0x3f);
+}
+
+
+
+void enable_keyadc(void)
+
+{
+  uint *puVar1;
+  
+
+//Default is 0x01000168
+//   0      1       0      0       0      1        6        8
+//0000 | 0001 | 00 00 | 0000 | 00 00 | 0001 | 0 1 10 | 10 0 0
+//
+//FIRST_CONVERT_DLY      1
+//CONTINUE_TIME_SELECT   0
+//KEY_MODE_SELECT        0 (NORMAL)
+//LEVELA_B_CNT           1
+//KEY_ADC_HOLD_KEY_EN    0
+//KEY_ADC_HOLD_EN        1
+//LEVELB_VOL             2
+//KEY_ADC_SAMPLE_RATE    2 (62.5HZ)
+//KEY_ADC_EN             0
+
+//0x010000159
+
+  puVar1 = KEYADC_CTRL;
+  *KEYADC_CTRL = *KEYADC_CTRL & 0xffffcfff;  //Clear 0x3000
+  *puVar1 = *puVar1;
+  *puVar1 = *puVar1 & 0xffffffcf;            //Clear 0x30
+  *puVar1 = *puVar1 | 0x10;                  //Set levelB_VOL ~1,8V
+  *puVar1 = *puVar1 | 1;                     //Enable the ADC
+  return;
+}
+
+
+
+
 
 //Display_battery_status
 
