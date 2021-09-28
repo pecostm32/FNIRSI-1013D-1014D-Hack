@@ -208,7 +208,7 @@ void scope_display_thumbnails(void);                   //Add displaying the file
 
 void scope_display_thumbnail_data(uint32 xpos, uint32 ypos, PTHUMBNAILDATA thumbnaildata, uint32 channel);
 
-void scope_create_thumbnail(void);                     //Need to finish this one
+void scope_create_thumbnail(uint32 filenumber, PTHUMBNAILDATA thumbnaildata);
 
 int32 scope_display_picture_item(void);
 

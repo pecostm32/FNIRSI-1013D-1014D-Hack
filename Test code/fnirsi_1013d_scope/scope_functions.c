@@ -1748,6 +1748,13 @@ void scope_trigger_settings(int mode)
 
 void scope_battery_status(void)
 {
+  //Prepare the battery symbol in a working buffer to avoid flicker
+  display_set_screen_buffer(displaybuffer1);
+  
+  //Clear the background
+  display_set_fg_color(0x00000000);
+  display_fill_rect(701, 5, 25, 13);
+  
   //Draw an empty battery symbol in white
   display_set_fg_color(0x00FFFFFF);
   display_fill_rect(701, 9, 3, 5);
@@ -1794,6 +1801,11 @@ void scope_battery_status(void)
     display_draw_vert_line(721, 10, 12);
     display_draw_vert_line(722, 11, 11);
   }
+  
+  //Copy it to the actual screen
+  display_set_source_buffer(displaybuffer1);
+  display_set_screen_buffer((uint16 *)maindisplaybuffer);
+  display_copy_rect_to_screen(701, 5, 25, 13);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -6331,7 +6343,7 @@ void scope_save_view_item_file(int32 type)
       //If so create the thumbnail and quit the loop
       //This means that if there is no free slot or the new number is not found there will not be a thumbnail for it.
       //My version signals this.
-      scope_create_thumbnail();
+      scope_create_thumbnail(newnumber, thumbnaildata);
       break;
     }
 
@@ -6907,14 +6919,115 @@ void scope_display_thumbnail_data(uint32 xpos, uint32 ypos, PTHUMBNAILDATA thumb
     //Swap the samples
     sample1 = sample2;
   }
-  
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_create_thumbnail(void)
+void scope_create_thumbnail(uint32 filenumber, PTHUMBNAILDATA thumbnaildata)
 {
+  uint32  count;
+  uint8  *dptr;
+  uint16 *sptr;
   
+  //The number of samples needs to be reduced by a factor 4
+  //The original code does this in a stupid way, without filtering the data. For now I will use similar method without doing everything 4 times
+  
+  //Fill in the file number
+  thumbnaildata->filenumberlsb =  filenumber       & 0xFF;
+  thumbnaildata->filenumbermsb = (filenumber >> 8) & 0xFF;
+  
+  //Set the parameters for channel 1
+  thumbnaildata->channel1enable      = scopesettings.channel1.enable;
+  thumbnaildata->channel1traceoffset = (((scopesettings.channel1.traceoffset - 46) * 10000) / 36166) + 5;
+
+  //Set the parameters for channel 2
+  thumbnaildata->channel2enable      = scopesettings.channel2.enable;
+  thumbnaildata->channel2traceoffset = (((scopesettings.channel2.traceoffset - 46) * 10000) / 36166) + 5;
+  
+  //Set trigger information
+  thumbnaildata->triggerlevelscreenoffset = ((scopesettings.triggeroffset * 10000) / 36166) + 5;
+  thumbnaildata->triggerpositiononscreen  = scopesettings.triggerposition / 4;
+  
+  //Set the xy display mode
+  thumbnaildata->xydisplaymode = scopesettings.xymodedisplay;
+  
+  //For long timebase (50S/div - 100mS/div) use a different start and number of samples count
+  if(scopesettings.timeperdiv < 9)
+  {
+    //Always start at the beginning
+    thumbnaildata->traceposition = 0;
+    
+    //Use the current x position divided by 4 as sample count
+    thumbnaildata->tracesamples = disp_xpos / 4;
+  }
+  else
+  {
+    //Start at where the current trace starts on screen divided by 4
+    thumbnaildata->traceposition = disp_x_start / 4;
+    
+    //Use the display sample count divided by 4 as sample count
+    thumbnaildata->tracesamples = disp_sample_count / 4;
+  }
+  
+  //Do channel 1 data if it is enabled
+  if(scopesettings.channel1.enable)
+  {
+    //Only take 176 samples
+    count = 176;
+    dptr = thumbnaildata->channel1data;
+    sptr = (uint16 *)channel1ypoints + 2;
+    
+    //Do all the samples
+    while(count)
+    {
+      //Reduce the magnitude of the sample to fit the thumbnail rectangle
+      *dptr = (uint8)(((*sptr - 46) * 10000) / 36166) + 5;
+      
+      //Point to next samples
+      dptr++;
+      
+      //Only take every fourth sample
+      sptr += 4;
+      
+      //One sample done
+      count--;
+    }
+  }
+  else
+  {
+    //Not enabled then just clear the data
+    memset(thumbnaildata->channel1data, 5, sizeof(thumbnaildata->channel1data));
+  }
+  
+  //Do channel 2 data if it is enabled
+  if(scopesettings.channel2.enable)
+  {
+    //Only take 176 samples
+    count = 176;
+    dptr = thumbnaildata->channel2data;
+    sptr = (uint16 *)channel2ypoints + 2;
+    
+    //Do all the samples
+    while(count)
+    {
+      //Reduce the magnitude of the sample to fit the thumbnail rectangle
+      *dptr = (uint8)(((*sptr - 46) * 10000) / 36166) + 5;
+      
+      //Point to next samples
+      dptr++;
+      
+      //Only take every fourth sample
+      sptr += 4;
+      
+      //One sample done
+      count--;
+    }
+  }
+  else
+  {
+    //Not enabled then just clear the data
+    memset(thumbnaildata->channel2data, 5, sizeof(thumbnaildata->channel2data));
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -6995,6 +7108,8 @@ void scope_display_selected_signs(void)
 void scope_display_file_status_message(int32 msgid)
 {
   uint32 checkconfirmation = scopesettings.confirmationmode;
+  
+  //A screen buffer issue here???? Trace data is not saved????
   
   //Save the screen rectangle where the message will be displayed
   display_copy_rect_from_screen(310, 210, 180, 60);

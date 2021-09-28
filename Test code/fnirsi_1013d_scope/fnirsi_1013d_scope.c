@@ -9,6 +9,7 @@
 #include "display_control.h"
 #include "fpga_control.h"
 #include "touchpanel.h"
+#include "power_and_battery.h"
 
 #include "fnirsi_1013d_scope.h"
 #include "display_lib.h"
@@ -35,7 +36,6 @@ int main(void)
   //Initialize data in BSS section
   memset(&BSS_START, 0, &BSS_END - &BSS_START);
   
-  
   //Initialize the clock system
   sys_clock_init();
   
@@ -48,6 +48,12 @@ int main(void)
   
   //Setup timer interrupt
   timer0_setup();
+  
+  //Setup power monitoring
+  power_interrupt_init();
+  
+  //Setup battery monitoring
+  battery_check_init();
   
   //Enable interrupts only once. In the original code it is done on more then one location.
   arm32_interrupt_enable();
@@ -143,8 +149,8 @@ int main(void)
   
   scopesettings.updatescreen = 1;
   
-  scopesettings.batterychargelevel = 20;
-  scopesettings.batterycharging = 1;
+  scopesettings.batterychargelevel = 10;
+  scopesettings.batterycharging = 0;
   
   scopesettings.screenbrightness = 67;
   scopesettings.gridbrightness = 46;
@@ -188,8 +194,6 @@ int main(void)
   //In the original code there is some hardware check function here. Actions are not performed unless some data in the FLASH is not set
   
   //Here USB setup needs to be done
-  
-  //Power monitoring adc and interrupt setup
   
   //Load configuration data from FLASH
   
@@ -237,18 +241,12 @@ int main(void)
     
   //Set screen brightness
   fpga_set_translated_brightness();
-
   
-  
-//  scope_draw_time_cursors();
-//  scope_draw_volt_cursors();
-
-//  scope_draw_pointers();
-  
+  //Monitor the battery, process and display trace data and handle user input until power is switched off
   while(1)
   {
     //Monitor the battery status
-
+    battery_check_status();
     
     //Go through the trace data and make it ready for displaying
     scope_process_trace_data();

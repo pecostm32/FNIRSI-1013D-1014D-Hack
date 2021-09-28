@@ -26,6 +26,7 @@ void setup_interrupt(uint32 irq, IRQHANDLERFUNCION function, uint32 priority)
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
+//The actual interrupt handler that takes care of the stacks and registers is in start.s
 
 void irq_handler(void) 
 {

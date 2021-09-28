@@ -54,6 +54,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/memcpy.o \
 	${OBJECTDIR}/memmove.o \
 	${OBJECTDIR}/memset.o \
+	${OBJECTDIR}/power_and_battery.o \
 	${OBJECTDIR}/scope_functions.o \
 	${OBJECTDIR}/sd_card_interface.o \
 	${OBJECTDIR}/sin_cos_math.o \
@@ -179,6 +180,11 @@ ${OBJECTDIR}/memmove.o: memmove.s
 ${OBJECTDIR}/memset.o: memset.s
 	${MKDIR} -p ${OBJECTDIR}
 	$(AS) $(ASFLAGS) -o ${OBJECTDIR}/memset.o memset.s
+
+${OBJECTDIR}/power_and_battery.o: power_and_battery.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/power_and_battery.o power_and_battery.c
 
 ${OBJECTDIR}/scope_functions.o: scope_functions.c
 	${MKDIR} -p ${OBJECTDIR}
