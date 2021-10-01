@@ -170,7 +170,7 @@ void scope_determine_sample_buffer_indexes(void);
 // Signal data display functions
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_display_trace_data(void);
+void scope_display_trace_data(void);          //Needs work on long time base to fix problem when enabling a channel. previous y position is then wrong.
 
 void scope_display_channel_trace(uint16 *buffer, uint16 xpos, uint16 count, uint32 color);
 
@@ -215,6 +215,17 @@ int32 scope_display_picture_item(void);
 void scope_display_selected_signs(void);
 
 void scope_display_file_status_message(int32 msgid);
+
+//----------------------------------------------------------------------------------------------------------------------------------
+// Configuration data functions
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_load_configuration_data(void);
+void scope_save_configuration_data(void);
+
+void scope_reset_config_data(void);
+void scope_save_config_data(void);
+void scope_restore_config_data(void);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

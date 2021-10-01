@@ -93,6 +93,20 @@ void display_set_destination_buffer(uint16 *buffer)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+void display_save_screen_buffer(void)
+{
+  displaydata.savebuffer = displaydata.screenbuffer;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_restore_screen_buffer(void)
+{
+  displaydata.screenbuffer = displaydata.savebuffer;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 void display_draw_line(uint32 xstart, uint32 ystart, uint32 xend, uint32 yend)
 {
   register uint16 *ptr;
@@ -1158,13 +1172,13 @@ void display_right_pointer(uint32 xpos, uint32 ypos, int8 id)
 void display_top_pointer(uint32 xpos, uint32 ypos, int8 id)
 {
   //Draw the pointer
-  display_copy_icon_fg_color(top_pointer_icon, xpos, ypos, 15, 19);
+  display_copy_icon_fg_color(top_pointer_icon, xpos, ypos, 14, 21);
  
   //Set the color for drawing the id
   displaydata.fg_color = displaydata.bg_color;
   
   //Draw the id
-  display_character(xpos + 4, ypos + 1, id);
+  display_character(xpos + 3, ypos + 1, id);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

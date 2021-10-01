@@ -73,18 +73,6 @@ int main(void)
   //Setup the display library for the scope hardware
   scope_setup_display_lib();
   
-  //Initialize some variables for now
-  systemsettingsmenuopen = 0;
-  screenbrightnessopen = 0;
-  gridbrightnessopen = 0;
-  calibrationopen = 0;
-  
-  touchstate = 0;
-  havetouch = 0;
-  xtouch = 0;
-  ytouch = 0;
-  
-  viewtype = VIEW_TYPE_PICTURE;
 
   //Setup the touch panel interface
   tp_i2c_setup();
@@ -109,95 +97,12 @@ int main(void)
     while(1);
   }
   
-  
-  scopesettings.rightmenustate = 0;
-  scopesettings.waveviewmode = 0;
-
-  scopesettings.runstate = 0;
-
-  scopesettings.movespeed = 0;
-
-  scopesettings.channel1.enable = 1;
-  scopesettings.channel1.coupling = 0;
-  scopesettings.channel1.magnification = 0;
-  scopesettings.channel1.voltperdiv = 4;
-  scopesettings.channel1.fftenable = 0;
-  scopesettings.channel1.traceoffset = 220;
-  
-  scopesettings.channel2.enable = 0;
-  scopesettings.channel2.coupling = 0;
-  scopesettings.channel2.magnification = 0;
-  scopesettings.channel2.voltperdiv = 3;
-  scopesettings.channel2.fftenable = 0;
-  scopesettings.channel2.traceoffset = 155;
-  
-  scopesettings.triggermode = 0;
-  scopesettings.triggeredge = 1;
-  scopesettings.triggerchannel = 0;
-  
-  scopesettings.triggerposition = 350;
-  scopesettings.triggeroffset = 225;
-  scopesettings.triggerlevel = 20;
-  
-  scopesettings.timeperdivbackup = 24;
-  scopesettings.timeperdiv = 24;
-  
-  scopesettings.triggerflag1 = 0;
-  scopesettings.triggerflag2 = 0;
-  scopesettings.triggerflag3 = 0;
-  scopesettings.triggerflag4 = 0;
-  
-  scopesettings.updatescreen = 1;
-  
-  scopesettings.batterychargelevel = 10;
-  scopesettings.batterycharging = 0;
-  
-  scopesettings.screenbrightness = 67;
-  scopesettings.gridbrightness = 46;
-  scopesettings.alwaystrigger50 = 1;
-  scopesettings.xymodedisplay = 0;
-  
-  scopesettings.confirmationmode = 1;
-  
-  scopesettings.timecursorsenable = 0;
-  scopesettings.timecursor1position = 78;
-  scopesettings.timecursor2position = 358;
-
- 
-  scopesettings.voltcursorsenable = 0;
-  scopesettings.voltcursor1position = 169;
-  scopesettings.voltcursor2position = 234;
-
-  scopesettings.previoustimerticks = 0;
-  
-  int channel;
-  int item;
-  
-  for(channel=0;channel<2;channel++)
-  {
-    //For each channel 12 items
-    for(item=0;item<12;item++)
-    {
-      scopesettings.measuresstate[channel][item] = 0;
-    }
-  }
-  
-  scopesettings.measuresstate[0][4] = 1;
-  scopesettings.measuresstate[0][7] = 1;
-
-  scopesettings.measuresstate[1][2] = 1;
-  scopesettings.measuresstate[1][10] = 1;
-
-  
-  
-  
   //In the original code there is some hardware check function here. Actions are not performed unless some data in the FLASH is not set
   
   //Here USB setup needs to be done
   
   //Load configuration data from FLASH
-  
-  //Check if configuration data is ok and if not write new one to flash and reload it
+  scope_load_configuration_data();
 
   //Enable or disable the channels based on the scope loaded settings
   fpga_set_channel_1_enable();

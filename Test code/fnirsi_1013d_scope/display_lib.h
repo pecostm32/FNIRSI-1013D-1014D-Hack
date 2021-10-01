@@ -27,6 +27,7 @@ struct tagDisplayData
   uint16    *screenbuffer;
   uint16    *sourcebuffer;         //For copy to screen or slide function the source from where to get the data from
   uint16    *destbuffer;           //For copy from screen the destination where to put the data
+  uint16    *savebuffer;
   uint16    *linepointer;
   uint32     xpos;
   uint32     ypos;
@@ -45,6 +46,9 @@ void display_set_bg_color(uint32 color);
 void display_set_screen_buffer(uint16 *buffer);
 void display_set_source_buffer(uint16 *buffer);
 void display_set_destination_buffer(uint16 *buffer);
+
+void display_save_screen_buffer(void);
+void display_restore_screen_buffer(void);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

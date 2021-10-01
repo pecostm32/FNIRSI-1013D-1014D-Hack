@@ -70,12 +70,12 @@ uint16 channel2tracebuffer3[3000];    //In original code at 0x801AA8DA
 //declared as uint32 for use with file functions, but used with shorts (3000)
 uint32 channel2tracebuffer4[1500];    //In original code at 0x801AD7BA
 
-uint16 temptracebuffer1[6000];         //In original code at 0x801AEF26
-uint16 temptracebuffer2[6000];         //In original code at 0x801B8B60
+uint16 temptracebuffer1[3000];         //In original code at 0x801AEF26
+uint16 temptracebuffer2[3000];         //In original code at 0x801B8B60
 
 //declared as uint32 for use with file functions, but used with shorts (1000)
 uint32 channel1ypoints[500];          //At 0x801C374A in original code
-uint32 channel2ypoints[500];          //At 0x801C374A + 2000 in original code   = 0x801C3F1A
+uint32 channel2ypoints[500];          //At 0x801C374A + 2000 in original code = 0x801C3F1A
 
 uint16 disp_xpos = 0;                  //In original code at 0x80192EAA
 
@@ -92,6 +92,14 @@ uint16 disp_sample_count = 0;          //In original code at 0x8019D5BC
 
 
 uint8 channel_1_process_anyway = 0;    //In original code at 0x8019D5A9 (Basically a channel setting)
+
+
+uint16 system_ok;                      //In original code at 0x8019D5E4
+
+uint8 parameter_buffer[7];
+uint8 parameter_crypt_byte;
+
+uint16 settingsworkbuffer[250];        //In original code at 0x8035344E. Used for loading from and writing to flash
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Distances of touch point to traces and cursors
@@ -139,6 +147,8 @@ FIL viewfp;                         //Since files are not opened concurrent usin
 
 char viewfilename[32];              //The original code uses a large buffer to create all the needed file names in. Here the file name is created when needed
 
+uint8 viewactive;                   //Not in the original code. Used to avoid copying settings to the flash
+
 uint8 viewtype = VIEW_TYPE_PICTURE; //At 0x80192EE2 in original code
 uint8 viewselectmode;               //In original code this is at 0x8035A97E. Signals if either the select all or the select button is active
 uint8 viewpage;                     //In original code this is at 0x8035A97F. Is the page number of the current items on the screen. 16 items per page
@@ -157,8 +167,18 @@ uint32 viewthumbnaildata[VIEW_THUMBNAIL_DATA_SIZE / 4];      //In original code 
 
 uint32 viewfilenumberdata[VIEW_FILE_NUMBER_DATA_SIZE / 4];   //In original code at 0x8035A99C. 2000 bytes, but to make sure it is dword aligned declared as uint32
 
-                                                          //The original code uses a large buffer to load all the data into and writes it in one go to a file. This requires a lot of extra memory
-uint32 viewfilesetupdata[VIEW_SETUP_DATA_SIZE / 4];      //Not in original code. 1000 bytes for storing the system settings to save to file or to load from file
+                                                             //The original code uses a large buffer to load all the data into and writes it in one go to a file. This requires a lot of extra memory
+uint32 viewfilesetupdata[VIEW_SETUP_DATA_SIZE / 4];          //Not in original code. 1000 bytes for storing the system settings to save to file or to load from file
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Calibration data
+//----------------------------------------------------------------------------------------------------------------------------------
+
+uint16 channel1_calibration_factor = 0x00DC;
+uint16 channel1_calibration_data[] = { 0x054D, 0x0545, 0x0554, 0x054D, 0x0553, 0x054C, 0x054C };
+
+uint16 channel2_calibration_factor = 0x00D9;
+uint16 channel2_calibration_data[] = { 0x055B, 0x0556, 0x0561, 0x055B, 0x0560, 0x055A, 0x055A };
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Predefined data
@@ -167,6 +187,31 @@ uint32 viewfilesetupdata[VIEW_SETUP_DATA_SIZE / 4];      //Not in original code.
 const uint16 signal_adjusters[7] = { 0xAD, 0xAF, 0xB4, 0xB4, 0xB8, 0xB8, 0xB8 };
 
 const uint16 timebase_adjusters[5] = { 0x01A9, 0x00AA, 0x0055, 0x002F, 0x0014 };
+
+const uint32 short_timebase_settings[] =
+{
+     800,   // 50mS/div
+     800,   // 20mS/div
+    1800,   // 10mS/div
+    2500,   //  5mS/div
+    2500,   //  2mS/div
+    2500,   //  1mS/div
+    2500,   //500uS/div
+    2500,   //200uS/div
+    3000,   //100uS/div
+    5596,   // 50uS/div
+    9692,   // 20uS/div
+   21980,   // 10uS/div
+   21980,   //  5uS/div
+   83420,   //  2uS/div
+  206300,   //  1uS/div
+  411100,   //500nS/div
+  411100,   //250nS/div
+  411100,   //100nS/div
+  411100,   // 50nS/div
+  411100,   // 25nS/div
+  411100,   // 10nS/div
+};
 
 const uint8 zoom_select_settings[3][7] =
 {

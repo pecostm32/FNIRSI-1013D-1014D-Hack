@@ -16,6 +16,9 @@
 //Defines
 //----------------------------------------------------------------------------------------------------------------------------------
 
+#define VIEW_NOT_ACTIVE                   0
+#define VIEW_ACTIVE                       1
+
 #define VIEW_ITEM_XSTART                  2
 #define VIEW_ITEM_YSTART                  0
 #define VIEW_ITEM_WIDTH                 182
@@ -184,6 +187,13 @@ extern uint16 disp_sample_count;
 
 extern uint8 channel_1_process_anyway;
 
+extern uint16 system_ok;
+
+extern uint8 parameter_buffer[7];
+extern uint8 parameter_crypt_byte;
+
+extern uint16 settingsworkbuffer[250];
+
 //----------------------------------------------------------------------------------------------------------------------------------
 //Distances of touch point to traces and cursors
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -217,12 +227,24 @@ extern uint16 previous_top_volt_cursor_position;
 extern uint16 previous_bottom_volt_cursor_position;
 
 //----------------------------------------------------------------------------------------------------------------------------------
+//Calibration data
+//----------------------------------------------------------------------------------------------------------------------------------
+
+extern uint16 channel1_calibration_factor;
+extern uint16 channel1_calibration_data[];
+
+extern uint16 channel2_calibration_factor;
+extern uint16 channel2_calibration_data[];
+
+//----------------------------------------------------------------------------------------------------------------------------------
 //Predefined data
 //----------------------------------------------------------------------------------------------------------------------------------
 
 extern const uint16 signal_adjusters[];
 
 extern const uint16 timebase_adjusters[];
+
+extern const uint32 short_timebase_settings[];
 
 extern const uint8 zoom_select_settings[3][7];
 
@@ -241,6 +263,8 @@ extern uint16 prevxtouch;
 extern FIL viewfp;
 
 extern char viewfilename[];
+
+extern uint8 viewactive;
 
 extern uint8 viewtype;
 

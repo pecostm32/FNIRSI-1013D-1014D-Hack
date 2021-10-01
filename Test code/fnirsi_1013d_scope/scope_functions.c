@@ -6,6 +6,7 @@
 #include "touchpanel.h"
 #include "timer.h"
 #include "fpga_control.h"
+#include "spi_control.h"
 #include "display_lib.h"
 #include "ff.h"
 
@@ -87,6 +88,9 @@ void scope_setup_main_screen(void)
 
 void scope_setup_view_screen(void)
 {
+  //Switch to view mode so disallow saving of settings on power down
+  viewactive = VIEW_ACTIVE;
+  
   //Set scope run state to running to have it sample fresh data on exit
   scopesettings.runstate = 0;
 
@@ -126,7 +130,6 @@ void scope_setup_view_screen(void)
   //Restore the current settings
   scope_restore_setup(&savedscopesettings1);
 
-
   //Make sure view mode is normal
   scopesettings.waveviewmode = 0;
 
@@ -161,14 +164,14 @@ void scope_setup_view_screen(void)
   //Reset the screen to the normal scope screen
   scope_setup_main_screen();
 
-  
   //Restart the scope at this point in the code
   
           
 //        FUN_8000a750();          //Restart the scope function
 //        setup_main_screen();          
-          
-  
+
+  //Back to normal mode so allow saving of settings on power down
+  viewactive = VIEW_NOT_ACTIVE;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -4185,6 +4188,23 @@ skip_delay:
   //Need insight in the code that displays the data to get an understanding of the next bit of code
   //It is a more or less straight conversion from what Ghidra shows
   
+  //Check if data needs to be doubled
+  //This is missing in the original code  
+  //Since the trace offset is processed in the FPGA this does not work properly. The trace goes up on the screen, so needs a subtract to stay on the right position!!!
+  if(scopesettings.channel1.voltperdiv == 6)
+  {
+    //Only on highest sensitivity
+    channel1tracebuffer1[0] <<= 1;
+  }
+
+  //Check if data needs to be doubled
+  //This is missing in the original code  
+  if(scopesettings.channel2.voltperdiv == 6)
+  {
+    //Only on highest sensitivity
+    channel2tracebuffer1[0] <<= 1;
+  }
+  
   //Some fractional scaling on the signal to fit it on screen???
   //Adjust the channel 1 signal based on the volts per div setting
   signaladjust = channel1tracebuffer1[0] * signal_adjusters[scopesettings.channel1.voltperdiv];
@@ -4199,13 +4219,6 @@ skip_delay:
   
   //Store it somewhere
   channel1tracebuffer3[0] = temp1;                    //At address 0x801A916A in original code
-  
-  //Check if data needs to be doubled
-  if(scopesettings.channel1.voltperdiv == 6)          //This is missing in the original code
-  {
-    //Only on highest sensitivity
-    temp1 <<= 1;
-  }
   
   //Destination buffer is declared as uint32 to be able to use it with file functions, so need to cast it to uint16 pointer here
   ptr = (uint16 *)channel1tracebuffer4;
@@ -4237,13 +4250,6 @@ skip_delay:
   //Store it somewhere
   channel2tracebuffer3[0] = temp1;               //At address 0x801AA8DA in original code
   
-  //Check if data needs to be doubled
-  if(scopesettings.channel2.voltperdiv == 6)     //This is missing in the original code
-  {
-    //Only on highest sensitivity
-    temp1 <<= 1;
-  }
-
   //Destination buffer is declared as uint32 to be able to use it with file functions, so need to cast it to uint16 pointer here
   ptr = (uint16 *)channel2tracebuffer4;
   
@@ -5817,6 +5823,8 @@ void scope_display_measurements(void)
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
+// File display functions
+//----------------------------------------------------------------------------------------------------------------------------------
 //Simplest setup here is to put all important data in a struct and make it such that a pointer is used to point to the active one
 //This way no memory needs to be copied
 //Needs a bit of a re write but might improve things a bit
@@ -7109,9 +7117,13 @@ void scope_display_file_status_message(int32 msgid)
 {
   uint32 checkconfirmation = scopesettings.confirmationmode;
   
-  //A screen buffer issue here???? Trace data is not saved????
-  
+  //Need to save the screen buffer pointer and set it to the actual screen
+  //When displaying trace data to avoid flickering data is drawn in a different screen buffer
+  display_save_screen_buffer();
+
   //Save the screen rectangle where the message will be displayed
+  display_set_screen_buffer((uint16 *)maindisplaybuffer);
+  display_set_destination_buffer(displaybuffer2);
   display_copy_rect_from_screen(310, 210, 180, 60);
   
   //Draw the background in grey
@@ -7186,7 +7198,309 @@ void scope_display_file_status_message(int32 msgid)
   }
   
   //Restore the original screen
+  display_set_source_buffer(displaybuffer2);
   display_copy_rect_to_screen(310, 210, 180, 60);
+  
+  //Need to restore the screen buffer pointer
+  display_restore_screen_buffer();
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+// Configuration data functions
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_load_configuration_data(void)
+{
+  //Get the settings data form the flash memory
+  sys_spi_flash_read(0x001FD000, (uint8 *)settingsworkbuffer, sizeof(settingsworkbuffer));
+  
+  //Check if configuration data is ok
+  if(settingsworkbuffer[200] == 0x1432)
+  {
+    //If they are ok, copy them to the actual settings
+    scope_restore_config_data();
+  }
+  else
+  {
+    //Not ok, so reset to a default configuration
+    scope_reset_config_data();
+    
+    //Get the settings in the working buffer and write them to the flash
+    scope_save_configuration_data();
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_save_configuration_data(void)
+{
+  //Save the settings for writing to the flash
+  scope_save_config_data();
+
+  //Write it to the flash
+  sys_spi_flash_write(0x001FD000, (uint8 *)settingsworkbuffer, sizeof(settingsworkbuffer));
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_reset_config_data(void)
+{
+  //Load a default configuration in case of settings in flash being corrupted
+  
+  //Enable channel 1, dc coupling, 1x magnification, 50V/div, fft disabled and trace line in top part of the screen
+  scopesettings.channel1.enable        = 1;
+  scopesettings.channel1.coupling      = 0;
+  scopesettings.channel1.magnification = 0;
+  scopesettings.channel1.voltperdiv    = 0;
+  scopesettings.channel1.fftenable     = 0;
+  scopesettings.channel1.traceoffset   = 300;
+  
+  //Enable channel 2, dc coupling, 1x magnification, 50V/div, fft disabled and trace line in bottom part of the screen
+  scopesettings.channel2.enable        = 1;
+  scopesettings.channel2.coupling      = 0;
+  scopesettings.channel2.magnification = 0;
+  scopesettings.channel2.voltperdiv    = 0;
+  scopesettings.channel2.fftenable     = 0;
+  scopesettings.channel2.traceoffset   = 100;
+  
+  //Set trigger mode to auto, trigger edge to rising, trigger channel to channel 1, trigger position and trigger screen offset to center of the screen
+  scopesettings.triggermode     = 0;
+  scopesettings.triggeredge     = 0;
+  scopesettings.triggerchannel  = 0;
+  scopesettings.triggerposition = 362;
+  scopesettings.triggeroffset   = 200;
+  
+  //Set move speed to fast
+  scopesettings.movespeed = 0;
+  
+  //Set time base to 20uS/div
+  scopesettings.timeperdiv = 19;
+  
+  //Enable some default measurements
+  //Not yet implemented display wise and am thinking of a different way of doing it so left for later
+  
+  //Turn time cursor off and set some default positions
+  scopesettings.timecursorsenable   = 0;
+  scopesettings.timecursor1position = 183;
+  scopesettings.timecursor2position = 547;
+  
+  //Turn volt cursor of and set some default positions
+  scopesettings.voltcursorsenable   = 0;
+  scopesettings.voltcursor1position = 167;
+  scopesettings.voltcursor2position = 328;
+  
+  //Set right menu to normal state
+  scopesettings.rightmenustate = 0;
+  
+  //Trigger flags to start mode
+  scopesettings.triggerflag1 = 1;
+  scopesettings.triggerflag2 = 1;
+
+  //Set screen brightness to max, grid brightness to low, always 50% trigger on and x y mode display off
+  scopesettings.screenbrightness = 100;
+  scopesettings.gridbrightness   = 15;
+  scopesettings.alwaystrigger50  = 1;
+  scopesettings.xymodedisplay    = 0;
+  
+  //Set the settings integrity check flag
+  system_ok = 0x1432;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_save_config_data(void)
+{
+  uint32  channel;
+  uint32  index;
+  uint16 *ptr;
+  
+  //Save the channel 1 settings
+  settingsworkbuffer[0]  = scopesettings.channel1.enable;
+  settingsworkbuffer[3]  = scopesettings.channel1.coupling;
+  settingsworkbuffer[4]  = scopesettings.channel1.magnification;
+  settingsworkbuffer[1]  = scopesettings.channel1.voltperdiv;
+  settingsworkbuffer[2]  = scopesettings.channel1.fftenable;
+  settingsworkbuffer[42] = scopesettings.channel1.traceoffset;
+
+  //Save the channel 2 settings
+  settingsworkbuffer[5]  = scopesettings.channel2.enable;
+  settingsworkbuffer[8]  = scopesettings.channel2.coupling;
+  settingsworkbuffer[9]  = scopesettings.channel2.magnification;
+  settingsworkbuffer[6]  = scopesettings.channel2.voltperdiv;
+  settingsworkbuffer[7]  = scopesettings.channel2.fftenable;
+  settingsworkbuffer[43] = scopesettings.channel2.traceoffset;
+  
+  //Save trigger settings
+  settingsworkbuffer[12] = scopesettings.triggermode;
+  settingsworkbuffer[13] = scopesettings.triggeredge;
+  settingsworkbuffer[14] = scopesettings.triggerchannel;
+  settingsworkbuffer[40] = scopesettings.triggerposition;
+  settingsworkbuffer[41] = scopesettings.triggeroffset;
+  
+  //Save the time base
+  settingsworkbuffer[10] = scopesettings.timeperdiv;
+
+  //Save the move speed
+  settingsworkbuffer[11] = scopesettings.movespeed;
+  
+  //Save the right menu state
+  settingsworkbuffer[15] = scopesettings.rightmenustate;
+
+  //Save the confirmation mode (not in the original code)
+  settingsworkbuffer[16] = scopesettings.confirmationmode;
+  
+  //Save screen brightness, grid brightness, always 50% trigger and xy display mode
+  settingsworkbuffer[60] = scopesettings.screenbrightness;
+  settingsworkbuffer[61] = scopesettings.gridbrightness;
+  settingsworkbuffer[62] = scopesettings.alwaystrigger50;
+  settingsworkbuffer[63] = scopesettings.xymodedisplay;
+  
+  //Save the time cursor settings
+  settingsworkbuffer[161] = scopesettings.timecursorsenable;
+  settingsworkbuffer[162] = scopesettings.timecursor1position;
+  settingsworkbuffer[163] = scopesettings.timecursor2position;
+  
+  //Save the volt cursor settings
+  settingsworkbuffer[164] = scopesettings.voltcursorsenable;
+  settingsworkbuffer[165] = scopesettings.voltcursor1position;
+  settingsworkbuffer[166] = scopesettings.voltcursor2position;
+
+  //Point to the first measurement enable setting
+  ptr = &settingsworkbuffer[80];
+  
+  //Save the measurements enable states
+  for(channel=0;channel<2;channel++)
+  {
+    //12 measurements per channel
+    for(index=0;index<12;index++)
+    {
+      //Copy the current measurement state and point to the next one
+      *ptr++ = scopesettings.measuresstate[channel][index];
+    }
+  }
+  
+  //Save the calibration data
+  settingsworkbuffer[120] = channel1_calibration_factor;
+  settingsworkbuffer[127] = channel2_calibration_factor;
+
+  //Point to the first channel calibration value
+  ptr = &settingsworkbuffer[121];
+  
+  //Copy the  working set values to the saved values
+  for(index=0;index<6;index++,ptr++)
+  {
+    //Copy the data for both channels
+    ptr[0] = channel1_calibration_data[index];
+    ptr[7] = channel2_calibration_data[index];
+  }
+
+  //Save the system ok flag
+  settingsworkbuffer[200] = system_ok;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_restore_config_data(void)
+{
+  uint32  channel;
+  uint32  index;
+  uint16 *ptr;
+  
+  //Restore the channel 1 settings
+  scopesettings.channel1.enable        = settingsworkbuffer[0];
+  scopesettings.channel1.coupling      = settingsworkbuffer[3];
+  scopesettings.channel1.magnification = settingsworkbuffer[4];
+  scopesettings.channel1.voltperdiv    = settingsworkbuffer[1];
+  scopesettings.channel1.fftenable     = settingsworkbuffer[2];
+  scopesettings.channel1.traceoffset   = settingsworkbuffer[42];
+
+  //Restore the channel 2 settings
+  scopesettings.channel2.enable        = settingsworkbuffer[5];
+  scopesettings.channel2.coupling      = settingsworkbuffer[8];
+  scopesettings.channel2.magnification = settingsworkbuffer[9];
+  scopesettings.channel2.voltperdiv    = settingsworkbuffer[6];
+  scopesettings.channel2.fftenable     = settingsworkbuffer[7];
+  scopesettings.channel2.traceoffset   = settingsworkbuffer[43];
+  
+  //Restore trigger settings
+  scopesettings.triggermode     = settingsworkbuffer[12];
+  scopesettings.triggeredge     = settingsworkbuffer[13];
+  scopesettings.triggerchannel  = settingsworkbuffer[14];
+  scopesettings.triggerposition = settingsworkbuffer[40];
+  scopesettings.triggeroffset   = settingsworkbuffer[41];
+  
+  //Restore the time base
+  scopesettings.timeperdiv = settingsworkbuffer[10];
+
+  //Restore the move speed
+  scopesettings.movespeed = settingsworkbuffer[11];
+  
+  //Restore the right menu state
+  scopesettings.rightmenustate = settingsworkbuffer[15];
+  
+  //Restore the confirmation mode (not in the original code)
+  scopesettings.confirmationmode = settingsworkbuffer[16];
+  
+  //Since it is added to the code need to make sure the loaded value is in range.
+  //Was not the case on my system, even though the data position is not used in the code checked so far
+  if(scopesettings.confirmationmode > 1)
+  {
+    scopesettings.confirmationmode = 1;
+  }
+  
+  //Restore screen brightness, grid brightness, always 50% trigger and xy display mode
+  scopesettings.screenbrightness = settingsworkbuffer[60];
+  scopesettings.gridbrightness   = settingsworkbuffer[61];
+  scopesettings.alwaystrigger50  = settingsworkbuffer[62];
+  scopesettings.xymodedisplay    = settingsworkbuffer[63];
+  
+  //Restore the time cursor settings
+  scopesettings.timecursorsenable   = settingsworkbuffer[161];
+  scopesettings.timecursor1position = settingsworkbuffer[162];
+  scopesettings.timecursor2position = settingsworkbuffer[163];
+  
+  //Restore the volt cursor settings
+  scopesettings.voltcursorsenable   = settingsworkbuffer[164];
+  scopesettings.voltcursor1position = settingsworkbuffer[165];
+  scopesettings.voltcursor2position = settingsworkbuffer[166];
+
+  //Point to the first measurement enable setting
+  ptr = &settingsworkbuffer[80];
+  
+  //Restore the measurements enable states
+  for(channel=0;channel<2;channel++)
+  {
+    //12 measurements per channel
+    for(index=0;index<12;index++)
+    {
+      //Copy the current measurement state and point to the next one
+      scopesettings.measuresstate[channel][index] = *ptr++;
+    }
+  }
+  
+  //Restore the calibration data
+  channel1_calibration_factor = settingsworkbuffer[120];
+  channel2_calibration_factor = settingsworkbuffer[127];
+
+  //Point to the first channel calibration value
+  ptr = &settingsworkbuffer[121];
+  
+  //Copy the saved values to the working set
+  for(index=0;index<6;index++,ptr++)
+  {
+    //Copy the data for both channels
+    channel1_calibration_data[index] = ptr[0];
+    channel2_calibration_data[index] = ptr[7];
+  }
+
+  //The last entry is a copy of the fore last value
+  //Different from the original code where they use a switch statement instead of an array index for getting the data
+  channel1_calibration_data[6] = settingsworkbuffer[126];
+  channel2_calibration_data[6] = settingsworkbuffer[133];
+
+  //Restore the system ok flag. This is a bit off bullshit. Should be a CRC over all the settings to really verify the integrity
+  system_ok = settingsworkbuffer[200];
+  
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

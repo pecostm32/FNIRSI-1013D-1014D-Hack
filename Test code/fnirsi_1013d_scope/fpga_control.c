@@ -2,6 +2,7 @@
 
 #include "fpga_control.h"
 #include "fnirsi_1013d_scope.h"
+#include "variables.h"
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -30,14 +31,6 @@ union tagByteAndBits
   uint8 byte;
   ByteBits      bits;
 };
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-extern SCOPESETTINGS scopesettings;
-
-extern const uint16 signal_adjusters[];
-
-extern uint16 disp_xpos;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -320,11 +313,6 @@ void fpga_set_channel_1_voltperdiv(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-uint16 channel1_calibration_factor = 0x00DC;
-uint16 channel1_calibration_data[] = { 0x054D, 0x0545, 0x0554, 0x054D, 0x0553, 0x054C, 0x054C };
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
 void fpga_set_channel_1_offset(void)
 {
   uint32 offset;
@@ -397,11 +385,6 @@ void fpga_set_channel_2_voltperdiv(void)
   //Write it to the FPGA
   fpga_write_byte(setting);
 }
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-uint16 channel2_calibration_factor = 0x00D9;
-uint16 channel2_calibration_data[] = { 0x055B, 0x0556, 0x0561, 0x055B, 0x0560, 0x055A, 0x055A };
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -610,33 +593,6 @@ void fpga_set_long_timebase(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-const uint32 short_timebase_settings[] =
-{
-     800,   // 50mS/div
-     800,   // 20mS/div
-    1800,   // 10mS/div
-    2500,   //  5mS/div
-    2500,   //  2mS/div
-    2500,   //  1mS/div
-    2500,   //500uS/div
-    2500,   //200uS/div
-    3000,   //100uS/div
-    5596,   // 50uS/div
-    9692,   // 20uS/div
-   21980,   // 10uS/div
-   21980,   //  5uS/div
-   83420,   //  2uS/div
-  206300,   //  1uS/div
-  411100,   //500nS/div
-  411100,   //250nS/div
-  411100,   //100nS/div
-  411100,   // 50nS/div
-  411100,   // 25nS/div
-  411100,   // 10nS/div
-};
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
 void fpga_set_short_timebase(void)
 {
   //Write the command to set the short time base data to the FPGA
@@ -746,11 +702,6 @@ void fpga_set_battery_level(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-uint8 parameter_buffer[7];
-uint8 parameter_crypt_byte;
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
 void fpga_init_parameter_ic(void)
 {
   int i;
@@ -760,6 +711,7 @@ void fpga_init_parameter_ic(void)
   fpga_write_cmd(0x64);
   
   //Need a delay here. In the scope it is delay(20) but not sure what the base of the delay is
+  //It works without this one
 //  fpga_delay(10);
   
   //Start the read action
@@ -924,6 +876,7 @@ uint32 fpga_read_parameter_ic(uint8 id, uint32 value)
       fpga_write_cmd(0x64);
 
       //Need a delay here. In the scope it is delay(20) but not sure what the base of the delay is
+      //It works without this one
 //      fpga_delay(10);
 
       //Start the read action
@@ -995,6 +948,7 @@ uint32 fpga_read_parameter_ic(uint8 id, uint32 value)
       }
       
       //Need a delay here. In the scope it is delay(100) but not sure what the base of the delay is
+      //It works without this one
 //      fpga_delay(50);
       
       //One more try if not valid

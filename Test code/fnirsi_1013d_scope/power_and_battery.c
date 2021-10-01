@@ -93,6 +93,13 @@ void power_interrupt_handler(void)
   
   //Also need some scheme for wear leveling of the FLASH. It has enough room to do so
   
+  //Check if not in view mode
+  if(viewactive == VIEW_NOT_ACTIVE)
+  {
+    //Get the settings in the working buffer and write them to the flash
+    scope_save_configuration_data();
+  }
+  
   //Power has been turned off and settings are saved when needed so hang here until complete shutdown
   while(1);
 }
