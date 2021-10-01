@@ -1,5 +1,5 @@
 //Some init function that does something with the SD card
-
+//FUnction for firmware update
 void FUN_8000a024(void)
 
 {

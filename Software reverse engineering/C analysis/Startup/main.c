@@ -9,7 +9,7 @@ void main(void)
   sys_clock_init();                         //Has been implemented
   setup_mmu();                              //Only caches enabled
   sys_init_uart0(BAUD_115200);              //Not needed because there is no free uart available
-  setup_timer_int();
+  setup_timer_int();                        //Implemented
   sys_spi0_init();                          //Has been implemented
   fpga_init();                              //Done
   turn_off_brightness();                    //Also done
@@ -38,9 +38,9 @@ void main(void)
 
   check_hardware();                         //Hardware check only performed when flash address 0x001FE000 not contains 0x9086  
   FUN_8002a17c();                           //Some usb setup stuff
-  setup_power_mon_int();
-  load_config_data();
-  check_sys_ok_load_config_on_fail();
+  setup_power_mon_int();                    //Implemented
+  load_config_data();                       //Imlemented
+  check_sys_ok_load_config_on_fail();       //Added to load_config_data function
   set_fpga_channel1_enable();               //Implemented
   set_fpga_channel2_enable();               //Implemented
   FUN_80001314();                           //Some variable initialization. set_trigger_level_dividers. Hard coded in my version
@@ -56,8 +56,8 @@ void main(void)
   set_fpga_trigger_edge();                  //Implemented
   FUN_800267c4();                           //set_fpga_trigger_level  needs more research
   set_fpga_trigger_mode();                  //Implemented
-  FUN_8000696c();                           //Channel 1 offset needs mre research
-  FUN_800096b8();                           //Channel 2 offset needs mre research
+  FUN_8000696c();                           //Channel 1 offset needs more research
+  FUN_800096b8();                           //Channel 2 offset needs more research
   FUN_80017ce0();                           //Something with battery chagre level and FPGA command 0x3C. Implemented
   FUN_80026918();                           //Another hardware check only performed when flash address 0x001FE000 not contains 0x9086
   FUN_8000a024();                           //No idea about this one yet????
