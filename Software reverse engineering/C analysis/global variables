@@ -107,7 +107,7 @@ Picture and waveform data
   |
 +0x017
 
-
+        calculated values
 +0xe4   channel 1 max value
 +0xe6   channel 1 min value
 +0xea   channel 1 max plus (min / 2)
@@ -123,7 +123,7 @@ Picture and waveform data
 
 
 
-+0x100  Channel1 Vmax    ??
++0x100  Channel1 Vmax    ??  Enable
 +0x112  Channel1 Vmin
 +0x122  Channel1 Vavg
 +0x132  Channel1 Vrms
@@ -142,15 +142,28 @@ Picture and waveform data
 +0x282  Channel2 Duty-
 
 
-+0x292  Time cursor on off
+0x801FA4DE  Time cursor on off            byte
 
-+0x29A  Volt cursor on off
+0x801fa4e0  short timecursor1 position    short
+0x801fa4e2  short timecursor2 position    short
 
-0x801fa4e0  short timecursor1 position
-0x801fa4e2  short timecursor2 position
 
-0x801fa4e8  short voltcursor1 position
-0x801fa4ea  short voltcursor2 position
+0x801FA4E6  Volt cursor on off            byte
+
+0x801fa4e8  short voltcursor1 position    short
+0x801fa4ea  short voltcursor2 position    short
+
+
+
+
+//Calibration data is set starting from this address
+0x802F18B0
+
+
+
+
+
+
 
 
 0x80361378  some state variable for menu handling
