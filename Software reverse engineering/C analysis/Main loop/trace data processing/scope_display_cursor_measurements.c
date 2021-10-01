@@ -73,79 +73,96 @@ void FUN_8000ebf8(void)
   undefined4 local_2c;
   
   ypos = (ushort)unaff_r10;
+
   set_frame_to_global_pointer();
+
   uVar12 = DAT_8000fb30;
   uVar7 = DAT_8000fb2c;
   uVar8 = DAT_8000fb10;
-  pcVar5 = DAT_8000faf4;
-  uVar6 = (uint)*(ushort *)(DAT_8000faf0 + 0x9e) - (uint)*(ushort *)(DAT_8000faf0 + 0x9c);
-  uVar9 = (uint)*(ushort *)(DAT_8000faf0 + 0x96) - (uint)*(ushort *)(DAT_8000faf0 + 0x94);
-  switch(DAT_8000faf4[10]) {
-  case '\t':
-    uVar11 = DAT_8000faf8;
+  pcVar5 = DAT_8000faf4;   //0x8019D5A0
+
+  //0x801FA44C
+  uVar6 = (uint)*(ushort *)(DAT_8000faf0 + 0x9e) - (uint)*(ushort *)(DAT_8000faf0 + 0x9c);  //0x801FA4EA - 0x801FA4E8
+
+  //Time cursor positions subtracted
+  uVar9 = (uint)*(ushort *)(DAT_8000faf0 + 0x96) - (uint)*(ushort *)(DAT_8000faf0 + 0x94);  //0x801FA4E2 - 0x801FA4E0
+
+  //50 dots per division
+
+  switch(DAT_8000faf4[10])  //Switch on time base setting
+ {
+  case '\t':  //9   50mS/div
+    uVar11 = DAT_8000faf8;    //0x000F4240 = 1000000
     break;
-  case '\n':
-    uVar11 = DAT_8000fafc;
+  case '\n':  //10
+    uVar11 = DAT_8000fafc;    //0x00061A80 = 400000
     break;
-  case '\v':
-    uVar11 = DAT_8000fb00;
+  case '\v':  //11
+    uVar11 = DAT_8000fb00;    //0x00030D40 = 200000
     break;
-  case '\f':
-    uVar11 = DAT_8000fb04;
+  case '\f':  //12
+    uVar11 = DAT_8000fb04;    //0x000186A0 = 100000
     break;
-  case '\r':
-    uVar11 = DAT_8000fb08;
+  case '\r':  //13
+    uVar11 = DAT_8000fb08;    //0x00009C40 = 40000
     break;
-  case '\x0e':
-    uVar11 = DAT_8000fb0c;
+  case '\x0e':  //14
+    uVar11 = DAT_8000fb0c;    //0x00004E20 = 20000
     break;
-  case '\x0f':
-    uVar11 = DAT_8000fb10;
+  case '\x0f':  //15
+    uVar11 = DAT_8000fb10;    //0x00002710 = 10000
     break;
-  case '\x10':
+  case '\x10':  //16
     uVar11 = 4000;
     break;
-  case '\x11':
+  case '\x11':  //17
     uVar11 = 2000;
     break;
-  case '\x12':
+  case '\x12':  //18
     uVar11 = 1000;
     break;
-  case '\x13':
+  case '\x13':  //19
     uVar11 = 400;
     break;
-  case '\x14':
+  case '\x14':  //20
     uVar11 = 200;
     break;
-  case '\x15':
+  case '\x15':  //21
     uVar11 = 100;
     break;
-  case '\x16':
-    uVar9 = uVar9 * 0x28;
+  case '\x16':  //22
+    uVar9 = uVar9 * 0x28;             //40
     goto switchD_8000ec34_caseD_1b;
-  case '\x17':
-    uVar9 = uVar9 * 0x14;
+  case '\x17':  //23
+    uVar9 = uVar9 * 0x14;             //20
     goto switchD_8000ec34_caseD_1b;
-  case '\x18':
-    uVar9 = uVar9 * 10;
+  case '\x18':  //24
+    uVar9 = uVar9 * 10;               //10
     goto switchD_8000ec34_caseD_1b;
-  case '\x19':
+  case '\x19':  //25
     uVar9 = uVar9 * 5;
     goto switchD_8000ec34_caseD_1b;
-  case '\x1a':
+  case '\x1a':  //26
     uVar9 = uVar9 * 2;
+
   default:
     goto switchD_8000ec34_caseD_1b;
-  case '\x1c':
+  case '\x1c': //28   25nS/div
     uVar11 = 500;
     break;
-  case '\x1d':
+  case '\x1d':  //29  10nS/div
     uVar9 = uVar9 * 200;
     goto switchD_8000ec34_caseD_1b;
   }
+
   uVar9 = uVar11 * uVar9;
+
+
 switchD_8000ec34_caseD_1b:
-  switch(DAT_8000faf4[3]) {
+
+
+  switch(DAT_8000faf4[3])  //switch on channel 1 volts div
+  {
   case '\0':
     iVar10 = 100;
     goto LAB_8000ed7c;
@@ -169,7 +186,9 @@ LAB_8000ed7c:
   case '\x06':
     unaff_r5 = uVar6;
   }
-  switch(DAT_8000faf4[0xf]) {
+
+  switch(DAT_8000faf4[0xf])
+ {
   case '\0':
     iVar10 = 100;
     goto LAB_8000ede8;
@@ -209,6 +228,7 @@ LAB_8000ede8:
       unaff_r4 = unaff_r4 * 100;
     }
   }
+
   local_84 = 'F';
   local_74 = 'V';
   local_73 = 0x31;
@@ -227,6 +247,7 @@ LAB_8000ede8:
   local_4d = 0x20;
   local_5d = 0x3d;
   local_5c = 0x20;
+
   sVar1 = (short)DAT_8000fb1c;
   if (unaff_r5 < DAT_8000faf8) {
     if (unaff_r5 < DAT_8000fb04) {
@@ -420,6 +441,7 @@ LAB_8000ede8:
     local_55 = 0;
   }
   cVar3 = (char)uVar9;
+
   if ((byte)DAT_8000faf4[10] < 0x1c) {
     if (DAT_8000fb34 <= uVar9) {
       local_4c = (byte)((ulonglong)uVar9 * (ulonglong)DAT_8000fb38 >> 0x39) + 0x30;
@@ -743,7 +765,8 @@ LAB_8000ede8:
         local_47 = 0x53;
         local_46 = 0;
         uVar9 = divide(1000,uVar8);
-        if (uVar9 == 1000) {
+        if (uVar9 == 1000)
+        {
 LAB_80010258:
           local_80 = '1';
           local_7f = 'G';
@@ -842,32 +865,43 @@ LAB_80010060:
 LAB_80010394:
   iVar10 = DAT_800104a8;
   iVar13 = 0x33;
-  if (*(char *)(DAT_800104a8 + 0x292) != '\0') {
+
+  if (*(char *)(DAT_800104a8 + 0x292) != '\0')
+  {
     local_2c = 0x33;
     iVar13 = 0x53;
     local_30 = 0x43;
   }
+
   if (*(char *)(DAT_800104a8 + 0x29a) != '\0') {
     iVar14 = iVar13;
     if (*pcVar5 != '\0') {
       iVar14 = iVar13 + 0x10;
       unaff_r10 = iVar13;
     }
+
     ypos = (ushort)unaff_r10;
     iVar13 = iVar14;
+
     if (pcVar5[0xc] != '\0') {
       iVar13 = iVar14 + 0x10;
       local_34 = iVar14;
     }
   }
+
+  //Check if cursors enabled. Should have been done at the start of the function!!!!!
   if (*(char *)(DAT_800104a8 + 0x292) == '\0' && *(char *)(DAT_800104a8 + 0x29a) == '\0') {
     return;
   }
-  set_display_fg_color(DAT_800104ac);
+
+  set_display_fg_color(DAT_800104ac);  //0x00404040
+
   display_fill_rounded_rect(5,0x31,0x66,(short)iVar13 - 1,2);
+
   set_font_paint_mode(2);
   select_font(PTR_FONT_0_800104b0);
   set_display_fg_color(0xffffff);
+
   if (*(char *)(iVar10 + 0x292) != '\0') {
     display_text(&local_50,10,(ushort)local_2c);
     display_text(&local_84,10,(ushort)local_30);
