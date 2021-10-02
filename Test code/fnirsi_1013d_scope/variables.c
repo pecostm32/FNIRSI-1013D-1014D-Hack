@@ -184,6 +184,13 @@ uint16 channel2_calibration_data[] = { 0x055B, 0x0556, 0x0561, 0x055B, 0x0560, 0
 //Predefined data
 //----------------------------------------------------------------------------------------------------------------------------------
 
+const int8 *volt_div_texts[3][7] =
+{
+  { "5V/div", "2.5V/div", "1V/div", "500mV/div", "200mV/div", "100mV/div", "50mV/div" },
+  { "50V/div", "25V/div", "10V/div", "5V/div", "2V/div", "1V/div", "500mV/div" },
+  { "500V/div", "250V/div", "100V/div", "50V/div", "20V/div", "10V/div", "5V/div" }
+};
+
 const uint16 signal_adjusters[7] = { 0xAD, 0xAF, 0xB4, 0xB4, 0xB8, 0xB8, 0xB8 };
 
 const uint16 timebase_adjusters[5] = { 0x01A9, 0x00AA, 0x0055, 0x002F, 0x0014 };
@@ -219,6 +226,40 @@ const uint8 zoom_select_settings[3][7] =
   { 8,  7, 6, 0, 1, 9, 4 },
   { 8,  7, 5, 0, 1, 3, 4 }
 };
+
+const TIMECALCDATA time_calc_data[21] =
+{
+  {    100, 3, 3 },         // 50mS/div
+  {  40000, 2, 4 },         // 20mS/div
+  {  20000, 2, 4 },         // 10mS/div
+  {  10000, 2, 4 },         //  5mS/div
+  {   4000, 2, 4 },         //  2mS/div
+  {   2000, 2, 4 },         //  1mS/div
+  {   1000, 2, 4 },         //500uS/div
+  {    400, 2, 4 },         //200uS/div
+  {    200, 2, 4 },         //100uS/div
+  {    100, 2, 4 },         // 50uS/div
+  {  40000, 1, 5 },         // 20uS/div
+  {  20000, 1, 5 },         // 10uS/div
+  {  10000, 1, 5 },         //  5uS/div
+  {   4000, 1, 5 },         //  2uS/div
+  {   2000, 1, 5 },         //  1uS/div
+  {   1000, 1, 5 },         //500nS/div
+  {    500, 1, 5 },         //250nS/div
+  {    200, 1, 5 },         //100nS/div
+  {    100, 1, 5 },         // 50nS/div
+  {  50000, 0, 6 },         // 25nS/div
+  {  20000, 0, 6 }          // 10nS/div
+};
+
+const VOLTCALCDATA volt_calc_data[3][7] = 
+{
+  { {  10000, 3 },  {  5000, 3 }, {  2000, 3 }, {  1000, 3 }, {  400, 3 }, {  200, 3 }, {  100, 3 } },
+  { { 100000, 3 },  { 50000, 3 }, { 20000, 3 }, { 10000, 3 }, { 4000, 3 }, { 2000, 3 }, { 1000, 3 } },
+  { {   1000, 4 },  {   500, 4 }, {   200, 4 }, {   100, 4 }, {   40, 4 }, {   20, 4 }, {   10, 4 } }
+};
+
+const char *magnitude_scaler[8] = { "p", "n", "u", "m", "", "K", "M", "G"};
 
 //Setup the bitmap header
 //Consist of basic bitmap header followed by a DIB header (BITMAPINFOHEADER + BITMAPV3INFOHEADER)

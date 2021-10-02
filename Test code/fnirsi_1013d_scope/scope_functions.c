@@ -1228,15 +1228,6 @@ void scope_run_stop_text(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-const int8 *volt_div_texts[3][7] =
-{
-  { "5V/div", "2.5V/div", "1V/div", "500mV/div", "200mV/div", "100mV/div", "50mV/div" },
-  { "50V/div", "25V/div", "10V/div", "5V/div", "2V/div", "1V/div", "500mV/div" },
-  { "500V/div", "250V/div", "100V/div", "50V/div", "20V/div", "10V/div", "5V/div" }
-};
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
 void scope_channel1_settings(int mode)
 {
   int8 **vdtext;
@@ -5812,7 +5803,124 @@ void scope_display_channel_trace(uint16 *buffer, uint16 xpos, uint16 count, uint
 
 void scope_display_cursor_measurements(void)
 {
+  uint32 height = 5;
+  uint32 ch1ypos = 52;
+  uint32 ch2ypos = 52;
+  uint32 delta;
+  char   displaytext[10];
   
+  //Check if need to do anything here
+  if(scopesettings.timecursorsenable || (scopesettings.voltcursorsenable && (scopesettings.channel1.enable || scopesettings.channel2.enable)))
+  {
+    //Check if time cursor is enabled
+    if(scopesettings.timecursorsenable)
+    {
+      //Add height for two text lines
+      height += 32;
+      
+      //Shift the voltage text positions down
+      ch1ypos += 32;
+      ch2ypos += 32;
+    }
+    
+    //Check if volt cursor is enabled
+    if(scopesettings.voltcursorsenable)
+    {
+      //Check if channel 1 is enabled
+      if(scopesettings.channel1.enable)
+      {
+        //Add height for one text line
+        height += 16;
+        
+        //Shift the channel 2 voltage text down
+        ch2ypos += 16;
+      }
+      
+      //Check if channel 2 is enabled
+      if(scopesettings.channel2.enable)
+      {
+        //Add height for one text line
+        height += 16;
+      }
+    }
+  
+    //Set gray background for the cursor measurements
+    display_set_fg_color(0x00404040);
+
+    //Draw rounded rectangle depending on what is enabled.
+    display_fill_rounded_rect(5, 49, 102, height, 2);
+
+    //Use white text and font_0
+    display_set_fg_color(0x00FFFFFF);
+    display_set_font(&font_0);
+    
+    //Check if time cursor is enabled
+    if(scopesettings.timecursorsenable)
+    {
+      //Time texts are always on the top two lines
+
+      //Get the time delta based on the cursor positions
+      delta = scopesettings.timecursor2position - scopesettings.timecursor1position;
+      
+      //Get the time calculation data for this time base setting. Only for the short time bases so take of the first 9
+      PTIMECALCDATA tcd = (PTIMECALCDATA)&time_calc_data[scopesettings.timeperdiv - 9];
+      
+      //For the time multiply with the scaling factor and display based on the time scale
+      delta *= tcd->mul_factor;
+      
+      //Format the time for displaying
+      scope_print_value(displaytext, delta, tcd->time_scale, "T ", "S");
+      display_text(10, 52, displaytext);
+      
+      //Calculate the frequency for this time. Need to adjust for stay within 32 bits
+      delta /= 10;
+      delta = 1000000000/ delta;
+      
+      //Format the frequency for displaying
+      scope_print_value(displaytext, delta, tcd->freq_scale, "F ", "Hz");
+      display_text(10, 68, displaytext);
+    }
+    
+    //Check if volt cursor is enabled
+    if(scopesettings.voltcursorsenable)
+    {
+      PVOLTCALCDATA vcd;
+      uint32        volts;
+      
+      //Get the volts delta based on the cursor positions
+      delta = scopesettings.voltcursor2position - scopesettings.voltcursor1position;
+      
+      //Check if channel 1 is enabled
+      if(scopesettings.channel1.enable)
+      {
+        //Calculate the voltage based on the channel 1 settings
+        vcd = (PVOLTCALCDATA)&volt_calc_data[scopesettings.channel1.magnification][scopesettings.channel1.voltperdiv];
+        
+        //Multiply with the scaling factor for the channel 1 settings
+        volts = delta * vcd->mul_factor;
+        
+        //Channel 1 text has a variable position
+        //Format the voltage for displaying
+        scope_print_value(displaytext, volts, vcd->volt_scale, "V1 ", "V");
+        display_text(10, ch1ypos, displaytext);
+      }
+      
+      //Check if channel 2 is enabled
+      if(scopesettings.channel2.enable)
+      {
+        //Calculate the voltage based on the channel 2 settings
+        vcd = (PVOLTCALCDATA)&volt_calc_data[scopesettings.channel2.magnification][scopesettings.channel2.voltperdiv];
+        
+        //Multiply with the scaling factor for the channel 2 settings
+        volts = delta * vcd->mul_factor;
+        
+        //Channel 2 text has a variable position
+        //Format the voltage for displaying
+        scope_print_value(displaytext, volts, vcd->volt_scale, "V2 ", "V");
+        display_text(10, ch2ypos, displaytext);
+      }
+    }
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -5820,6 +5928,120 @@ void scope_display_cursor_measurements(void)
 void scope_display_measurements(void)
 {
   
+}
+
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Simple non optimized function for string copy that returns the position of the terminator
+//----------------------------------------------------------------------------------------------------------------------------------
+char *strcpy(char *dst, const char *src)
+{
+  while(*src)
+  {
+    *dst++ = *src++;
+  }
+  
+  //Terminate the copy
+  *dst = 0;
+  
+  return(dst);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_print_value(char *buffer, uint32 value, uint32 scale, char *header, char *sign)
+{
+  //Copy the header into the string buffer
+  buffer = strcpy(buffer, header);
+
+  //Need to find the magnitude scale for the input
+  //The calculations are based on fixed point
+  while(value >= 100000)
+  {
+    //Skip to the next magnitude
+    scale++;
+    
+    //Bring the value in range
+    value /= 1000;
+  }
+
+  //Format the remainder for displaying. Only 3 digits are allowed to be displayed
+  if(value < 1000)
+  {
+    //Less then 1000 means x.yy
+    buffer = scope_print_decimal(buffer, value, 2);
+  }
+  else if(value < 10000)
+  {
+    //More then 1000 but less then 10000 means xx.y
+    value /= 10;
+    buffer = scope_print_decimal(buffer, value, 1);
+  }
+  else
+  {
+    //More then 10000 and less then 100000 means xxx
+    value /= 100;
+    buffer = scope_print_decimal(buffer, value, 0);
+  }
+
+  //Make sure scale is not out of range
+  if(scale > 7)
+  {
+    scale = 7;
+  }
+  
+  //Add the magnitude scaler
+  buffer = strcpy(buffer, magnitude_scaler[scale]);
+  
+  //Add the type of measurement sign
+  strcpy(buffer, sign);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+char *scope_print_decimal(char *buffer, uint32 value, uint32 decimals)
+{
+  char    b[12];
+  uint32  i = 12;   //Start beyond the array since the index is pre decremented
+  uint32  s;
+
+  //For value 0 no need to do the work
+  if(value == 0)
+  {
+    //Value is zero so just set 0 character
+    b[--i] = '0';
+  }
+  else
+  {
+    //Process the digits
+    while(value)
+    {
+      //Set current digit to decreased index
+      b[--i] = (value % 10) + '0';
+
+      //Check if decimal point needs to be placed
+      if(i == 12 - decimals)
+      {
+        //If so put it in
+        b[--i] = '.';
+      }
+      
+      //Take of the current digit
+      value /= 10;
+    }
+  }
+
+  //Determine the size of the string
+  s = 12 - i;
+  
+  //Copy to the buffer
+  memcpy(buffer, &b[i], s);
+  
+  //terminate the string
+  buffer[s] = 0;
+  
+  //Return the position of the terminator to allow appending
+  return(&buffer[s]);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

@@ -69,7 +69,7 @@
 
 #define PICTURE_DATA_SIZE                 (800 * 480 * 2)                              //trace data
 #define PICTURE_PIXEL_OFFSET              (70 + 15000)                                 //Bitmap header + trace data
-#define PICTURE_FILE_SIZE                 (PICTURE_PIXEL_OFFSET + PICTURE_DATA_SIZE)  //Bitmap header + trace data + pixel data
+#define PICTURE_FILE_SIZE                 (PICTURE_PIXEL_OFFSET + PICTURE_DATA_SIZE)   //Bitmap header + trace data + pixel data
 
 #define MESSAGE_SAVE_SUCCESSFUL           0
 #define MESSAGE_FILE_CREATE_FAILED        1
@@ -83,6 +83,9 @@
 //----------------------------------------------------------------------------------------------------------------------------------
 
 typedef struct tagThumbnailData         THUMBNAILDATA,        *PTHUMBNAILDATA;
+
+typedef struct tagTimeCalcData          TIMECALCDATA,         *PTIMECALCDATA;
+typedef struct tagVoltCalcData          VOLTCALCDATA,         *PVOLTCALCDATA;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Structs
@@ -104,6 +107,19 @@ struct tagThumbnailData
   uint8 reserved[9];
   uint8 channel1data[180];
   uint8 channel2data[200];
+};
+
+struct tagTimeCalcData
+{
+  uint32 mul_factor;
+  uint8  time_scale;
+  uint8  freq_scale;
+};
+
+struct tagVoltCalcData
+{
+  uint32 mul_factor;
+  uint8  volt_scale;
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -240,6 +256,8 @@ extern uint16 channel2_calibration_data[];
 //Predefined data
 //----------------------------------------------------------------------------------------------------------------------------------
 
+extern const int8 *volt_div_texts[3][7];
+
 extern const uint16 signal_adjusters[];
 
 extern const uint16 timebase_adjusters[];
@@ -247,6 +265,12 @@ extern const uint16 timebase_adjusters[];
 extern const uint32 short_timebase_settings[];
 
 extern const uint8 zoom_select_settings[3][7];
+
+extern const TIMECALCDATA time_calc_data[21];
+
+extern const VOLTCALCDATA volt_calc_data[3][7];
+
+extern const char *magnitude_scaler[8];
 
 extern const uint8 bmpheader[70];
 

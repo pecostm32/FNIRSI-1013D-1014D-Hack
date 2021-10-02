@@ -178,6 +178,10 @@ void scope_display_cursor_measurements(void);
 
 void scope_display_measurements(void);
 
+void scope_print_value(char *buffer, uint32 value, uint32 scale, char *header, char *sign);
+
+char *scope_print_decimal(char *buffer, uint32 value, uint32 decimalplace);
+
 //----------------------------------------------------------------------------------------------------------------------------------
 // File display functions
 //----------------------------------------------------------------------------------------------------------------------------------
