@@ -55,9 +55,12 @@ SCOPESETTINGS savedscopesettings2;
 MEASUREMENTS channel1measurements;
 MEASUREMENTS channel2measurements;
 
+ADC2CALIBRATIONDATA channel1adc2calibration;
+ADC2CALIBRATIONDATA channel2adc2calibration;
+
 //Need to make sure some of these are 32 bit aligned to allow usage as source and target for file operations
 uint16 channel1tracebuffer1[3000];    //In original code at 0x8019D5EA
-uint16 channel1tracebuffer2[3000];    //Not used in original code???
+uint16 channel1tracebuffer2[3000];    //In original code at 0x8019ED5A
 uint16 channel1tracebuffer3[3000];    //Target buffer for processed trace data. In original code at 0x801A916A
 
 //declared as uint32 for use with file functions, but used with shorts (3000)
@@ -70,7 +73,7 @@ uint16 channel2tracebuffer3[3000];    //In original code at 0x801AA8DA
 //declared as uint32 for use with file functions, but used with shorts (3000)
 uint32 channel2tracebuffer4[1500];    //In original code at 0x801AD7BA
 
-uint16 temptracebuffer1[3000];         //In original code at 0x801AEF26
+uint16 temptracebuffer1[3000];         //In original code at 0x801AEF26  (0x801AEF2A)
 uint16 temptracebuffer2[3000];         //In original code at 0x801B8B60
 
 //declared as uint32 for use with file functions, but used with shorts (1000)

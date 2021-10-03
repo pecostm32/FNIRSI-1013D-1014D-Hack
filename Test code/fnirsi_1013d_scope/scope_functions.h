@@ -157,7 +157,7 @@ void scope_up_sample_x_10(uint16 *buffer, uint32 count);
 
 
 
-void scope_pre_process_25ns_data(uint16 *buffer, uint32 offset, uint32 count);
+void scope_interleave_samples(uint16 *buffer1, uint16 *buffer2, PADC2CALIBRATIONDATA calibration);   //scope_pre_process_ch1_25ns_data
 
 void scope_process_25ns_data(uint16 *buffer, uint32 offset, uint32 count);
 

@@ -87,6 +87,8 @@ typedef struct tagThumbnailData         THUMBNAILDATA,        *PTHUMBNAILDATA;
 typedef struct tagTimeCalcData          TIMECALCDATA,         *PTIMECALCDATA;
 typedef struct tagVoltCalcData          VOLTCALCDATA,         *PVOLTCALCDATA;
 
+typedef struct tagADC2CalibrationData   ADC2CALIBRATIONDATA,  *PADC2CALIBRATIONDATA;
+
 //----------------------------------------------------------------------------------------------------------------------------------
 //Structs
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -120,6 +122,12 @@ struct tagVoltCalcData
 {
   uint32 mul_factor;
   uint8  volt_scale;
+};
+
+struct tagADC2CalibrationData
+{
+  uint16 flag;
+  uint16 compensation;
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -171,6 +179,9 @@ extern SCOPESETTINGS savedscopesettings2;
 
 extern MEASUREMENTS channel1measurements;
 extern MEASUREMENTS channel2measurements;
+
+extern ADC2CALIBRATIONDATA channel1adc2calibration;
+extern ADC2CALIBRATIONDATA channel2adc2calibration;
 
 extern uint16 channel1tracebuffer1[];
 extern uint16 channel1tracebuffer2[];

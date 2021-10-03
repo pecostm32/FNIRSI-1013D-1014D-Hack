@@ -4079,6 +4079,11 @@ void scope_process_trace_data(void)
       
       //scope_process_short_timebase_data();
     }
+    else
+    {
+      //Makes not a lot of sense since the scope is not running or being touched and the next function is also called in the main loop directly after this one
+      scope_display_trace_data();
+    }
   }
 }
 
@@ -4507,8 +4512,10 @@ void scope_get_short_timebase_data(void)
         //Read the bytes into a trace buffer
         fpga_read_trace_data(0x21, channel1tracebuffer2, 1500);                //In original code this is done in buffer1
         
-        //Call pre process function for it
-        scope_pre_process_25ns_data(channel1tracebuffer2, 0, 1500);
+        //Merge the samples from the two ADC's into the first trace buffer
+        scope_interleave_samples(channel1tracebuffer1, channel1tracebuffer2, &channel1adc2calibration);
+        
+        
         scope_process_25ns_data(channel1tracebuffer2, 0, 1500);
         break;
     }
@@ -4846,233 +4853,99 @@ uint32 scope_process_trigger(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_up_sample_x_2(uint16 * buffer, uint32 count)   //In original code an offset is used, but it is always 0
+void scope_up_sample_x_2(uint16 *buffer, uint32 count)
 {
-  uint32 cnt;
-  uint32 sample;
-  uint16 *ptr1 = temptracebuffer1;
-  uint16 *ptr2 = buffer;
-  
-  //More efficient way of doing this would be to handle the samples from the end and keep them in a single buffer
-  //Need to investigate this further
-  //This has to do with what the FPGA returns. The time base setting in the FPGA is the same for these time base settings
-  //So some manipulation of the samples needs to be done.
-  //Base is 500nS/div so for 250nS/div they are doubled, for 100nS/div they are multiplied by 5, so probably for 50nS/div times 10
+  register uint32  cnt;
+  register uint16 *sptr;
+  register uint16 *dptr;
+  register uint32  sample1, sample2;
   
   //Only do half the samples
-  cnt = count >> 1;
+  cnt = count / 2;
   
-  //Check if odd number of samples to process
-  if(cnt & 1)
-  {
-    //Copy the odd sample
-    *ptr1 = *ptr2;
-  }
-  else
-  {
-    //Point to before data since copy loop starts on next data
-    ptr1 -= 2;
-    ptr2--;
-  }
+  //For the source point to the last sample to use
+  sptr = &buffer[cnt];
   
-  //Handle two samples per loop
-  cnt >>= 1;
+  //For the destination point to the last result sample
+  dptr = &buffer[count];
   
-  //Process the samples
+  //Get the first sample to use
+  sample1 = *sptr--;
+  
+  //Process all the needed samples
   while(cnt)
   {
-    //Copy samples with an interleave in the destination
-    ptr1[2] = ptr2[1];
-    ptr1[4] = ptr2[2];
+    //Store the first sample
+    *dptr-- = sample1;
     
-    //Point to next destination and source
-    ptr1 += 4;
-    ptr2 += 2;
+    //Get the second sample
+    sample2 = *sptr--;
     
-    //Two samples done
-    cnt--;
-  }
-  
-  //Average a sample in between
-  cnt = (count >> 1) - 1;
-  
-  //Check if odd number of samples to process
-  if(cnt & 1)
-  {
-    //Point to the buffer
-    ptr1 = temptracebuffer1;
+    //Store the average of the two samples
+    *dptr-- = (sample1 + sample2) / 2;
     
-    //Average the odd sample
-    ptr1[1] = (ptr1[0] + ptr1[2]) >> 1;
-  }
-  else
-  {
-    //Point to before data since copy loop starts on next data
-    ptr1 = temptracebuffer1 - 2;
-  }
-  
-  //Handle two samples per loop
-  cnt >>= 1;
-
-  //Process the samples
-  while(cnt)
-  {
-    //Get the middle sample
-    sample = ptr1[4];
+    //Save the second sample as the first sample
+    sample1 = sample2;
     
-    //Average the in between samples
-    ptr1[3] = (ptr1[2] + sample) >> 1;
-    ptr1[5] = (sample + ptr1[6]) >> 1;
-    
-    //Point to next set to handle
-    ptr1 += 4;
-    
-    //Two samples done
-    cnt--;
-  }
-
-  //Point to the buffers to copy back the samples to the original buffer
-  ptr1 = temptracebuffer1;
-  ptr2 = buffer;
-  
-  //Check if odd number of samples to process
-  if(count & 1)
-  {
-    *ptr2 = *ptr1;
-  }
-  else
-  {
-    //Point to before data since copy loop starts on next data
-    ptr1--;
-    ptr2--;
-  }
-  
-  //Two samples at a time so half the count
-  cnt = count >> 1;
-  
-  //Copy the samples
-  while(cnt)
-  {
-    //Do two samples per loop
-    ptr2[1] = ptr1[1];
-    ptr2[2] = ptr1[2];
-    
-    //Point to next destination and source
-    ptr1 += 2;
-    ptr2 += 2;
-    
-    //Two samples done
+    //One set of samples done
     cnt--;
   }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_up_sample_x_5(uint16 * buffer, uint32 count)
+void scope_up_sample_x_5(uint16 *buffer, uint32 count)
 {
-  uint32 cnt1, cnt2;
-  uint32 sample1, sample2;
-  int32  delta;
-  uint16 *ptr1 = temptracebuffer1;
-  uint16 *ptr2 = buffer;
+  register uint32  cnt, idx;
+  register uint16 *sptr;
+  register uint16 *dptr;
+  register int32   sample1, sample2;
+  register int32   delta;
   
-  //Only one fifth of the samples
-  cnt1 = count / 5;
+  //Only do one fifth of the samples
+  cnt = count / 5;
   
-  //Check if odd number of samples to process
-  if(cnt1 & 1)
+  //For the source point to the last sample to use
+  sptr = &buffer[cnt];
+  
+  //For the destination point to the last result sample
+  dptr = &buffer[count];
+  
+  //Get the first sample to use
+  sample1 = *sptr--;
+  
+  //Process all the needed samples
+  while(cnt)
   {
-    //Copy the odd sample
-    *ptr1 = *ptr2;
-  }
-  else
-  {
-    //Point to before data since copy loop starts on next data
-    ptr1 -= 5;
-    ptr2--;
-  }
-  
-  //Handle two samples per loop
-  cnt2 = cnt1 >> 1;
-  
-  //Process the samples
-  while(cnt2)
-  {
-    //Copy samples with an interleave of 5 in the destination
-    ptr1[5]  = ptr2[1];
-    ptr1[10] = ptr2[2];
+    //Store the first sample
+    *dptr-- = sample1;
     
-    //Point to next destination and source
-    ptr1 += 10;
-    ptr2 += 2;
+    //Get the second sample
+    sample2 = *sptr--;
     
-    //Two samples done
-    cnt2--;
-  }
-  
-  //One less sample to do
-  cnt1--;
-  
-  //Point to the buffer to work in
-  ptr1 = temptracebuffer1;
-  
-  //Process the samples to be interpolated in between the copied ones
-  while(cnt1)
-  {
+    //Fill in the in between samples
     //The original code uses a different approach
-    //Need to check if this is correct
     //Get the samples shifted up for fractional calculations 10.22 bits
-    sample1 = ptr1[0] << 22;
-    sample2 = ptr1[5] << 22;
+    sample1 <<= 22;
     
     //Calculate a delta step between the samples
-    delta = (sample1 - sample2) / 5;
+    delta = (sample1 - (sample2 << 22)) / 5;
     
-    for(cnt2=1;cnt2<5;cnt2++)
+    for(idx=0;idx<4;idx++)
     {
       //Calculate the next sample with fixed point calculation
-      sample1 += delta;
+      //Since the direction is from last sample to first sample the step needs to be taken off
+      sample1 -= delta;
       
       //Store the decimal part of it
-      ptr1[cnt2] = sample1 >> 22;
+      *dptr-- = sample1 >> 22;
     }
     
+    //Save the second sample as the first sample
+    sample1 = sample2;
+    
     //One set of samples done
-    cnt1--;
-  }
-  
-  //Point to the buffers to copy back the samples to the original buffer
-  ptr1 = temptracebuffer1;
-  ptr2 = buffer;
-  
-  //Check if odd number of samples to process
-  if(count & 1)
-  {
-    *ptr2 = *ptr1;
-  }
-  else
-  {
-    //Point to before data since copy loop starts on next data
-    ptr1--;
-    ptr2--;
-  }
-  
-  //Two samples at a time so half the count
-  cnt1 = count >> 1;
-  
-  //Copy the samples
-  while(cnt1)
-  {
-    //Do two samples per loop
-    ptr2[1] = ptr1[1];
-    ptr2[2] = ptr1[2];
-    
-    //Point to next destination and source
-    ptr1 += 2;
-    ptr2 += 2;
-    
-    //Two samples done
-    cnt1--;
+    cnt--;
   }
 }
 
@@ -5080,164 +4953,133 @@ void scope_up_sample_x_5(uint16 * buffer, uint32 count)
 
 void scope_up_sample_x_10(uint16 * buffer, uint32 count)
 {
-  uint32 cnt1, cnt2;
-  uint32 sample1, sample2;
-  int32  delta;
-  uint16 *ptr1 = temptracebuffer1;
-  uint16 *ptr2 = buffer;
+  register uint32  cnt, idx;
+  register uint16 *sptr;
+  register uint16 *dptr;
+  register int32   sample1, sample2;
+  register int32   delta;
   
-  //Only one tenth of the samples
-  cnt1 = count / 10;
+  //Only do one tenth of the samples
+  cnt = count / 10;
   
-  //Check if odd number of samples to process
-  if(cnt1 & 1)
+  //For the source point to the last sample to use
+  sptr = &buffer[cnt];
+  
+  //For the destination point to the last result sample
+  dptr = &buffer[count];
+  
+  //Get the first sample to use
+  sample1 = *sptr--;
+  
+  //Process all the needed samples
+  while(cnt)
   {
-    //Copy the odd sample
-    *ptr1 = *ptr2;
-  }
-  else
-  {
-    //Point to before data since copy loop starts on next data
-    ptr1 -= 10;
-    ptr2--;
-  }
-  
-  //Handle two samples per loop
-  cnt2 = cnt1 >> 1;
-  
-  //Process the samples
-  while(cnt2)
-  {
-    //Copy samples with an interleave of 10 in the destination
-    ptr1[10] = ptr2[1];
-    ptr1[20] = ptr2[2];
+    //Store the first sample
+    *dptr-- = sample1;
     
-    //Point to next destination and source
-    ptr1 += 20;
-    ptr2 += 2;
+    //Get the second sample
+    sample2 = *sptr--;
     
-    //Two samples done
-    cnt2--;
-  }
-
-  //One less sample to do
-  cnt2 = cnt1 - 1;
-  
-  //Point to the buffer to work in
-  ptr1 = temptracebuffer1;
-  
-  //Process the samples to be interpolated in between the copied ones
-  while(cnt2)
-  {
+    //Fill in the in between samples
     //The original code uses a different approach
-    //Need to check if this is correct
     //Get the samples shifted up for fractional calculations 10.22 bits
-    sample1 = ptr1[0]  << 22;
-    sample2 = ptr1[10] << 22;
+    sample1 <<= 22;
     
     //Calculate a delta step between the samples
-    delta = (sample1 - sample2) / 10;
+    delta = (sample1 - (sample2 << 22)) / 10;
     
-    for(cnt2=1;cnt2<10;cnt2++)
+    for(idx=0;idx<9;idx++)
     {
       //Calculate the next sample with fixed point calculation
-      sample1 += delta;
+      //Since the direction is from last sample to first sample the step needs to be taken off
+      sample1 -= delta;
       
       //Store the decimal part of it
-      ptr1[cnt2] = sample1 >> 22;
+      *dptr-- = sample1 >> 22;
     }
     
-    //Point to next set of samples to do
-    ptr1 += 10;
+    //Save the second sample as the first sample
+    sample1 = sample2;
     
     //One set of samples done
-    cnt2--;
+    cnt--;
   }
   
-  //One less sample to do
-  cnt2 = cnt1 - 1;
-
-  //Point to another buffer for destination and the 5th before sample in the temporary buffer
-  ptr1 = temptracebuffer2;
-  ptr2 = temptracebuffer1 - 5;
-  
-  //Check if odd number of samples to process
-  if(cnt1 & 1)
-  {
-    //Copy the odd sample
-    ptr1[10] = ptr2[10];
-  }
-  
-  //Half the number to do since two samples per loop
-  cnt2 >>= 1;
-  
-  //Do them all
-  while(cnt2)
-  {
-    //Copy the samples with an offset of 5 samples in the source, which is a calculated sample.
-    ptr1[10] = ptr2[10];
-    ptr1[20] = ptr2[20];
-    
-    //Point to next set of samples to do
-    ptr1 += 10;
-    ptr2 += 10;
-    
-    //One set of samples done
-    cnt2--;
-  }
-  
-  //Up sample a second set based on already up sampled samples
-  //Two samples less to do
-  cnt2 = cnt1 - 2;
-  
-  //Point to the buffer to work in
-  ptr1 = temptracebuffer2;
-  
-  //Process the samples to be interpolated in between the copied ones
-  while(cnt2)
-  {
-    //The original code uses a different approach
-    //Need to check if this is correct
-    //Get the samples shifted up for fractional calculations 10.22 bits
-    sample1 = ptr1[0]  << 22;
-    sample2 = ptr1[10] << 22;
-    
-    //Calculate a delta step between the samples
-    delta = (sample1 - sample2) / 10;
-    
-    for(cnt2=1;cnt2<10;cnt2++)
-    {
-      //Calculate the next sample with fixed point calculation
-      sample1 += delta;
-      
-      //Store the decimal part of it
-      ptr1[cnt2] = sample1 >> 22;
-    }
-    
-    //Point to next set of samples to do
-    ptr1 += 10;
-    
-    //One set of samples done
-    cnt2--;
-  }
-  
-  //Copy back to original buffer an average of the two temporary samples
-  //Do half the input count
-  cnt1 = count >> 1;
-  
-  
-  //Needs more processing here, but not sure if it is really needed and if the found errors are actual errors
-  
-  
-  
+  //In the original code some filtering is done on the resulting data. Need to figure this out on what it does since it is also used in the 25 and 10ns processing
   
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_pre_process_25ns_data(uint16 * buffer, uint32 offset, uint32 count)
+void scope_interleave_samples(uint16 *buffer1, uint16 *buffer2, PADC2CALIBRATIONDATA calibration)
 {
+  //Fixed number of samples to do
+  //In the original code it is 1490, but the read from the FPGA is for 1500, so all data done here
+  register uint32 count = 1500;
   
+  //Buffers have a fixed size of 3000 samples
+  //Destination pointer on the last entry in the first buffer
+  register  uint16 *dptr = &buffer1[2999];
+  
+  //Source pointers on the last sample in each buffer
+  register uint16 *sptr1 = &buffer1[1499];
+  register uint16 *sptr2 = &buffer2[1499];
+  
+  //Get the compensation into a register for better performance
+  register uint32 compensation = calibration->compensation;
+  
+  register uint32 sample;
+  
+  //Check on what to do with the calibration compensation
+  if(calibration->flag == 0)
+  {
+    //On zero subtract from second buffer samples
+    
+    //Loop until all the samples are done
+    while(count)
+    {
+      //Copy the sample of the first buffer to the upper entries
+      *dptr-- = *sptr1--;
+      
+      //Get the sample from the second ADC
+      sample = *sptr2--;
+      
+      //Check if there is data to compensate
+      if(sample > compensation)
+      {
+        //Store the compensated sample to the lower entries
+        *dptr-- = sample - compensation;
+      }
+      else
+      {
+        //Zero the sample if to small
+        *dptr-- = 0;
+      }
+      
+      //One set of samples done
+      count--;
+    }
+  }
+  else
+  {
+    //On one add to second buffer samples
+    
+    //Loop until all the samples are done
+    while(count)
+    {
+      //Copy the sample of the first buffer to the upper entries
+      *dptr-- = *sptr1--;
+      
+      //Get the sample from the second ADC
+      sample = *sptr2--;
+      
+      //Compensate and store the sample to the lower entries
+      *dptr-- = sample + compensation;
+      
+      //One set of samples done
+      count--;
+    }
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -7608,7 +7450,7 @@ void scope_save_config_data(void)
   //Point to the first channel calibration value
   ptr = &settingsworkbuffer[121];
   
-  //Copy the  working set values to the saved values
+  //Copy the working set values to the saved values
   for(index=0;index<6;index++,ptr++)
   {
     //Copy the data for both channels
@@ -7616,6 +7458,12 @@ void scope_save_config_data(void)
     ptr[7] = channel2_calibration_data[index];
   }
 
+  //Restore the ADC2 calibration
+  settingsworkbuffer[134] = channel1adc2calibration.flag;
+  settingsworkbuffer[135] = channel1adc2calibration.compensation;
+  settingsworkbuffer[136] = channel2adc2calibration.flag;
+  settingsworkbuffer[137] = channel2adc2calibration.compensation;
+  
   //Save the system ok flag
   settingsworkbuffer[200] = system_ok;
 }
@@ -7720,6 +7568,12 @@ void scope_restore_config_data(void)
   channel1_calibration_data[6] = settingsworkbuffer[126];
   channel2_calibration_data[6] = settingsworkbuffer[133];
 
+  //Restore the ADC2 calibration
+  channel1adc2calibration.flag         = settingsworkbuffer[134];
+  channel1adc2calibration.compensation = settingsworkbuffer[135];
+  channel2adc2calibration.flag         = settingsworkbuffer[136];
+  channel2adc2calibration.compensation = settingsworkbuffer[137];
+  
   //Restore the system ok flag. This is a bit off bullshit. Should be a CRC over all the settings to really verify the integrity
   system_ok = settingsworkbuffer[200];
   
