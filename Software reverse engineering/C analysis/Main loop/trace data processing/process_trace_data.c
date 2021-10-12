@@ -288,7 +288,7 @@ LAB_8002582c:
       *puVar16 = (ushort)uVar26;
     }
 
-    //After this it jumps into display cursors
+    //After this it jumps into display trace data
   }
   else 
   {
@@ -814,7 +814,9 @@ LAB_800084c8:
   }
 
 
-  //This is display_cursors, but maybe needs to be named display_traces
+
+
+  //This is display_trace_data
   pcVar9 = DAT_8002b64c;        //0x8019D5A0  settings base
   puVar8 = PTR_DAT_8002b648;    //0x80192f08  touch state machine
   cVar1 = *PTR_DAT_8002b648;    //Get the actual state

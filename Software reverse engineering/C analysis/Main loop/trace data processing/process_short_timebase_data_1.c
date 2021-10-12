@@ -323,7 +323,7 @@ void FUN_80025468(void)
       {
         set_gpio_pin_low(puVar18,8);
         set_gpio_pin_high(puVar18,8);
-        puVar16 = DAT_8000b278 + (int)puVar24;                             //0x8019D5EA
+        puVar16 = DAT_8000b278 + (int)puVar24;                             //0x8019D5EA = channel1tracebuffer1
         puVar24 = (uint *)((uint)((int)puVar24 + 1) & 0xfffeffff);
         *puVar16 = (ushort)puVar18[4] & 0xff;
       } while (puVar24 < puVar22);
@@ -341,17 +341,17 @@ void FUN_80025468(void)
 
     if (pcVar2[10] == '\x19')    //Timebase 250nS/div ?
     {
-      FUN_8001363c(DAT_8000b278,0);  //0x8019D5EA   //scope_pre_process_250ns_data
+      scope_up_sample_x_2(DAT_8000b278,0);  //0x8019D5EA   //scope_pre_process_250ns_data
     }
 
     if (pcVar2[10] == '\x1a')    //Timebase 100nS/div ?
     {
-      FUN_800141c8(DAT_8000b278,0);  //scope_pre_process_100ns_data
+      scope_up_sample_x_5(DAT_8000b278,0);  //scope_pre_process_100ns_data
     }
 
     if (pcVar2[10] == '\x1b')    //Timebase 50nS/div ?
     {
-      FUN_800130c4(DAT_8000b278,0);  //scope_pre_process_50ns_data
+      scope_up_sample_x_10(DAT_8000b278,0);  //scope_pre_process_50ns_data
     }
 
     //Timebase 25nS/div or 10nS/div

@@ -22,16 +22,16 @@ void FUN_8000410c(void)
   switch(*(undefined2 *)(PTR_DAT_800043ac + 0x1a))    //0x80192ec4  sample_index_select
   {
   case 1:
-    scope_pre_process_250ns_data(DAT_800043a8,0,DAT_800043a0);  //up sample by 2
+    scope_up_sample_x_2(DAT_800043a8,0,DAT_800043a0);  //up sample by 2
     break;
   case 2:
     FUN_80013eac(DAT_800043a8,0,4000);                          //up sample by 2.5
     break;
   case 3:
-    scope_pre_process_100ns_data(DAT_800043a8,0,DAT_800043b0);  //up sample by 5
+    scope_up_sample_x_5(DAT_800043a8,0,DAT_800043b0);  //up sample by 5
     break;
   case 4:
-    scope_pre_process_50ns_data(DAT_800043a8,0,DAT_800043b4);   //up sample by 10
+    scope_up_sample_x_10(DAT_800043a8,0,DAT_800043b4);   //up sample by 10
     break;
   case 5:
     FUN_80023648(DAT_800043a8,DAT_800043b8);
