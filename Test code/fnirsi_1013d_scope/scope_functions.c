@@ -4486,19 +4486,19 @@ void scope_get_short_timebase_data(void)
       //250nS/div
       case 25:
         //Call up sampling function for it
-//        scope_up_sample_x_2(channel1tracebuffer1, 2500);
+        scope_up_sample_x_2(channel1tracebuffer1, 1500);
         break;
 
       //100nS/div
       case 26:
         //Call up sampling function for it
-//        scope_up_sample_x_5(channel1tracebuffer1, 2500);
+        scope_up_sample_x_5(channel1tracebuffer1, 1500);
         break;
 
       //50nS/div
       case 27:
         //Call up sampling function for it
-//        scope_up_sample_x_10(channel1tracebuffer1, 2500);
+        scope_up_sample_x_10(channel1tracebuffer1, 1500);
         break;
 
       //25nS/div and 10nS/div
@@ -4510,7 +4510,7 @@ void scope_get_short_timebase_data(void)
         fpga_write_short(data);
         
         //Read the bytes into a trace buffer
-        fpga_read_trace_data(0x21, channel1tracebuffer2, 1500);                //In original code this is done in buffer1
+        fpga_read_trace_data(0x21, channel1tracebuffer2, 1500);
         
         //Merge the samples from the two ADC's into the first trace buffer
         scope_interleave_samples(channel1tracebuffer1, channel1tracebuffer2, &channel1adc2calibration);
@@ -4893,6 +4893,138 @@ void scope_up_sample_x_2(uint16 *buffer, uint32 count)
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
+//This is a special case where there is a need for two different interpolations.
+//Between 1st and 2nd sample two new samples and between 2nd and 3rd sample only one new sample making 5 samples for every two samples
+//The original code uses four loops for this. The first loop to copy every other sample to the 1st, 6th, 11th, etc. position
+//A second loop to copy every other sample starting from the second sample to the 4th, 9th, 14th, etc. position
+//And a third loop to do the interpolation between the samples. At last a fourth loop to copy the data back to the input buffer
+
+void scope_up_sample_x_2_5(uint16 *buffer, uint32 count)
+{
+  register uint32  cnt;
+  register uint16 *sptr;
+  register uint16 *dptr;
+  register uint32  sample1, sample2, sample3;
+  register int32   delta;
+  
+  //Only do two and a half the samples
+  cnt = (count * 2) / 5;
+  
+  //For the source point to the last sample to use
+  sptr = &buffer[cnt];
+  
+  //For the destination point to the last result sample
+  dptr = &buffer[count];
+  
+  //Get the first sample to use
+  sample1 = *sptr--;
+  
+  //Since the loop processes two samples per loop do half the count
+  cnt /= 2;
+  
+  //Process all the needed samples
+  while(cnt)
+  {
+    //Store the first sample
+    *dptr-- = sample1;
+    
+    //Get the second sample
+    sample2 = *sptr--;
+    
+    //Store the average of the two samples
+    *dptr-- = (sample1 + sample2) / 2;
+    
+    //Get the third sample
+    sample3 = *sptr--;
+    
+    //Fill in the in between samples
+    //Get the samples shifted up for fractional calculations 10.22 bits
+    sample2 <<= 22;
+    
+    //Calculate a delta step between the samples
+    delta = (sample2 - (sample3 << 22)) / 3;
+
+    //Calculate the next sample with fixed point calculation
+    //Since the direction is from last sample to first sample the step needs to be taken off
+    sample2 -= delta;
+
+    //Store the decimal part of it
+    *dptr-- = sample2 >> 22;
+    
+    //Repeat this
+    sample2 -= delta;
+
+    //Store the decimal part of it
+    *dptr-- = sample2 >> 22;
+
+    //Save the third sample as the first sample
+    sample1 = sample3;
+    
+    //One set of samples done
+    cnt--;
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//The up sample code can be reduced in size by creating a function for the basic up sampling with the times as input (4, 5, 10, 25)
+//A second function for the interpolating with averaging with the interpolation factor as input (5, 6, 10, 12, 25)
+
+void scope_up_sample_x_4(uint16 *buffer, uint32 count)
+{
+  register uint32  cnt, idx;
+  register uint16 *sptr;
+  register uint16 *dptr;
+  register int32   sample1, sample2;
+  register int32   delta;
+  
+  //Only do one fourth of the samples
+  cnt = count / 4;
+  
+  //For the source point to the last sample to use
+  sptr = &buffer[cnt];
+  
+  //For the destination point to the last result sample
+  dptr = &buffer[count];
+  
+  //Get the first sample to use
+  sample1 = *sptr--;
+  
+  //Process all the needed samples
+  while(cnt)
+  {
+    //Store the first sample
+    *dptr-- = sample1;
+    
+    //Get the second sample
+    sample2 = *sptr--;
+    
+    //Fill in the in between samples
+    //The original code uses a different approach
+    //Get the samples shifted up for fractional calculations 10.22 bits
+    sample1 <<= 22;
+    
+    //Calculate a delta step between the samples
+    delta = (sample1 - (sample2 << 22)) / 4;
+    
+    for(idx=0;idx<3;idx++)
+    {
+      //Calculate the next sample with fixed point calculation
+      //Since the direction is from last sample to first sample the step needs to be taken off
+      sample1 -= delta;
+      
+      //Store the decimal part of it
+      *dptr-- = sample1 >> 22;
+    }
+    
+    //Save the second sample as the first sample
+    sample1 = sample2;
+    
+    //One set of samples done
+    cnt--;
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
 
 void scope_up_sample_x_5(uint16 *buffer, uint32 count)
 {
@@ -5005,8 +5137,338 @@ void scope_up_sample_x_10(uint16 * buffer, uint32 count)
     cnt--;
   }
   
-  //In the original code some filtering is done on the resulting data. Need to figure this out on what it does since it is also used in the 25 and 10ns processing
+  //Create a second interpolated set of data based on the initially interpolated samples and average the two sets
+  //Only take one tenth of the samples, minus one since the data is shifted, as input
+  cnt = (count / 10) - 1;
+
+  //For the source point to the last sample to use
+  sptr = &buffer[count - 5];
   
+  //For the destination point to the last result sample
+  dptr = &buffer[count - 5];
+  
+  //Get the first sample to use and skip ten samples
+  sample1 = *sptr;
+  sptr -= 10;
+  
+  //Process all the needed samples
+  while(cnt)
+  {
+    //Average and store the first sample
+    *dptr = (*dptr + sample1) / 2;
+    
+    //Point to the previous sample
+    dptr--;
+    
+    //Get the second sample and skip ten samples
+    sample2 = *sptr;
+    sptr -= 10;
+    
+    //Fill in the in between samples
+    //Get the samples shifted up for fractional calculations 10.22 bits
+    sample1 <<= 22;
+    
+    //Calculate a delta step between the samples
+    delta = (sample1 - (sample2 << 22)) / 10;
+    
+    for(idx=0;idx<9;idx++)
+    {
+      //Calculate the next sample with fixed point calculation
+      //Since the direction is from last sample to first sample the step needs to be taken off
+      sample1 -= delta;
+      
+      //Average and store the decimal part of it
+      *dptr = (*dptr + (sample1 >> 22)) / 2;
+      
+      //Point to the previous sample
+      dptr--;
+    }
+    
+    //Save the second sample as the first sample
+    sample1 = sample2;
+    
+    //One set of samples done
+    cnt--;
+  }
+  
+  //Create a third interpolated set of data based on the previous interpolated and averaged samples and also average these two sets
+  //Only take one fifth of the samples, minus one since the data is shifted, as input
+  cnt = (count / 5) - 1;
+
+  //For the source point to the last sample to use
+  //Takes the second sample as last input
+  sptr = &buffer[count - 8];
+  
+  //For the destination point to the last result sample
+  dptr = &buffer[count];
+  
+  //Get the first sample to use and skip five samples
+  sample1 = *sptr;
+  sptr -= 5;
+  
+  //Process all the needed samples
+  while(cnt)
+  {
+    //Average and store the first sample
+    *dptr = (*dptr + sample1) / 2;
+    
+    //Point to the previous sample
+    dptr--;
+    
+    //Get the second sample and skip ten samples
+    sample2 = *sptr;
+    sptr -= 5;
+    
+    //Fill in the in between samples
+    //Get the samples shifted up for fractional calculations 10.22 bits
+    sample1 <<= 22;
+    
+    //Calculate a delta step between the samples
+    delta = (sample1 - (sample2 << 22)) / 5;
+    
+    for(idx=0;idx<9;idx++)
+    {
+      //Calculate the next sample with fixed point calculation
+      //Since the direction is from last sample to first sample the step needs to be taken off
+      sample1 -= delta;
+      
+      //Average and store the decimal part of it
+      *dptr = (*dptr + (sample1 >> 22)) / 2;
+      
+      //Point to the previous sample
+      dptr--;
+    }
+    
+    //Save the second sample as the first sample
+    sample1 = sample2;
+    
+    //One set of samples done
+    cnt--;
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_up_sample_x_25(uint16 *buffer, uint32 count)
+{
+  register uint32  cnt, idx;
+  register uint16 *sptr;
+  register uint16 *dptr;
+  register int32   sample1, sample2;
+  register int32   delta;
+  
+  //Only do one twenty fifth of the samples
+  cnt = count / 25;
+  
+  //For the source point to the last sample to use
+  sptr = &buffer[cnt];
+  
+  //For the destination point to the last result sample
+  dptr = &buffer[count];
+  
+  //Get the first sample to use
+  sample1 = *sptr--;
+  
+  //Process all the needed samples
+  while(cnt)
+  {
+    //Store the first sample
+    *dptr-- = sample1;
+    
+    //Get the second sample
+    sample2 = *sptr--;
+    
+    //Fill in the in between samples
+    //The original code uses a different approach
+    //Get the samples shifted up for fractional calculations 10.22 bits
+    sample1 <<= 22;
+    
+    //Calculate a delta step between the samples
+    delta = (sample1 - (sample2 << 22)) / 25;
+    
+    for(idx=0;idx<24;idx++)
+    {
+      //Calculate the next sample with fixed point calculation
+      //Since the direction is from last sample to first sample the step needs to be taken off
+      sample1 -= delta;
+      
+      //Store the decimal part of it
+      *dptr-- = sample1 >> 22;
+    }
+    
+    //Save the second sample as the first sample
+    sample1 = sample2;
+    
+    //One set of samples done
+    cnt--;
+  }
+  
+  //Create a second interpolated set of data based on the interpolated samples
+  //Only do one twenty fifth of the samples minus one since the data is shifted
+  cnt = (count / 25) - 1;
+
+  //For the source point to the last sample to use
+  sptr = &buffer[count - 13];
+  
+  //For the destination point to the last result sample
+  //Also on shifted sample to end where needed
+  dptr = &buffer[count - 13];
+  
+  //Get the first sample to use and skip twenty five samples
+  sample1 = *sptr;
+  sptr -= 25;
+  
+  //Process all the needed samples
+  while(cnt)
+  {
+    //Average and store the first sample
+    *dptr = (*dptr + sample1) / 2;
+      
+    //Point to the previous sample
+    dptr--;
+    
+    //Get the second sample and skip twenty five samples
+    sample2 = *sptr;
+    sptr -= 25;
+    
+    //Fill in the in between samples
+    //Get the samples shifted up for fractional calculations 10.22 bits
+    sample1 <<= 22;
+    
+    //Calculate a delta step between the samples
+    delta = (sample1 - (sample2 << 22)) / 25;
+    
+    for(idx=0;idx<24;idx++)
+    {
+      //Calculate the next sample with fixed point calculation
+      //Since the direction is from last sample to first sample the step needs to be taken off
+      sample1 -= delta;
+      
+      //Store the averaged decimal part of it
+      *dptr = (*dptr + (sample1 >> 22)) / 2;
+      
+      //Point to the previous sample
+      dptr--;
+    }
+    
+    //Save the second sample as the first sample
+    sample1 = sample2;
+    
+    //One set of samples done
+    cnt--;
+  }
+  
+  //The next step is a 12 step interpolating of the processed data and averaging that with the processed data
+  //Only do one twelfth of the samples
+  cnt = (count / 12);
+  
+  //For the source point to the last sample to use
+  //Takes the second sample as last input
+  sptr = &buffer[count];
+  
+  //For the destination point to the last result sample
+  dptr = &buffer[count];
+  
+  //Get the first sample to use and skip twelve samples
+  sample1 = *sptr;
+  sptr -= 12;
+  
+  //Process all the needed samples
+  while(cnt)
+  {
+    //Average and store the first sample
+    *dptr = (*dptr + sample1) / 2;
+      
+    //Point to the previous sample
+    dptr--;
+    
+    //Get the second sample and skip twelve samples
+    sample2 = *sptr;
+    sptr -= 12;
+    
+    //Fill in the in between samples
+    //The original code uses a different approach
+    //Get the samples shifted up for fractional calculations 10.22 bits
+    sample1 <<= 22;
+    
+    //Calculate a delta step between the samples
+    delta = (sample1 - (sample2 << 22)) / 12;
+    
+    for(idx=0;idx<11;idx++)
+    {
+      //Calculate the next sample with fixed point calculation
+      //Since the direction is from last sample to first sample the step needs to be taken off
+      sample1 -= delta;
+      
+      //Store the averaged decimal part of it
+      *dptr = (*dptr + (sample1 >> 22)) / 2;
+      
+      //Point to the previous sample
+      dptr--;
+    }
+    
+    //Save the second sample as the first sample
+    sample1 = sample2;
+    
+    //One set of samples done
+    cnt--;
+  }
+  
+  //The next step is a 6 step interpolating of the processed data and averaging that with the processed data
+  //Only do one sixth of the samples
+  cnt = (count / 6);
+  
+  //For the source point to the last sample to use
+  //Takes the second sample as last input
+  sptr = &buffer[count];
+  
+  //For the destination point to the last result sample
+  dptr = &buffer[count];
+  
+  //Get the first sample to use and skip 6 samples
+  sample1 = *sptr;
+  sptr -= 6;
+  
+  //Process all the needed samples
+  while(cnt)
+  {
+    //Average and store the first sample
+    *dptr = (*dptr + sample1) / 2;
+      
+    //Point to the previous sample
+    dptr--;
+    
+    //Get the second sample and skip 6 samples
+    sample2 = *sptr;
+    sptr -= 6;
+    
+    //Fill in the in between samples
+    //The original code uses a different approach
+    //Get the samples shifted up for fractional calculations 10.22 bits
+    sample1 <<= 22;
+    
+    //Calculate a delta step between the samples
+    delta = (sample1 - (sample2 << 22)) / 6;
+    
+    for(idx=0;idx<5;idx++)
+    {
+      //Calculate the next sample with fixed point calculation
+      //Since the direction is from last sample to first sample the step needs to be taken off
+      sample1 -= delta;
+      
+      //Store the averaged decimal part of it
+      *dptr = (*dptr + (sample1 >> 22)) / 2;
+      
+      //Point to the previous sample
+      dptr--;
+    }
+    
+    //Save the second sample as the first sample
+    sample1 = sample2;
+    
+    //One set of samples done
+    cnt--;
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

@@ -152,8 +152,11 @@ void scope_double_data(uint16 *buffer, uint32 count);
 uint32 scope_process_trigger(void);
 
 void scope_up_sample_x_2(uint16 *buffer, uint32 count);
+void scope_up_sample_x_2_5(uint16 *buffer, uint32 count);
+void scope_up_sample_x_4(uint16 *buffer, uint32 count);
 void scope_up_sample_x_5(uint16 *buffer, uint32 count);
 void scope_up_sample_x_10(uint16 *buffer, uint32 count);
+void scope_up_sample_x_25(uint16 *buffer, uint32 count);
 
 
 

@@ -74,7 +74,7 @@ uint16 channel2tracebuffer3[3000];    //In original code at 0x801AA8DA
 uint32 channel2tracebuffer4[1500];    //In original code at 0x801AD7BA
 
 uint16 temptracebuffer1[3000];         //In original code at 0x801AEF26  (0x801AEF2A)
-uint16 temptracebuffer2[3000];         //In original code at 0x801B8B60
+uint16 temptracebuffer2[3000];         //In original code at 0x801B8B60  (0x801B8B6A)
 
 //declared as uint32 for use with file functions, but used with shorts (1000)
 uint32 channel1ypoints[500];          //At 0x801C374A in original code
