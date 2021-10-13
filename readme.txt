@@ -156,3 +156,43 @@ Started with the implementation of the picture and wavefrom view part of the cod
 Most of the original code on this subject has been analyzed now and judged as crap, so my version will differ in code, but will try to
 match the functionality and looks as close as possible.
 
+----------------------------------------------------------------------------------------------------------
+13-OCTOBER-2021
+Made quite a bit of progress, but the reversing of the short time base handling code is a big task. Made a list of what is done and still needs
+to be done.
+
+=====================
+Implemented so far
+=====================
+System setup
+Timer interrupt
+Touch panel interface
+Flash reading and writing
+SD card functionality based on FatFs
+FPGA interface functions
+Display library
+Battery charge measurement
+Power off interrupt for settings save
+Saving and loading of the settings to and from flash
+Cursor measurements display
+User interface
+  The main screen with all the menus
+  The picture view screen with picture view almost done. (Still needs displaying of the trace data)
+  The waveform view screen with waveform view almost done. (Still needs displaying of the trace data)
+  Saving of pictures and waveforms
+Trace data handling and displaying
+  Long time base settings 50S-100mS. (This is in roll mode and fully done)
+  Short time base settings 50mS-10nS. (This is partially implemented. Channel 1 data is fetched and displayed raw. Only part of the processing is implemented.)
+
+=====================
+Still to do
+=====================
+USB interface
+Finish the picture and waveform single item view. Needs the trace data processing functionality
+Trace processing and displaying for the short time bases (50mS-10nS)
+Calibration
+Auto set
+Measurements calculations and displaying
+FFT calculation and displaying
+Firmware update (This means both code within my version as creating an actual firmware update that can be loaded on a scope)
+
