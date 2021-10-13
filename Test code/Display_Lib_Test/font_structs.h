@@ -50,7 +50,7 @@ struct tagFontMetrics
   uint8  width;                   //Number of pixels to displace for next character
   uint8  bytes;                   //Number of bytes per font line
   uint8  nu;                      //Not used
-  uint8 *data;                    //Pointer to the actual pixel data. It uses single bit per pixel bitmaps with 8 bit multiples per line. A character width of 11 uses two bytes per line
+  const uint8 *data;                    //Pointer to the actual pixel data. It uses single bit per pixel bitmaps with 8 bit multiples per line. A character width of 11 uses two bytes per line
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
