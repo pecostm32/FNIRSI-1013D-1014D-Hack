@@ -106,8 +106,8 @@ void update_firmware(void)
 
 
 
-  memcpy(auStack104,DAT_80000f40 + 0x5000,0xc);   //copy 12 bytes?? from buffer + 0x5000, what is at that location???
-  memclear((uint)(puVar6 + 0x5000),0xc);          //clear the source
+  memcpy(auStack104,DAT_80000f40 + 0x14000,0xc);   //copy 12 bytes?? from buffer + 0x14000, which is the start of the main program. (bitmap at 0x13000 in the flash + 0x14000 = 0x27000 ==> start of main program in flash) (Ghidra C output messes this up to 0x5000)
+  memset((uint)(puVar6 + 0x14000),0xc, 0xFF);      //Erase the source bytes
 
   uVar14 = 0;
 
@@ -123,12 +123,12 @@ void update_firmware(void)
 
 
 
-  memcpy(DAT_80000f40,auStack104,0xc);   //Copy to the first 12 bytes of the data and  write these over the first 12 bytes of the main program
+  memcpy(DAT_80000f40,auStack104,0xc);   //Copy to the first 12 bytes of the data and  write these over the first 12 bytes of the main program (Why do the copy????)
 
-  write_to_flash_no_erase(0,DAT_80000f40,0x27000,0xc);
+  write_to_flash_no_erase(0,DAT_80000f40,0x27000,0xc);  //Write the 12 bytes of the header to the flash. What the F!!!!!!!!!! is this good for.
 
 
-  //Check dwords need to be calculated over the data that will end up in the flash, so the 12 bytes at 0x5000 need to be set after calculation.
+  //Check dwords need to be calculated over the data that will end up in the flash
 
   //File data is extended with the 0x24 bytes for the check dwords, but the calculations need to be done on again 0x24 bytes less???
 
