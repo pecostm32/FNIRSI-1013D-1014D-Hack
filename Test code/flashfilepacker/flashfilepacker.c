@@ -34,8 +34,13 @@ int main(int argc, char **argv)
   
   int  numberbase = 10;
   int  length = 0;
+  int  lastbyte = 0;
   char curchar;
   int  writelocation = 0;
+  
+  int checkdata[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 } ;
+  int index;
+  int bit;
   
   while(1)
   {
@@ -178,7 +183,8 @@ int main(int argc, char **argv)
   int opflen;
   int ipflen;
   unsigned char *buffer;
-
+  unsigned char byte;
+  unsigned char bitflag;
 
   if(ipf)
   {
@@ -201,29 +207,82 @@ int main(int argc, char **argv)
     exit(0);
   }
 
-  length = writelocation + ipflen;
-  buffer = malloc(writelocation + ipflen);
+  //Add 72 bytes to make room for the check data
+  lastbyte = writelocation + ipflen;
+  length = lastbyte + 72;
+  buffer = malloc(length);
   
   if(buffer)
   {
+    //Clear the buffer so gaps in the data are zero
     memset(buffer, 0, length);
   
+    //Get the output file data from the start
     fseek(opf, 0, SEEK_SET);
     
+    //Don't go beyond the new write location
     if(opflen > writelocation)
+    {
       opflen = writelocation;
+    }
     
+    //Load the output file data to the buffer
     fread(buffer, 1, opflen, opf);
 
+    //Get the input file data from the start
     fseek(ipf, 0, SEEK_SET);
     
+    //Load the input file data to the buffer starting from write location
     fread(&buffer[writelocation], 1, ipflen, ipf);
-  
+
+    //Calculate the check data
+    //Go through all the data bytes
+    for(index=0;index<lastbyte;index++)
+    {
+      //Get the current byte
+      byte = buffer[index];
+      
+      //Calculate the sum of all the data bytes
+      checkdata[0] += byte;
+      
+      //Calculate a index dependent occurrence of the individual bits
+      for(bit=1,bitflag=0x80;bit<9;bit++)
+      {
+        //Check if the current bit is set
+        if(byte & bitflag)
+        {
+          //If so add to the counter for this bit
+          checkdata[bit] += index;
+        }
+        
+        //Select the next bit to check
+        bitflag >>=1;
+      }
+    }
+    
+    //Add the check data to the buffer
+    index = length - 36;
+    
+    //Copy the data in byte by byte
+    for(bit=0;bit<9;bit++)
+    {
+      buffer[index++] = checkdata[bit] >> 24;
+      buffer[index++] = checkdata[bit] >> 16;
+      buffer[index++] = checkdata[bit] >> 8;
+      buffer[index++] = checkdata[bit];
+    }
+ 
     fclose(opf);
     
+    //Need to reopen the output file for writing
     opf = fopen(outfile, "wb");
     
-    fwrite(buffer, 1, length, opf);
+    //Make sure it is opened again
+    if(opf)
+    {
+      //Write the data including the check bytes to the output file
+      fwrite(buffer, 1, length, opf);
+    }
     
     free(buffer);
   }
