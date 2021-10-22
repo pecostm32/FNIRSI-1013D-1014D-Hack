@@ -63,6 +63,10 @@ OBJECTFILES= \
 	${OBJECTDIR}/statemachine.o \
 	${OBJECTDIR}/timer.o \
 	${OBJECTDIR}/touchpanel.o \
+	${OBJECTDIR}/usb_dev.o \
+	${OBJECTDIR}/usbc.o \
+	${OBJECTDIR}/usbc_dev.o \
+	${OBJECTDIR}/usbc_phy.o \
 	${OBJECTDIR}/variables.o
 
 
@@ -224,6 +228,26 @@ ${OBJECTDIR}/touchpanel.o: touchpanel.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/touchpanel.o touchpanel.c
+
+${OBJECTDIR}/usb_dev.o: usb_dev.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/usb_dev.o usb_dev.c
+
+${OBJECTDIR}/usbc.o: usbc.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/usbc.o usbc.c
+
+${OBJECTDIR}/usbc_dev.o: usbc_dev.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/usbc_dev.o usbc_dev.c
+
+${OBJECTDIR}/usbc_phy.o: usbc_phy.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/usbc_phy.o usbc_phy.c
 
 ${OBJECTDIR}/variables.o: variables.c
 	${MKDIR} -p ${OBJECTDIR}

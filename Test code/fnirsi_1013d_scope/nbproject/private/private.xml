@@ -6,20 +6,6 @@
     </data>
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/power_and_battery.h</file>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/fnirsi_1013d_scope.h</file>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/variables.c</file>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/scope_functions.h</file>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/power_and_battery.c</file>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/fnirsi_1013d_scope.c</file>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/statemachine.c</file>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/scope_functions.c</file>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/statemachine.h</file>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/todo.txt</file>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/fpga_control.h</file>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/variables.h</file>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/fpga_control.c</file>
-        </group>
+        <group/>
     </open-files>
 </project-private>

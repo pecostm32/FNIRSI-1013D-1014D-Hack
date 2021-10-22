@@ -18,6 +18,8 @@ void scope_setup_main_screen(void);
 
 void scope_setup_view_screen(void);
 
+void scope_setup_usb_screen(void);
+
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void scope_setup_right_control_menu(void);

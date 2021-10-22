@@ -82,6 +82,12 @@ void scope_setup_main_screen(void)
   
   //Show the battery charge level and charging indicator
   scope_battery_status();
+  
+  //Clear some flags to make the trace part of the screen refresh
+  scopesettings.triggerflag1 = 1;
+  scopesettings.triggerflag2 = 1;
+  
+  disp_xpos = 0;  
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -172,6 +178,84 @@ void scope_setup_view_screen(void)
 
   //Back to normal mode so allow saving of settings on power down
   viewactive = VIEW_NOT_ACTIVE;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_setup_usb_screen(void)
+{
+  //Clear the whole screen
+  display_set_fg_color(0x00000000);
+  display_fill_rect(0, 0, 800, 480);
+  
+  //Set the light color for the equipment borders
+  display_set_fg_color(0x00AAAAAA);
+  
+  //Draw the computer screen
+  display_fill_rounded_rect(470, 115, 250, 190, 2);
+  display_fill_rect(580, 305, 30, 20);
+  display_fill_rounded_rect(550, 325, 90, 10, 2);
+  display_fill_rect(550, 331, 89, 4);
+
+  //Draw the scope
+  display_fill_rounded_rect(80, 200, 180, 135, 2);
+
+  //Draw the cable
+  display_fill_rect(210, 188, 10, 12);
+  display_fill_rect(213, 154, 4, 36);
+  display_fill_rect(213, 150, 152, 4);
+  display_fill_rect(361, 154, 4, 106);
+  display_fill_rect(361, 260, 98, 4);
+  display_fill_rect(458, 257, 12, 10);
+  
+  //Fill in the screens with a blue color
+  display_set_fg_color(0x00000055);
+  display_fill_rect(477, 125, 235, 163);
+  display_fill_rect(88, 210, 163, 112);
+  
+  //Draw a dark border around the blue screens
+  display_set_fg_color(0x00111111);
+  display_draw_rect(477, 125, 235, 163);
+  display_draw_rect(88, 210, 163, 112);
+  
+  //Display the text with font 5 and the light color
+  display_set_font(&font_5);
+  display_set_fg_color(0x00AAAAAA);
+  display_text(125, 254, "ON / OFF");
+
+  //Start the usb interface
+  
+  
+  
+  //Wait for the user to touch the scope ON / OFF section to quit
+  while(1)
+  {
+    //Scan the touch panel for touch
+    tp_i2c_read_status();
+    
+    //Check if there is touch
+    if(havetouch)
+    {
+      //Check if touch within the text field
+      if((xtouch >= 90) && (xtouch <= 250) && (ytouch >= 210) && (ytouch <= 320))
+      {
+        //Touched the text field so wait until touch is released and then quit
+        tp_i2c_wait_for_touch_release();
+        
+        break;
+      }
+    }
+  }
+  
+  
+  //Stop the usb interface  
+  
+  
+  
+  //Resync the system files
+  
+  
+  
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -5741,7 +5825,7 @@ void scope_display_trace_data(void)
   //Reset some flags if display touched for trace and cursor movement and stopped or in auto or normal mode
   if((touchstate) && ((scopesettings.triggermode != 1) || (scopesettings.runstate)))
   {
-    //Clear some flags
+    //Set some flags
     scopesettings.triggerflag1 = 1;
     scopesettings.triggerflag2 = 1;
   }

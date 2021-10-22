@@ -713,6 +713,9 @@ void handle_main_menu_touch(void)
         //Check if on picture view
         else if((ytouch >= 107) && (ytouch <= 164))
         {
+          //Close any other open menu
+          close_open_menus(1);
+          
           //Set the button active
           scope_main_menu_picture_view(1);
 
@@ -728,6 +731,9 @@ void handle_main_menu_touch(void)
         //Check if on waveform view
         else if((ytouch >= 166) && (ytouch <= 223))
         {
+          //Close any other open menu
+          close_open_menus(1);
+          
           //Set the button active
           scope_main_menu_waveform_view(1);
 
@@ -743,15 +749,32 @@ void handle_main_menu_touch(void)
         //Check if on USB connection
         else if((ytouch >= 225) && (ytouch <= 278))
         {
+          //Close any other open menu
+          close_open_menus(1);
+          
           //Set the button active
           scope_main_menu_usb_connection(1);
 
           //Wait until touch is released
           tp_i2c_wait_for_touch_release();
 
+          //Restore the main screen before entering the USB screen
+          display_set_source_buffer(displaybuffer2);
+          display_copy_rect_to_screen(0, 46, 149, 233);
+          
+          //And make a copy of it to return to
+          display_set_destination_buffer(displaybuffer2);
+          display_copy_rect_from_screen(0, 0, 800, 480);
+          
           //Show and handle the usb connection here
-
-          //Close menu and switch to usb connection screen
+          scope_setup_usb_screen();
+          
+          //Copy back the original screen to continue were left of
+          display_set_source_buffer(displaybuffer2);
+          display_copy_rect_to_screen(0, 0, 800, 480);
+          
+          //Need to exit the loop here
+          return;
         }
       }
       //Check on system settings menu opened and being touched
@@ -764,7 +787,7 @@ void handle_main_menu_touch(void)
           if(screenbrightnessopen == 0)
           {
             //Close any of the sub menus if open
-            close_open_sub_menus();
+            close_open_menus(0);
 
             //Set this item active
             scope_system_settings_screen_brightness_item(1);
@@ -786,7 +809,7 @@ void handle_main_menu_touch(void)
           if(gridbrightnessopen == 0)
           {
             //Close any of the sub menus if open
-            close_open_sub_menus();
+            close_open_menus(0);
             
             //Set this item active
             scope_system_settings_grid_brightness_item(1);
@@ -805,7 +828,7 @@ void handle_main_menu_touch(void)
         else if((ytouch >= 164) && (ytouch <= 221))
         {
           //Close any of the sub menus if open
-          close_open_sub_menus();
+          close_open_menus(0);
           
           //Wait until touch is released
           tp_i2c_wait_for_touch_release();
@@ -823,7 +846,7 @@ void handle_main_menu_touch(void)
           if(calibrationopen == 0)
           {
             //Close any of the sub menus if open
-            close_open_sub_menus();
+            close_open_menus(0);
 
             //Set this item active
             scope_system_settings_calibration_item(1);
@@ -842,7 +865,7 @@ void handle_main_menu_touch(void)
         else if((ytouch >= 282) && (ytouch <= 339))
         {
           //Close any of the sub menus if open
-          close_open_sub_menus();
+          close_open_menus(0);
           
           //Wait until touch is released
           tp_i2c_wait_for_touch_release();
@@ -857,7 +880,7 @@ void handle_main_menu_touch(void)
         else if((ytouch >= 341) && (ytouch <= 398))
         {
           //Close any of the sub menus if open
-          close_open_sub_menus();
+          close_open_menus(0);
           
           //Wait until touch is released
           tp_i2c_wait_for_touch_release();
@@ -927,19 +950,8 @@ void handle_main_menu_touch(void)
       }
       else
       {
-        //Close any of the sub menus if open
-        close_open_sub_menus();
-        
-        //Check if system settings menu has been opened
-        if(systemsettingsmenuopen)
-        {
-          //Restore the screen under the system settings menu when done
-          display_set_source_buffer(displaybuffer2);
-          display_copy_rect_to_screen(150, 46, 244, 353);
-          
-          //Clear the flag so it will be opened next time
-          systemsettingsmenuopen = 0;
-        }
+        //Close any of the menus if open
+        close_open_menus(1);
         
         //Touch outside the menu so wait until touch is released and then quit
         tp_i2c_wait_for_touch_release();
@@ -2647,7 +2659,7 @@ int32 handle_confirm_delete(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void close_open_sub_menus(void)
+void close_open_menus(uint32 closemain)
 {
   //Only one of these menu's will be opened at any time
   
@@ -2689,6 +2701,17 @@ void close_open_sub_menus(void)
 
     //Signal it is closed
     calibrationopen = 0;
+  }
+
+  //Check if system settings menu has been opened and needs to be closed
+  if(closemain && systemsettingsmenuopen)
+  {
+    //Restore the screen under the system settings menu when done
+    display_set_source_buffer(displaybuffer2);
+    display_copy_rect_to_screen(150, 46, 244, 353);
+
+    //Clear the flag so it will be opened next time
+    systemsettingsmenuopen = 0;
   }
 }
 
