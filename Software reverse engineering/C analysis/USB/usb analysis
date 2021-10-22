@@ -1,0 +1,22 @@
+On system startup some data is configured for which I did not find corrosponding code in the USB project. (FUN_80021be0)
+
+After this usb_dev_bsp_init() is called. All this does is configure the USB interface and sets it idle.
+
+When check for new firmware fails (corrupted update file) it starts the USB interface so new firmware can be written.
+
+The user can enable the USB interface via the menu option (enter_usb_connect())
+
+With the function "setup_usb_int()" the USB interface is configured and interrupt is enabled.
+
+
+
+
+Mass storage is the fourth device. Descriptor is found at 0x8019D23C. This is in the data being unpacked at startup
+
+
+
+
+
+FUN_8002958c   configure endpoints 
+FUN_8002963c   power control
+FUN_800389a8 interrupt handler
