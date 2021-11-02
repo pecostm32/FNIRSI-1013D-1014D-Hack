@@ -196,3 +196,14 @@ Measurements calculations and displaying
 FFT calculation and displaying
 Firmware update (This means both code within my version as creating an actual firmware update that can be loaded on a scope)
 
+----------------------------------------------------------------------------------------------------------
+02-NOVEMBER-2021
+Managed to create a firmware update file based on the original scope code, but when I updated my new scope it f-ed up the touch panel.
+This new scope uses a different touch panel than the other one I have. Costed me a couple of days to fix it.
+I'm at least able to create a firmware update file, so that part of the todo is done.
+At the moment working on the USB interface. Managed to get an emulation of a CH340 device working and are basing the mass storage device
+on this code. Got some crude implementation to communicate with my Linux machine. Still needs a lot of work done to make it a proper driver,
+but it starts to come together.
+When this part is working I will make a side step to make a firmware and touch panel configuration capture program, to allow scope owners to
+save their originals state before trying what I'm making here:-)
+
