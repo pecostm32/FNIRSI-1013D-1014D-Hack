@@ -19,6 +19,8 @@
 #include "sd_card_interface.h"
 #include "ff.h"
 
+#include "usb_dev.h"
+
 #include "arm32.h"
 
 #include "variables.h"
@@ -72,7 +74,6 @@ int main(void)
   
   //Setup the display library for the scope hardware
   scope_setup_display_lib();
-  
 
   //Setup the touch panel interface
   tp_i2c_setup();
@@ -100,6 +101,7 @@ int main(void)
   //In the original code there is some hardware check function here. Actions are not performed unless some data in the FLASH is not set
   
   //Here USB setup needs to be done
+  usb_dev_bsp_init();
   
   //Load configuration data from FLASH
   scope_load_configuration_data();

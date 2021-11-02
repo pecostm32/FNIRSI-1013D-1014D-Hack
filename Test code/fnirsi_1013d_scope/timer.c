@@ -23,7 +23,7 @@ void timer0_setup(void)
   //Setup the interrupt for this timer
   setup_interrupt(TMR0_IRQ_NUM, timer0_irq_handler, 0);
   
-  //Configurate and enable the timer 
+  //Configure and enable the timer 
   *TMR0_CTRL_REG = TMR_CLK_SRC_OSC24M | TMR_ENABLE;
   
   //Enable this timers interrupt

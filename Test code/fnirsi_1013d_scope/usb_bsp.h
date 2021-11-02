@@ -245,7 +245,7 @@ static inline void writesb(const void *addr, const void *buf, int len) {
 #define  USBC_REG_o_VEND1        0x007D
 #define  USBC_REG_o_VEND3        0x007E
 
-//#define  USBC_REG_o_PHYCTL				0x006C
+//#define  USBC_REG_o_PHYCTL        0x006C
 #define  USBC_REG_o_EPINFO       0x0078
 #define  USBC_REG_o_RAMINFO      0x0079
 #define  USBC_REG_o_LINKINFO     0x007A
@@ -535,7 +535,7 @@ static inline void writesb(const void *addr, const void *buf, int len) {
 
 #define  USBC_TXCSR_H_WZC_BITS    ( (1 << USBC_BP_TXCSR_H_NAK_TIMEOUT) | (1 << USBC_BP_TXCSR_H_TX_STALL) \
                         | (1 << USBC_BP_TXCSR_H_ERROR) | (1 << USBC_BP_TXCSR_H_FIFO_NOT_EMPTY)\
-											)
+                      )
 
 /* Tx ep Control and Status Register for Device only */
 #define  USBC_BP_TXCSR_D_AUTOSET    15
@@ -581,7 +581,7 @@ static inline void writesb(const void *addr, const void *buf, int len) {
 
 #define  USBC_RXCSR_H_WZC_BITS    (  (1 << USBC_BP_RXCSR_H_RX_STALL) | (1 << USBC_BP_RXCSR_H_ERROR) \
                         | (1 << USBC_BP_RXCSR_H_DATA_ERR) | (1 << USBC_BP_RXCSR_H_RX_PKT_READY)\
-											)
+                      )
 
 /* Rx ep Control and Status Register for Device only */
 #define  USBC_BP_RXCSR_D_AUTO_CLEAR   15
@@ -610,7 +610,7 @@ static inline void writesb(const void *addr, const void *buf, int len) {
 #define  USBC_BP_RXTYPE_PROROCOL   4
 #define  USBC_BP_RXTYPE_TARGET_EP_NUM      0
 
-/* Core Configueation */
+/* Core Configuration */
 #define  USBC_BP_CONFIGDATA_MPRXE   7
 #define  USBC_BP_CONFIGDATA_MPTXE   6
 #define  USBC_BP_CONFIGDATA_BIGENDIAN  5
@@ -836,7 +836,7 @@ void USBC_Dev_SetAddress(uint8 address);
 
 uint32 USBC_Dev_QueryTransferMode(void);
 void USBC_Dev_ConfigTransferMode(uint8 ts_type, uint8 speed_mode);
-void USBC_Dev_ConectSwitch(uint32 is_on);
+void USBC_Dev_ConnectSwitch(uint32 is_on);
 uint32 USBC_Dev_QueryPowerStatus(void);
 
 int32 USBC_Dev_ConfigEp(uint32 ts_type, uint32 ep_type, uint32 is_double_fifo, uint32 ep_MaxPkt);

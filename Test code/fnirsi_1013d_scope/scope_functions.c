@@ -10,6 +10,7 @@
 #include "display_lib.h"
 #include "ff.h"
 
+#include "usb_dev.h"
 #include "variables.h"
 
 #include <string.h>
@@ -224,8 +225,7 @@ void scope_setup_usb_screen(void)
   display_text(125, 254, "ON / OFF");
 
   //Start the usb interface
-  
-  
+  usb_setup_interrupt();
   
   //Wait for the user to touch the scope ON / OFF section to quit
   while(1)
@@ -247,9 +247,8 @@ void scope_setup_usb_screen(void)
     }
   }
   
-  
   //Stop the usb interface  
-  
+  usb_udc_disable();
   
   
   //Resync the system files

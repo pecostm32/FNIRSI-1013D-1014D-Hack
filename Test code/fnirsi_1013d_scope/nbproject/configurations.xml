@@ -16,6 +16,7 @@
       <itemPath>fpga_control.h</itemPath>
       <itemPath>gpio_control.h</itemPath>
       <itemPath>interrupt.h</itemPath>
+      <itemPath>mass_storage_class.h</itemPath>
       <itemPath>power_and_battery.h</itemPath>
       <itemPath>scope_functions.h</itemPath>
       <itemPath>sd_card_interface.h</itemPath>
@@ -66,6 +67,7 @@
       <itemPath>timer.c</itemPath>
       <itemPath>touchpanel.c</itemPath>
       <itemPath>usb_dev.c</itemPath>
+      <itemPath>usb_mass_storage.c</itemPath>
       <itemPath>usbc.c</itemPath>
       <itemPath>usbc_dev.c</itemPath>
       <itemPath>usbc_phy.c</itemPath>
@@ -165,6 +167,8 @@
       </item>
       <item path="interrupt.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="mass_storage_class.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="memcmp.s" ex="false" tool="4" flavor2="0">
       </item>
       <item path="memcpy.s" ex="false" tool="4" flavor2="0">
@@ -216,6 +220,8 @@
       <item path="usb_dev.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="usb_dev.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="usb_mass_storage.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="usbc.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -308,6 +314,8 @@
       </item>
       <item path="interrupt.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="mass_storage_class.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="memcmp.s" ex="false" tool="4" flavor2="0">
       </item>
       <item path="memcpy.s" ex="false" tool="4" flavor2="0">
@@ -359,6 +367,8 @@
       <item path="usb_dev.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="usb_dev.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="usb_mass_storage.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="usbc.c" ex="false" tool="0" flavor2="0">
       </item>
