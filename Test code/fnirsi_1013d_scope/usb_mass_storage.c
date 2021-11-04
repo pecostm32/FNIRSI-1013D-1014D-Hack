@@ -1,11 +1,13 @@
 #include "usb.h"
 #include "usb_dev.h"
 #include "mass_storage_class.h"
+#include "sd_card_interface.h"
+#include "variables.h"
 #include <string.h>
 
 //Wireshark filter (usb.dst == "1.12.0") || (usb.src == "1.12.0") 
 //reject mouse !(usb.dst == "1.2.2")  && !(usb.src == "1.2.2")  && !(usb.dst == "1.2.3")  && !(usb.src == "1.2.3") 
-//!(usb.dst == "1.2.1")  && !(usb.src == "1.2.1")  &&!(usb.dst == "1.2.2")  && !(usb.src == "1.2.2")  && !(usb.dst == "1.2.3")  && !(usb.src == "1.2.3") 
+//!(usb.dst == "1.2.1")  && !(usb.src == "1.2.1")  &&!(usb.dst == "1.2.2")  && !(usb.src == "1.2.2")  && !(usb.dst == "1.2.3")  && !(usb.src == "1.2.3")
 
 //USB types, the second of three bRequestType fields
 
@@ -14,9 +16,22 @@
 extern uint32 cardsectorsize;
 extern uint32 cardsectors;
 
+volatile uint32 scsi_start_lba;
+volatile uint32 scsi_block_count;
+
+volatile uint32 scsi_byte_count;
+volatile uint32 scsi_bytes_received;
+
+//uint32 scsi_data_block[128];  //512 byte block on a 32 bit boundary aligned for reading and writing to the sd card
+
+volatile uint8 *scsi_data_in_ptr;
+volatile uint8 *scsi_data_end_ptr;
+
+volatile uint32 scsi_available_blocks;
+
 uint8 scsi_capacity[8];
 
-uint32 msc_state = MSC_WAIT_COMMAND;
+volatile uint32 msc_state = MSC_WAIT_COMMAND;
 
 MSC_Status_Wrapper csw;
 
@@ -286,6 +301,9 @@ static void set_configuration(void)
   usb_device_clear_setup_end();
   usb_device_send_nullpack_ep0();
   usb_device_set_ep0_state(EP0_IDLE);
+  
+  //Also clear the scsi data
+  msc_state = MSC_WAIT_COMMAND;
 }
 
 static void standard_setup_request(USB_DeviceRequest *req_data)
@@ -421,50 +439,60 @@ void usb_mass_storage_out_ep_callback(unsigned char *pdat, int len)
   switch(msc_state)
   {
     case MSC_WAIT_COMMAND:
+    {
+      //Make the data accessible as a command block wrapper
+      MSC_Command_Wrapper *cbw = (MSC_Command_Wrapper *)pdat;
+
+
+      //LUN should be zero since this device only supports the single unit
+
+      //The direction bit tells if the host will send data or the device needs to send data
+
+      //Command length needs to be from 1 to 16, otherwise it is an error
+
+      //Check if the data is valid
+      if((len == MSC_CBW_LENGTH) && (cbw->signature == MSC_CBW_SIGNATURE))
       {
-        //Make the data accessible as a command block wrapper
-        MSC_Command_Wrapper *cbw = (MSC_Command_Wrapper *)pdat;
+        //If so process the command
 
-        //Check if the data is valid
-        if((len == MSC_CBW_LENGTH) && (cbw->signature == MSC_CBW_SIGNATURE))
+        //First 
+        //Copy the tag to the csw and set the csw signature (can be done in a setup routine)
+        csw.signature    = MSC_CSW_SIGNATURE;
+        csw.tag          = cbw->tag;
+        csw.data_residue = 0;
+        csw.status       = MSC_CSW_STATUS_OK;
+
+        //Parse the command
+        switch(cbw->command[0])
         {
-          //If so process the command
+          case SCSI_CMD_INQUIRY:
+            usb_device_write_data_ep_pack(1, (uint8 *)scsi_inquiry_string, sizeof(scsi_inquiry_string));
 
-          //First 
-          //Copy the tag to the csw and set the csw signature (can be done in a setup routine)
-          csw.signature    = MSC_CSW_SIGNATURE;
-          csw.tag          = cbw->tag;
-          csw.data_residue = 0;
-          csw.status       = MSC_CSW_STATUS_OK;
-            
-          //Parse the command
-          switch(cbw->command[0])
-          {
-            case SCSI_CMD_INQUIRY:
-              usb_device_write_data_ep_pack(1, (uint8 *)scsi_inquiry_string, sizeof(scsi_inquiry_string));
-              
-              //Switch to status state (No more data to send)
-              msc_state = MSC_SEND_STATUS;
-              break;
+            //Switch to status state (No more data to send)
+            msc_state = MSC_SEND_STATUS;
+            break;
 
-            //Ignore these commands for now
-            case SCSI_CMD_TEST_UNIT_READY:
-            case SCSI_CMD_PREVENT_ALLOW_MEDIUM_REMOVAL:
-            case SCSI_CMD_START_STOP_UNIT:
-              //Needs to be done here since the data needs to be ready before the in request is send from the host
-              //Send the ok status
-              usb_device_write_data_ep_pack(1, (uint8 *)&csw, MSC_CSW_LENGTH);
+          //Ignore these commands for now
+          case SCSI_CMD_TEST_UNIT_READY:
+          case SCSI_CMD_PREVENT_ALLOW_MEDIUM_REMOVAL:
+          case SCSI_CMD_START_STOP_UNIT:
+            //Needs to be done here since the data needs to be ready before the in request is send from the host
+            //Send the ok status
+            usb_device_write_data_ep_pack(1, (uint8 *)&csw, MSC_CSW_LENGTH);
 
-              //Switch to wait for command state
-              msc_state = MSC_WAIT_COMMAND;
-              break;
-              
-            case SCSI_CMD_READ_CAPACITY_10:
+            //Switch to wait for command state
+            msc_state = MSC_WAIT_COMMAND;
+            break;
+
+          case SCSI_CMD_READ_CAPACITY_10:
+            {
+              uint32 sectors = cardsectors - 1;
+
               //Need to return the last logical block address and the block size
-              scsi_capacity[0] = cardsectors >> 24;
-              scsi_capacity[1] = cardsectors >> 16;
-              scsi_capacity[2] = cardsectors >> 8;
-              scsi_capacity[3] = cardsectors;
+              scsi_capacity[0] = sectors >> 24;
+              scsi_capacity[1] = sectors >> 16;
+              scsi_capacity[2] = sectors >> 8;
+              scsi_capacity[3] = sectors;
 
               scsi_capacity[4] = cardsectorsize >> 24;
               scsi_capacity[5] = cardsectorsize >> 16;
@@ -472,49 +500,193 @@ void usb_mass_storage_out_ep_callback(unsigned char *pdat, int len)
               scsi_capacity[7] = cardsectorsize;
 
               usb_device_write_data_ep_pack(1, scsi_capacity, sizeof(scsi_capacity));
-              
+
               //Switch to status state (No more data to send)
               msc_state = MSC_SEND_STATUS;
-              break;
-              
-            case SCSI_CMD_MODE_SENSE_6:
-              usb_device_write_data_ep_pack(1, (uint8 *)scsi_inquiry_string, sizeof(scsi_inquiry_string));
-              
-              //Switch to status state (No more data to send)
+            }
+            break;
+
+          case SCSI_CMD_MODE_SENSE_6:
+            usb_device_write_data_ep_pack(1, (uint8 *)scsi_inquiry_string, sizeof(scsi_inquiry_string));
+
+            //Switch to status state (No more data to send)
+            msc_state = MSC_SEND_STATUS;
+            break;
+
+          case SCSI_CMD_READ_10:
+            //This requires a bit more checking!!!!!
+            //Get the lba to access
+            scsi_start_lba = (cbw->command[2] << 24) | (cbw->command[3] << 16) | (cbw->command[4] << 8) | cbw->command[5];
+
+            //get the block count
+            scsi_block_count = (cbw->command[7] << 8) | cbw->command[8];
+
+            //Need to handle possible error conditions here
+            //Check on cbw data transfer length
+            //check on scsi command length
+            //check on data direction
+
+            //Do a per block read and transfer
+            //Not really needed since it will fall through in the send action
+            if(scsi_block_count > 1)
+            {
+              msc_state = MSC_SEND_DATA;
+            }
+            else
+            {
               msc_state = MSC_SEND_STATUS;
-              break;
-              
-            case SCSI_CMD_READ_10:
-              //This requires a bit more checking!!!!!
-              break;
+            }
+
+            //Check if this can be done directly to the usb fifo
+            //Need to handle error conditions here too
+
+            scsi_data_in_ptr = (uint8 *)viewthumbnaildata;
+
+            if(scsi_block_count > SCSI_MAX_BLOCK_COUNT)
+            {
+              scsi_available_blocks = SCSI_MAX_BLOCK_COUNT;
+            }
+            else
+            {
+              scsi_available_blocks = scsi_block_count;
+            }
+
+            sd_card_read(scsi_start_lba, scsi_available_blocks, (uint8 *)scsi_data_in_ptr);
+
+            usb_device_write_data_ep_pack(1, (uint8 *)scsi_data_in_ptr, cardsectorsize);
+
+            //One full buffer done
+            scsi_block_count -= scsi_available_blocks;
+
+            //select the next sector to read
+            scsi_start_lba += scsi_available_blocks;
+
+            //Point to next data to transfer
+            scsi_data_in_ptr += cardsectorsize;
+
+            //Already one block done
+            scsi_available_blocks--;
+            break;
+
+
+
+          case SCSI_CMD_WRITE_10:
+            //This requires a bit more checking!!!!!
+            //Get the lba to access
+            scsi_start_lba = (cbw->command[2] << 24) | (cbw->command[3] << 16) | (cbw->command[4] << 8) | cbw->command[5];
+
+            //get the block count
+            scsi_block_count = (cbw->command[7] << 8) | cbw->command[8];
+
+            //Need the number of bytes to receive
+            scsi_byte_count = scsi_block_count * 512;
+            scsi_bytes_received = 0;
+
+            //Point to the start of the buffer to receive the payload data into
+            scsi_data_in_ptr = (uint8 *)viewthumbnaildata;
+            scsi_data_end_ptr = scsi_data_in_ptr + sizeof(viewthumbnaildata);
+
+
+            //Next out transaction holds the payload data
+            msc_state = MSC_RECEIVE_DATA;
+            break;
+        }
+
+      }
+      else
+      {
+        //Not a valid command block wrapper then stall the endpoints
+        USBC_Dev_EpSendStall(USBC_EP_TYPE_TX);
+        USBC_Dev_EpSendStall(USBC_EP_TYPE_RX);
+      }
+    }
+    break;
+      
+    case MSC_RECEIVE_DATA:
+    {
+      //Calculate the last location when this data is written to the buffer. Needs to stay below the end of the buffer
+      register uint8 *tptr = (uint8 *)scsi_data_in_ptr + len;
+      
+      //Check if there is still room in the buffer
+      if(tptr < scsi_data_end_ptr)
+      {
+        //Need to load it into a buffer before writing to the card
+        memcpy((uint8 *)scsi_data_in_ptr, pdat, len);
+
+        scsi_bytes_received += len;
+        
+        //Need to determine here if this was the last data
+        if(len >= scsi_byte_count)
+        {
+          //Last payload data received so write it to the card and switch to status state
+          //Get the number of sectors to write to the card to free the buffer
+          uint32 sectors = scsi_bytes_received / 512;
+          uint32 bytesdone = sectors * 512;
+
+          //Check if there is a non full sector at the end
+          if(bytesdone < scsi_bytes_received)
+          {
+            //If so do one sector extra
+            sectors++;
           }
           
-          //LUN should be zero since this device only supports the single unit
+          //Need to handle errors here!!!!!
+          //Need to write the data to the card
+          sd_card_write(scsi_start_lba, sectors, (uint8 *)viewthumbnaildata);
           
-          //The direction bit tells if the host will send data or the device needs to send data
-          
-          //Command length needs to be from 1 to 16, otherwise it is an error
-          
-          
-          //Switch to data state
-          
-          
-          //Send zero byte data
-          
+          //Next action is send the status to the host
+          usb_device_write_data_ep_pack(1, (uint8 *)&csw, MSC_CSW_LENGTH);
+
+          //switch to wait for command state
+          msc_state = MSC_WAIT_COMMAND;
         }
         else
         {
-          //Not a valid command block wrapper then stall the endpoints
-          USBC_Dev_EpSendStall(USBC_EP_TYPE_TX);
-          USBC_Dev_EpSendStall(USBC_EP_TYPE_RX);
+          //Take of the received bytes to see if more needs to come
+          scsi_byte_count -= len;
+
+          //Point to the next location in the buffer to store the next load
+          scsi_data_in_ptr = tptr;
         }
       }
-      break;
-      
+      else
+      {
+        //Get the number of sectors to write to the card to free the buffer
+        uint32 sectors = scsi_bytes_received / 512;
+        uint32 bytesdone = sectors * 512;
+        
+        scsi_data_in_ptr = (uint8 *)viewthumbnaildata;
+        
+        //Need to handle errors here!!!!!
+        //Need to write the data to the card
+        sd_card_write(scsi_start_lba, sectors, (uint8 *)scsi_data_in_ptr);
+        
+        //Point to next logical block address to write to
+        scsi_start_lba += sectors;
+        
+        //Check if there is data left
+        if(bytesdone < scsi_bytes_received)
+        {
+          uint32 bytesleft = scsi_bytes_received - bytesdone;
+          
+          //If so copy the remainder to the start of the buffer
+          memcpy((uint8 *)scsi_data_in_ptr, (uint8 *)scsi_data_in_ptr + bytesdone, bytesleft);
+          
+          //Set pointer to the end of this left over data
+          scsi_data_in_ptr += bytesleft;
+          
+          //At this moment still data received
+          scsi_bytes_received = bytesleft;
+        }
+        else
+        {
+          //Reset the number of received bytes for handling remainder of payload data
+          scsi_bytes_received = 0;
+        }
+      }
+    } 
+    break;
   }
-  
-  
-  
 }
 
 void usb_mass_storage_in_ep_callback(void)
@@ -526,8 +698,47 @@ void usb_mass_storage_in_ep_callback(void)
   {
     case MSC_SEND_DATA:
       //Need check on if more data needs to be send!!!!
+
+      if(scsi_available_blocks)
+      {
+        usb_device_write_data_ep_pack(1, (uint8 *)scsi_data_in_ptr, cardsectorsize);
+
+        //one more block done
+        scsi_available_blocks--;
+
+        //Point to next data to transfer
+        scsi_data_in_ptr += cardsectorsize;
+        
+        //Check if more data needs to be read from the SD card
+        if((scsi_available_blocks == 0) && scsi_block_count)
+        {
+          //Reset the pointer to the beginning of the buffer
+          scsi_data_in_ptr = (uint8 *)viewthumbnaildata;
+
+          if(scsi_block_count > SCSI_MAX_BLOCK_COUNT)
+          {
+            scsi_available_blocks = SCSI_MAX_BLOCK_COUNT;
+          }
+          else
+          {
+            scsi_available_blocks = scsi_block_count;
+          }
+          
+          //Need to handle errors here!!!!!!
+          //Read the next block if needed
+          sd_card_read(scsi_start_lba, scsi_available_blocks, (uint8 *)scsi_data_in_ptr);
+          
+          //One full buffer done
+          scsi_block_count -= scsi_available_blocks;
+
+          //select the next sector to read
+          scsi_start_lba += scsi_available_blocks;
+        }        
+        break;
+      }
       
-      //No data to send then fall through to status
+      
+      //No more data to send then fall through to status
       
     case MSC_SEND_STATUS:
       //If not send status state

@@ -317,6 +317,7 @@ int32 sd_card_read(uint32 sector, uint32 blocks, uint8 *buffer)
   if(buffer == 0)
     return(SD_ERROR_INVALID_BUFFER);
   
+  //This might be wrong. Need testing with last sector!!!!!
   //Check if last bytes to read in range of the card sectors
   if((sector + blocks - 1) > cardsectors)
     return(SD_ERROR_SECTOR_OUT_OF_RANGE);
