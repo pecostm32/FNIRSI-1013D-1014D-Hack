@@ -29,6 +29,7 @@
       <itemPath>usb.h</itemPath>
       <itemPath>usb_bsp.h</itemPath>
       <itemPath>usb_dev.h</itemPath>
+      <itemPath>usb_interface.h</itemPath>
       <itemPath>variables.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
@@ -67,6 +68,7 @@
       <itemPath>timer.c</itemPath>
       <itemPath>touchpanel.c</itemPath>
       <itemPath>usb_dev.c</itemPath>
+      <itemPath>usb_interface.c</itemPath>
       <itemPath>usb_mass_storage.c</itemPath>
       <itemPath>usbc.c</itemPath>
       <itemPath>usbc_dev.c</itemPath>
@@ -221,6 +223,10 @@
       </item>
       <item path="usb_dev.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="usb_interface.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="usb_interface.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="usb_mass_storage.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="usbc.c" ex="false" tool="0" flavor2="0">
@@ -367,6 +373,10 @@
       <item path="usb_dev.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="usb_dev.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="usb_interface.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="usb_interface.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="usb_mass_storage.c" ex="false" tool="0" flavor2="0">
       </item>

@@ -64,6 +64,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/timer.o \
 	${OBJECTDIR}/touchpanel.o \
 	${OBJECTDIR}/usb_dev.o \
+	${OBJECTDIR}/usb_interface.o \
 	${OBJECTDIR}/usb_mass_storage.o \
 	${OBJECTDIR}/usbc.o \
 	${OBJECTDIR}/usbc_dev.o \
@@ -234,6 +235,11 @@ ${OBJECTDIR}/usb_dev.o: usb_dev.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/usb_dev.o usb_dev.c
+
+${OBJECTDIR}/usb_interface.o: usb_interface.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/usb_interface.o usb_interface.c
 
 ${OBJECTDIR}/usb_mass_storage.o: usb_mass_storage.c
 	${MKDIR} -p ${OBJECTDIR}

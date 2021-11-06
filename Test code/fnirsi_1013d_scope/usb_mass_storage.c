@@ -306,7 +306,7 @@ static void set_configuration(void)
   msc_state = MSC_WAIT_COMMAND;
 }
 
-static void standard_setup_request(USB_DeviceRequest *req_data)
+void standard_setup_request(USB_DeviceRequest *req_data)
 {
   unsigned char bRequest = req_data->bRequest;
 
@@ -392,6 +392,12 @@ static void class_setup_request(USB_DeviceRequest* req_data)
   }
 }
 
+void usb_mass_storage_standard_request(void *dat)
+{
+  standard_setup_request(dat);
+}
+
+
 void usb_mass_storage_setup_handle(unsigned char *dat, int len)
 {
   if(len == 8)
@@ -472,9 +478,11 @@ void usb_mass_storage_out_ep_callback(unsigned char *pdat, int len)
             msc_state = MSC_SEND_STATUS;
             break;
 
+          case SCSI_CMD_PREVENT_ALLOW_MEDIUM_REMOVAL:
+            //Use this command to block the return to scope mode if the host says so!!!
+            
           //Ignore these commands for now
           case SCSI_CMD_TEST_UNIT_READY:
-          case SCSI_CMD_PREVENT_ALLOW_MEDIUM_REMOVAL:
           case SCSI_CMD_START_STOP_UNIT:
             //Needs to be done here since the data needs to be ready before the in request is send from the host
             //Send the ok status

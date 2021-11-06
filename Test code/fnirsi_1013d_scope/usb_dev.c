@@ -29,7 +29,7 @@ enum sunxi_udc_cmd_e
   SW_UDC_P_RESET = 3,   //UDC reset, in case of
 };
 
-static int32 ep_max_len[3] = {64, 512, 512};
+int32 ep_max_len[3] = {64, 512, 512};
 
 uint8 usb_tx_buf[512];
 int32 usb_tx_buf_len = 0;
@@ -478,6 +478,9 @@ void usb_irq_handle(void)
     USBC_INT_ClearMiscPending(USBC_INTUSB_DISCONNECT);
     usb_ep0_state = EP0_IDLE;
     usb_connect = 0;
+    
+    //Need to add code here to force the scope to go back to its normal mode
+    //Use a flag that is checked in the touch scan for the usb on/off
   }
 
   //    //SOF

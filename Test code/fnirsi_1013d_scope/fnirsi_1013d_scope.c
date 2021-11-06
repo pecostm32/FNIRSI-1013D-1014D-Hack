@@ -21,6 +21,8 @@
 
 #include "usb_dev.h"
 
+#include "usb_interface.h"
+
 #include "arm32.h"
 
 #include "variables.h"
@@ -99,9 +101,10 @@ int main(void)
   }
   
   //In the original code there is some hardware check function here. Actions are not performed unless some data in the FLASH is not set
+  //This tests the basic hardware and verifies the touch panel
   
-  //Here USB setup needs to be done
-  usb_dev_bsp_init();
+  //Setup the USB interface
+  usb_device_init();
   
   //Load configuration data from FLASH
   scope_load_configuration_data();
@@ -139,6 +142,9 @@ int main(void)
   fpga_set_battery_level();      //Only called here and in hardware check
 
   //In the original code there is another hardware check function here. Actions are not performed unless some data in the FLASH is not set
+  //This is for testing the analog response
+  //When all tests run through the flash is updated to no longer run the hardware tests.
+  
 
   //Here a function is called that looks at some system file????? Firmware upgrade!!!
 

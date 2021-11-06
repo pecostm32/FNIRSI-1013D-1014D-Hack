@@ -10,18 +10,17 @@
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/usb_mass_storage.c</file>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/usbc_phy.c</file>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/usb_bsp.h</file>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/scope_functions.h</file>
+            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/usb_interface.h</file>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/fnirsi_1013d_scope.c</file>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/mass_storage_class.h</file>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/statemachine.c</file>
+            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/usb_interface.c</file>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/usb_dev.c</file>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/scope_functions.c</file>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/usb_dev.h</file>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/usbc_dev.c</file>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/statemachine.h</file>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/usbc.c</file>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/sd_card_interface.c</file>
+            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/todo.txt</file>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/usb.h</file>
+            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_1013d_scope/ccu_control.h</file>
         </group>
     </open-files>
 </project-private>

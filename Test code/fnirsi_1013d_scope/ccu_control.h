@@ -137,6 +137,13 @@
 #define CCU_AHB_CLK_DIV_RATIO_4        0x00000020
 
 //--------------------------------------------------------------------------------------
+//USB PHY configuration settings
+#define CCU_USBPHY_CFG_RST             0x00000001
+#define CCU_USBPHY_CFG_GAT             0x00000002
+
+
+
+//--------------------------------------------------------------------------------------
 //DRAM gating settings
 #define CCU_DRAM_BE_DCLK_GATING_PASS            0x04000000
 #define CCU_DRAM_FE_DCLK_GATING_PASS            0x01000000
@@ -155,6 +162,8 @@
 
 #define CCU_BCGR1_DEBE_EN                       0x00001000
 
+#define CCU_BCGR1_USBOTG_EN                     0x01000000
+
 
 //--------------------------------------------------------------------------------------
 //Bus software reset settings
@@ -165,6 +174,8 @@
 #define CCU_BSRR1_LCD_RST                       0x00000010
 
 #define CCU_BSRR1_DEBE_RST                      0x00001000
+
+#define CCU_BSRR1_USBOTG_EN                     0x01000000
 
 //--------------------------------------------------------------------------------------
 //SD MMC settings
