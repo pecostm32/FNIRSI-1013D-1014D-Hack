@@ -40,7 +40,7 @@ typedef struct
   uint8  iProduct;
   uint8  iSerialNumber;
   uint8  bNumConfigurations;
-} __attribute__ ((packed)) USB_DeviceDescriptor_1;
+} __attribute__ ((packed)) USB_DeviceDescriptor;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -54,7 +54,7 @@ typedef struct
   uint8  iConfiguration;
   uint8  bmAttributes;
   uint8  MaxPower;
-} __attribute__ ((packed)) USB_ConfigDescriptor_1;
+} __attribute__ ((packed)) USB_ConfigDescriptor;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@ typedef struct
   uint8 bInterfaceSubClass;
   uint8 bInterfaceProtocol;
   uint8 iInterface;
-} __attribute__ ((packed)) USB_InterfaceDescriptor_1;
+} __attribute__ ((packed)) USB_InterfaceDescriptor;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -81,24 +81,24 @@ typedef struct
   uint8  bmAttributes;
   uint16 wMaxPacketSize;
   uint8  bInterval;
-} __attribute__ ((packed)) USB_EndPointDescriptor_1;
+} __attribute__ ((packed)) USB_EndPointDescriptor;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 typedef struct
 {
-  USB_ConfigDescriptor_1 configuration_descriptor;
-  USB_InterfaceDescriptor_1 interface_descritor;
-  USB_EndPointDescriptor_1 endpoint_descriptor[2];
+  USB_ConfigDescriptor    configuration_descriptor;
+  USB_InterfaceDescriptor interface_descritor;
+  USB_EndPointDescriptor  endpoint_descriptor[2];
 } __attribute__ ((packed)) Mass_Storage_Descriptor;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-#define CONFIG_MASS_STORAGE_DESCRIPTOR_LEN   (sizeof(USB_ConfigDescriptor_1) + sizeof(USB_InterfaceDescriptor_1) + (sizeof(USB_EndPointDescriptor_1) * 2))
+#define CONFIG_MASS_STORAGE_DESCRIPTOR_LEN   (sizeof(USB_ConfigDescriptor) + sizeof(USB_InterfaceDescriptor) + (sizeof(USB_EndPointDescriptor) * 2))
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-extern const USB_DeviceDescriptor_1 Mass_Storage_DevDesc;
+extern const USB_DeviceDescriptor Mass_Storage_DevDesc;
 
 extern const Mass_Storage_Descriptor Mass_Storage_ConfDesc;
 
@@ -183,7 +183,7 @@ typedef struct
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void usb_mass_storage_out_ep_callback(unsigned char *pdat, int len);
+void usb_mass_storage_out_ep_callback(void *fifo, int length);
 
 void usb_mass_storage_in_ep_callback(void);
 

@@ -30,9 +30,6 @@ int32 usb_ep0_state = EP0_IDLE;                  //0x8019D1E4
 
 int32 ep_max_len[3] = {64, 512, 512};
 
-uint8 usb_rx_buf[512];
-int32 usb_rx_buf_len = 0;
-int32 usb_rx_pos = 0;
 
 
 
@@ -517,7 +514,7 @@ void usb_device_irq_handler(void)
                       switch(usb_setup_packet.packet.wValue >> 8)
                       {
                         case DEVICE_DESCRIPTOR:
-                          ep0_data_length  = sizeof(USB_DeviceDescriptor_1);
+                          ep0_data_length  = sizeof(USB_DeviceDescriptor);
                           ep0_data_pointer = (uint8 *)&Mass_Storage_DevDesc;
                           break;
 
@@ -612,6 +609,7 @@ void usb_device_irq_handler(void)
 
                     case USB_REQ_SET_CONFIGURATION:
                       //This needs attention to allow for full speed host connection
+                      //Need to check if the double FIFO setup is needed. The rest of the code does not make use of it for as far as I can tell
                       //For the mass storage device two endpoints are used
                       //EP1 OUT for receiving data from the host
                       //EP1 IN for sending data to the host
@@ -792,13 +790,8 @@ void usb_device_irq_handler(void)
     //Check if there is data to handle
     if(*USBC_REG_RXCSR & USBC_BP_RXCSR_D_RX_PKT_READY)
     {
-      usb_rx_buf_len = *USBC_REG_RXCOUNT;
-
-      //Get the data from the FIFO
-      usb_read_from_fifo((void *)USBC_REG_EPFIFO1, usb_rx_buf, usb_rx_buf_len);
-
-      //Modify for msc handling
-      usb_mass_storage_out_ep_callback(usb_rx_buf, usb_rx_buf_len);
+      //Handle the received data in the mass storage code
+      usb_mass_storage_out_ep_callback((void *)USBC_REG_EPFIFO1, *USBC_REG_RXCOUNT);
 
       //Signal done with the packet and clear possible errors
       *USBC_REG_RXCSR &= ~(USBC_BP_RXCSR_D_RX_PKT_READY | USBC_BP_RXCSR_D_OVERRUN);
@@ -824,7 +817,7 @@ void usb_device_irq_handler(void)
     //Check if the FIFO is ready for more data
     if((*USBC_REG_TXCSR & USBC_BP_TXCSR_D_TX_READY) == 0)
     {
-      //Modify for msc here
+      //Have the mass storage code handle the request for data
       usb_mass_storage_in_ep_callback();
     }
   }

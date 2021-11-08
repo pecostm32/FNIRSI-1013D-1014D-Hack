@@ -19,8 +19,6 @@
 #include "sd_card_interface.h"
 #include "ff.h"
 
-#include "usb_dev.h"
-
 #include "usb_interface.h"
 
 #include "arm32.h"
