@@ -2,7 +2,6 @@
 
 #include "mass_storage_class.h"
 #include "sd_card_interface.h"
-#include "usb_interface.h"
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -113,7 +112,7 @@ const uint8 StringInterface[30] =
   0x63, 0x00, 0x6F, 0x00, 0x6E, 0x00, 0x66, 0x00, 0x69, 0x00, 0x67, 0x00, 
 };
 
-
+//----------------------------------------------------------------------------------------------------------------------------------
 
 const uint8 scsi_inquiry_string[36] =
 {
@@ -153,6 +152,59 @@ MSC_Status_Wrapper  scsi_csw;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+uint32 scsi_check_read10_write10(uint32 check)
+{
+  //Check on possible no data transfer
+  if(scsi_cbw.total_bytes == 0)
+  {
+    //Check on SCSI case 2 (Hn < Di) or case 3 (Hn < Do)
+    if(scsi_block_count)
+    {
+      //Signal an error
+      scsi_csw.status = MSC_CSW_STATUS_ERROR;
+    }
+  }
+  else
+  {
+    //Check if wrong direction specified (SCSI case 10 (Ho <> Di) or case 8 (Hi <> Do))
+    if((scsi_cbw.dir & 0x80) == check)
+    {
+      //Signal an error
+      scsi_csw.status = MSC_CSW_STATUS_ERROR;
+    }
+    //Check on SCSI case 4 (Hi > Dn) (READ10) or case 9 (Ho > Dn) (WRITE10)
+    else if(scsi_block_count == 0)
+    {
+      //Signal a fail
+      scsi_csw.status = MSC_CSW_STATUS_FAIL;
+    }
+    //Check on computed block size (SCSI case 7 (Hi < Di) (READ10) or case 13 (Ho < Do) (WRIT10))
+    else if((scsi_cbw.total_bytes / scsi_block_count) == 0)
+    {
+      //Signal an error
+      scsi_csw.status = MSC_CSW_STATUS_ERROR;
+    }
+  }
+
+  //Check if there is a fault condition
+  if(scsi_csw.status != MSC_CSW_STATUS_OK)
+  {
+    //Set data residue to total bytes since no data has been transfered yet
+    scsi_csw.data_residue = scsi_cbw.total_bytes;
+
+    //Send the error status
+    usb_write_ep1_data((void *)&scsi_csw, MSC_CSW_LENGTH);
+
+    //Signal there was an error
+    return(1);
+  }
+  
+  //Signal all is OK
+  return(0);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 void usb_mass_storage_out_ep_callback(void *fifo, int length)
 {
   //usb_handle_mass_storage_write in Ghidra
@@ -173,13 +225,24 @@ void usb_mass_storage_out_ep_callback(void *fifo, int length)
     //Handle the command given in the CBW
 
 
+  //In case of a command failure
+    //signal the failure status??                                                         (csw.status)
+    //need to determine how many bytes still need to be send (total_bytes - transfered??) (csw.data_residue)
+    //When there is still data that needs to be transfered the corresponding end point needs to be stalled (cbw.dir bit 7)
+  
+    //For the status there are two options, FAIL or ERROR
+    //FAIL is the most used one
+    //ERROR is in case the CBW states no data (total_bytes == 0) and the scsi command has a block count
+    //ERROR is also when the command is read10 and the CBW states write (dir == 0x00)
+    //ERROR is also when the command is write10 and the CBW states read (dir == 0x80)
+    //ERROR is when the CBW total_bytes / block_count is zero
+    //FAIL is when CBW states data while the block_count is zero
   
   //Handle host data based on the current state
   switch(msc_state)
   {
     case MSC_WAIT_COMMAND:
     {
-
       //LUN should be zero since this device only supports the single unit
 
       //The direction bit tells if the host will send data or the device needs to send data
@@ -223,9 +286,6 @@ void usb_mass_storage_out_ep_callback(void *fifo, int length)
               //Needs to be done here since the data needs to be ready before the in request is send from the host
               //Send the ok status
               usb_write_ep1_data((void *)&scsi_csw, MSC_CSW_LENGTH);
-
-              //Switch to wait for command state
-              msc_state = MSC_WAIT_COMMAND;
               break;
 
             case SCSI_CMD_READ_CAPACITY_10:
@@ -265,38 +325,43 @@ void usb_mass_storage_out_ep_callback(void *fifo, int length)
               //get the block count
               scsi_block_count = (scsi_cbw.command[7] << 8) | scsi_cbw.command[8];
 
-              //Need to handle possible error conditions here
-              //Check on cbw data transfer length
-              //check on scsi command length
-              //check on data direction
-
-              //Do a per block read and transfer
-              //Not really needed since it will fall through in the send action
-              if(scsi_block_count > 1)
+              //Check on errors
+              if(scsi_check_read10_write10(0x00) != 0)
               {
-                msc_state = MSC_SEND_DATA;
+                //Bail out when there is an error
+                break;
               }
-              else
-              {
-                msc_state = MSC_SEND_STATUS;
-              }
-
-              //Check if this can be done directly to the usb fifo
-              //Need to handle error conditions here too
-
+            
+              //Use the thumbnail buffer for the SCSI data
               scsi_data_in_ptr = (uint8 *)viewthumbnaildata;
 
+              //Check if more data than what fits the buffer
               if(scsi_block_count > SCSI_MAX_BLOCK_COUNT)
               {
+                //Limit to the max
                 scsi_available_blocks = SCSI_MAX_BLOCK_COUNT;
               }
               else
               {
+                //Otherwise just load them all
                 scsi_available_blocks = scsi_block_count;
               }
 
-              sd_card_read(scsi_start_lba, scsi_available_blocks, (uint8 *)scsi_data_in_ptr);
+              //Read the data from the card
+              //Need to handle error here. Need to calculate the size already done
+              if(sd_card_read(scsi_start_lba, scsi_available_blocks, (uint8 *)scsi_data_in_ptr) != SD_OK)
+              {
+                //When the SD card fails send a FAIL
+                scsi_csw.status = MSC_CSW_STATUS_FAIL;
 
+                //Calculate the residual data length
+                scsi_csw.data_residue = scsi_block_count * 512; 
+                
+                //Send the status
+                usb_write_ep1_data((void *)&scsi_csw, MSC_CSW_LENGTH);
+              }
+
+              //Write the first block to the FIFO
               usb_write_ep1_data((void *)scsi_data_in_ptr, cardsectorsize);
 
               //One full buffer done
@@ -310,6 +375,9 @@ void usb_mass_storage_out_ep_callback(void *fifo, int length)
 
               //Already one block done
               scsi_available_blocks--;
+              
+              //Switch to the send data state
+              msc_state = MSC_SEND_DATA;
               break;
 
 
@@ -321,6 +389,13 @@ void usb_mass_storage_out_ep_callback(void *fifo, int length)
               //get the block count
               scsi_block_count = (scsi_cbw.command[7] << 8) | scsi_cbw.command[8];
 
+              //Check on errors
+              if(scsi_check_read10_write10(0x80) != 0)
+              {
+                //Bail out when there is an error
+                break;
+              }
+              
               //Need the number of bytes to receive
               scsi_byte_count = scsi_block_count * 512;
               scsi_bytes_received = 0;
@@ -331,6 +406,14 @@ void usb_mass_storage_out_ep_callback(void *fifo, int length)
 
               //Next out transaction holds the payload data
               msc_state = MSC_RECEIVE_DATA;
+              break;
+              
+            default:
+              //For unsupported commands send a FAIL
+              scsi_csw.status = MSC_CSW_STATUS_FAIL;
+              
+              //Send the status
+              usb_write_ep1_data((void *)&scsi_csw, MSC_CSW_LENGTH);
               break;
           }
         }
@@ -366,7 +449,7 @@ void usb_mass_storage_out_ep_callback(void *fifo, int length)
         //Need to determine here if this was the last data
         if(length >= scsi_byte_count)
         {
-          //Last payload data received so write it to the card and switch to status state
+          //Last payload data received so write it to the card and send the status
           //Get the number of sectors to write to the card to free the buffer
           uint32 sectors = scsi_bytes_received / 512;
           uint32 bytesdone = sectors * 512;
@@ -378,9 +461,12 @@ void usb_mass_storage_out_ep_callback(void *fifo, int length)
             sectors++;
           }
           
-          //Need to handle errors here!!!!!
-          //Need to write the data to the card
-          sd_card_write(scsi_start_lba, sectors, (uint8 *)viewthumbnaildata);
+          //Write the data to the card and check on errors
+          if(sd_card_write(scsi_start_lba, sectors, (uint8 *)viewthumbnaildata) != SD_OK)
+          {
+            //When there is an error signal it to the host
+            scsi_csw.status = MSC_CSW_STATUS_FAIL;
+          }
           
           //Next action is send the status to the host
           usb_write_ep1_data((void *)&scsi_csw, MSC_CSW_LENGTH);
@@ -403,11 +489,18 @@ void usb_mass_storage_out_ep_callback(void *fifo, int length)
         uint32 sectors = scsi_bytes_received / 512;
         uint32 bytesdone = sectors * 512;
         
+        //Start on the beginning of the buffer
         scsi_data_in_ptr = (uint8 *)viewthumbnaildata;
         
-        //Need to handle errors here!!!!!
-        //Need to write the data to the card
-        sd_card_write(scsi_start_lba, sectors, (uint8 *)scsi_data_in_ptr);
+        //Write the data to the card and check on errors
+        if(sd_card_write(scsi_start_lba, sectors, (uint8 *)scsi_data_in_ptr) != SD_OK)
+        {
+          //When there is an error signal it to the host
+          scsi_csw.status = MSC_CSW_STATUS_FAIL;
+            
+          //Calculate the residual data length
+          scsi_csw.data_residue = scsi_cbw.total_bytes - scsi_bytes_received; 
+        }
         
         //Point to next logical block address to write to
         scsi_start_lba += sectors;
@@ -476,9 +569,15 @@ void usb_mass_storage_in_ep_callback(void)
             scsi_available_blocks = scsi_block_count;
           }
           
-          //Need to handle errors here!!!!!!
-          //Read the next block if needed
-          sd_card_read(scsi_start_lba, scsi_available_blocks, (uint8 *)scsi_data_in_ptr);
+          //Read the next block as needed and check on errors
+          if(sd_card_read(scsi_start_lba, scsi_available_blocks, (uint8 *)scsi_data_in_ptr) != SD_OK)
+          {
+            //When there is an error signal it to the host
+            scsi_csw.status = MSC_CSW_STATUS_FAIL;
+
+            //Calculate the residual data length
+            scsi_csw.data_residue = scsi_block_count * 512; 
+          }
           
           //One full buffer done
           scsi_block_count -= scsi_available_blocks;

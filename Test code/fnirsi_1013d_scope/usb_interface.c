@@ -10,12 +10,6 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-//Rename the defines to be better readable!!!
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-//void usb_irq_handle(void);
-
 void usb_device_irq_handler(void);
 
 void usb_mass_storage_standard_request(void *dat);
@@ -24,20 +18,14 @@ int32 usb_device_write_data_ep_pack(int32 ep, uint8 * databuf, int32 len);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-uint8 current_speed = USB_SPEED_UNKNOWN;         //0x8019D1DC  ??
-uint32 usb_connect = 0;                          //0x8019D1E0  ??
-int32 usb_ep0_state = EP0_IDLE;                  //0x8019D1E4
-
-int32 ep_max_len[3] = {64, 512, 512};
-
-
-
+uint8 current_speed = USB_SPEED_UNKNOWN;
+uint32 usb_connect = 0;
+int32 usb_ep0_state = EP0_IDLE;
 
 extern volatile uint32 msc_state;
 
 volatile uint32 usb_set_faddr = 0;
 volatile uint32 usb_faddr = 0;
-
 
 volatile uint32  ep0_data_length = 0;
 volatile uint8  *ep0_data_pointer;
@@ -99,10 +87,10 @@ void usb_device_init(void)
   //Regulation 45 ohms
   usb_phy_setup(0x0c, 0x01, 1);
 
-  //adjust PHY's magnitude and rate
+  //Adjust PHY's magnitude and rate
   usb_phy_setup(0x20, 0x14, 5);
 
-  //threshold adjustment disconnect
+  //Threshold adjustment disconnect
   usb_phy_setup(0x2a, 3, 2);
   
   //Configurate the FIFO base
@@ -118,7 +106,6 @@ void usb_device_init(void)
   usb_device_disable();
   
   //Setup the interrupt handler for the USB interface
-  //setup_interrupt(USB_IRQ_NUM, usb_irq_handle, 2);
   setup_interrupt(USB_IRQ_NUM, usb_device_irq_handler, 2);
 }
 
@@ -435,14 +422,14 @@ void usb_device_irq_handler(void)
       //Check the speed negotiated by the host
       if(*USBC_REG_PCTL & USBC_BP_POWER_D_HIGH_SPEED_FLAG)
       {
-        //Only need to do this for one endpoint
         current_speed = USB_SPEED_HIGH;
-        ep_max_len[1] = 512;
       }
       else
       {
+        //Things will fail for low speed due to the end point size not being adjusted
+        //Think it would also need a different device descriptor or configuration
+        //Question is how big is the change it will be connected to a full speed only device
         current_speed = USB_SPEED_FULL;
-        ep_max_len[1] = 64;
       }
     }
     
@@ -625,6 +612,8 @@ void usb_device_irq_handler(void)
                       *USBC_REG_RXCSR = USBC_BP_RXCSR_D_FLUSH_FIFO;
                         
                       //Max 512 bytes per transaction
+                      //This setting is dependent on the negotiated device speed
+                      //Needs extra code to cope with that
                       *USBC_REG_RXMAXP = 512;
     
                       //The FIFO size is set based on 2^n * 8, so for 512 bytes it is 6
@@ -642,6 +631,8 @@ void usb_device_irq_handler(void)
                       *USBC_REG_TXCSR = USBC_BP_TXCSR_D_FLUSH_FIFO;
 
                       //Max 512 bytes per transaction
+                      //This setting is dependent on the negotiated device speed
+                      //Needs extra code to cope with that
                       *USBC_REG_TXMAXP = 512;
 
                       //The FIFO size is set based on 2^n * 8, so for 512 bytes it is 6
@@ -654,9 +645,6 @@ void usb_device_irq_handler(void)
                       //Enable the endpoint interrupts
                       *USBC_REG_INTRXE |= USBC_INTRX_FLAG_EP1;
                       *USBC_REG_INTTXE |= USBC_INTTX_FLAG_EP1;
-  
-                      //The sizes used here should be based on the negotiated speed to be correct
-                      ep_max_len[1] = 512;
   
                       //Clear the SCSI state to wait for command
                       msc_state = MSC_WAIT_COMMAND;

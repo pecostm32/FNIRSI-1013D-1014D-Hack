@@ -7,90 +7,7 @@
 
 #include "types.h"
 #include "variables.h"
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-#define DEVICE_DESCRIPTOR                      1
-#define CONFIGURATION_DESCRIPTOR               2
-#define STRING_DESCRIPTOR                      3
-#define INTERFACE_DESCRIPTOR                   4
-#define ENDPOINT_DESCRIPTOR                    5
-#define DEVICE_QUALIFIER_DESCRIPTOR            6
-#define OTHER_SPEED_CONFIGURATION_DESCRIPTOR   7
-#define INTERFACE_POWER1_DESCRIPTOR            8
-#define INTERFACE_ASSOC_DESCRIPTOR            11
-#define HID_DESCRIPTOR_TYPE                   33
-#define REPORT_DESCRIPTOR                     34
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-typedef struct
-{
-  uint8  bLength;
-  uint8  bDescriptorType;
-  uint16 bcdUSB;
-  uint8  bDeviceClass;
-  uint8  bDeviceSubClass;
-  uint8  bDeviceProtocol;
-  uint8  bMaxPacketSize0;
-  uint16 idVendor;
-  uint16 idProduct;
-  uint16 bcdDevice;
-  uint8  iManufacturer;
-  uint8  iProduct;
-  uint8  iSerialNumber;
-  uint8  bNumConfigurations;
-} __attribute__ ((packed)) USB_DeviceDescriptor;
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-typedef struct
-{
-  uint8  bLength;
-  uint8  bDescriptorType;
-  uint16 wTotalLength;
-  uint8  bNumInterfaces;
-  uint8  bConfigurationValue;
-  uint8  iConfiguration;
-  uint8  bmAttributes;
-  uint8  MaxPower;
-} __attribute__ ((packed)) USB_ConfigDescriptor;
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-typedef struct
-{
-  uint8 bLength;
-  uint8 bDescriptorType;
-  uint8 bInterfaceNumber;
-  uint8 bAlternateSetting;
-  uint8 bNumEndpoints;
-  uint8 bInterfaceClass;
-  uint8 bInterfaceSubClass;
-  uint8 bInterfaceProtocol;
-  uint8 iInterface;
-} __attribute__ ((packed)) USB_InterfaceDescriptor;
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-typedef struct
-{
-  uint8  bLegth;
-  uint8  bDescriptorType;
-  uint8  bEndpointAddress;
-  uint8  bmAttributes;
-  uint16 wMaxPacketSize;
-  uint8  bInterval;
-} __attribute__ ((packed)) USB_EndPointDescriptor;
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-typedef struct
-{
-  USB_ConfigDescriptor    configuration_descriptor;
-  USB_InterfaceDescriptor interface_descritor;
-  USB_EndPointDescriptor  endpoint_descriptor[2];
-} __attribute__ ((packed)) Mass_Storage_Descriptor;
+#include "usb_interface.h"
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -117,28 +34,27 @@ extern const uint8 scsi_sense_data[4];
 #define MSC_RECEIVE_DATA            2
 #define MSC_SEND_STATUS             3
 
-
+//----------------------------------------------------------------------------------------------------------------------------------
 
 #define MSC_CSW_STATUS_OK           0
 #define MSC_CSW_STATUS_FAIL         1
 #define MSC_CSW_STATUS_ERROR        2
 
+//----------------------------------------------------------------------------------------------------------------------------------
 
 #define MSC_CBW_LENGTH              31
 #define MSC_CSW_LENGTH              13
 
-
+//----------------------------------------------------------------------------------------------------------------------------------
 
 #define MSC_CBW_SIGNATURE           0x43425355
 #define MSC_CSW_SIGNATURE           0x53425355
-
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 #define SCSI_MAX_BLOCK_COUNT        (VIEW_THUMBNAIL_DATA_SIZE / 512)
 
 //----------------------------------------------------------------------------------------------------------------------------------
-
 
 #define SCSI_CMD_TEST_UNIT_READY                0x00
 
@@ -164,13 +80,13 @@ extern const uint8 scsi_sense_data[4];
 
 typedef struct
 {
-  uint32 signature;    //Signature that helps identify this data packet as a CBW. The signature field shall contain the value 43425355h (little endian), indicating a CBW.
-  uint32 tag;          //Tag sent by the host. The device shall echo the contents of this field back to the host in the dCSWTagfield of the associated CSW.
-  uint32 total_bytes;  //The number of bytes of data that the host expects to transfer on the Bulk-In or Bulk-Out endpoint (as indicated by the Direction bit) during the execution of this command.
-  uint8  dir;          //Bit 7 of this field define transfer direction 0: Data-Out from host to the device. 1: Data-In from the device to the host.
-  uint8  lun;          //The device Logical Unit Number (LUN) to which the command block is being sent.
-  uint8  cmd_len;      //The valid length of the CBWCBin bytes. This defines the valid length of the command block. The only legal values are 1 through 16
-  uint8  command[16];  //The command block to be executed by the device.
+  uint32 signature;     //Signature that helps identify this data packet as a CBW. The signature field shall contain the value 43425355h (little endian), indicating a CBW.
+  uint32 tag;           //Tag sent by the host. The device shall echo the contents of this field back to the host in the dCSWTagfield of the associated CSW.
+  uint32 total_bytes;   //The number of bytes of data that the host expects to transfer on the Bulk-In or Bulk-Out endpoint (as indicated by the Direction bit) during the execution of this command.
+  uint8  dir;           //Bit 7 of this field define transfer direction 0: Data-Out from host to the device. 1: Data-In from the device to the host.
+  uint8  lun;           //The device Logical Unit Number (LUN) to which the command block is being sent.
+  uint8  cmd_len;       //The valid length of the CBWCBin bytes. This defines the valid length of the command block. The only legal values are 1 through 16
+  uint8  command[16];   //The command block to be executed by the device.
 } __attribute__ ((packed)) MSC_Command_Wrapper;
 
 typedef struct

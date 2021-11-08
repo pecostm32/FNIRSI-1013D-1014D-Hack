@@ -247,6 +247,89 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+#define DEVICE_DESCRIPTOR                      1
+#define CONFIGURATION_DESCRIPTOR               2
+#define STRING_DESCRIPTOR                      3
+#define INTERFACE_DESCRIPTOR                   4
+#define ENDPOINT_DESCRIPTOR                    5
+#define DEVICE_QUALIFIER_DESCRIPTOR            6
+#define OTHER_SPEED_CONFIGURATION_DESCRIPTOR   7
+#define INTERFACE_POWER1_DESCRIPTOR            8
+#define INTERFACE_ASSOC_DESCRIPTOR            11
+#define HID_DESCRIPTOR_TYPE                   33
+#define REPORT_DESCRIPTOR                     34
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+typedef struct
+{
+  uint8  bLength;
+  uint8  bDescriptorType;
+  uint16 bcdUSB;
+  uint8  bDeviceClass;
+  uint8  bDeviceSubClass;
+  uint8  bDeviceProtocol;
+  uint8  bMaxPacketSize0;
+  uint16 idVendor;
+  uint16 idProduct;
+  uint16 bcdDevice;
+  uint8  iManufacturer;
+  uint8  iProduct;
+  uint8  iSerialNumber;
+  uint8  bNumConfigurations;
+} __attribute__ ((packed)) USB_DeviceDescriptor;
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+typedef struct
+{
+  uint8  bLength;
+  uint8  bDescriptorType;
+  uint16 wTotalLength;
+  uint8  bNumInterfaces;
+  uint8  bConfigurationValue;
+  uint8  iConfiguration;
+  uint8  bmAttributes;
+  uint8  MaxPower;
+} __attribute__ ((packed)) USB_ConfigDescriptor;
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+typedef struct
+{
+  uint8 bLength;
+  uint8 bDescriptorType;
+  uint8 bInterfaceNumber;
+  uint8 bAlternateSetting;
+  uint8 bNumEndpoints;
+  uint8 bInterfaceClass;
+  uint8 bInterfaceSubClass;
+  uint8 bInterfaceProtocol;
+  uint8 iInterface;
+} __attribute__ ((packed)) USB_InterfaceDescriptor;
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+typedef struct
+{
+  uint8  bLegth;
+  uint8  bDescriptorType;
+  uint8  bEndpointAddress;
+  uint8  bmAttributes;
+  uint16 wMaxPacketSize;
+  uint8  bInterval;
+} __attribute__ ((packed)) USB_EndPointDescriptor;
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+typedef struct
+{
+  USB_ConfigDescriptor    configuration_descriptor;
+  USB_InterfaceDescriptor interface_descritor;
+  USB_EndPointDescriptor  endpoint_descriptor[2];
+} __attribute__ ((packed)) Mass_Storage_Descriptor;
+
+//----------------------------------------------------------------------------------------------------------------------------------
 
 typedef struct
 {
