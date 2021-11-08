@@ -26,9 +26,6 @@
       <itemPath>timer.h</itemPath>
       <itemPath>touchpanel.h</itemPath>
       <itemPath>types.h</itemPath>
-      <itemPath>usb.h</itemPath>
-      <itemPath>usb_bsp.h</itemPath>
-      <itemPath>usb_dev.h</itemPath>
       <itemPath>usb_interface.h</itemPath>
       <itemPath>variables.h</itemPath>
     </logicalFolder>
@@ -54,6 +51,7 @@
       <itemPath>fpga_control.c</itemPath>
       <itemPath>icons.c</itemPath>
       <itemPath>interrupt.c</itemPath>
+      <itemPath>mass_storage_class.c</itemPath>
       <itemPath>memcmp.s</itemPath>
       <itemPath>memcpy.s</itemPath>
       <itemPath>memmove.s</itemPath>
@@ -67,12 +65,7 @@
       <itemPath>statemachine.c</itemPath>
       <itemPath>timer.c</itemPath>
       <itemPath>touchpanel.c</itemPath>
-      <itemPath>usb_dev.c</itemPath>
       <itemPath>usb_interface.c</itemPath>
-      <itemPath>usb_mass_storage.c</itemPath>
-      <itemPath>usbc.c</itemPath>
-      <itemPath>usbc_dev.c</itemPath>
-      <itemPath>usbc_phy.c</itemPath>
       <itemPath>variables.c</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
@@ -169,6 +162,8 @@
       </item>
       <item path="interrupt.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="mass_storage_class.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="mass_storage_class.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="memcmp.s" ex="false" tool="4" flavor2="0">
@@ -215,25 +210,9 @@
       </item>
       <item path="types.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="usb.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="usb_bsp.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="usb_dev.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="usb_dev.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="usb_interface.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="usb_interface.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="usb_mass_storage.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="usbc.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="usbc_dev.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="usbc_phy.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="variables.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -320,6 +299,8 @@
       </item>
       <item path="interrupt.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="mass_storage_class.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="mass_storage_class.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="memcmp.s" ex="false" tool="4" flavor2="0">
@@ -366,25 +347,9 @@
       </item>
       <item path="types.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="usb.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="usb_bsp.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="usb_dev.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="usb_dev.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="usb_interface.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="usb_interface.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="usb_mass_storage.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="usbc.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="usbc_dev.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="usbc_phy.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="variables.c" ex="false" tool="0" flavor2="0">
       </item>

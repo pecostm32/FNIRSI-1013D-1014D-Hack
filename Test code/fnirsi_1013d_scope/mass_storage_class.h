@@ -10,6 +10,108 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+#define DEVICE_DESCRIPTOR                      1
+#define CONFIGURATION_DESCRIPTOR               2
+#define STRING_DESCRIPTOR                      3
+#define INTERFACE_DESCRIPTOR                   4
+#define ENDPOINT_DESCRIPTOR                    5
+#define DEVICE_QUALIFIER_DESCRIPTOR            6
+#define OTHER_SPEED_CONFIGURATION_DESCRIPTOR   7
+#define INTERFACE_POWER1_DESCRIPTOR            8
+#define INTERFACE_ASSOC_DESCRIPTOR            11
+#define HID_DESCRIPTOR_TYPE                   33
+#define REPORT_DESCRIPTOR                     34
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+typedef struct
+{
+  uint8  bLength;
+  uint8  bDescriptorType;
+  uint16 bcdUSB;
+  uint8  bDeviceClass;
+  uint8  bDeviceSubClass;
+  uint8  bDeviceProtocol;
+  uint8  bMaxPacketSize0;
+  uint16 idVendor;
+  uint16 idProduct;
+  uint16 bcdDevice;
+  uint8  iManufacturer;
+  uint8  iProduct;
+  uint8  iSerialNumber;
+  uint8  bNumConfigurations;
+} __attribute__ ((packed)) USB_DeviceDescriptor_1;
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+typedef struct
+{
+  uint8  bLength;
+  uint8  bDescriptorType;
+  uint16 wTotalLength;
+  uint8  bNumInterfaces;
+  uint8  bConfigurationValue;
+  uint8  iConfiguration;
+  uint8  bmAttributes;
+  uint8  MaxPower;
+} __attribute__ ((packed)) USB_ConfigDescriptor_1;
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+typedef struct
+{
+  uint8 bLength;
+  uint8 bDescriptorType;
+  uint8 bInterfaceNumber;
+  uint8 bAlternateSetting;
+  uint8 bNumEndpoints;
+  uint8 bInterfaceClass;
+  uint8 bInterfaceSubClass;
+  uint8 bInterfaceProtocol;
+  uint8 iInterface;
+} __attribute__ ((packed)) USB_InterfaceDescriptor_1;
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+typedef struct
+{
+  uint8  bLegth;
+  uint8  bDescriptorType;
+  uint8  bEndpointAddress;
+  uint8  bmAttributes;
+  uint16 wMaxPacketSize;
+  uint8  bInterval;
+} __attribute__ ((packed)) USB_EndPointDescriptor_1;
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+typedef struct
+{
+  USB_ConfigDescriptor_1 configuration_descriptor;
+  USB_InterfaceDescriptor_1 interface_descritor;
+  USB_EndPointDescriptor_1 endpoint_descriptor[2];
+} __attribute__ ((packed)) Mass_Storage_Descriptor;
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+#define CONFIG_MASS_STORAGE_DESCRIPTOR_LEN   (sizeof(USB_ConfigDescriptor_1) + sizeof(USB_InterfaceDescriptor_1) + (sizeof(USB_EndPointDescriptor_1) * 2))
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+extern const USB_DeviceDescriptor_1 Mass_Storage_DevDesc;
+
+extern const Mass_Storage_Descriptor Mass_Storage_ConfDesc;
+
+extern const uint8 StringLangID[4];
+extern const uint8 StringVendor[62];
+extern const uint8 StringProduct[38];
+extern const uint8 StringSerial[30];
+extern const uint8 StringInterface[30];
+extern const uint8 scsi_inquiry_string[36];
+extern const uint8 scsi_sense_data[4];
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 #define MSC_WAIT_COMMAND            0
 #define MSC_SEND_DATA               1
 #define MSC_RECEIVE_DATA            2
@@ -78,6 +180,12 @@ typedef struct
   uint32 data_residue;  //For Data-Out the device shall report in the dCSWDataResiduethe difference between the amount of data expected as stated in the dCBWDataTransferLength, and the actual amount of data processed by the device.
   uint8  status;        //Indicates the success or failure of the command.
 } __attribute__ ((packed)) MSC_Status_Wrapper;
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void usb_mass_storage_out_ep_callback(unsigned char *pdat, int len);
+
+void usb_mass_storage_in_ep_callback(void);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

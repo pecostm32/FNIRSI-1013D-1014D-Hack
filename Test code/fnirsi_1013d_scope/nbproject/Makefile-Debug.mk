@@ -50,6 +50,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/fpga_control.o \
 	${OBJECTDIR}/icons.o \
 	${OBJECTDIR}/interrupt.o \
+	${OBJECTDIR}/mass_storage_class.o \
 	${OBJECTDIR}/memcmp.o \
 	${OBJECTDIR}/memcpy.o \
 	${OBJECTDIR}/memmove.o \
@@ -63,12 +64,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/statemachine.o \
 	${OBJECTDIR}/timer.o \
 	${OBJECTDIR}/touchpanel.o \
-	${OBJECTDIR}/usb_dev.o \
 	${OBJECTDIR}/usb_interface.o \
-	${OBJECTDIR}/usb_mass_storage.o \
-	${OBJECTDIR}/usbc.o \
-	${OBJECTDIR}/usbc_dev.o \
-	${OBJECTDIR}/usbc_phy.o \
 	${OBJECTDIR}/variables.o
 
 
@@ -171,6 +167,11 @@ ${OBJECTDIR}/interrupt.o: interrupt.c
 	${RM} "$@.d"
 	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/interrupt.o interrupt.c
 
+${OBJECTDIR}/mass_storage_class.o: mass_storage_class.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/mass_storage_class.o mass_storage_class.c
+
 ${OBJECTDIR}/memcmp.o: memcmp.s
 	${MKDIR} -p ${OBJECTDIR}
 	$(AS) $(ASFLAGS) -g -o ${OBJECTDIR}/memcmp.o memcmp.s
@@ -231,35 +232,10 @@ ${OBJECTDIR}/touchpanel.o: touchpanel.c
 	${RM} "$@.d"
 	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/touchpanel.o touchpanel.c
 
-${OBJECTDIR}/usb_dev.o: usb_dev.c
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} "$@.d"
-	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/usb_dev.o usb_dev.c
-
 ${OBJECTDIR}/usb_interface.o: usb_interface.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/usb_interface.o usb_interface.c
-
-${OBJECTDIR}/usb_mass_storage.o: usb_mass_storage.c
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} "$@.d"
-	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/usb_mass_storage.o usb_mass_storage.c
-
-${OBJECTDIR}/usbc.o: usbc.c
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} "$@.d"
-	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/usbc.o usbc.c
-
-${OBJECTDIR}/usbc_dev.o: usbc_dev.c
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} "$@.d"
-	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/usbc_dev.o usbc_dev.c
-
-${OBJECTDIR}/usbc_phy.o: usbc_phy.c
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} "$@.d"
-	$(COMPILE.c) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/usbc_phy.o usbc_phy.c
 
 ${OBJECTDIR}/variables.o: variables.c
 	${MKDIR} -p ${OBJECTDIR}
