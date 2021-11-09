@@ -21,6 +21,10 @@
 
 #include <string.h>
 
+
+#include <stdio.h>
+#include <stdlib.h>
+
 //----------------------------------------------------------------------------------------------------------------------------------
 
 DISPLAYDATA displaydata;
@@ -103,6 +107,66 @@ void display_save_screen_buffer(void)
 void display_restore_screen_buffer(void)
 {
   displaydata.screenbuffer = displaydata.savebuffer;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_set_fg_y_gradient(uint16 *buffer, uint32 ystart, uint32 yend, uint32 startcolor, uint32 endcolor)
+{
+  uint32 y,ys,ye;
+  int32  rs,re,gs,ge,bs,be;
+  int32  rd,gd,bd,yd;
+  
+  //Set the buffer pointer for the gradient
+  displaydata.ygradient = buffer;
+
+  //Determine the lowest x for start point
+  if(ystart < yend)
+  {
+    //Use the coordinates as is
+    ys = ystart;
+    ye = yend;
+  }
+  else
+  {
+    //Swap start and end
+    ys = yend;
+    ye = ystart;
+  }
+  
+  //Make sure yend is in range of the screen
+  if(ye > displaydata.height)
+  {
+    ye = displaydata.height;
+  }
+  
+  //Calculate the y delta
+  yd = ye - ys;
+  
+  //Get individual color bytes in the msb minus one bit
+  rs = (startcolor <<  7) & 0x7F800000;
+  re = (endcolor   <<  7) & 0x7F800000;
+  gs = (startcolor << 15) & 0x7F800000;
+  ge = (endcolor   << 15) & 0x7F800000;
+  bs = (startcolor << 23) & 0x7F800000;
+  be = (endcolor   << 23) & 0x7F800000;
+  
+  //Calculate the integer color steps. Can be negative.
+  rd = (re - rs) / yd;
+  gd = (ge - gs) / yd;
+  bd = (be - bs) / yd;
+  
+  //Process the gradient in a loop and set a color for each entry in range of ystart and yend
+  for(y=ys;y<=ye;y++)
+  {
+    //Set the current color
+    buffer[y] = ((rs & 0x7C000000) >> 15) | ((gs & 0x7C000000) >> 20) | ((bs & 0x7C000000) >> 26);
+    
+    //Calculate the next color elements
+    rs += rd;
+    gs += gd;
+    bs += bd;
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -1118,6 +1182,62 @@ void display_copy_icon_fg_color(const uint8 *icon, uint32 xpos, uint32 ypos, uin
       {
         //When on use the foreground color
         ptr[pixel] = displaydata.fg_color;
+      }
+      
+      //Select next pixel
+      pixel++;
+      
+      //Check if pixel on multiple of 8 for next byte select
+      if((pixel & 0x07) == 0)
+      {
+        //Point to the next byte
+        idx++;
+    
+        //And get the data for it
+        pixeldata = icon[idx];
+      }
+    }
+
+    //Point to the next line of pixels in the destination
+    ptr += pixels;
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_copy_icon_fg_color_y_gradient(const uint8 *icon, uint32 xpos, uint32 ypos, uint32 width, uint32 height)
+{
+  register uint16 *ptr;
+  register uint32  line;
+  register uint32  pixel;
+  register uint32  idx;
+  register uint32  pixeldata;
+  register uint32  bytesperrow = (width + 7) / 8;
+  register uint32  pixels = displaydata.pixelsperline;
+  
+  //Setup destination pointer
+  ptr = displaydata.screenbuffer + xpos + (ypos * pixels);
+  
+  //Copy the needed lines
+  for(line=0;line<height;line++)
+  {
+    //Point the icon start byte for this line
+    idx = line * bytesperrow;
+    
+    //Get the data for per bit handling
+    pixeldata = icon[idx];
+    
+    //Copy a single line to the destination buffer
+    for(pixel=0;pixel<width;)
+    {
+      //Select the pixel to check
+      pixeldata <<= 1;
+      
+      //Copy one pixel at a time with a check on being on
+      if(pixeldata & 0x0100)
+      {
+        //When on use the foreground gradient
+        ptr[pixel] = displaydata.ygradient[ypos+line];
       }
       
       //Select next pixel

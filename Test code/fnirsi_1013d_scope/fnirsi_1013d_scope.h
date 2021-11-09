@@ -104,7 +104,7 @@ struct tagScopeSettings
 #define SCREEN_WIDTH    800
 #define SCREEN_HEIGHT   480
 
-#define SCREEN_SIZE     (SCREEN_WIDTH * SCREEN_WIDTH)
+#define SCREEN_SIZE     (SCREEN_WIDTH * SCREEN_HEIGHT)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

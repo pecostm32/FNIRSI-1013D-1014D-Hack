@@ -24,6 +24,7 @@ struct tagDisplayData
   PFONTDATA  font;
   uint16     fg_color;
   uint16     bg_color;
+  uint16    *ygradient;            //Buffer for holding a y gradient. Needs full y dimension to work
   uint16    *screenbuffer;
   uint16    *sourcebuffer;         //For copy to screen or slide function the source from where to get the data from
   uint16    *destbuffer;           //For copy from screen the destination where to put the data
@@ -49,6 +50,8 @@ void display_set_destination_buffer(uint16 *buffer);
 
 void display_save_screen_buffer(void);
 void display_restore_screen_buffer(void);
+
+void display_set_fg_y_gradient(uint16 *buffer, uint32 ystart, uint32 yend, uint32 startcolor, uint32 endcolor);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -83,6 +86,7 @@ void display_copy_rect_to_screen(uint32 xpos, uint32 ypos, uint32 width, uint32 
 
 void display_copy_icon_use_colors(const uint8 *icon, uint32 xpos, uint32 ypos, uint32 width, uint32 height);
 void display_copy_icon_fg_color(const uint8 *icon, uint32 xpos, uint32 ypos, uint32 width, uint32 height);
+void display_copy_icon_fg_color_y_gradient(const uint8 *icon, uint32 xpos, uint32 ypos, uint32 width, uint32 height);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

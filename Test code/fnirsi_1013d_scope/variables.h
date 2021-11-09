@@ -332,6 +332,8 @@ extern uint32 maindisplaybuffer[SCREEN_SIZE / 2];
 extern uint16 displaybuffer1[SCREEN_SIZE];
 extern uint16 displaybuffer2[SCREEN_SIZE];
 
+extern uint16 gradientbuffer[SCREEN_HEIGHT];
+
 //----------------------------------------------------------------------------------------------------------------------------------
 //Fonts
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -364,6 +366,14 @@ extern const uint8 select_sign_icon[];
 extern const uint8 waste_bin_icon[];
 extern const uint8 previous_picture_icon[];
 extern const uint8 next_picture_icon[];
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+extern const uint8 letter_c_icon[];
+extern const uint8 letter_e_icon[];
+extern const uint8 letter_o_icon[];
+extern const uint8 letter_p_icon[];
+extern const uint8 letter_s_icon[];
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

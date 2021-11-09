@@ -74,7 +74,7 @@ int main(void)
   
   //Setup the display library for the scope hardware
   scope_setup_display_lib();
-
+  
   //Setup the touch panel interface
   tp_i2c_setup();
 
@@ -97,6 +97,13 @@ int main(void)
     //On error just hang
     while(1);
   }
+  
+//Just to test it displaying of the new startup screen  
+//  fpga_set_backlight_brightness(0xEA60);
+//  scope_draw_startup_screen();
+  
+//  while(1);
+  
   
   //In the original code there is some hardware check function here. Actions are not performed unless some data in the FLASH is not set
   //This tests the basic hardware and verifies the touch panel
