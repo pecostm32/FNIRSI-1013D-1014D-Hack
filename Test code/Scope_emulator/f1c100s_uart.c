@@ -12,7 +12,7 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //UART0 control registers
-void *F1C100sUART0(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
+void *F1C100sUART0(PARMV5TL_CORE core, uint32_t address, uint32_t mode)
 {
   //Call the SPI handler with the registers for SPI0
   return(F1C100sUART(&core->f1c100s_uart[0], address, mode));
@@ -20,7 +20,7 @@ void *F1C100sUART0(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //UART0 control registers read
-void F1C100sUART0Read(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
+void F1C100sUART0Read(PARMV5TL_CORE core, uint32_t address, uint32_t mode)
 {
   //Call the SPI read handler with the registers for SPI0
   F1C100sUARTRead(&core->f1c100s_uart[0], address, mode);
@@ -28,7 +28,7 @@ void F1C100sUART0Read(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //UART0 control registers write
-void F1C100sUART0Write(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
+void F1C100sUART0Write(PARMV5TL_CORE core, uint32_t address, uint32_t mode)
 {
   //Call the SPI write handler with the registers for SPI0
   F1C100sUARTWrite(&core->f1c100s_uart[0], address, mode);
@@ -36,7 +36,7 @@ void F1C100sUART0Write(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //UART control registers
-void *F1C100sUART(F1C100S_UART *registers, u_int32_t address, u_int32_t mode)
+void *F1C100sUART(F1C100S_UART *registers, uint32_t address, uint32_t mode)
 {
   F1C100S_MEMORY *ptr = NULL;
   
@@ -129,7 +129,7 @@ void *F1C100sUART(F1C100S_UART *registers, u_int32_t address, u_int32_t mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //UART control registers read
-void F1C100sUARTRead(F1C100S_UART *registers, u_int32_t address, u_int32_t mode)
+void F1C100sUARTRead(F1C100S_UART *registers, uint32_t address, uint32_t mode)
 {
   //Select the target register based on word address
   switch(address & 0x00000FFC)
@@ -184,7 +184,7 @@ void F1C100sUARTRead(F1C100S_UART *registers, u_int32_t address, u_int32_t mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //UART control registers write
-void F1C100sUARTWrite(F1C100S_UART *registers, u_int32_t address, u_int32_t mode)
+void F1C100sUARTWrite(F1C100S_UART *registers, uint32_t address, uint32_t mode)
 {
   //Select the target register based on word address
   switch(address & 0x00000FFC)

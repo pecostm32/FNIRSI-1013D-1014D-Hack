@@ -63,19 +63,19 @@ typedef union tagARMV5TL_MEMORY             ARMV5TL_MEMORY;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-typedef void *(*PERIPHERALCHECK)(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+typedef void *(*PERIPHERALCHECK)(PARMV5TL_CORE core, uint32_t address, uint32_t mode);
 
 typedef void (*PERIPHERALFUNC)(PARMV5TL_CORE core);
 
-typedef void (*PERIPHERALREAD)(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
-typedef void (*PERIPHERALWRITE)(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+typedef void (*PERIPHERALREAD)(PARMV5TL_CORE core, uint32_t address, uint32_t mode);
+typedef void (*PERIPHERALWRITE)(PARMV5TL_CORE core, uint32_t address, uint32_t mode);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 struct tagARMV5TL_ADDRESS_MAP
 {
-  u_int32_t       start;
-  u_int32_t       end;
+  uint32_t       start;
+  uint32_t       end;
   PERIPHERALCHECK function;
   PERIPHERALREAD  read;
   PERIPHERALWRITE write;
@@ -85,402 +85,402 @@ struct tagARMV5TL_ADDRESS_MAP
 
 struct tagARMV5TL_INSTR_BASE
 {
-  u_int32_t data:12;      //Addressing data
-  u_int32_t rd:4;         //Destination register
-  u_int32_t rn:4;         //Second operand register
-  u_int32_t s:1;          //Update status bit
-  u_int32_t opcode:4;     //Actual opcode for some type of instructions
-  u_int32_t type:3;       //Type of instructions
-  u_int32_t cond:4;       //Condition bits
+  uint32_t data:12;      //Addressing data
+  uint32_t rd:4;         //Destination register
+  uint32_t rn:4;         //Second operand register
+  uint32_t s:1;          //Update status bit
+  uint32_t opcode:4;     //Actual opcode for some type of instructions
+  uint32_t type:3;       //Type of instructions
+  uint32_t cond:4;       //Condition bits
 };
 
 struct tagARMV5TL_INSTR_MUL
 {
-  u_int32_t rm:4;         //Register m
-  u_int32_t nu:4;         //Fixed value
-  u_int32_t rs:4;         //Register s
-  u_int32_t rn:4;         //Register n
-  u_int32_t rd:4;         //Destination register
-  u_int32_t s:1;          //Status update flag
-  u_int32_t op1:3;        //Opcode for type of multiply
-  u_int32_t type:4;       //Type of instructions
-  u_int32_t cond:4;       //Condition bits
+  uint32_t rm:4;         //Register m
+  uint32_t nu:4;         //Fixed value
+  uint32_t rs:4;         //Register s
+  uint32_t rn:4;         //Register n
+  uint32_t rd:4;         //Destination register
+  uint32_t s:1;          //Status update flag
+  uint32_t op1:3;        //Opcode for type of multiply
+  uint32_t type:4;       //Type of instructions
+  uint32_t cond:4;       //Condition bits
 };
 
 struct tagARMV5TL_INSTR_SMULXY
 {
-  u_int32_t rm:4;         //Register m
-  u_int32_t nu2:1;        //Fixed value
-  u_int32_t x:1;          //mss or lss indicator for rm
-  u_int32_t y:1;          //mss or lss indicator for rs
-  u_int32_t nu1:1;        //Fixed value
-  u_int32_t rs:4;         //Register s
-  u_int32_t rn:4;         //Register n
-  u_int32_t rd:4;         //Destination register
-  u_int32_t s:1;          //Status update flag
-  u_int32_t op1:3;        //Opcode for type of multiply
-  u_int32_t type:4;       //Type of instructions
-  u_int32_t cond:4;       //Condition bits
+  uint32_t rm:4;         //Register m
+  uint32_t nu2:1;        //Fixed value
+  uint32_t x:1;          //mss or lss indicator for rm
+  uint32_t y:1;          //mss or lss indicator for rs
+  uint32_t nu1:1;        //Fixed value
+  uint32_t rs:4;         //Register s
+  uint32_t rn:4;         //Register n
+  uint32_t rd:4;         //Destination register
+  uint32_t s:1;          //Status update flag
+  uint32_t op1:3;        //Opcode for type of multiply
+  uint32_t type:4;       //Type of instructions
+  uint32_t cond:4;       //Condition bits
 };
 
 struct tagARMV5TL_INSTR_ELS
 {
-  u_int32_t rm:4;         //Register
-  u_int32_t nu1:1;        //Always one
-  u_int32_t opcode:2;     //Opcode
-  u_int32_t nu2:1;        //Always one
-  u_int32_t rs:4;         //Register
-  u_int32_t rd:4;         //Destination register
-  u_int32_t rn:4;         //Second operand register
-  u_int32_t l:1;          //
-  u_int32_t w:1;          //
-  u_int32_t b:1;          //
-  u_int32_t u:1;          //
-  u_int32_t p:1;          //
-  u_int32_t type:3;       //Type of instructions
-  u_int32_t cond:4;       //Condition bits
+  uint32_t rm:4;         //Register
+  uint32_t nu1:1;        //Always one
+  uint32_t opcode:2;     //Opcode
+  uint32_t nu2:1;        //Always one
+  uint32_t rs:4;         //Register
+  uint32_t rd:4;         //Destination register
+  uint32_t rn:4;         //Second operand register
+  uint32_t l:1;          //
+  uint32_t w:1;          //
+  uint32_t b:1;          //
+  uint32_t u:1;          //
+  uint32_t p:1;          //
+  uint32_t type:3;       //Type of instructions
+  uint32_t cond:4;       //Condition bits
 };
 
 struct tagARMV5TL_INSTR_LSI
 {
-  u_int32_t of:12;        //Offset
-  u_int32_t rd:4;         //Destination register
-  u_int32_t rn:4;         //Second operand register
-  u_int32_t l:1;          //Load or store. 1: Load. 0: Store.
-  u_int32_t w:1;          //For offset addressing this is the write back to base indicator.
-  u_int32_t b:1;          //Unsigned byte mode
-  u_int32_t u:1;          //Offset use mode 1: Add to base. 0: Subtract from base
-  u_int32_t p:1;          //Pre indexed addressing. Combined with W bit
-  u_int32_t type:3;       //Type of instructions
-  u_int32_t cond:4;       //Condition bits
+  uint32_t of:12;        //Offset
+  uint32_t rd:4;         //Destination register
+  uint32_t rn:4;         //Second operand register
+  uint32_t l:1;          //Load or store. 1: Load. 0: Store.
+  uint32_t w:1;          //For offset addressing this is the write back to base indicator.
+  uint32_t b:1;          //Unsigned byte mode
+  uint32_t u:1;          //Offset use mode 1: Add to base. 0: Subtract from base
+  uint32_t p:1;          //Pre indexed addressing. Combined with W bit
+  uint32_t type:3;       //Type of instructions
+  uint32_t cond:4;       //Condition bits
 };
 
 struct tagARMV5TL_INSTR_LSR
 {
-  u_int32_t rm:4;        //Offset
-  u_int32_t nu:1;         //Not used
-  u_int32_t sm:2;         //Shift mode
-  u_int32_t sa:5;         //Shift amount
-  u_int32_t rd:4;         //Destination register
-  u_int32_t rn:4;         //Second operand register
-  u_int32_t l:1;          //Load or store. 1: Load. 0: Store.
-  u_int32_t w:1;          //For offset addressing this is the write back to base indicator.
-  u_int32_t b:1;          //Unsigned byte mode
-  u_int32_t u:1;          //Offset use mode 1: Add to base. 0: Subtract from base
-  u_int32_t p:1;          //Pre indexed addressing. Combined with W bit
-  u_int32_t type:3;       //Type of instructions
-  u_int32_t cond:4;       //Condition bits
+  uint32_t rm:4;        //Offset
+  uint32_t nu:1;         //Not used
+  uint32_t sm:2;         //Shift mode
+  uint32_t sa:5;         //Shift amount
+  uint32_t rd:4;         //Destination register
+  uint32_t rn:4;         //Second operand register
+  uint32_t l:1;          //Load or store. 1: Load. 0: Store.
+  uint32_t w:1;          //For offset addressing this is the write back to base indicator.
+  uint32_t b:1;          //Unsigned byte mode
+  uint32_t u:1;          //Offset use mode 1: Add to base. 0: Subtract from base
+  uint32_t p:1;          //Pre indexed addressing. Combined with W bit
+  uint32_t type:3;       //Type of instructions
+  uint32_t cond:4;       //Condition bits
 };
 
 struct tagARMV5TL_INSTR_LSRN
 {
-  u_int32_t rm:4;         //Register m
-  u_int32_t ns:8;         //No scaling when zero
-  u_int32_t rd:4;         //Destination register
-  u_int32_t rn:4;         //Second operand register
-  u_int32_t l:1;          //Load or store. 1: Load. 0: Store.
-  u_int32_t w:1;          //For offset addressing this is the write back to base indicator.
-  u_int32_t b:1;          //Unsigned byte mode
-  u_int32_t u:1;          //Offset use mode 1: Add to base. 0: Subtract from base
-  u_int32_t p:1;          //Pre indexed addressing. Combined with W bit
-  u_int32_t type:3;       //Type of instructions
-  u_int32_t cond:4;       //Condition bits
+  uint32_t rm:4;         //Register m
+  uint32_t ns:8;         //No scaling when zero
+  uint32_t rd:4;         //Destination register
+  uint32_t rn:4;         //Second operand register
+  uint32_t l:1;          //Load or store. 1: Load. 0: Store.
+  uint32_t w:1;          //For offset addressing this is the write back to base indicator.
+  uint32_t b:1;          //Unsigned byte mode
+  uint32_t u:1;          //Offset use mode 1: Add to base. 0: Subtract from base
+  uint32_t p:1;          //Pre indexed addressing. Combined with W bit
+  uint32_t type:3;       //Type of instructions
+  uint32_t cond:4;       //Condition bits
 };
 
 struct tagARMV5TL_INSTR_LSX
 {
-  u_int32_t rm:4;         //Register m
-  u_int32_t sbo2:1;       //Should be one
-  u_int32_t op1:2;        //Extra opcode
-  u_int32_t sbo1:1;       //Should be one
-  u_int32_t rs:4;         //Register s
-  u_int32_t rd:4;         //Destination register
-  u_int32_t rn:4;         //Register n
-  u_int32_t l:1;          //Load or store. 1: Load. 0: Store.
-  u_int32_t w:1;          //For offset addressing this is the write back to base indicator.
-  u_int32_t i:1;          //Immediate offset / index or register offset / index
-  u_int32_t u:1;          //Offset use mode 1: Add to base. 0: Subtract from base
-  u_int32_t p:1;          //Pre indexed addressing. Combined with W bit
-  u_int32_t type:3;       //Type of instructions
-  u_int32_t cond:4;       //Condition bits
+  uint32_t rm:4;         //Register m
+  uint32_t sbo2:1;       //Should be one
+  uint32_t op1:2;        //Extra opcode
+  uint32_t sbo1:1;       //Should be one
+  uint32_t rs:4;         //Register s
+  uint32_t rd:4;         //Destination register
+  uint32_t rn:4;         //Register n
+  uint32_t l:1;          //Load or store. 1: Load. 0: Store.
+  uint32_t w:1;          //For offset addressing this is the write back to base indicator.
+  uint32_t i:1;          //Immediate offset / index or register offset / index
+  uint32_t u:1;          //Offset use mode 1: Add to base. 0: Subtract from base
+  uint32_t p:1;          //Pre indexed addressing. Combined with W bit
+  uint32_t type:3;       //Type of instructions
+  uint32_t cond:4;       //Condition bits
 };
 
 struct tagARMV5TL_INSTR_DPSI
 {
-  u_int32_t rm:4;         //Register
-  u_int32_t t1:1;         //Shift type
-  u_int32_t sm:2;         //Shift mode
-  u_int32_t sa:5;         //Shift amount
-  u_int32_t rd:4;         //Destination register
-  u_int32_t rn:4;         //Second operand register
-  u_int32_t opcode:4;     //Opcode for type of multiply
-  u_int32_t type:4;       //Type of instructions
-  u_int32_t cond:4;       //Condition bits
+  uint32_t rm:4;         //Register
+  uint32_t t1:1;         //Shift type
+  uint32_t sm:2;         //Shift mode
+  uint32_t sa:5;         //Shift amount
+  uint32_t rd:4;         //Destination register
+  uint32_t rn:4;         //Second operand register
+  uint32_t opcode:4;     //Opcode for type of multiply
+  uint32_t type:4;       //Type of instructions
+  uint32_t cond:4;       //Condition bits
 };
 
 struct tagARMV5TL_INSTR_DPSR
 {
-  u_int32_t rm:4;         //Register
-  u_int32_t t1:1;         //Shift type
-  u_int32_t sm:2;         //Shift mode
-  u_int32_t nu:1;         //Always 0
-  u_int32_t rs:4;         //Shift amount register
-  u_int32_t rd:4;         //Destination register
-  u_int32_t rn:4;         //Second operand register
-  u_int32_t opcode:4;     //Opcode for type of data processing
-  u_int32_t type:4;       //Type of instructions
-  u_int32_t cond:4;       //Condition bits
+  uint32_t rm:4;         //Register
+  uint32_t t1:1;         //Shift type
+  uint32_t sm:2;         //Shift mode
+  uint32_t nu:1;         //Always 0
+  uint32_t rs:4;         //Shift amount register
+  uint32_t rd:4;         //Destination register
+  uint32_t rn:4;         //Second operand register
+  uint32_t opcode:4;     //Opcode for type of data processing
+  uint32_t type:4;       //Type of instructions
+  uint32_t cond:4;       //Condition bits
 };
 
 struct tagARMV5TL_INSTR_DPI
 {
-  u_int32_t im:8;         //Immediate value
-  u_int32_t ri:4;         //Rotate immediate
-  u_int32_t rd:4;         //Destination register
-  u_int32_t rn:4;         //Second operand register
-  u_int32_t opcode:4;     //Opcode for type of data processing
-  u_int32_t type:4;       //Type of instructions
-  u_int32_t cond:4;       //Condition bits
+  uint32_t im:8;         //Immediate value
+  uint32_t ri:4;         //Rotate immediate
+  uint32_t rd:4;         //Destination register
+  uint32_t rn:4;         //Second operand register
+  uint32_t opcode:4;     //Opcode for type of data processing
+  uint32_t type:4;       //Type of instructions
+  uint32_t cond:4;       //Condition bits
 };
 
 struct tagARMV5TL_INSTR_MSRI
 {
-  u_int32_t im:8;         //Immediate value
-  u_int32_t ri:4;         //Rotate immediate
-  u_int32_t sbo:4;        //Should be one
-  u_int32_t c:1;          //Control field mask
-  u_int32_t x:1;          //Extension field mask
-  u_int32_t s:1;          //Status field mask
-  u_int32_t f:1;          //Flags field mask
-  u_int32_t nu1:2;        //Not used after decoding
-  u_int32_t r:1;          //Target register select 0: cpsr. 1: spsr.
-  u_int32_t nu2:5;        //Not used after decoding
-  u_int32_t cond:4;       //Condition bits
+  uint32_t im:8;         //Immediate value
+  uint32_t ri:4;         //Rotate immediate
+  uint32_t sbo:4;        //Should be one
+  uint32_t c:1;          //Control field mask
+  uint32_t x:1;          //Extension field mask
+  uint32_t s:1;          //Status field mask
+  uint32_t f:1;          //Flags field mask
+  uint32_t nu1:2;        //Not used after decoding
+  uint32_t r:1;          //Target register select 0: cpsr. 1: spsr.
+  uint32_t nu2:5;        //Not used after decoding
+  uint32_t cond:4;       //Condition bits
 };
 
 struct tagARMV5TL_INSTR_MSRR
 {
-  u_int32_t rm:4;         //Register holding the data
-  u_int32_t sbz:8;        //Should be zero
-  u_int32_t sbo:4;        //Should be one
-  u_int32_t c:1;          //Control field mask
-  u_int32_t x:1;          //Extension field mask
-  u_int32_t s:1;          //Status field mask
-  u_int32_t f:1;          //Flags field mask
-  u_int32_t nu1:1;        //Not used after decoding
-  u_int32_t d:1;          //Move direction bit
-  u_int32_t r:1;          //Target register select 0: cpsr. 1: spsr.
-  u_int32_t nu2:5;        //Not used after decoding
-  u_int32_t cond:4;       //Condition bits
+  uint32_t rm:4;         //Register holding the data
+  uint32_t sbz:8;        //Should be zero
+  uint32_t sbo:4;        //Should be one
+  uint32_t c:1;          //Control field mask
+  uint32_t x:1;          //Extension field mask
+  uint32_t s:1;          //Status field mask
+  uint32_t f:1;          //Flags field mask
+  uint32_t nu1:1;        //Not used after decoding
+  uint32_t d:1;          //Move direction bit
+  uint32_t r:1;          //Target register select 0: cpsr. 1: spsr.
+  uint32_t nu2:5;        //Not used after decoding
+  uint32_t cond:4;       //Condition bits
 };
 
 struct tagARMV5TL_INSTR_MRS
 {
-  u_int32_t sbz:12;       //Should be zero
-  u_int32_t rd:4;         //Destination register
-  u_int32_t sbo:4;        //Should be one
-  u_int32_t nu1:2;        //Not used after decoding
-  u_int32_t r:1;          //Source register select 0: cpsr. 1: spsr.
-  u_int32_t nu2:5;        //Not used after decoding
-  u_int32_t cond:4;       //Condition bits
+  uint32_t sbz:12;       //Should be zero
+  uint32_t rd:4;         //Destination register
+  uint32_t sbo:4;        //Should be one
+  uint32_t nu1:2;        //Not used after decoding
+  uint32_t r:1;          //Source register select 0: cpsr. 1: spsr.
+  uint32_t nu2:5;        //Not used after decoding
+  uint32_t cond:4;       //Condition bits
 };
 
 struct tagARMV5TL_INSTR_MRCMCR
 {
-  u_int32_t crm:4;        //Coprocessor register m
-  u_int32_t nu:1;         //Not used after decoding
-  u_int32_t op2:3;        //Coprocessor opcode 2
-  u_int32_t cpn:4;        //Coprocessor number
-  u_int32_t rd:4;         //Destination register
-  u_int32_t crn:4;        //Coprocessor register n
-  u_int32_t d:1;          //Data direction bit
-  u_int32_t op1:3;        //Coprocessor opcode 1
-  u_int32_t type:4;       //Type bits
-  u_int32_t cond:4;       //Condition bits
+  uint32_t crm:4;        //Coprocessor register m
+  uint32_t nu:1;         //Not used after decoding
+  uint32_t op2:3;        //Coprocessor opcode 2
+  uint32_t cpn:4;        //Coprocessor number
+  uint32_t rd:4;         //Destination register
+  uint32_t crn:4;        //Coprocessor register n
+  uint32_t d:1;          //Data direction bit
+  uint32_t op1:3;        //Coprocessor opcode 1
+  uint32_t type:4;       //Type bits
+  uint32_t cond:4;       //Condition bits
 };
 
 struct tagARMV5TL_INSTR_MISC0
 {
-  u_int32_t rm:4;         //Register
-  u_int32_t op2:4;        //Opcode 2
-  u_int32_t rs:4;         //Multiply register
-  u_int32_t rd:4;         //Destination register
-  u_int32_t rn:4;         //Second operand register
-  u_int32_t s:1;          //Update status bit
-  u_int32_t op1:2;        //Opcode 1
-  u_int32_t type:5;       //Type of instructions
-  u_int32_t cond:4;       //Condition bits
+  uint32_t rm:4;         //Register
+  uint32_t op2:4;        //Opcode 2
+  uint32_t rs:4;         //Multiply register
+  uint32_t rd:4;         //Destination register
+  uint32_t rn:4;         //Second operand register
+  uint32_t s:1;          //Update status bit
+  uint32_t op1:2;        //Opcode 1
+  uint32_t type:5;       //Type of instructions
+  uint32_t cond:4;       //Condition bits
 };
 
 struct tagARMV5TL_INSTR_CLZ
 {
-  u_int32_t rm:4;         //Register
-  u_int32_t nu2:4;        //Not used
-  u_int32_t sbo:4;        //Should be one
-  u_int32_t rd:4;         //Destination register
-  u_int32_t nu1:12;       //Not used
-  u_int32_t cond:4;       //Condition bits
+  uint32_t rm:4;         //Register
+  uint32_t nu2:4;        //Not used
+  uint32_t sbo:4;        //Should be one
+  uint32_t rd:4;         //Destination register
+  uint32_t nu1:12;       //Not used
+  uint32_t cond:4;       //Condition bits
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 struct tagARMV5TL_INSTR_TYPE0
 {
-  u_int32_t rm:4;         //Register
-  u_int32_t it1:1;        //Instruction type
-  u_int32_t sm:2;         //Shift mode
-  u_int32_t it2:1;        //Instruction type
-  u_int32_t rs:4;         //Register
-  u_int32_t rd:4;         //Destination register
-  u_int32_t rn:4;         //Second operand register
-  u_int32_t s:1;          //Update status bit
-  u_int32_t opcode:4;     //Actual opcode for some type of instructions
-  u_int32_t type:3;       //Type of instructions
-  u_int32_t cond:4;       //Condition bits
+  uint32_t rm:4;         //Register
+  uint32_t it1:1;        //Instruction type
+  uint32_t sm:2;         //Shift mode
+  uint32_t it2:1;        //Instruction type
+  uint32_t rs:4;         //Register
+  uint32_t rd:4;         //Destination register
+  uint32_t rn:4;         //Second operand register
+  uint32_t s:1;          //Update status bit
+  uint32_t opcode:4;     //Actual opcode for some type of instructions
+  uint32_t type:3;       //Type of instructions
+  uint32_t cond:4;       //Condition bits
 };
 
 struct tagARMV5TL_INSTR_TYPE1
 {
-  u_int32_t im:8;         //Immediate
-  u_int32_t r:4;          //Rotate
-  u_int32_t rd:4;         //Destination register
-  u_int32_t rn:4;         //Second operand register
-  u_int32_t s:1;          //Update status bit
-  u_int32_t opcode:4;     //Actual opcode for some type of instructions
-  u_int32_t type:3;       //Type of instructions
-  u_int32_t cond:4;       //Condition bits
+  uint32_t im:8;         //Immediate
+  uint32_t r:4;          //Rotate
+  uint32_t rd:4;         //Destination register
+  uint32_t rn:4;         //Second operand register
+  uint32_t s:1;          //Update status bit
+  uint32_t opcode:4;     //Actual opcode for some type of instructions
+  uint32_t type:3;       //Type of instructions
+  uint32_t cond:4;       //Condition bits
 };
 
 struct tagARMV5TL_INSTR_TYPE2
 {
-  u_int32_t im:12;        //Immediate data
-  u_int32_t rd:4;         //Destination register
-  u_int32_t rn:4;         //Second operand register
-  u_int32_t l:1;          //Load or store. 1: Load. 0: Store.
-  u_int32_t w:1;          //For offset addressing this is the write back to base indicator.
-  u_int32_t b:1;          //Unsigned byte mode
-  u_int32_t u:1;          //Offset use mode 1: Add to base. 0: Subtract from base
-  u_int32_t p:1;          //Pre indexed addressing. Combined with W bit
-  u_int32_t type:3;       //Type of instructions
-  u_int32_t cond:4;       //Condition bits
+  uint32_t im:12;        //Immediate data
+  uint32_t rd:4;         //Destination register
+  uint32_t rn:4;         //Second operand register
+  uint32_t l:1;          //Load or store. 1: Load. 0: Store.
+  uint32_t w:1;          //For offset addressing this is the write back to base indicator.
+  uint32_t b:1;          //Unsigned byte mode
+  uint32_t u:1;          //Offset use mode 1: Add to base. 0: Subtract from base
+  uint32_t p:1;          //Pre indexed addressing. Combined with W bit
+  uint32_t type:3;       //Type of instructions
+  uint32_t cond:4;       //Condition bits
 };
 
 struct tagARMV5TL_INSTR_TYPE3
 {
-  u_int32_t rm:4;         //Register
-  u_int32_t it1:1;        //Instruction type
-  u_int32_t sm:2;         //Shift mode
-  u_int32_t sa:5;         //Shift amount
-  u_int32_t rd:4;         //Destination register
-  u_int32_t rn:4;         //Second operand register
-  u_int32_t l:1;          //Load or store. 1: Load. 0: Store.
-  u_int32_t w:1;          //For offset addressing this is the write back to base indicator.
-  u_int32_t b:1;          //Unsigned byte mode
-  u_int32_t u:1;          //Offset use mode 1: Add to base. 0: Subtract from base
-  u_int32_t p:1;          //Pre indexed addressing. Combined with W bit
-  u_int32_t type:3;       //Type of instructions
-  u_int32_t cond:4;       //Condition bits
+  uint32_t rm:4;         //Register
+  uint32_t it1:1;        //Instruction type
+  uint32_t sm:2;         //Shift mode
+  uint32_t sa:5;         //Shift amount
+  uint32_t rd:4;         //Destination register
+  uint32_t rn:4;         //Second operand register
+  uint32_t l:1;          //Load or store. 1: Load. 0: Store.
+  uint32_t w:1;          //For offset addressing this is the write back to base indicator.
+  uint32_t b:1;          //Unsigned byte mode
+  uint32_t u:1;          //Offset use mode 1: Add to base. 0: Subtract from base
+  uint32_t p:1;          //Pre indexed addressing. Combined with W bit
+  uint32_t type:3;       //Type of instructions
+  uint32_t cond:4;       //Condition bits
 };
 
 struct tagARMV5TL_INSTR_TYPE4
 {
-  u_int32_t r0:1;         //Include r0
-  u_int32_t r1:1;         //Include r1
-  u_int32_t r2:1;         //Include r2
-  u_int32_t r3:1;         //Include r3
-  u_int32_t r4:1;         //Include r4
-  u_int32_t r5:1;         //Include r5
-  u_int32_t r6:1;         //Include r6
-  u_int32_t r7:1;         //Include r7
-  u_int32_t r8:1;         //Include r8
-  u_int32_t r9:1;         //Include r9
-  u_int32_t r10:1;        //Include r10
-  u_int32_t r11:1;        //Include r11
-  u_int32_t r12:1;        //Include r12
-  u_int32_t r13:1;        //Include r13
-  u_int32_t r14:1;        //Include r14
-  u_int32_t r15:1;        //Include r15
-  u_int32_t rn:4;         //Register holding the base address
-  u_int32_t l:1;          //Load or store. 1: Load. 0: Store.
-  u_int32_t w:1;          //Update base register after transfer
-  u_int32_t s:1;          //Restore cpsr from spsr when r15 included
-  u_int32_t u:1;          //Direction. 1: Add to base. 0: Subtract from base
-  u_int32_t p:1;          //Range base included or not
-  u_int32_t type:3;       //Type of instructions
-  u_int32_t cond:4;       //Condition bits
+  uint32_t r0:1;         //Include r0
+  uint32_t r1:1;         //Include r1
+  uint32_t r2:1;         //Include r2
+  uint32_t r3:1;         //Include r3
+  uint32_t r4:1;         //Include r4
+  uint32_t r5:1;         //Include r5
+  uint32_t r6:1;         //Include r6
+  uint32_t r7:1;         //Include r7
+  uint32_t r8:1;         //Include r8
+  uint32_t r9:1;         //Include r9
+  uint32_t r10:1;        //Include r10
+  uint32_t r11:1;        //Include r11
+  uint32_t r12:1;        //Include r12
+  uint32_t r13:1;        //Include r13
+  uint32_t r14:1;        //Include r14
+  uint32_t r15:1;        //Include r15
+  uint32_t rn:4;         //Register holding the base address
+  uint32_t l:1;          //Load or store. 1: Load. 0: Store.
+  uint32_t w:1;          //Update base register after transfer
+  uint32_t s:1;          //Restore cpsr from spsr when r15 included
+  uint32_t u:1;          //Direction. 1: Add to base. 0: Subtract from base
+  uint32_t p:1;          //Range base included or not
+  uint32_t type:3;       //Type of instructions
+  uint32_t cond:4;       //Condition bits
 };
 
 struct tagARMV5TL_INSTR_TYPE5
 {
-  u_int32_t offset:24;    //Signed offset
-  u_int32_t l:1;          //Update link register
-  u_int32_t type:3;       //Type of instructions
-  u_int32_t cond:4;       //Condition bits
+  uint32_t offset:24;    //Signed offset
+  uint32_t l:1;          //Update link register
+  uint32_t type:3;       //Type of instructions
+  uint32_t cond:4;       //Condition bits
 };
 
 struct tagARMV5TL_INSTR_TYPE6
 {
-  u_int32_t of:8;         //Offset
-  u_int32_t cp:4;         //Coprocessor number
-  u_int32_t crd:4;        //Destination register
-  u_int32_t rn:4;         //Second operand register
-  u_int32_t l:1;          //
-  u_int32_t w:1;          //
-  u_int32_t n:1;          //
-  u_int32_t u:1;          //
-  u_int32_t p:1;          //
-  u_int32_t type:3;       //Type of instructions
-  u_int32_t cond:4;       //Condition bits
+  uint32_t of:8;         //Offset
+  uint32_t cp:4;         //Coprocessor number
+  uint32_t crd:4;        //Destination register
+  uint32_t rn:4;         //Second operand register
+  uint32_t l:1;          //
+  uint32_t w:1;          //
+  uint32_t n:1;          //
+  uint32_t u:1;          //
+  uint32_t p:1;          //
+  uint32_t type:3;       //Type of instructions
+  uint32_t cond:4;       //Condition bits
 };
 
 struct tagARMV5TL_INSTR_TYPE7
 {
-  u_int32_t rm:4;         //Register
-  u_int32_t it1:1;        //Type of instruction bit
-  u_int32_t sm:2;         //Shift mode
-  u_int32_t sa:5;         //Shift amount
-  u_int32_t rd:4;         //Destination register
-  u_int32_t rn:4;         //Second operand register
-  u_int32_t l:1;          //
-  u_int32_t w:1;          //
-  u_int32_t b:1;          //
-  u_int32_t u:1;          //
-  u_int32_t it2:1;        //Type of instruction bit
-  u_int32_t type:3;       //Type of instructions
-  u_int32_t cond:4;       //Condition bits
+  uint32_t rm:4;         //Register
+  uint32_t it1:1;        //Type of instruction bit
+  uint32_t sm:2;         //Shift mode
+  uint32_t sa:5;         //Shift amount
+  uint32_t rd:4;         //Destination register
+  uint32_t rn:4;         //Second operand register
+  uint32_t l:1;          //
+  uint32_t w:1;          //
+  uint32_t b:1;          //
+  uint32_t u:1;          //
+  uint32_t it2:1;        //Type of instruction bit
+  uint32_t type:3;       //Type of instructions
+  uint32_t cond:4;       //Condition bits
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 struct tagARMV5TL_FLAGS
 {
-  u_int32_t M:5;         //Mode bits
-  u_int32_t T:1;         //Thumb execution state flag
-  u_int32_t F:1;         //Fast Interrupt disable flag
-  u_int32_t I:1;         //Interrupt disable flag
-  u_int32_t R1:8;        //Reserved bits
-  u_int32_t GE:4;        //Greater then or equal flags
-  u_int32_t R2:4;        //Reserved bits
-  u_int32_t J:1;         //Jazelle execution state flag
-  u_int32_t R3:2;        //Reserved bits
-  u_int32_t Q:1;         //DSP overflow / saturation flag
-  u_int32_t V:1;         //Overflow flag
-  u_int32_t C:1;         //Carry flag
-  u_int32_t Z:1;         //Zero flag
-  u_int32_t N:1;         //Negative flag
+  uint32_t M:5;         //Mode bits
+  uint32_t T:1;         //Thumb execution state flag
+  uint32_t F:1;         //Fast Interrupt disable flag
+  uint32_t I:1;         //Interrupt disable flag
+  uint32_t R1:8;        //Reserved bits
+  uint32_t GE:4;        //Greater then or equal flags
+  uint32_t R2:4;        //Reserved bits
+  uint32_t J:1;         //Jazelle execution state flag
+  uint32_t R3:2;        //Reserved bits
+  uint32_t Q:1;         //DSP overflow / saturation flag
+  uint32_t V:1;         //Overflow flag
+  uint32_t C:1;         //Carry flag
+  uint32_t Z:1;         //Zero flag
+  uint32_t N:1;         //Negative flag
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 union tagARMV5TL_STATUS
 {
-  u_int32_t     word;            //Word register
-  ARMV5TL_FLAGS flags;           //Bit flags
+  uint32_t     word;            //Word register
+  ARMV5TL_FLAGS flags;          //Bit flags
 };                                        
 
 union tagARMV5TL_ARM_INSTRUCTION
 {
-  u_int32_t                instr;      //Instruction register
+  uint32_t                instr;       //Instruction register
   ARMV5TL_INSTR_BASE       base;       //Base for instruction decoding
   ARMV5TL_INSTR_MISC0      misc0;      //Miscellaneous instructions
   ARMV5TL_INSTR_TYPE0      type0;      //For type 0 instruction decoding
@@ -510,75 +510,75 @@ union tagARMV5TL_ARM_INSTRUCTION
 
 union tagARMV5TL_MEMORY
 {
-  u_int32_t  m_32bit;
-  u_int16_t  m_16bit[2];
-  u_int8_t   m_8bit[4];
+  uint32_t  m_32bit;
+  uint16_t  m_16bit[2];
+  uint8_t   m_8bit[4];
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //The complete arm register set
 struct tagARMV5TL_REGS
 {
-  u_int32_t r0;
-  u_int32_t r1;
-  u_int32_t r2;
-  u_int32_t r3;
-  u_int32_t r4;
-  u_int32_t r5;
-  u_int32_t r6;
-  u_int32_t r7;
-  u_int32_t r8[2];
-  u_int32_t r9[2];
-  u_int32_t r10[2];
-  u_int32_t r11[2];
-  u_int32_t r12[2];
-  u_int32_t r13[6];
-  u_int32_t r14[6];
-  u_int32_t r15;
-  u_int32_t cpsr;
-  u_int32_t spsr[5];
+  uint32_t r0;
+  uint32_t r1;
+  uint32_t r2;
+  uint32_t r3;
+  uint32_t r4;
+  uint32_t r5;
+  uint32_t r6;
+  uint32_t r7;
+  uint32_t r8[2];
+  uint32_t r9[2];
+  uint32_t r10[2];
+  uint32_t r11[2];
+  uint32_t r12[2];
+  uint32_t r13[6];
+  uint32_t r14[6];
+  uint32_t r15;
+  uint32_t cpsr;
+  uint32_t spsr[5];
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 struct tagARMV5TL_TRACE_ENTRY
 {
-  u_int32_t    instruction_address;    //Address of the traced instruction
-  u_int32_t    instruction_word;       //Instruction word for arm, half word for thumb
-  u_int32_t    execution_status;       //Information about if the arm instruction has been executed or not
+  uint32_t    instruction_address;     //Address of the traced instruction
+  uint32_t    instruction_word;        //Instruction word for arm, half word for thumb
+  uint32_t    execution_status;        //Information about if the arm instruction has been executed or not
   ARMV5TL_REGS registers;              //The 37 registers
-  u_int32_t    memory_address;         //Depending on the type of instruction this is set with the targeted memory address
-  u_int32_t    memory_direction;       //For load or store multiple instructions this signals if the given address is incremented or decremented
-  u_int32_t    data_width;             //For instructions that load or store half words or bytes this will reflect this, otherwise word width
-  u_int32_t    data_count;             //The number of words read or written by the instruction
-  u_int32_t    data[16];               //The data read or written. Single instruction can do a max of 16 words
+  uint32_t    memory_address;          //Depending on the type of instruction this is set with the targeted memory address
+  uint32_t    memory_direction;        //For load or store multiple instructions this signals if the given address is incremented or decremented
+  uint32_t    data_width;              //For instructions that load or store half words or bytes this will reflect this, otherwise word width
+  uint32_t    data_count;              //The number of words read or written by the instruction
+  uint32_t    data[16];                //The data read or written. Single instruction can do a max of 16 words
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //The core main struct
 struct tagARMV5TL_CORE
 {
-  u_int32_t                *registers[6][18];         //The ARM core has banked register sets. In different modes some of the registers are not available or are the un_banked user mode ones. Pointers are used to emulate this.
+  uint32_t                *registers[6][18];          //The ARM core has banked register sets. In different modes some of the registers are not available or are the un_banked user mode ones. Pointers are used to emulate this.
   
-  u_int32_t                 current_mode;             //The mode the core is running in.
-  u_int32_t                 current_bank;             //The register bank currently in use.
+  uint32_t                 current_mode;              //The mode the core is running in.
+  uint32_t                 current_bank;              //The register bank currently in use.
   
   ARMV5TL_ARM_INSTRUCTION   arm_instruction;          //The arm instruction loaded for the current cycle. Only when in arm state
   ARMV5TL_THUMB_INSTRUCTION thumb_instruction;        //The thumb instruction loaded for the current cycle. Only when in thumb state
   
-  u_int32_t                 pcincrvalue;              //Value the program counter needs to be incremented with
+  uint32_t                 pcincrvalue;               //Value the program counter needs to be incremented with
   
-  u_int64_t                 cpu_cycles;               //Counter for counting the cpu instruction cycles. Used for timing peripherals
+  uint64_t                 cpu_cycles;                //Counter for counting the cpu instruction cycles. Used for timing peripherals
   
   int                      *program_counter;          //For more direct control a pointer to the program counter here
   ARMV5TL_STATUS           *status;                   //Same for the status word
   
-  u_int32_t                 reset;                    //Processor reset flag
-  u_int32_t                 irq;                      //Processor irg flag
-  u_int32_t                 fiq;                      //Processor fast interrupt flag
-  u_int32_t                 undefinedinstruction;     //Flag to signal undefined instruction encountered
+  uint32_t                 reset;                     //Processor reset flag
+  uint32_t                 irq;                       //Processor irg flag
+  uint32_t                 fiq;                       //Processor fast interrupt flag
+  uint32_t                 undefinedinstruction;      //Flag to signal undefined instruction encountered
   
-  u_int32_t                 run;                      //Processor run flag
+  uint32_t                 run;                       //Processor run flag
   
   ARMV5TL_MEMORY            sram1[8192];              //32K core startup memory located at address 0x00000000
   ARMV5TL_MEMORY            sram2[10240];             //40K core static memory located at address 0x00010000
@@ -624,14 +624,14 @@ struct tagARMV5TL_CORE
   //Debug and tracing support
   FILE                     *TraceFilePointer;         //Null if tracing is disabled
   
-  u_int32_t                 breakpointaddress;        //Instruction address for breakpoint
+  uint32_t                 breakpointaddress;         //Instruction address for breakpoint
   
-  u_int32_t                 tracetriggeraddress;      //Instruction address to start tracing on
-  u_int32_t                 tracetriggered;           //Flag to signal tracing has been triggered
-  u_int32_t                 tracecount;               //Counter for limiting trace files to 256K Lines
-  u_int32_t                 tracefileindex;           //Index counter for the trace file name
-  u_int32_t                 tracebufferenabled;       //Flag to signal writing into the trace buffer is enabled
-  u_int32_t                 traceindex;               //Index into the trace buffer
+  uint32_t                 tracetriggeraddress;       //Instruction address to start tracing on
+  uint32_t                 tracetriggered;            //Flag to signal tracing has been triggered
+  uint32_t                 tracecount;                //Counter for limiting trace files to 256K Lines
+  uint32_t                 tracefileindex;            //Index counter for the trace file name
+  uint32_t                 tracebufferenabled;        //Flag to signal writing into the trace buffer is enabled
+  uint32_t                 traceindex;                //Index into the trace buffer
   ARMV5TL_TRACE_ENTRY       tracebuffer[4096];        //A trace buffer to be able to get pre trace trigger info
 };
 
@@ -750,11 +750,11 @@ void ArmV5tlCore(PARMV5TL_CORE core);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //General memory handler
-void *ArmV5tlGetMemoryPointer(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+void *ArmV5tlGetMemoryPointer(PARMV5TL_CORE core, uint32_t address, uint32_t mode);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void ArmV5tlSetMemoryTraceData(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode, u_int32_t count, u_int32_t direction);
+void ArmV5tlSetMemoryTraceData(PARMV5TL_CORE core, uint32_t address, uint32_t mode, uint32_t count, uint32_t direction);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -768,7 +768,7 @@ void ArmV5tlDPRShift(PARMV5TL_CORE core);
 void ArmV5tlDPRImmediate(PARMV5TL_CORE core);
 
 //Data processing instruction handling
-void ArmV5tlDPR(PARMV5TL_CORE core, u_int32_t vn, u_int32_t vm, u_int32_t c);
+void ArmV5tlDPR(PARMV5TL_CORE core, uint32_t vn, uint32_t vm, uint32_t c);
 
 //Load and store immediate instruction handling
 void ArmV5tlLSImmediate(PARMV5TL_CORE core);
@@ -783,7 +783,7 @@ void ArmV5tlLSExtraImmediate(PARMV5TL_CORE core);
 void ArmV5tlLSExtraRegister(PARMV5TL_CORE core);
 
 //Load and store instruction handling
-void ArmV5tlLS(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode);
+void ArmV5tlLS(PARMV5TL_CORE core, uint32_t address, uint32_t mode);
 
 //Load and store multiple instruction handling
 void ArmV5tlLSM(PARMV5TL_CORE core);
@@ -799,7 +799,7 @@ void ArmV5tlMSRImmediate(PARMV5TL_CORE core);
 void ArmV5tlMSRRegister(PARMV5TL_CORE core);
 
 //Move to status register
-void ArmV5tlMSR(PARMV5TL_CORE core, u_int32_t data);
+void ArmV5tlMSR(PARMV5TL_CORE core, uint32_t data);
 
 //Move status register to register
 void ArmV5tlMRS(PARMV5TL_CORE core);

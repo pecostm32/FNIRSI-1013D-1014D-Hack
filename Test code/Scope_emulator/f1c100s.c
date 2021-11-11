@@ -30,9 +30,9 @@ void F1C100sProcess(PARMV5TL_CORE core)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Memory handlers
-void *F1C100sSram1(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
+void *F1C100sSram1(PARMV5TL_CORE core, uint32_t address, uint32_t mode)
 {
-  u_int32_t idx = address >> 2;
+  uint32_t idx = address >> 2;
   
   switch(mode)
   {
@@ -52,9 +52,9 @@ void *F1C100sSram1(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
   return(NULL);
 }
 
-void *F1C100sSram2(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
+void *F1C100sSram2(PARMV5TL_CORE core, uint32_t address, uint32_t mode)
 {
-  u_int32_t idx = address >> 2;
+  uint32_t idx = address >> 2;
   
   switch(mode)
   {
@@ -74,9 +74,9 @@ void *F1C100sSram2(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
   return(NULL);
 }
 
-void *F1C100sDDR(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
+void *F1C100sDDR(PARMV5TL_CORE core, uint32_t address, uint32_t mode)
 {
-  u_int32_t idx = address >> 2;
+  uint32_t idx = address >> 2;
   
   switch(mode)
   {

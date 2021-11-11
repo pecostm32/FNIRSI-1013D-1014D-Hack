@@ -319,8 +319,8 @@ void ArmV5tlSetup(PARMV5TL_CORE core)
 
 void ArmV5tlCore(PARMV5TL_CORE core)
 {
-  u_int32_t *memorypointer;
-  u_int32_t  execute = 0;
+  uint32_t  *memorypointer;
+  uint32_t   execute = 0;
   int        i;
   char       tracefilename[64];
   
@@ -454,13 +454,13 @@ void ArmV5tlCore(PARMV5TL_CORE core)
     core->pcincrvalue = 4;
     
     //Instruction fetch for arm state
-    memorypointer = (u_int32_t *)ArmV5tlGetMemoryPointer(core, *core->program_counter, ARM_MEMORY_WORD);
+    memorypointer = (uint32_t *)ArmV5tlGetMemoryPointer(core, *core->program_counter, ARM_MEMORY_WORD);
 
     //Check if a valid address is found
     if(memorypointer)
     {
       //get the current instruction
-      core->arm_instruction.instr = (u_int32_t)*memorypointer;
+      core->arm_instruction.instr = (uint32_t)*memorypointer;
      
       //Check the condition bits against the status bits to decide if the instruction needs to be executed
       switch(core->arm_instruction.base.cond)
@@ -930,7 +930,7 @@ ARMV5TL_ADDRESS_MAP address_map[] =
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void *ArmV5tlGetMemoryPointer(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
+void *ArmV5tlGetMemoryPointer(PARMV5TL_CORE core, uint32_t address, uint32_t mode)
 {
   int i;
   
@@ -969,7 +969,7 @@ void *ArmV5tlGetMemoryPointer(PARMV5TL_CORE core, u_int32_t address, u_int32_t m
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void ArmV5tlSetMemoryTraceData(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode, u_int32_t count, u_int32_t direction)
+void ArmV5tlSetMemoryTraceData(PARMV5TL_CORE core, uint32_t address, uint32_t mode, uint32_t count, uint32_t direction)
 {
   int i;
   void *memory;
@@ -993,15 +993,15 @@ void ArmV5tlSetMemoryTraceData(PARMV5TL_CORE core, u_int32_t address, u_int32_t 
       switch(mode & ARM_MEMORY_MASK)  
       {
         case ARM_MEMORY_WORD:
-          core->tracebuffer[core->traceindex].data[i] = *(u_int32_t *)memory;
+          core->tracebuffer[core->traceindex].data[i] = *(uint32_t *)memory;
           break;
 
         case ARM_MEMORY_SHORT:
-          core->tracebuffer[core->traceindex].data[i] = *(u_int16_t *)memory;
+          core->tracebuffer[core->traceindex].data[i] = *(uint16_t *)memory;
           break;
 
         case ARM_MEMORY_BYTE:
-          core->tracebuffer[core->traceindex].data[i] = *(u_int8_t *)memory;
+          core->tracebuffer[core->traceindex].data[i] = *(uint8_t *)memory;
           break;
       }
     }
@@ -1034,10 +1034,10 @@ void ArmV5tlUndefinedInstruction(PARMV5TL_CORE core)
 void ArmV5tlDPRShift(PARMV5TL_CORE core)
 {
   //Get the input data
-  u_int32_t vm = *core->registers[core->current_bank][core->arm_instruction.dpsi.rm];
-  u_int32_t vn = *core->registers[core->current_bank][core->arm_instruction.dpsi.rn];
-  u_int32_t sa;
-  u_int32_t c = core->status->flags.C;
+  uint32_t vm = *core->registers[core->current_bank][core->arm_instruction.dpsi.rm];
+  uint32_t vn = *core->registers[core->current_bank][core->arm_instruction.dpsi.rn];
+  uint32_t sa;
+  uint32_t c = core->status->flags.C;
 
   //Amend the values when r15 (pc) is used
   if(core->arm_instruction.dpsi.rn == 15)
@@ -1215,10 +1215,10 @@ void ArmV5tlDPRShift(PARMV5TL_CORE core)
 void ArmV5tlDPRImmediate(PARMV5TL_CORE core)
 {
   //Get the input data
-  u_int32_t vm = core->arm_instruction.dpi.im;
-  u_int32_t vn = *core->registers[core->current_bank][core->arm_instruction.dpsi.rn];
-  u_int32_t ri = core->arm_instruction.dpi.ri << 1;
-  u_int32_t c = core->status->flags.C;
+  uint32_t vm = core->arm_instruction.dpi.im;
+  uint32_t vn = *core->registers[core->current_bank][core->arm_instruction.dpsi.rn];
+  uint32_t ri = core->arm_instruction.dpi.ri << 1;
+  uint32_t c = core->status->flags.C;
   
   //Amend the operand value when r15 (pc) is used
   if(core->arm_instruction.dpsi.rn == 15)
@@ -1242,11 +1242,11 @@ void ArmV5tlDPRImmediate(PARMV5TL_CORE core)
   
 //----------------------------------------------------------------------------------------------------------------------------------
 //Actual data processing handling
-void ArmV5tlDPR(PARMV5TL_CORE core, u_int32_t vn, u_int32_t vm, u_int32_t c)
+void ArmV5tlDPR(PARMV5TL_CORE core, uint32_t vn, uint32_t vm, uint32_t c)
 {
-  u_int64_t vd;
-  u_int32_t update = 1;
-  u_int32_t docandv = ARM_FLAGS_UPDATE_CV_NO;
+  uint64_t vd;
+  uint32_t update = 1;
+  uint32_t docandv = ARM_FLAGS_UPDATE_CV_NO;
   
   //Perform the correct action based on the opcode
   switch(core->arm_instruction.type0.opcode)
@@ -1453,9 +1453,9 @@ void ArmV5tlDPR(PARMV5TL_CORE core, u_int32_t vn, u_int32_t vm, u_int32_t c)
 void ArmV5tlLSImmediate(PARMV5TL_CORE core)
 {
   //Get the input data. Assume target is a word
-  u_int32_t mode = ARM_MEMORY_WORD;
-  u_int32_t vn = *core->registers[core->current_bank][core->arm_instruction.lsi.rn];
-  u_int32_t addr;
+  uint32_t mode = ARM_MEMORY_WORD;
+  uint32_t vn = *core->registers[core->current_bank][core->arm_instruction.lsi.rn];
+  uint32_t addr;
   
   //Amend the value when r15 (pc) is used
   if(core->arm_instruction.lsi.rn == 15)
@@ -1516,11 +1516,11 @@ void ArmV5tlLSImmediate(PARMV5TL_CORE core)
 void ArmV5tlLSRegister(PARMV5TL_CORE core)
 {
   //Get the input data. Assume target is a word
-  u_int32_t mode = ARM_MEMORY_WORD;
-  u_int32_t vm = *core->registers[core->current_bank][core->arm_instruction.lsr.rm];
-  u_int32_t vn = *core->registers[core->current_bank][core->arm_instruction.lsr.rn];
-  u_int32_t addr;
-  u_int32_t sa;
+  uint32_t mode = ARM_MEMORY_WORD;
+  uint32_t vm = *core->registers[core->current_bank][core->arm_instruction.lsr.rm];
+  uint32_t vn = *core->registers[core->current_bank][core->arm_instruction.lsr.rn];
+  uint32_t addr;
+  uint32_t sa;
 
   //Amend the values when r15 (pc) is used
   if(core->arm_instruction.lsr.rn == 15)
@@ -1660,10 +1660,10 @@ void ArmV5tlLSRegister(PARMV5TL_CORE core)
 void ArmV5tlLSExtraImmediate(PARMV5TL_CORE core)
 {
   //The offset is constructed by shifting the high part 4 positions and oring the low part. (rs = immedH, rm = immedL)
-  u_int32_t of = (core->arm_instruction.lsx.rs << 4) | core->arm_instruction.lsx.rm;
-  u_int32_t vn = *core->registers[core->current_bank][core->arm_instruction.lsx.rn];
-  u_int32_t mode = ARM_MEMORY_WORD;
-  u_int32_t addr;
+  uint32_t of = (core->arm_instruction.lsx.rs << 4) | core->arm_instruction.lsx.rm;
+  uint32_t vn = *core->registers[core->current_bank][core->arm_instruction.lsx.rn];
+  uint32_t mode = ARM_MEMORY_WORD;
+  uint32_t addr;
   
   //Amend the value when r15 (pc) is used
   if(core->arm_instruction.lsx.rn == 15)
@@ -1760,10 +1760,10 @@ void ArmV5tlLSExtraImmediate(PARMV5TL_CORE core)
 void ArmV5tlLSExtraRegister(PARMV5TL_CORE core)
 {
   //Get the input data. Assume target is a word
-  u_int32_t mode = ARM_MEMORY_WORD;
-  u_int32_t vm = *core->registers[core->current_bank][core->arm_instruction.lsx.rm];
-  u_int32_t vn = *core->registers[core->current_bank][core->arm_instruction.lsx.rn];
-  u_int32_t addr;
+  uint32_t mode = ARM_MEMORY_WORD;
+  uint32_t vm = *core->registers[core->current_bank][core->arm_instruction.lsx.rm];
+  uint32_t vn = *core->registers[core->current_bank][core->arm_instruction.lsx.rn];
+  uint32_t addr;
 
   //Amend the values when r15 (pc) is used
   if(core->arm_instruction.lsx.rn == 15)
@@ -1863,10 +1863,10 @@ void ArmV5tlLSExtraRegister(PARMV5TL_CORE core)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Load and store instruction handling
-void ArmV5tlLS(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
+void ArmV5tlLS(PARMV5TL_CORE core, uint32_t address, uint32_t mode)
 {
   void *memory;
-  u_int32_t memtype = mode & ARM_MEMORY_MASK;
+  uint32_t memtype = mode & ARM_MEMORY_MASK;
     
   //Get a pointer to the given address based on the mode
   memory = ArmV5tlGetMemoryPointer(core, address, memtype);
@@ -1889,12 +1889,12 @@ void ArmV5tlLS(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
         if(core->arm_instruction.lsr.l)
         {
           //Load from found memory address
-          *core->registers[core->current_bank][core->arm_instruction.lsr.rd] = *(u_int32_t *)memory;
+          *core->registers[core->current_bank][core->arm_instruction.lsr.rd] = *(uint32_t *)memory;
         }
         else
         {
           //Store to found memory address
-          *(u_int32_t *)memory = *core->registers[core->current_bank][core->arm_instruction.lsr.rd];
+          *(uint32_t *)memory = *core->registers[core->current_bank][core->arm_instruction.lsr.rd];
         }
         break;
         
@@ -1903,10 +1903,10 @@ void ArmV5tlLS(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
         if(core->arm_instruction.lsr.l)
         {
           //Load from found memory address
-          *core->registers[core->current_bank][core->arm_instruction.lsr.rd] = *(u_int16_t *)memory;
+          *core->registers[core->current_bank][core->arm_instruction.lsr.rd] = *(uint16_t *)memory;
           
           //Sign extend here when needed
-          if((mode & ARM_SIGN_EXTEND) && (*(u_int16_t *)memory & 0x8000))
+          if((mode & ARM_SIGN_EXTEND) && (*(uint16_t *)memory & 0x8000))
           {
             *core->registers[core->current_bank][core->arm_instruction.lsr.rd] |= 0xFFFF0000;
           }
@@ -1914,7 +1914,7 @@ void ArmV5tlLS(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
         else
         {
           //Store to found memory address
-          *(u_int16_t *)memory = *core->registers[core->current_bank][core->arm_instruction.lsr.rd];
+          *(uint16_t *)memory = *core->registers[core->current_bank][core->arm_instruction.lsr.rd];
         }
         break;
         
@@ -1923,10 +1923,10 @@ void ArmV5tlLS(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
         if(core->arm_instruction.lsr.l)
         {
           //Load from found memory address
-          *core->registers[core->current_bank][core->arm_instruction.lsr.rd] = *(u_int8_t *)memory;
+          *core->registers[core->current_bank][core->arm_instruction.lsr.rd] = *(uint8_t *)memory;
           
           //Sign extend here when needed
-          if((mode & ARM_SIGN_EXTEND) && (*(u_int8_t *)memory & 0x80))
+          if((mode & ARM_SIGN_EXTEND) && (*(uint8_t *)memory & 0x80))
           {
             *core->registers[core->current_bank][core->arm_instruction.lsr.rd] |= 0xFFFFFF00;
           }
@@ -1934,7 +1934,7 @@ void ArmV5tlLS(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
         else
         {
           //Store to found memory address
-          *(u_int8_t *)memory = (u_int8_t)*core->registers[core->current_bank][core->arm_instruction.lsr.rd];
+          *(uint8_t *)memory = (uint8_t)*core->registers[core->current_bank][core->arm_instruction.lsr.rd];
         }
         break;
     }
@@ -1985,11 +1985,11 @@ void ArmV5tlLS(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
 //Load and store multiple instruction handling
 void ArmV5tlLSM(PARMV5TL_CORE core)
 {
-  u_int32_t address = *core->registers[core->current_bank][core->arm_instruction.type4.rn];
-  u_int32_t traceaddress;
-  u_int32_t *memory;
-  u_int32_t reglist = core->arm_instruction.instr & 0x0000FFFF;
-  u_int32_t mode = ARM_MEMORY_WORD;
+  uint32_t  address = *core->registers[core->current_bank][core->arm_instruction.type4.rn];
+  uint32_t  traceaddress;
+  uint32_t  *memory;
+  uint32_t  reglist = core->arm_instruction.instr & 0x0000FFFF;
+  uint32_t  mode = ARM_MEMORY_WORD;
   int       numregs = 0;
   int       bank = core->current_bank;
   int       i;
@@ -2237,8 +2237,8 @@ void ArmV5tlLSM(PARMV5TL_CORE core)
 //MUL, MULS, MLA, MLAS, UMULL, UMULLS, UMLAL, UMLALS, SMULL, SMULLS, SMLAL, SMLALS  
 void ArmV5tlMUL(PARMV5TL_CORE core)
 {
-  u_int32_t rm = *core->registers[core->current_bank][core->arm_instruction.mul.rm];
-  u_int32_t rs = *core->registers[core->current_bank][core->arm_instruction.mul.rs];
+  uint32_t rm = *core->registers[core->current_bank][core->arm_instruction.mul.rm];
+  uint32_t rs = *core->registers[core->current_bank][core->arm_instruction.mul.rs];
   int64_t vd;
   int64_t va;
   
@@ -2251,14 +2251,14 @@ void ArmV5tlMUL(PARMV5TL_CORE core)
   else
   {
     //Do multiply with unsigned inputs
-    vd = (u_int64_t)rs * (u_int64_t)rm;
+    vd = (uint64_t)rs * (uint64_t)rm;
   }
   
   //Check if 64 bit accumulate needed (UMLAL op1:5, SMLAL op1:7)
   if((core->arm_instruction.mul.op1 == 5) || (core->arm_instruction.mul.op1 == 7))
   {
     //Get the value to add from the two destination registers. rd holds high part, rn holds low part.
-    va  = (u_int64_t)*core->registers[core->current_bank][core->arm_instruction.mul.rd] << 32;
+    va  = (uint64_t)*core->registers[core->current_bank][core->arm_instruction.mul.rd] << 32;
     va |= *core->registers[core->current_bank][core->arm_instruction.mul.rn];
     
     //Do the summation
@@ -2275,7 +2275,7 @@ void ArmV5tlMUL(PARMV5TL_CORE core)
   if((core->arm_instruction.mul.op1 == 0) || (core->arm_instruction.mul.op1 == 1))
   {
     //Store the 32 bit result back to rd
-    *core->registers[core->current_bank][core->arm_instruction.mul.rd] = (u_int32_t)vd;
+    *core->registers[core->current_bank][core->arm_instruction.mul.rd] = (uint32_t)vd;
     
     //Check if status flags need to be updated
     if(core->arm_instruction.mul.s)
@@ -2291,8 +2291,8 @@ void ArmV5tlMUL(PARMV5TL_CORE core)
   else
   {
     //Store the 64 bit result back to register pair. rd holds high part, rn holds low part.
-    *core->registers[core->current_bank][core->arm_instruction.mul.rd] = (u_int32_t)(vd >> 32);
-    *core->registers[core->current_bank][core->arm_instruction.mul.rn] = (u_int32_t)vd;
+    *core->registers[core->current_bank][core->arm_instruction.mul.rd] = (uint32_t)(vd >> 32);
+    *core->registers[core->current_bank][core->arm_instruction.mul.rn] = (uint32_t)vd;
     
     //Check if status flags need to be updated
     if(core->arm_instruction.mul.s)
@@ -2351,8 +2351,8 @@ void ArmV5tlSMULxy(PARMV5TL_CORE core)
 void ArmV5tlMSRImmediate(PARMV5TL_CORE core)
 {
   //Get the input data
-  u_int32_t vm = core->arm_instruction.msri.im;
-  u_int32_t ri = core->arm_instruction.msri.ri << 1;
+  uint32_t vm = core->arm_instruction.msri.im;
+  uint32_t ri = core->arm_instruction.msri.ri << 1;
   
   //Check if rotation is needed
   if(ri)
@@ -2369,7 +2369,7 @@ void ArmV5tlMSRImmediate(PARMV5TL_CORE core)
 //Move register to status register
 void ArmV5tlMSRRegister(PARMV5TL_CORE core)
 {
-  u_int32_t vm = *core->registers[core->current_bank][core->arm_instruction.msrr.rm];
+  uint32_t vm = *core->registers[core->current_bank][core->arm_instruction.msrr.rm];
   
   //Go and do the actual processing
   ArmV5tlMSR(core, vm);
@@ -2377,9 +2377,9 @@ void ArmV5tlMSRRegister(PARMV5TL_CORE core)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Move to status register
-void ArmV5tlMSR(PARMV5TL_CORE core, u_int32_t data)
+void ArmV5tlMSR(PARMV5TL_CORE core, uint32_t data)
 {
-  u_int32_t bytemask = 0x00000000;
+  uint32_t bytemask = 0x00000000;
   
   //Setup the byte mask based on the field mask bits
   //Control field
@@ -2498,9 +2498,9 @@ void ArmV5tlMRS(PARMV5TL_CORE core)
 //Move register to coprocessor or coprocessor to register
 void ArmV5tlMRCMCR(PARMV5TL_CORE core)
 {
-//  u_int32_t cpn = core->arm_instruction.mrcmcr.cpn;
-//  u_int32_t crm = core->arm_instruction.mrcmcr.crm;
-//  u_int32_t crn = core->arm_instruction.mrcmcr.crn;
+//  uint32_t cpn = core->arm_instruction.mrcmcr.cpn;
+//  uint32_t crm = core->arm_instruction.mrcmcr.crm;
+//  uint32_t crn = core->arm_instruction.mrcmcr.crn;
   
   //For now only coprocessor 15 read is implemented
   if((core->arm_instruction.mrcmcr.cpn == 15) && (core->arm_instruction.mrcmcr.d))
@@ -2570,7 +2570,7 @@ void ArmV5tlBranchLinkExchange1(PARMV5TL_CORE core)
 //Handle branch with link and exchange instructions
 void ArmV5tlBranchLinkExchange2(PARMV5TL_CORE core)
 {
-  u_int32_t address = *core->registers[core->current_bank][core->arm_instruction.misc0.rm];
+  uint32_t address = *core->registers[core->current_bank][core->arm_instruction.misc0.rm];
   
   //Load the address after this instruction to the link register r14
   *core->registers[core->current_bank][14] = *core->program_counter + 4;
@@ -2589,7 +2589,7 @@ void ArmV5tlBranchLinkExchange2(PARMV5TL_CORE core)
 //Handle branch with exchange instructions
 void ArmV5tlBranchExchangeT(PARMV5TL_CORE core)
 {
-  u_int32_t address = *core->registers[core->current_bank][core->arm_instruction.misc0.rm];
+  uint32_t address = *core->registers[core->current_bank][core->arm_instruction.misc0.rm];
   
   //Set the new address. Needs to be on a thumb boundary
   *core->program_counter = address & 0xFFFFFFFE;
@@ -2605,7 +2605,7 @@ void ArmV5tlBranchExchangeT(PARMV5TL_CORE core)
 //Handle branch with exchange instructions
 void ArmV5tlBranchExchangeJ(PARMV5TL_CORE core)
 {
-  u_int32_t address = *core->registers[core->current_bank][core->arm_instruction.misc0.rm];
+  uint32_t address = *core->registers[core->current_bank][core->arm_instruction.misc0.rm];
   
   //This is not correct and needs system info to do the correct things
   
@@ -2624,8 +2624,8 @@ void ArmV5tlBranchExchangeJ(PARMV5TL_CORE core)
 void ArmV5tlCLZ(PARMV5TL_CORE core)
 {
   //Get input data
-  u_int32_t vm = *core->registers[core->current_bank][core->arm_instruction.clz.rm];
-  u_int32_t cnt = 0;
+  uint32_t vm = *core->registers[core->current_bank][core->arm_instruction.clz.rm];
+  uint32_t cnt = 0;
   
   //Check on input being zero
   if(vm == 0)

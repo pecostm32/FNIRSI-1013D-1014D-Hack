@@ -29,7 +29,7 @@ void F1C100sProcessTCON(PARMV5TL_CORE core)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //LCD timing control registers
-void *F1C100sTCON(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
+void *F1C100sTCON(PARMV5TL_CORE core, uint32_t address, uint32_t mode)
 {
   F1C100S_MEMORY *ptr = NULL;
   
@@ -210,7 +210,7 @@ void *F1C100sTCON(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //LCD timing control registers read function
-void F1C100sTCONRead(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
+void F1C100sTCONRead(PARMV5TL_CORE core, uint32_t address, uint32_t mode)
 {
   //Select the target register based on word address
   switch(address & 0x000003FC)
@@ -330,7 +330,7 @@ void F1C100sTCONRead(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //LCD timing control registers write function
-void F1C100sTCONWrite(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
+void F1C100sTCONWrite(PARMV5TL_CORE core, uint32_t address, uint32_t mode)
 {
   //Select the target register based on word address
   switch(address & 0x000003FC)
