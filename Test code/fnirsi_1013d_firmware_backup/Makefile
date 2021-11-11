@@ -62,6 +62,7 @@ build: .build-post
 	./mksunxi dist/Debug/GNU_ARM-Linux/fnirsi_1013d_firmware_backup.bin
 #	./flashfilepacker -o ../../FNIRSI-1013D/Scope_emulator/scope_test_code.bin -i dist/Debug/GNU_ARM-Linux/fnirsi_1013d_scope.bin -l 0x27000
 #	./flashfilepacker -o dist/Debug/GNU_ARM-Linux/FSI-1013.bin -i dist/Debug/GNU_ARM-Linux/fnirsi_1013d_scope.bin -l 0x14000
+	./flashfilepacker -o dist/Debug/GNU_ARM-Linux/fnirsi_1013d_fwb.bin -i dist/Debug/GNU_ARM-Linux/fnirsi_1013d_firmware_backup.bin -l 0x8000
 
 # clean
 clean: .clean-post

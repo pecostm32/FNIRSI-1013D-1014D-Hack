@@ -142,9 +142,18 @@ int main(void)
     }
   }
   
-  
+  //Clear a sector worth of data
+  memset(massstoragedata, 0, 512);
   
   //Remove the brom boot sector Need SD card functions for this
+  if(sd_card_write(16, 1, (uint8 *)massstoragedata) != SD_OK)
+  {
+    //Display special touch panel text in red
+    display_set_fg_color(0x00FF0000);
+    display_text(20, 440, "FAILED TO CLEAR SD SECTOR 16 (BROM BOOT)");
+    
+    status = -1;
+  }
   
   //Inform the user done without error
   if(status == 0)
