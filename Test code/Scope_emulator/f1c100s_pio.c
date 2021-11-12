@@ -36,10 +36,10 @@
 #define I2C_SCL_BIT            0x08
 
 //----------------------------------------------------------------------------------------------------------------------------------
-void PortAHandler(F1C100S_PIO_PORT *registers,  u_int32_t mode)
+void PortAHandler(F1C100S_PIO_PORT *registers,  uint32_t mode)
 {
   TOUCH_PANEL_DATA *pd = (TOUCH_PANEL_DATA *)registers->portdata;
-  u_int8_t address;
+  uint8_t address;
   
    //Check if there is device data
   if(pd)
@@ -284,11 +284,11 @@ void PortAHandler(F1C100S_PIO_PORT *registers,  u_int32_t mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Static data
-const u_int8_t tp_coord_reg[2] = { 0x81, 0x50 };
+const uint8_t tp_coord_reg[2] = { 0x81, 0x50 };
 
-const u_int8_t param_status_byte = 0x01;
+const uint8_t param_status_byte = 0x01;
 
-const u_int8_t scope_ch1_data[1600] = 
+const uint8_t scope_ch1_data[1600] =
 {
   0xB0, 0xB0, 0xB0, 0xB0, 0xB0, 0xB0, 0xB0, 0xB0, 0xB0, 0xB0, 0xB0, 0xB0, 0xB0, 0xB0, 0xB0, 0xB0,
   0xB0, 0xB0, 0xB0, 0xB0, 0xB0, 0xB0, 0xB0, 0xB0, 0xB0, 0xB0, 0xB0, 0xB0, 0xB0, 0xB0, 0xB0, 0xB0,
@@ -392,7 +392,7 @@ const u_int8_t scope_ch1_data[1600] =
   0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90,
 };
 
-const u_int8_t scope_ch2_data[1600] = 
+const uint8_t scope_ch2_data[1600] =
 {
   0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28,
   0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28,
@@ -499,7 +499,7 @@ const u_int8_t scope_ch2_data[1600] =
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //FPGA handling
-void PortEHandler(F1C100S_PIO_PORT *registers,  u_int32_t mode)
+void PortEHandler(F1C100S_PIO_PORT *registers,  uint32_t mode)
 {
   FPGA_DATA *pd = (FPGA_DATA *)registers->portdata;
   int i;
@@ -728,8 +728,8 @@ void PortEHandler(F1C100S_PIO_PORT *registers,  u_int32_t mode)
 
                   if(pd->param_trace)
                   {
-                    u_int32_t value;
-                    u_int32_t len = (pd->param_data[1] ^ pd->param_crypt) & 0x03;
+                    uint32_t value;
+                    uint32_t len = (pd->param_data[1] ^ pd->param_crypt) & 0x03;
                     
                     
                     //decode the data
@@ -868,7 +868,7 @@ void PortEHandler(F1C100S_PIO_PORT *registers,  u_int32_t mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //PIO control registers
-void *F1C100sPIO(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
+void *F1C100sPIO(PARMV5TL_CORE core, uint32_t address, uint32_t mode)
 {
   //Check if port control register selected
   if(address < 0xD8)
@@ -932,7 +932,7 @@ void *F1C100sPIO(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //PIO control registers read
-void F1C100sPIORead(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
+void F1C100sPIORead(PARMV5TL_CORE core, uint32_t address, uint32_t mode)
 {
   address &= 0x03FF;
   
@@ -964,7 +964,7 @@ void F1C100sPIORead(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //PIO control registers read
-void F1C100sPIOWrite(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
+void F1C100sPIOWrite(PARMV5TL_CORE core, uint32_t address, uint32_t mode)
 {
   address &= 0x03FF;
 
@@ -996,7 +996,7 @@ void F1C100sPIOWrite(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //PIO port control registers
-void *F1C100sPIOPort(F1C100S_PIO_PORT *registers, u_int32_t address, u_int32_t mode)
+void *F1C100sPIOPort(F1C100S_PIO_PORT *registers, uint32_t address, uint32_t mode)
 {
   F1C100S_MEMORY *ptr = NULL;
   
@@ -1065,7 +1065,7 @@ void *F1C100sPIOPort(F1C100S_PIO_PORT *registers, u_int32_t address, u_int32_t m
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //PIO port control registers read
-void F1C100sPIOPortRead(F1C100S_PIO_PORT *registers, u_int32_t address, u_int32_t mode)
+void F1C100sPIOPortRead(F1C100S_PIO_PORT *registers, uint32_t address, uint32_t mode)
 {
   //Select the target register based on word address
   switch(address & 0x0000003C)
@@ -1104,7 +1104,7 @@ void F1C100sPIOPortRead(F1C100S_PIO_PORT *registers, u_int32_t address, u_int32_
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //PIO port control registers read
-void F1C100sPIOPortWrite(F1C100S_PIO_PORT *registers, u_int32_t address, u_int32_t mode)
+void F1C100sPIOPortWrite(F1C100S_PIO_PORT *registers, uint32_t address, uint32_t mode)
 {
   //Select the target register based on word address
   switch(address & 0x0000003C)
@@ -1143,7 +1143,7 @@ void F1C100sPIOPortWrite(F1C100S_PIO_PORT *registers, u_int32_t address, u_int32
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //PIO interrupt control registers
-void *F1C100sPIOInt(F1C100S_PIO_INT *registers, u_int32_t address, u_int32_t mode)
+void *F1C100sPIOInt(F1C100S_PIO_INT *registers, uint32_t address, uint32_t mode)
 {
   F1C100S_MEMORY *ptr = NULL;
   
@@ -1204,7 +1204,7 @@ void *F1C100sPIOInt(F1C100S_PIO_INT *registers, u_int32_t address, u_int32_t mod
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //PIO interrupt control registers read
-void F1C100sPIOIntRead(F1C100S_PIO_INT *registers, u_int32_t address, u_int32_t mode)
+void F1C100sPIOIntRead(F1C100S_PIO_INT *registers, uint32_t address, uint32_t mode)
 {
   //Select the target register based on word address
   switch(address & 0x0000003C)
@@ -1234,7 +1234,7 @@ void F1C100sPIOIntRead(F1C100S_PIO_INT *registers, u_int32_t address, u_int32_t 
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //PIO interrupt control registers write
-void F1C100sPIOIntWrite(F1C100S_PIO_INT *registers, u_int32_t address, u_int32_t mode)
+void F1C100sPIOIntWrite(F1C100S_PIO_INT *registers, uint32_t address, uint32_t mode)
 {
   //Select the target register based on word address
   switch(address & 0x0000003C)

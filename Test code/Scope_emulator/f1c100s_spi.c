@@ -44,7 +44,7 @@ void F1C100sResetSPI0(PARMV5TL_CORE core)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //SPI0 control registers
-void *F1C100sSPI0(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
+void *F1C100sSPI0(PARMV5TL_CORE core, uint32_t address, uint32_t mode)
 {
   //Call the SPI handler with the registers for SPI0
   return(F1C100sSPI(&core->f1c100s_spi[0], address, mode));
@@ -52,7 +52,7 @@ void *F1C100sSPI0(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //SPI0 control registers read
-void F1C100sSPI0Read(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
+void F1C100sSPI0Read(PARMV5TL_CORE core, uint32_t address, uint32_t mode)
 {
   //Call the SPI read handler with the registers for SPI0
   F1C100sSPIRead(&core->f1c100s_spi[0], address, mode);
@@ -60,7 +60,7 @@ void F1C100sSPI0Read(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //SPI0 control registers write
-void F1C100sSPI0Write(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
+void F1C100sSPI0Write(PARMV5TL_CORE core, uint32_t address, uint32_t mode)
 {
   //Call the SPI write handler with the registers for SPI0
   F1C100sSPIWrite(core, &core->f1c100s_spi[0], address, mode);
@@ -68,7 +68,7 @@ void F1C100sSPI0Write(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //SPI control registers
-void *F1C100sSPI(F1C100S_SPI *registers, u_int32_t address, u_int32_t mode)
+void *F1C100sSPI(F1C100S_SPI *registers, uint32_t address, uint32_t mode)
 {
   F1C100S_MEMORY *ptr = NULL;
   
@@ -153,7 +153,7 @@ void *F1C100sSPI(F1C100S_SPI *registers, u_int32_t address, u_int32_t mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //SPI control registers read
-void F1C100sSPIRead(F1C100S_SPI *registers, u_int32_t address, u_int32_t mode)
+void F1C100sSPIRead(F1C100S_SPI *registers, uint32_t address, uint32_t mode)
 {
   //Select the target register based on word address
   switch(address & 0x00000FFC)
@@ -213,7 +213,7 @@ void F1C100sSPIRead(F1C100S_SPI *registers, u_int32_t address, u_int32_t mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //SPI control registers write
-void F1C100sSPIWrite(PARMV5TL_CORE core, F1C100S_SPI *registers, u_int32_t address, u_int32_t mode)
+void F1C100sSPIWrite(PARMV5TL_CORE core, F1C100S_SPI *registers, uint32_t address, uint32_t mode)
 {
   //Select the target register based on word address
   switch(address & 0x00000FFC)

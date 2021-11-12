@@ -3,6 +3,9 @@
 #ifndef F1C100S_STRUCTS_H
 #define F1C100S_STRUCTS_H
 
+#include <stdint.h>   // for fixed width integer types
+#include <stdio.h>    // for FILE
+
 //----------------------------------------------------------------------------------------------------------------------------------
 
 typedef struct tagF1C100S_PERIPH_STATUS    F1C100S_PERIPH_STATUS;
@@ -36,93 +39,93 @@ typedef union tagF1C100S_MEMORY            F1C100S_MEMORY;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-typedef void (*PORTFUNC)(F1C100S_PIO_PORT *registers, u_int32_t mode);
+typedef void (*PORTFUNC)(F1C100S_PIO_PORT *registers, uint32_t mode);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 union tagF1C100S_MEMORY
 {
-  u_int32_t m_32bit;
+  uint32_t  m_32bit;
   int32_t   s_32bit;
-  u_int16_t m_16bit[2];
-  u_int8_t  m_8bit[4];
+  uint16_t  m_16bit[2];
+  uint8_t   m_8bit[4];
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Data for flash memory handling
 struct tagFLASH_MEMORY
 {
-  u_int32_t commandstate;
-  u_int32_t mode;
-  u_int32_t readaddress;
+  uint32_t  commandstate;
+  uint32_t  mode;
+  uint32_t  readaddress;
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Data for display handling
 struct tagDISPLAY_MEMORY
 {
-  u_int32_t startaddress;            //Start of the video buffer in the core memory
-  u_int32_t linewidth;               //Number of bytes per line
-  u_int32_t xsize;                   //Number of x pixels
-  u_int32_t ysize;                   //Number of y pixels
-  u_int64_t prevcycles;              //CPU cycles count last vertical sync was triggered on
-  u_int64_t numcycles;               //Number of CPU cycles needed for a vertical trigger to occur
-  u_int32_t linetime;                //Number of cpu cycles for a line
-  u_int32_t verticaltime;            //Number of lines for vertical front and back porch
+  uint32_t  startaddress;            //Start of the video buffer in the core memory
+  uint32_t  linewidth;               //Number of bytes per line
+  uint32_t  xsize;                   //Number of x pixels
+  uint32_t  ysize;                   //Number of y pixels
+  uint64_t  prevcycles;              //CPU cycles count last vertical sync was triggered on
+  uint64_t  numcycles;               //Number of CPU cycles needed for a vertical trigger to occur
+  uint32_t  linetime;                //Number of cpu cycles for a line
+  uint32_t  verticaltime;            //Number of lines for vertical front and back porch
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Data for touch panel handling
 struct tagTOUCH_PANEL_DATA
 {
-  u_int8_t  i2c_currentbyte;
-  u_int8_t  i2c_currentbit;
-  u_int8_t  i2c_state;
+  uint8_t   i2c_currentbyte;
+  uint8_t   i2c_currentbit;
+  uint8_t   i2c_state;
   
-  u_int8_t  panel_state;              //Process state for the panel state machine
-  u_int8_t  panel_mode;               //Data direction mode for the current data stream
-  u_int16_t panel_address;            //Internal address for panel read and write actions
-  u_int8_t  panel_data[0x200];        //Panel has a lot of registers. For easy implementation set to 0x200 (address range 0x8000 - 0x8200)
+  uint8_t   panel_state;              //Process state for the panel state machine
+  uint8_t   panel_mode;               //Data direction mode for the current data stream
+  uint16_t  panel_address;            //Internal address for panel read and write actions
+  uint8_t   panel_data[0x200];        //Panel has a lot of registers. For easy implementation set to 0x200 (address range 0x8000 - 0x8200)
   
-  u_int8_t  prev_port_data;
+  uint8_t   prev_port_data;
   
-  u_int8_t  mouse_down;               //Signal from mouse touch panel that there is touch
-  u_int8_t  mouse_prev;               //Previous value to detect the change from touch to no touch
+  uint8_t   mouse_down;               //Signal from mouse touch panel that there is touch
+  uint8_t   mouse_prev;               //Previous value to detect the change from touch to no touch
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Data for FPGA handling
 struct tagFPGA_DATA
 {
-  u_int8_t        current_command;
-  u_int16_t       read_count;
-  const u_int8_t *read_ptr;
-  u_int16_t       write_count;
-  u_int8_t       *write_ptr;
-  u_int8_t        prev_ctrl_bits;
+  uint8_t         current_command;
+  uint16_t        read_count;
+  const uint8_t  *read_ptr;
+  uint16_t        write_count;
+  uint8_t        *write_ptr;
+  uint8_t         prev_ctrl_bits;
   
   //Data for parameter storage system
-  u_int8_t   param_state;
-  u_int8_t   param_crypt;
-  u_int8_t   param_mode;
-  u_int8_t   param_id;
-  u_int8_t   param_data[7];
+  uint8_t    param_state;
+  uint8_t    param_crypt;
+  uint8_t    param_mode;
+  uint8_t    param_id;
+  uint8_t    param_data[7];
   FILE      *param_file;
   FILE      *param_trace;
   
-  u_int8_t   cmd0x14count[2];
+  uint8_t    cmd0x14count[2];
 
-  u_int8_t   cmd0x21data[2];
+  uint8_t    cmd0x21data[2];
   
   
-  u_int8_t   tracedata[1500];
-  u_int32_t  tracecount;
-  u_int32_t  datamode;
+  uint8_t    tracedata[1500];
+  uint32_t   tracecount;
+  uint32_t   datamode;
   
-  u_int32_t  print_command;
+  uint32_t   print_command;
   char       file_name[128];
-  u_int32_t  file_line_count;
-  u_int32_t  file_index;
+  uint32_t   file_line_count;
+  uint32_t   file_index;
   FILE      *trace_file;
 };
 
@@ -130,8 +133,8 @@ struct tagFPGA_DATA
 //Peripheral reset status info
 struct tagF1C100S_PERIPH_STATUS
 {
-  u_int32_t spi0_reset;
-  u_int32_t spi1_reset;
+  uint32_t spi0_reset;
+  uint32_t spi1_reset;
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -245,7 +248,7 @@ struct tagF1C100S_INTC
   F1C100S_MEMORY prio3;
   
   //Internal interrupt status bits
-  u_int32_t interruptstatus[2];
+  uint32_t interruptstatus[2];
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -278,11 +281,11 @@ struct tagF1C100S_TIMER
   int32_t prescalerreload[5];
   
   //Timer control previous values for start detect
-  u_int32_t ctrl_previous[5];
+  uint32_t ctrl_previous[5];
   
   //Timer interrupt status bits
-  u_int32_t interruptstatus;
-  u_int32_t interruptrequest;
+  uint32_t interruptstatus;
+  uint32_t interruptrequest;
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -304,8 +307,8 @@ struct tagF1C100S_SPI
   F1C100S_MEMORY rxd;
   
   //Not directly addressable are the two fifo's each spi interface has
-  u_int8_t txfifo[64];
-  u_int8_t rxfifo[64];
+  uint8_t txfifo[64];
+  uint8_t rxfifo[64];
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -332,17 +335,17 @@ struct tagF1C100S_UART
   F1C100S_MEMORY dbg_dlh;
 
   //Internal registers
-  u_int32_t rbr;
-  u_int32_t thr;
-  u_int32_t dll;
-  u_int32_t dlh;
-  u_int32_t ier;
-  u_int32_t iir;
-  u_int32_t fcr;
+  uint32_t rbr;
+  uint32_t thr;
+  uint32_t dll;
+  uint32_t dlh;
+  uint32_t ier;
+  uint32_t iir;
+  uint32_t fcr;
   
   //Not directly addressable are the two fifo's each uart interface has
-  u_int8_t txfifo[64];
-  u_int8_t rxfifo[64];
+  uint8_t txfifo[64];
+  uint8_t rxfifo[64];
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------

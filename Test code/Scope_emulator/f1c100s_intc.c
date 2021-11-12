@@ -42,7 +42,7 @@ void F1C100sProcessINTC(PARMV5TL_CORE core)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Interrupt control registers
-void *F1C100sINTC(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
+void *F1C100sINTC(PARMV5TL_CORE core, uint32_t address, uint32_t mode)
 {
   F1C100S_MEMORY *ptr = NULL;
   
@@ -143,7 +143,7 @@ void *F1C100sINTC(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Timer control registers read function
-void F1C100sINTCRead(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
+void F1C100sINTCRead(PARMV5TL_CORE core, uint32_t address, uint32_t mode)
 {
   F1C100S_MEMORY *ptr = NULL;
   
@@ -209,7 +209,7 @@ void F1C100sINTCRead(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Timer control registers write function
-void F1C100sINTCWrite(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
+void F1C100sINTCWrite(PARMV5TL_CORE core, uint32_t address, uint32_t mode)
 {
   F1C100S_MEMORY *ptr = NULL;
   

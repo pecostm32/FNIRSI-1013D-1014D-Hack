@@ -10,16 +10,16 @@
 
 void ArmV5tlHandleThumb(PARMV5TL_CORE core)
 {
-  u_int16_t *memorypointer;
+  uint16_t *memorypointer;
 
   //Instruction fetch for thumb state
-  memorypointer = (u_int16_t *)ArmV5tlGetMemoryPointer(core, *core->program_counter, ARM_MEMORY_SHORT);
+  memorypointer = (uint16_t *)ArmV5tlGetMemoryPointer(core, *core->program_counter, ARM_MEMORY_SHORT);
 
   //Check if a valid address is found
   if(memorypointer)
   {
     //get the current instruction
-    core->thumb_instruction.instr = (u_int16_t)*memorypointer;
+    core->thumb_instruction.instr = (uint16_t)*memorypointer;
     
     //Check if tracing into buffer is enabled.
     if(core->tracebufferenabled)
@@ -222,9 +222,9 @@ void ArmV5tlHandleThumb(PARMV5TL_CORE core)
 //Immediate shift
 void ArmV5tlThumbShiftImmediate(PARMV5TL_CORE core)
 {
-  u_int32_t sa = core->thumb_instruction.shift0.sa;
-  u_int32_t vm = *core->registers[core->current_bank][core->thumb_instruction.shift0.rm];
-  u_int32_t type;
+  uint32_t sa = core->thumb_instruction.shift0.sa;
+  uint32_t vm = *core->registers[core->current_bank][core->thumb_instruction.shift0.rm];
+  uint32_t type;
   
   
   switch(core->thumb_instruction.shift0.op1)
@@ -258,9 +258,9 @@ void ArmV5tlThumbShiftImmediate(PARMV5TL_CORE core)
 //Register shift
 void ArmV5tlThumbShiftRegister(PARMV5TL_CORE core)
 {
-  u_int32_t sa = *core->registers[core->current_bank][core->thumb_instruction.shift2.rs];
-  u_int32_t vm = *core->registers[core->current_bank][core->thumb_instruction.shift2.rd];
-  u_int32_t type;
+  uint32_t sa = *core->registers[core->current_bank][core->thumb_instruction.shift2.rs];
+  uint32_t vm = *core->registers[core->current_bank][core->thumb_instruction.shift2.rd];
+  uint32_t type;
   
   //LSL(2) op2:2, LSR(2) op2:3, ASR(2) op2:4, ROR op2:7
   //Other values are filtered out in the decode stage
@@ -289,9 +289,9 @@ void ArmV5tlThumbShiftRegister(PARMV5TL_CORE core)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Shift
-void ArmV5tlThumbShift(PARMV5TL_CORE core, u_int32_t type, u_int32_t sa, u_int32_t vm)
+void ArmV5tlThumbShift(PARMV5TL_CORE core, uint32_t type, uint32_t sa, uint32_t vm)
 {
-  u_int32_t c = core->status->flags.C;
+  uint32_t c = core->status->flags.C;
   
   //Take action based on the shift type
   switch(type)
@@ -410,10 +410,10 @@ void ArmV5tlThumbShift(PARMV5TL_CORE core, u_int32_t type, u_int32_t sa, u_int32
 void ArmV5tlThumbDP0(PARMV5TL_CORE core)
 {
   //Get the input data. For rd and vn there is no difference between dpi0 and dpr0
-  u_int32_t rd = core->thumb_instruction.dpi0.rd;
-  u_int32_t vm;
-  u_int32_t vn = *core->registers[core->current_bank][core->thumb_instruction.dpr0.rn];
-  u_int32_t type;
+  uint32_t rd = core->thumb_instruction.dpi0.rd;
+  uint32_t vm;
+  uint32_t vn = *core->registers[core->current_bank][core->thumb_instruction.dpr0.rn];
+  uint32_t type;
   
   //For op2 both dpr0 and dpi0 are the same
   switch(core->thumb_instruction.dpr0.op2)
@@ -470,10 +470,10 @@ void ArmV5tlThumbDP0(PARMV5TL_CORE core)
 void ArmV5tlThumbDP1(PARMV5TL_CORE core)
 {
   //Get the input data.
-  u_int32_t rd = core->thumb_instruction.dp1.rd;
-  u_int32_t vm = core->thumb_instruction.dp1.im;
-  u_int32_t vn = *core->registers[core->current_bank][core->thumb_instruction.dp1.rd];
-  u_int32_t type;
+  uint32_t rd = core->thumb_instruction.dp1.rd;
+  uint32_t vm = core->thumb_instruction.dp1.im;
+  uint32_t vn = *core->registers[core->current_bank][core->thumb_instruction.dp1.rd];
+  uint32_t type;
   
   //For type 1 the op1 is the select for the type of function to perform
   switch(core->thumb_instruction.dp1.op1)
@@ -508,10 +508,10 @@ void ArmV5tlThumbDP1(PARMV5TL_CORE core)
 void ArmV5tlThumbDP2(PARMV5TL_CORE core)
 {
   //Get the input data.
-  u_int32_t rd = core->thumb_instruction.dp2.rd;
-  u_int32_t vm = *core->registers[core->current_bank][core->thumb_instruction.dp2.rm];
-  u_int32_t vn = *core->registers[core->current_bank][core->thumb_instruction.dp2.rd];
-  u_int32_t type;
+  uint32_t rd = core->thumb_instruction.dp2.rd;
+  uint32_t vm = *core->registers[core->current_bank][core->thumb_instruction.dp2.rm];
+  uint32_t vn = *core->registers[core->current_bank][core->thumb_instruction.dp2.rd];
+  uint32_t type;
   
   //For type 2 dp2 op2 tells which function to perform. Some have already been filtered out in the decoding process.
   switch(core->thumb_instruction.dp2.op2)
@@ -586,10 +586,10 @@ void ArmV5tlThumbDP2(PARMV5TL_CORE core)
 void ArmV5tlThumbDP2S(PARMV5TL_CORE core)
 {
  //Get the input data. rd is a combination of the h (high) bit and the three rd bits
-  u_int32_t rd = core->thumb_instruction.dp2s.rd | (core->thumb_instruction.dp2s.h << 3);
-  u_int32_t vm = *core->registers[core->current_bank][core->thumb_instruction.dp2s.rm];
-  u_int32_t vn = *core->registers[core->current_bank][rd];
-  u_int32_t type;
+  uint32_t rd = core->thumb_instruction.dp2s.rd | (core->thumb_instruction.dp2s.h << 3);
+  uint32_t vm = *core->registers[core->current_bank][core->thumb_instruction.dp2s.rm];
+  uint32_t vn = *core->registers[core->current_bank][rd];
+  uint32_t type;
   
   //Not sure about this. Manual does not give enogh info
   //Amend the values when r15 (pc) is used
@@ -629,11 +629,11 @@ void ArmV5tlThumbDP2S(PARMV5TL_CORE core)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Actual data processing handling
-void ArmV5tlThumbDP(PARMV5TL_CORE core, u_int32_t type, u_int32_t  rd, u_int32_t vn, u_int32_t vm)
+void ArmV5tlThumbDP(PARMV5TL_CORE core, uint32_t type, uint32_t  rd, uint32_t vn, uint32_t vm)
 {
-  u_int64_t vd;
-  u_int32_t update = 1;
-  u_int32_t docandv = ARM_FLAGS_UPDATE_CV_NO;
+  uint64_t vd;
+  uint32_t update = 1;
+  uint32_t docandv = ARM_FLAGS_UPDATE_CV_NO;
   
   //Check if NEG
   if(type & ARM_OPCODE_THUMB_NEG)
@@ -818,11 +818,11 @@ void ArmV5tlThumbDP(PARMV5TL_CORE core, u_int32_t type, u_int32_t  rd, u_int32_t
 void ArmV5tlThumbLS2I(PARMV5TL_CORE core)
 {
  //Get the input data
-  u_int32_t rd = core->thumb_instruction.ls2i.rd;
-  u_int32_t vm = core->thumb_instruction.ls2i.im * 4;
-  u_int32_t vn = (*core->program_counter + 4) & 0xFFFFFFFC;
-  u_int32_t type;
-  u_int32_t address = vn + vm;
+  uint32_t rd = core->thumb_instruction.ls2i.rd;
+  uint32_t vm = core->thumb_instruction.ls2i.im * 4;
+  uint32_t vn = (*core->program_counter + 4) & 0xFFFFFFFC;
+  uint32_t type;
+  uint32_t address = vn + vm;
 
   //Signal loading of a word
   type = ARM_MEMORY_WORD | ARM_THUMB_LOAD_FLAG;
@@ -836,11 +836,11 @@ void ArmV5tlThumbLS2I(PARMV5TL_CORE core)
 void ArmV5tlThumbLS2R(PARMV5TL_CORE core)
 {
  //Get the input data
-  u_int32_t rd = core->thumb_instruction.ls2r.rd;
-  u_int32_t vm = *core->registers[core->current_bank][core->thumb_instruction.ls2r.rm];
-  u_int32_t vn = *core->registers[core->current_bank][core->thumb_instruction.ls2r.rn];
-  u_int32_t type;
-  u_int32_t address = vn + vm;
+  uint32_t rd = core->thumb_instruction.ls2r.rd;
+  uint32_t vm = *core->registers[core->current_bank][core->thumb_instruction.ls2r.rm];
+  uint32_t vn = *core->registers[core->current_bank][core->thumb_instruction.ls2r.rn];
+  uint32_t type;
+  uint32_t address = vn + vm;
   
   //Check if sign extend instructions
   if(core->thumb_instruction.ls2r.op2 == 3)
@@ -883,11 +883,11 @@ void ArmV5tlThumbLS2R(PARMV5TL_CORE core)
 void ArmV5tlThumbLS3(PARMV5TL_CORE core)
 {
  //Get the input data
-  u_int32_t rd = core->thumb_instruction.ls3.rd;
-  u_int32_t vm = core->thumb_instruction.ls3.im * 4;
-  u_int32_t vn = *core->registers[core->current_bank][core->thumb_instruction.ls3.rn];
-  u_int32_t type;
-  u_int32_t address = vn + vm;
+  uint32_t rd = core->thumb_instruction.ls3.rd;
+  uint32_t vm = core->thumb_instruction.ls3.im * 4;
+  uint32_t vn = *core->registers[core->current_bank][core->thumb_instruction.ls3.rn];
+  uint32_t type;
+  uint32_t address = vn + vm;
 
   //Set the correct size for the given instruction
   if(core->thumb_instruction.ls3.type == 4)
@@ -922,11 +922,11 @@ void ArmV5tlThumbLS3(PARMV5TL_CORE core)
 void ArmV5tlThumbLS4(PARMV5TL_CORE core)
 {
  //Get the input data. Instruction format is the same as for type 2 immediate indexed so reusing it here
-  u_int32_t rd = core->thumb_instruction.ls2i.rd;
-  u_int32_t vm = core->thumb_instruction.ls2i.im * 4;
-  u_int32_t vn = (*core->registers[core->current_bank][13]) & 0xFFFFFFFC;
-  u_int32_t type = ARM_MEMORY_WORD;
-  u_int32_t address = vn + vm;
+  uint32_t rd = core->thumb_instruction.ls2i.rd;
+  uint32_t vm = core->thumb_instruction.ls2i.im * 4;
+  uint32_t vn = (*core->registers[core->current_bank][13]) & 0xFFFFFFFC;
+  uint32_t type = ARM_MEMORY_WORD;
+  uint32_t address = vn + vm;
 
   //Check if load or store
   if(core->thumb_instruction.ls2i.op1 == 3)
@@ -941,10 +941,10 @@ void ArmV5tlThumbLS4(PARMV5TL_CORE core)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Thumb load and store instruction handling
-void ArmV5tlThumbLS(PARMV5TL_CORE core, u_int32_t type, u_int32_t rd, u_int32_t address)
+void ArmV5tlThumbLS(PARMV5TL_CORE core, uint32_t type, uint32_t rd, uint32_t address)
 {
   void *memory;
-  u_int32_t mode = type & ARM_MEMORY_MASK;
+  uint32_t mode = type & ARM_MEMORY_MASK;
 
   //Get a pointer to the memory for the given address and type
   memory = ArmV5tlGetMemoryPointer(core, address, mode);
@@ -967,7 +967,7 @@ void ArmV5tlThumbLS(PARMV5TL_CORE core, u_int32_t type, u_int32_t rd, u_int32_t 
         if(type & ARM_THUMB_LOAD_FLAG)
         {
           //Load from memory address
-          *core->registers[core->current_bank][rd] = *(u_int8_t *)memory;
+          *core->registers[core->current_bank][rd] = *(uint8_t *)memory;
 
           //Check if sign extend needed
           if((type & ARM_THUMB_SIGN_EXTEND) && (*core->registers[core->current_bank][rd] & 0x80))
@@ -978,7 +978,7 @@ void ArmV5tlThumbLS(PARMV5TL_CORE core, u_int32_t type, u_int32_t rd, u_int32_t 
         else
         {
           //Store to memory address
-          *(u_int8_t *)memory = (u_int8_t)*core->registers[core->current_bank][rd];
+          *(uint8_t *)memory = (uint8_t)*core->registers[core->current_bank][rd];
         }
         break;
 
@@ -987,7 +987,7 @@ void ArmV5tlThumbLS(PARMV5TL_CORE core, u_int32_t type, u_int32_t rd, u_int32_t 
         if(type & ARM_THUMB_LOAD_FLAG)
         {
           //Load from memory address
-          *core->registers[core->current_bank][rd] = *(u_int16_t *)memory;
+          *core->registers[core->current_bank][rd] = *(uint16_t *)memory;
 
           //Check if sign extend needed
           if((type & ARM_THUMB_SIGN_EXTEND) && (*core->registers[core->current_bank][rd] & 0x8000))
@@ -998,7 +998,7 @@ void ArmV5tlThumbLS(PARMV5TL_CORE core, u_int32_t type, u_int32_t rd, u_int32_t 
         else
         {
           //Store to memory address
-          *(u_int16_t *)memory = (u_int16_t)*core->registers[core->current_bank][rd];
+          *(uint16_t *)memory = (uint16_t)*core->registers[core->current_bank][rd];
         }
         break;
 
@@ -1007,12 +1007,12 @@ void ArmV5tlThumbLS(PARMV5TL_CORE core, u_int32_t type, u_int32_t rd, u_int32_t 
         if(type & ARM_THUMB_LOAD_FLAG)
         {
           //Load from memory address
-          *core->registers[core->current_bank][rd] = *(u_int32_t *)memory;
+          *core->registers[core->current_bank][rd] = *(uint32_t *)memory;
         }
         else
         {
           //Store to memory address
-          *(u_int32_t *)memory = *core->registers[core->current_bank][rd];
+          *(uint32_t *)memory = *core->registers[core->current_bank][rd];
         }
         break;
     }
@@ -1050,11 +1050,11 @@ void ArmV5tlThumbLS(PARMV5TL_CORE core, u_int32_t type, u_int32_t rd, u_int32_t 
 //Load and store multiple instruction handling
 void ArmV5tlThumbLSMIA(PARMV5TL_CORE core)
 {
-  u_int32_t address = *core->registers[core->current_bank][core->thumb_instruction.lsm.rn];
-  u_int32_t traceaddress = address;
-  u_int32_t *memory;
-  u_int32_t reglist = core->thumb_instruction.lsm.rl;
-  u_int32_t mode = ARM_MEMORY_WORD;
+  uint32_t  address = *core->registers[core->current_bank][core->thumb_instruction.lsm.rn];
+  uint32_t  traceaddress = address;
+  uint32_t *memory;
+  uint32_t  reglist = core->thumb_instruction.lsm.rl;
+  uint32_t  mode = ARM_MEMORY_WORD;
   int       numregs = 0;
   int       update = 1;
   int       i;
@@ -1145,10 +1145,10 @@ void ArmV5tlThumbLSMIA(PARMV5TL_CORE core)
 //Pop instruction handling
 void ArmV5tlThumbPOP(PARMV5TL_CORE core)
 {
-  u_int32_t address = *core->registers[core->current_bank][13];
-  u_int32_t traceaddress = address;
-  u_int32_t *memory;
-  u_int32_t reglist = core->thumb_instruction.lsm.rl;
+  uint32_t  address = *core->registers[core->current_bank][13];
+  uint32_t  traceaddress = address;
+  uint32_t *memory;
+  uint32_t  reglist = core->thumb_instruction.lsm.rl;
   int       numregs = 0;
   int       i;
   
@@ -1226,10 +1226,10 @@ void ArmV5tlThumbPOP(PARMV5TL_CORE core)
 void ArmV5tlThumbPUSH(PARMV5TL_CORE core)
 {
   //For a push an extra 4 needs to be subtracted from the start address (decrement before)
-  u_int32_t address = *core->registers[core->current_bank][13] - 4;
-  u_int32_t traceaddress = address;
-  u_int32_t *memory;
-  u_int32_t reglist = core->thumb_instruction.lsm.rl;
+  uint32_t  address = *core->registers[core->current_bank][13] - 4;
+  uint32_t  traceaddress = address;
+  uint32_t *memory;
+  uint32_t  reglist = core->thumb_instruction.lsm.rl;
   int       numregs = 0;
   int       i;
   
@@ -1303,7 +1303,7 @@ void ArmV5tlThumbPUSH(PARMV5TL_CORE core)
 //Type 2 instructions branch handling
 void ArmV5tlThumbBranch2(PARMV5TL_CORE core)
 {
-  u_int32_t vm = *core->registers[core->current_bank][core->thumb_instruction.b2.rm];
+  uint32_t vm = *core->registers[core->current_bank][core->thumb_instruction.b2.rm];
   
   //When the program counter is used the value needs to be plus 4
   if(core->thumb_instruction.b2.rm == 15)
@@ -1332,8 +1332,8 @@ void ArmV5tlThumbBranch2(PARMV5TL_CORE core)
 //Type 6 instructions branch handling
 void ArmV5tlThumbBranch6(PARMV5TL_CORE core)
 {
-  u_int32_t vm;
-  u_int32_t execute = 0;
+  uint32_t vm;
+  uint32_t execute = 0;
 
   //Check the condition bits against the status bits to decide if the branch needs to be executed
   switch(core->thumb_instruction.b6.cond)
@@ -1448,7 +1448,7 @@ void ArmV5tlThumbBranch6(PARMV5TL_CORE core)
 //Type 7 instructions branch handling
 void ArmV5tlThumbBranch7(PARMV5TL_CORE core)
 {
-  u_int32_t vm;
+  uint32_t vm;
 
   //Check on unconditional branch
   if(core->thumb_instruction.b7.op1 == 0)

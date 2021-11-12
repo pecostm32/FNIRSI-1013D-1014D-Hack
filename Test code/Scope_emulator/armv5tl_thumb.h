@@ -28,20 +28,20 @@ void ArmV5tlHandleThumb(PARMV5TL_CORE core);
 
 void ArmV5tlThumbShiftImmediate(PARMV5TL_CORE core);
 void ArmV5tlThumbShiftRegister(PARMV5TL_CORE core);
-void ArmV5tlThumbShift(PARMV5TL_CORE core, u_int32_t type, u_int32_t sa, u_int32_t vm);
+void ArmV5tlThumbShift(PARMV5TL_CORE core, uint32_t type, uint32_t sa, uint32_t vm);
 
 void ArmV5tlThumbDP0(PARMV5TL_CORE core);
 void ArmV5tlThumbDP1(PARMV5TL_CORE core);
 void ArmV5tlThumbDP2(PARMV5TL_CORE core);
 void ArmV5tlThumbDP2S(PARMV5TL_CORE core);
-void ArmV5tlThumbDP(PARMV5TL_CORE core, u_int32_t type, u_int32_t rd, u_int32_t vn, u_int32_t vm);
+void ArmV5tlThumbDP(PARMV5TL_CORE core, uint32_t type, uint32_t rd, uint32_t vn, uint32_t vm);
 
 void ArmV5tlThumbLS2I(PARMV5TL_CORE core);
 void ArmV5tlThumbLS2R(PARMV5TL_CORE core);
 void ArmV5tlThumbLS3(PARMV5TL_CORE core);
 void ArmV5tlThumbLS4(PARMV5TL_CORE core);
 
-void ArmV5tlThumbLS(PARMV5TL_CORE core, u_int32_t type, u_int32_t rd, u_int32_t address);
+void ArmV5tlThumbLS(PARMV5TL_CORE core, uint32_t type, uint32_t rd, uint32_t address);
 
 void ArmV5tlThumbLSMIA(PARMV5TL_CORE core);
 

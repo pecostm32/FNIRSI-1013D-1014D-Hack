@@ -13,7 +13,7 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //LCD timing control registers
-void *F1C100sDEBE(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
+void *F1C100sDEBE(PARMV5TL_CORE core, uint32_t address, uint32_t mode)
 {
   F1C100S_MEMORY *ptr = NULL;
   
@@ -282,7 +282,7 @@ void *F1C100sDEBE(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //LCD timing control registers
-void F1C100sDEBERead(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
+void F1C100sDEBERead(PARMV5TL_CORE core, uint32_t address, uint32_t mode)
 {
   //Select the target register based on word address
   switch(address & 0x00000FFC)
@@ -468,7 +468,7 @@ void F1C100sDEBERead(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //LCD timing control registers
-void F1C100sDEBEWrite(PARMV5TL_CORE core, u_int32_t address, u_int32_t mode)
+void F1C100sDEBEWrite(PARMV5TL_CORE core, uint32_t address, uint32_t mode)
 {
   //Select the target register based on word address
   switch(address & 0x00000FFC)

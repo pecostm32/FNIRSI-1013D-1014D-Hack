@@ -226,7 +226,7 @@ int main(int argc,char **argv)
           //Need some scaling algo here to match the scope display to the screen display. The scaling will mostly be one but just in case
           int ix,iy,idx;
 
-          u_int16_t *dptr = (u_int16_t *)&parm_core->dram[parm_core->displaymemory.startaddress].m_16bit[0];
+          uint16_t *dptr = (uint16_t *)&parm_core->dram[parm_core->displaymemory.startaddress].m_16bit[0];
 
           for(iy=0;iy<scopedisplay->height;iy++)
           {
