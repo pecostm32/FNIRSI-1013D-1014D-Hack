@@ -2318,7 +2318,7 @@ void ArmV5tlSMULxy(PARMV5TL_CORE core)
   if(core->arm_instruction.smulxy.x)
   {
     //Upper half of the word
-    rm >> 16;
+    rm >>= 16;
   }
   
   //Check if sign extend is needed for this input
@@ -2332,7 +2332,7 @@ void ArmV5tlSMULxy(PARMV5TL_CORE core)
   if(core->arm_instruction.smulxy.y)
   {
     //Upper half of the word
-    rs >> 16;
+    rs >>= 16;
   }
   
   //Check if sign extend is needed for this input
