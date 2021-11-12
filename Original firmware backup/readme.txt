@@ -36,4 +36,7 @@ When the scope showed the "!! special touch panel detected !!" message please up
 !!                                                                                                              !!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+The firmware backup made (FWB_FSI_1013.bin) contains both the startup image and the actual scope program plus the settings.
+It also has the check values the scope needs for restoring the firmware.
 
+This is not yet tested as such. It needs renaming to FNI_1013.bin and be written on the scopes SD card.
