@@ -36,9 +36,11 @@ When the scope showed the "!! special touch panel detected !!" message please up
 !!                                                                                                              !!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-The firmware backup made (FWB_FSI_1013.bin) contains both the startup image and the actual scope program plus the settings.
+The firmware backup made (FWB_FSI-1013.bin) contains both the startup image and the actual scope program plus the settings.
 It also has the check values the scope needs for restoring the firmware.
 
-This is not yet tested as such. It needs renaming to FNI-1013.bin and be written on the scopes SD card.
+It needs renaming to FNI-1013.bin and be written on the scopes SD card.
 
-!! It sees it as corrupted, so needs more work !!
+Check bytes are now correct, but it still needs to be tested as a firmware restore. Failed on my new scope, and my old scope has a different boot loader
+that does not support the update.
+
