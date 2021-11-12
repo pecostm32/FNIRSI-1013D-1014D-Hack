@@ -387,7 +387,8 @@ int32 save_firmware_data(uint32 ypos)
   uint32 block;
   uint32 y1 = ypos + 3;
   
-  int32  index;
+  uint32 index = 0;
+  uint32 i;
   uint8 *sptr;
   uint8  byte;
   uint8  bitflag;
@@ -396,10 +397,10 @@ int32 save_firmware_data(uint32 ypos)
   //Firmware backup starts at 0x13000 in the flash and includes the special locations because these are cleared otherwise, so up to 0x1FE100
   
   //Delete the file if it exists
-  f_unlink("FWB_FSI_1013.bin");
+  f_unlink("FWB_FSI-1013.bin");
   
   //Create a file for the full flash backup. Fails if it already exists
-  if(f_open(&fp, "FWB_FSI_1013.bin", FA_CREATE_NEW | FA_WRITE | FA_READ) != FR_OK)
+  if(f_open(&fp, "FWB_FSI-1013.bin", FA_CREATE_NEW | FA_WRITE | FA_READ) != FR_OK)
   {
     //Error message in red
     display_set_fg_color(0x00FF0000);
@@ -439,10 +440,10 @@ int32 save_firmware_data(uint32 ypos)
       }
       
       //Calculate the check data on this block
-      for(index=0;index<blocksize;index++)
+      for(i=0;i<blocksize;i++,index++)
       {
         //Get the current byte
-        byte = sptr[index];
+        byte = sptr[i];
 
         //Calculate the sum of all the data bytes
         fwcheckdata[0] += byte;
