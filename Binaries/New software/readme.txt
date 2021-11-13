@@ -1,3 +1,46 @@
+The new approach is to run everything from the SD card
+
+No need to open up the scope anymore.
+
+!!! BE AWARE. I TAKE NO RESPONSIBILITY IF ANYTHING GOES WRONG !!!
+
+I have tested this on two scopes.
+
+For this the file fnirsi_1013d.bin is needed.
+
+Connect the scope to the computer and start the USB connection
+When the file manager window opens, close it
+Open a terminal window (ctrl + alt + t)
+
+Find out to which device the disk is connected
+
+Type the following commands to unmount the partition
+
+  sudo umount /dev/sd?1
+
+  sudo dd if=fnirsi_1013d.bin of=/dev/sd? bs=1024 seek=8
+  
+Turn of the scope and on power on it should start the new software
+
+To get rid of it do the following
+
+Connect the scope to the computer and start the USB connection
+When the file manager window opens, close it
+Open a terminal window (ctrl + alt + t)
+
+Find out to which device the disk is connected
+
+Type the following commands to unmount the partition
+
+  sudo umount /dev/sd?1
+
+  sudo dd if=/dev/zero of=/dev/sd? bs=1024 seek=8 count=1
+  
+Turn of the scope and on power on it starts the original code.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+OLD STUFF
+
 The binary of the semi reversed engineered FNIRSI-1013D scope software can be found here.
 
 To play with it one needs a micro SD card of which the size does not matter. It is only 9KB that needs to be written on it.
