@@ -141,6 +141,13 @@ extern uint8 BSS_END;
 //Touch data
 //----------------------------------------------------------------------------------------------------------------------------------
 
+#ifndef USE_TP_CONFIG
+extern uint8 tp_config_data[186];
+
+extern uint32 xscaler;
+extern uint32 yscaler;
+#endif
+
 extern uint8  havetouch;
 extern uint16 xtouch;
 extern uint16 ytouch;

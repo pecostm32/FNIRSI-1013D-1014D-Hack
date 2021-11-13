@@ -6,6 +6,13 @@
 //Touch data
 //----------------------------------------------------------------------------------------------------------------------------------
 
+#ifndef USE_TP_CONFIG
+uint8  tp_config_data[186];
+
+uint32 xscaler;
+uint32 yscaler;
+#endif
+
 uint8  havetouch;
 uint16 xtouch;
 uint16 ytouch;

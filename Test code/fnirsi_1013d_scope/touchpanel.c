@@ -17,7 +17,10 @@
 //----------------------------------------------------------------------------------------------------------------------------------
 //Touch panel configuration for the GT9157 set to 800x480 resolution
 
-#if 1
+#ifdef USE_TP_CONFIG
+#define USE_LR_CONFIG
+
+#ifdef USE_LR_CONFIG
 uint8 tp_config_data[] =
 {
   0xFF, 0x20, 0x03, 0xE0, 0x01, 0x0A, 0xFD, 0x00, 0x01, 0x08, 0x28, 0x08, 0x5A, 0x3C, 0x03, 0x05,
@@ -50,14 +53,21 @@ uint8 tp_config_data[] =
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x01, 
 };
 #endif
+#endif
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void tp_i2c_setup(void)
 {
   uint8 command;
+
+#ifdef USE_TP_CONFIG
   uint8 checksum;
   int   i;
+#else  
+  uint32 xmax;
+  uint32 ymax;
+#endif
   
   //Make sure all SCL and SDA are at a high level and RESET and INT  are at a low level before enabling as output 
   *PORT_A_DATA_REG = 0x0000000C;
@@ -90,6 +100,7 @@ void tp_i2c_setup(void)
   command = 2;
   tp_i2c_send_data(TP_CMD_REG, &command, 1);
 
+#ifdef USE_TP_CONFIG
   //Clear the checksum before calculating it
   checksum = 0;  
   
@@ -107,7 +118,19 @@ void tp_i2c_setup(void)
   
   //Send the configuration data
   tp_i2c_send_data(TP_CFG_VERSION_REG, tp_config_data, sizeof(tp_config_data));
-
+#else
+  //Read the touch panel configuration to calculate resolution scalers
+  tp_i2c_read_data(TP_CFG_VERSION_REG, tp_config_data, sizeof(tp_config_data));
+  
+  //Get maximum x and y value from configuration
+  xmax = tp_config_data[1] | (tp_config_data[2] << 8);
+  ymax = tp_config_data[3] | (tp_config_data[4] << 8);
+  
+  //Calculate scalers based on the set x and y max output values
+  xscaler = (800 << 20) / xmax;
+  yscaler = (480 << 20) / ymax;
+#endif
+  
   //Wait for ~100mS
   tp_delay(200000);
 
@@ -134,7 +157,7 @@ void tp_i2c_read_status(void)
 {
   uint8  status;
   uint8  data[4];
-  
+
   //Read the status of the touch panel
   tp_i2c_read_data(TP_STATUS_REG, &status, 1);
   
@@ -152,10 +175,16 @@ void tp_i2c_read_status(void)
     {
       //Get the touch point data
       tp_i2c_read_data(TP_COORD1_REG, data, 4);
-      
+
       //Store the result in the global coordinate variables
       xtouch = data[0] | (data[1] << 8);
       ytouch = data[2] | (data[3] << 8);
+      
+#ifndef USE_TP_CONFIG
+      //Scale the coordinates based on the x and y max values
+      xtouch = (xscaler * xtouch) >> 20;
+      ytouch = (yscaler * ytouch) >> 20;
+#endif
       
       //Signal touch active
       havetouch = 1;
