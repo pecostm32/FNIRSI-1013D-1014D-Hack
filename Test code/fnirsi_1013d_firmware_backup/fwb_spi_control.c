@@ -23,10 +23,12 @@ void sys_spi_flash_init(void)
   //Open the SPI0 bus gate
   *CCU_BUS_CLK_GATE0 |= CCU_BCGR0_SPI0_EN;
   
+  //15-11-2021
+  //Some FLASH chips seem to have an issue with to high a speed!! Lowered it to 2 instead of 1, which does the trick
   //In the main program init this is written with 0x00001001, so clock seems to be set faster there
   //Tested this and it works so kept on that setting (zero is to fast)
   //Set SPI0 clock rate control register to AHB_CLK divided by 4 = (2 * (1 + 1))
-  *SPI0_CCR = SPI_CCR_DRS_DIV_2 | SPI_CCR_CDR2(1);
+  *SPI0_CCR = SPI_CCR_DRS_DIV_2 | SPI_CCR_CDR2(2);
 
   //Enable SPI0 in master mode with transmit pause enabled and do a soft reset
   *SPI0_GCR = SPI_GCR_SRST | SPI_GCR_TP_EN | SPI_GCR_MODE_MASTER | SPI_GCR_MODE_EN;
