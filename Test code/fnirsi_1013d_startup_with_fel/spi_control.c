@@ -24,6 +24,8 @@ void sys_spi_flash_init(void)
   //Open the SPI0 bus gate
   *CCU_BUS_CLK_GATE0 |= CCU_BCGR0_SPI0_EN;
   
+  //15-11-2021
+  //Some FLASH chips seem to have an issue with to high a speed!! Lowered it to 2 instead of 1, which does the trick
   //Set SPI0 clock rate control register to AHB_CLK divided by 6 = (2 * (2 + 1))
   *SPI0_CCR = SPI_CCR_DRS_DIV_2 | SPI_CCR_CDR2(2);
 
