@@ -42,6 +42,8 @@
 #define VIEW_TYPE_PICTURE                 0
 #define VIEW_TYPE_WAVEFORM                1
 
+#define VIEW_MAX_TYPES                    2
+
 #define VIEW_ITEM_SELECTED_XSTART        77
 #define VIEW_ITEM_SELECTED_YSTART        45
 

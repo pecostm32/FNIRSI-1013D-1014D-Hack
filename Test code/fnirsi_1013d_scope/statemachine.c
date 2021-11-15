@@ -1697,7 +1697,7 @@ void handle_right_basic_menu_touch(void)
       if(handle_confirm_delete() == VIEW_CONFIRM_DELETE_YES)
       {
         //Need to remove this item from the lists
-        scope_remove_item_from_lists();
+        scope_remove_item_from_lists(1);
 
         //save the lists
         scope_save_list_files();
@@ -2299,7 +2299,7 @@ void handle_view_mode_touch(void)
                     viewcurrentindex = index + (viewpage * VIEW_ITEMS_PER_PAGE);
                     
                     //Remove the current item from the lists and delete the item from disk
-                    scope_remove_item_from_lists();
+                    scope_remove_item_from_lists(1);
                   }
                 }
                 
@@ -2506,7 +2506,7 @@ void handle_picture_view_touch(void)
             if(handle_confirm_delete() == VIEW_CONFIRM_DELETE_YES)
             {
               //Need to remove this item from the lists
-              scope_remove_item_from_lists();
+              scope_remove_item_from_lists(1);
 
               //save the lists
               scope_save_list_files();

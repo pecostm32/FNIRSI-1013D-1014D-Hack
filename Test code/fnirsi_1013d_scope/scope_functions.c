@@ -252,11 +252,8 @@ void scope_setup_usb_screen(void)
   //Stop the USB interface  
   usb_device_disable();
   
-  
-  //Resync the system files
-  
-  
-  
+  //Re-sync the system files
+  scope_sync_list_files();
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -7066,7 +7063,7 @@ void scope_save_view_item_file(int32 type)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_remove_item_from_lists(void)
+void scope_remove_item_from_lists(uint32 delete)
 {
   //Point to the file numbers
   uint16 *fnptr = (uint16 *)viewfilenumberdata;
@@ -7083,6 +7080,7 @@ void scope_remove_item_from_lists(void)
   //The original code does this two at a time, which requires a check to see if there is an odd number of items to copy
   //Another method can be with memcpy and calculate the number of bytes that need to be moved
   //This solution only does the needed items, and with a max of 1000 items it does not really matter that much
+  //Optimized compiling uses a memmove for this
   
   //Remove the item by shifting the others down
   while((sptr < eptr) && (*sptr))
@@ -7115,11 +7113,16 @@ void scope_remove_item_from_lists(void)
   //Setup the file name for this file
   scope_print_file_name(filenumber);
   
-  //Delete the file from the SD card
-  f_unlink(viewfilename);                   //Need error handling with message here
+  //Only delete when requested
+  if(delete)
+  {
+    //Delete the file from the SD card
+    f_unlink(viewfilename);                   //Need error handling with message here
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
+//This is used for both waveforms as well as pictures
 
 int32 scope_load_trace_data(void)
 {
@@ -7198,11 +7201,11 @@ int32 scope_load_trace_data(void)
     //Done with the file so close it
     f_close(&viewfp);
     
-    //Check if one of the writes failed
+    //Check if one of the reads failed
     if(result != FR_OK)
     {
       //Signal unable to write to the file
-      scope_display_file_status_message(MESSAGE_FILE_WRITE_FAILED);
+      scope_display_file_status_message(MESSAGE_FILE_READ_FAILED);
     }
   }
   else
@@ -7219,12 +7222,73 @@ int32 scope_load_trace_data(void)
   }
 
   //Remove the current item from the lists and delete the item from disk
-  scope_remove_item_from_lists();
+  scope_remove_item_from_lists(1);
   
   //Save the list files
   scope_save_list_files();
   
   return(VIEW_TRACE_LOAD_ERROR);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_sync_list_files(void)
+{
+  uint32  t;
+  uint32  save = 0;
+  uint16 *fnptr;
+  uint16 *eptr;
+  
+  //Handle the two types of list files
+  for(t=0;t<VIEW_MAX_TYPES;t++)
+  {
+    //Set the current type to handle
+    viewtype = t;
+    
+    //Load the files for this type
+    scope_load_list_files();
+    
+    //Point to the file numbers
+    fnptr = (uint16 *)viewfilenumberdata;
+
+    //Set the end pointer  
+    eptr = &fnptr[VIEW_MAX_ITEMS];
+    
+    //Go through the items in the system file and check if the files still exist on the SD card
+    while((*fnptr) && (fnptr < eptr))
+    {
+      //Setup the filename
+      scope_print_file_name(*fnptr);
+
+      //Try to open the file. On failure remove it from the lists
+      if(f_open(&viewfp, viewfilename, FA_READ) == FR_NO_FILE)
+      {
+        //Set the file index
+        viewcurrentindex = ((uint32)fnptr - (uint32)viewfilenumberdata) / sizeof(uint16);
+        
+        //Remove the current item from the lists without delete, since it is already removed from the SD card 
+        scope_remove_item_from_lists(0);
+        
+        //Signal saving of the list files is needed
+        save = 1;
+      }
+      else
+      {
+        //File exists so close it
+        f_close(&viewfp);
+      }
+      
+      //Select the next file number
+      fnptr++;
+    }
+    
+    //Check if there was a change
+    if(save)
+    {
+      //Save the files if so
+      scope_save_list_files();
+    }
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

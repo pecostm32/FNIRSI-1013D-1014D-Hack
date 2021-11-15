@@ -207,9 +207,11 @@ void scope_save_list_files(void);                      //Add error handling!!
 
 void scope_save_view_item_file(int32 type);
 
-void scope_remove_item_from_lists(void);
+void scope_remove_item_from_lists(uint32 delete);
 
 int32 scope_load_trace_data(void);                     //Need to finish this one. Trace data displaying!!!
+
+void scope_sync_list_files(void);
 
 void scope_count_and_display_thumbnails(void);
 
