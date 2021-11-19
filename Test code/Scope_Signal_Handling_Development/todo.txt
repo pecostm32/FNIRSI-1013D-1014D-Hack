@@ -1,0 +1,17 @@
+------------------------------------------------------------------------------------------------------------------------------------
+
+To emulate the scope software:
+
+check initialization of data. Need to implement load configuration from a file
+
+implement the fpga state machine and correct responses
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+v  implement timer ticks
+
+v  implement touch panel simulation
+
+v  make an other setup for display updating in the main program, to avoid message flooding
+
+------------------------------------------------------------------------------------------------------------------------------------
