@@ -23,6 +23,8 @@ void sys_spi_flash_init(void)
   //Open the SPI0 bus gate
   *CCU_BUS_CLK_GATE0 |= CCU_BCGR0_SPI0_EN;
   
+  //16-11-2021
+  //The 1014D code uses 5, so way slower then the 1 in the original 1013D code
   //15-11-2021
   //Some FLASH chips seem to have an issue with to high a speed!! Lowered it to 2 instead of 1, which does the trick
   //In the main program init this is written with 0x00001001, so clock seems to be set faster there

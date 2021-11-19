@@ -160,11 +160,7 @@ void scope_up_sample_x_5(uint16 *buffer, uint32 count);
 void scope_up_sample_x_10(uint16 *buffer, uint32 count);
 void scope_up_sample_x_25(uint16 *buffer, uint32 count);
 
-
-
 void scope_interleave_samples(uint16 *buffer1, uint16 *buffer2, PADC2CALIBRATIONDATA calibration);   //scope_pre_process_ch1_25ns_data
-
-void scope_process_25ns_data(uint16 *buffer, uint32 offset, uint32 count);
 
 void scope_calculate_min_max_avg(uint16 *buffer, PMEASUREMENTS measurements);
 void scope_evaluate_trace_data(uint16 *buffer, PMEASUREMENTS measurements, uint32 voltperdiv, uint32 screenoffset);
@@ -225,7 +221,7 @@ int32 scope_display_picture_item(void);
 
 void scope_display_selected_signs(void);
 
-void scope_display_file_status_message(int32 msgid);
+void scope_display_file_status_message(int32 msgid, int32 alwayswait);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 // Configuration data functions

@@ -138,11 +138,18 @@ void sys_init_display(uint16 xsize, uint16 ysize, uint16 *address)
   //Set timing based on the sizes. xsize - 1 and ysize - 1
   *TCON0_BASIC_TIMING0  = ((ysize - 1) & 0x07FF) | (((xsize - 1) & 0x07FF) << 16);
   
+  //18--11-2021
+  //Found 4 different settings through the software versions
+  //1014D new version 0x041E0043, 0x041A0019
+  //1014D old version 0x041E006D, 0x041A0022
+  //1013D version 1   0x041E0044, 0x041A0017
+  //1013D version 2   0x041E004A, 0x041A0017
+  
   //Horizontal total time and horizontal back porch
-  *TCON0_BASIC_TIMING1 = 0x41E0044;
+  *TCON0_BASIC_TIMING1 = 0x041E0044;
   
   //Vertical front porch and vertical back porch
-  *TCON0_BASIC_TIMING2 = 0x41A0017;
+  *TCON0_BASIC_TIMING2 = 0x041A0017;
   
   //Horizontal sync pulse width
   *TCON0_BASIC_TIMING3 = 0x160000;

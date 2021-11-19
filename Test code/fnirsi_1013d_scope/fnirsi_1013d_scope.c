@@ -112,6 +112,13 @@ int main(void)
   //Load configuration data from FLASH
   scope_load_configuration_data();
 
+  //25nS/div testing first
+  scopesettings.channel1.magnification = 0;
+  scopesettings.channel1.voltperdiv = 4;
+  scopesettings.timeperdiv = 29;
+  scopesettings.triggerchannel = 0;
+  saved_sample_buffers_count = 0;
+  
   //Enable or disable the channels based on the scope loaded settings
   fpga_set_channel_1_enable();
   fpga_set_channel_2_enable();

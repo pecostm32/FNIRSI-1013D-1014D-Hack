@@ -3849,6 +3849,10 @@ void scope_adjust_timebase(void)
       {
         //Go up in time by taking one of the setting
         scopesettings.timeperdiv--;
+        
+        //18-11-2021 Temp for saving sample files
+        saved_sample_buffers_count = 0;
+        
       }
     }
     //Check if touch on the right of the center line
@@ -3859,6 +3863,10 @@ void scope_adjust_timebase(void)
       {
         //Go down in time by adding one to the setting
         scopesettings.timeperdiv++;
+        
+        //18-11-2021 Temp for saving sample files
+        saved_sample_buffers_count = 0;
+        
       }
     }
     
@@ -4502,7 +4510,7 @@ void scope_get_short_timebase_data(void)
       //For 10mS/div - 500nS/div add or subtract data based on from FPGA returned value
       if(data < 750)
       {
-        //Less the 750 make it bigger
+        //Less then 750 make it bigger
         data = data + 3345;
       }
       else
@@ -4556,6 +4564,159 @@ void scope_get_short_timebase_data(void)
     //Read the bytes into a trace buffer
     fpga_read_trace_data(command, channel1tracebuffer1, count);
 
+#if 1
+    //Prepare FPGA for reading again
+    //Send command 0x1F to the FPGA followed by the translated data returned from command 0x14
+    fpga_write_cmd(0x1F);
+    fpga_write_short(data);
+
+    //Read the bytes into a trace buffer
+    fpga_read_trace_data(0x21, channel1tracebuffer2, count);
+
+    
+    //Merge the samples from the two ADC's into the first trace buffer
+//    scope_interleave_samples(channel1tracebuffer1, channel1tracebuffer2, &channel1adc2calibration);
+
+    //Check if data needs to be written to file
+    if(saved_sample_buffers_count == 50)
+    {
+      int8 filename[100];
+      int8 *ptr;
+      
+      memcpy(filename, "fnirsi_samples_", 15);
+      
+      ptr = scope_print_decimal(&filename[15], scopesettings.timeperdiv, 0);
+      
+      memcpy(ptr, ".bin", 5);
+      
+      //Create a file for the touch panel configuration. Fails if it already exists
+      if(f_open(&viewfp, filename, FA_CREATE_NEW | FA_WRITE | FA_READ) == FR_OK)
+      {
+        //Write the sample data to the sd card  
+        f_write(&viewfp, viewthumbnaildata, sizeof(viewthumbnaildata), 0);
+
+        //Close the file to finish the write
+        f_close(&viewfp);
+
+        //Show the saved successful message
+        scope_display_file_status_message(MESSAGE_SAVE_SUCCESSFUL, 1);
+      }
+
+      //Only do it once
+      saved_sample_buffers_count++;
+    }
+    else if(saved_sample_buffers_count < 50)
+    {
+      //Copy the sample buffers for writing to file
+      uint16 *dptr = (uint16 *)(viewthumbnaildata + (saved_sample_buffers_count * 6080));
+
+      //Copy first set of samples
+//      memcpy(dptr, channel1tracebuffer1, 6000);
+      memcpy(dptr, channel1tracebuffer1, 3000);
+
+      //Point to next location
+      dptr += 1520;
+
+      //Copy second set of samples
+      memcpy(dptr, channel1tracebuffer2, 3000);
+
+      //One set of buffers done
+      saved_sample_buffers_count++;
+    }
+#endif        
+    
+    
+#if 0
+    //Process the data to screen data
+    for(inpidx=0,prvidx=1;inpidx<pscopesettings->iNeededSamples;inpidx+=pscopesettings->dTimeBaseStep)
+    {
+      //Get the current integer index into the sample buffer
+      index = inpidx;
+
+      //Check if linear approximation needs to be done. (Only when step < 1) pixels are skipped if so.
+      if(index != prvidx)
+      {
+        //Set new previous index
+        prvidx = index;
+
+        //Setup pointer to the sample
+        ptr = sptr + index;
+
+        //Check if beyond end of the buffer
+        if(ptr >= eptr)
+          ptr -= TRIGGERBUFFERSIZE;
+
+        //Calculate y point based on input value and gain
+        y = *ptr * pscopesettings->dVerticalGain;
+        
+        //Find max value for DC offset calculation
+        if(y > max)
+          max = y;
+        
+        //Find min value for DC offset calculation
+        if(y < min)
+          min = y;
+
+        //Calculate y position based on vertical position, gain and input value
+        y = pscopesettings->iVerticalPosition - y;
+
+        //Remember last pixel used for drawing to calculate last screen pixel
+        lastx = x;
+        py = y;
+
+        //Store the current pixel coordinates
+        xbuffer[idx] = x;
+        ybuffer[idx] = y;
+        
+        idx++;
+      }
+
+      //Point to next pixel
+      x++;
+    }
+
+    //When step less then 1 the last pixel needs to be interpolated between current sample and next sample.
+    if(pscopesettings->dTimeBaseStep < 1)
+    {
+      //Calculate the scaler for the last y value based on the x distance from the last drawn position to the end of the screen
+      //divided by the x distance it takes to where the next position should be drawn (Number of x steps per sample)
+      double scaler =  (pscopesettings->iScreenWidth - lastx) / (1 / pscopesettings->dTimeBaseStep);
+
+      //Get the current integer index into the sample buffer for retrieving the last sample
+      index = inpidx;
+
+      //Setup pointer to the last sample
+      ptr = sptr + index;
+
+      //Check if beyond end of the buffer
+      if(ptr >= eptr)
+        ptr -= TRIGGERBUFFERSIZE;
+
+      //Calculate y point based on input value and gain
+      y = *ptr * pscopesettings->dVerticalGain;
+
+      //Find max value for DC offset calculation
+      if(y > max)
+        max = y;
+
+      //Find min value for DC offset calculation
+      if(y < min)
+        min = y;
+
+      //Calculate y position based on vertical position, gain and input value
+      y = pscopesettings->iVerticalPosition - y;
+      
+      //Calculate the y position for the last pixel based on linear interpolation
+      xbuffer[idx] = pscopesettings->iScreenWidth;
+      ybuffer[idx] = py + ((y - py) / scaler);
+      
+      //Make sure all coordinates are stored in the database
+      idx++;
+    }
+#endif
+    
+    
+#if 0    
     //Check if triggered on this channel
     if(scopesettings.triggerchannel == 0)
     {
@@ -4597,11 +4758,61 @@ void scope_get_short_timebase_data(void)
         //Merge the samples from the two ADC's into the first trace buffer
         scope_interleave_samples(channel1tracebuffer1, channel1tracebuffer2, &channel1adc2calibration);
         
+#if 0        
+        //Check if data needs to be written to file
+        if(saved_sample_buffers_count == 50)
+        {
+          //Create a file for the touch panel configuration. Fails if it already exists
+          if(f_open(&viewfp, "fnirsi_25ns_samples.bin", FA_CREATE_NEW | FA_WRITE | FA_READ) == FR_OK)
+          {
+            //Write the touch panel configuration to the sd card  
+            f_write(&viewfp, viewthumbnaildata, sizeof(viewthumbnaildata), 0);
+
+            //Close the file to finish the write
+            f_close(&viewfp);
+            
+            //Show the saved successful message
+            scope_display_file_status_message(MESSAGE_SAVE_SUCCESSFUL, 1);
+          }
+          
+          //Only do this once
+          saved_sample_buffers_count++;
+        }
+        else if(saved_sample_buffers_count < 50)
+        {
+          //Copy the sample buffers for writing to file
+          uint16 *dptr = (uint16 *)((uint32)viewthumbnaildata + (saved_sample_buffers_count * 6048));
+          
+          //Copy first set of samples
+          memcpy(dptr, channel1tracebuffer1, 6000);
+          
+          //Point to next location
+//          dptr += 1504;
+          
+          //Copy second set of samples
+//          memcpy(dptr, channel1tracebuffer2, 3000);
+          
+          //One set of buffers done
+          saved_sample_buffers_count++;
+        }
+#endif        
         
-        scope_process_25ns_data(channel1tracebuffer2, 0, 1500);
+        //No special signal generation when input frequency is high
+        //For now just do the correct up sampling for either 25nS/div or 10nS/div
+        if(scopesettings.timeperdiv == 28)
+        {
+          //For 25nS/div need to up sample by 10
+          scope_up_sample_x_10(channel1tracebuffer1, 1500);
+        }
+        else
+        {
+          //For 10nS/div need to up sample by 25
+          scope_up_sample_x_25(channel1tracebuffer1, 1500);
+        }
         break;
     }
-
+#endif
+    
     //Set sample count based on time base setting
     if(scopesettings.timeperdiv >= 25)
     {
@@ -4723,7 +4934,6 @@ void scope_adjust_data(uint16 *destination, uint16 *source, uint32 count, uint8 
     //One more sample done
     count--;
   }
-  
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -4904,7 +5114,7 @@ uint32 scope_process_trigger(void)
       //Check if sample lower then level
       if(buffer[index] < level)
       {
-        //Signal had sample lower  then level
+        //Signal had sample lower then level
         lower = 1;
       }
       //Check if sample higher then level
@@ -5308,7 +5518,7 @@ void scope_up_sample_x_10(uint16 * buffer, uint32 count)
     //Calculate a delta step between the samples
     delta = (sample1 - (sample2 << 22)) / 5;
     
-    for(idx=0;idx<9;idx++)
+    for(idx=0;idx<4;idx++)
     {
       //Calculate the next sample with fixed point calculation
       //Since the direction is from last sample to first sample the step needs to be taken off
@@ -5624,13 +5834,6 @@ void scope_interleave_samples(uint16 *buffer1, uint16 *buffer2, PADC2CALIBRATION
       count--;
     }
   }
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-void scope_process_25ns_data(uint16 * buffer, uint32 offset, uint32 count)
-{
-  
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -7036,18 +7239,18 @@ void scope_save_view_item_file(int32 type)
     if(result == FR_OK)
     {
       //Show the saved successful message
-      scope_display_file_status_message(MESSAGE_SAVE_SUCCESSFUL);
+      scope_display_file_status_message(MESSAGE_SAVE_SUCCESSFUL, 0);
     }
     else
     {
       //Signal unable to write to the file
-      scope_display_file_status_message(MESSAGE_FILE_WRITE_FAILED);
+      scope_display_file_status_message(MESSAGE_FILE_WRITE_FAILED, 0);
     }
   }
   else
   {
     //Signal unable to create the file
-    scope_display_file_status_message(MESSAGE_FILE_OPEN_FAILED);
+    scope_display_file_status_message(MESSAGE_FILE_OPEN_FAILED, 0);
   }
   
   //When a picture is saved while viewing a waveform, reload the waveform lists
@@ -7195,7 +7398,7 @@ int32 scope_load_trace_data(void)
     else
     {
       //Signal unable to seek the file
-      scope_display_file_status_message(MESSAGE_FILE_SEEK_FAILED);
+      scope_display_file_status_message(MESSAGE_FILE_SEEK_FAILED, 0);
     }
     
     //Done with the file so close it
@@ -7205,13 +7408,13 @@ int32 scope_load_trace_data(void)
     if(result != FR_OK)
     {
       //Signal unable to write to the file
-      scope_display_file_status_message(MESSAGE_FILE_READ_FAILED);
+      scope_display_file_status_message(MESSAGE_FILE_READ_FAILED, 0);
     }
   }
   else
   {
     //Signal unable to create the file
-    scope_display_file_status_message(MESSAGE_FILE_OPEN_FAILED);
+    scope_display_file_status_message(MESSAGE_FILE_OPEN_FAILED, 0);
   }
 
   //Check if all went well
@@ -7264,7 +7467,8 @@ void scope_sync_list_files(void)
       if(f_open(&viewfp, viewfilename, FA_READ) == FR_NO_FILE)
       {
         //Set the file index
-        viewcurrentindex = ((uint32)fnptr - (uint32)viewfilenumberdata) / sizeof(uint16);
+//        viewcurrentindex = ((uint32)fnptr - (uint32)viewfilenumberdata) / sizeof(uint16);
+        viewcurrentindex = (fnptr - (uint16 *)viewfilenumberdata) / sizeof(uint16);
         
         //Remove the current item from the lists without delete, since it is already removed from the SD card 
         scope_remove_item_from_lists(0);
@@ -7788,9 +7992,16 @@ void scope_display_selected_signs(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_display_file_status_message(int32 msgid)
+void scope_display_file_status_message(int32 msgid, int32 alwayswait)
 {
   uint32 checkconfirmation = scopesettings.confirmationmode;
+  
+  //Check if need to wait is requested
+  if(alwayswait)
+  {
+    //If so override the setting
+    checkconfirmation = 1;
+  }
   
   //Need to save the screen buffer pointer and set it to the actual screen
   //When displaying trace data to avoid flickering data is drawn in a different screen buffer
@@ -7818,8 +8029,8 @@ void scope_display_file_status_message(int32 msgid)
     case MESSAGE_SAVE_SUCCESSFUL:
       display_text(320, 220, "File saved successfully");
      
-      //Don't wait for confirmation in case of success
-      checkconfirmation = 0;
+      //Don't wait for confirmation in case of success, unless requested
+      checkconfirmation = alwayswait;
       break;
 
     case MESSAGE_FILE_CREATE_FAILED:

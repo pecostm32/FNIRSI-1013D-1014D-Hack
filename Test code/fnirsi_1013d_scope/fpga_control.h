@@ -39,61 +39,61 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void fpga_init(void);
+void   fpga_init(void);
 
-void fpga_write_cmd(uint8 command);
-uint8 fpga_read_cmd(void);
+void   fpga_write_cmd(uint8 command);
+uint8  fpga_read_cmd(void);
 
-void fpga_write_byte(uint8 data);
-uint8 fpga_read_byte(void);
+void   fpga_write_byte(uint8 data);
+uint8  fpga_read_byte(void);
 
-void fpga_write_short(uint16 data);
+void   fpga_write_short(uint16 data);
 uint16 fpga_read_short(void);
 
-void fpga_write_int(uint32 data);
+void   fpga_write_int(uint32 data);
 
-void fpga_set_backlight_brightness(uint16 brightness);
-void fpga_set_translated_brightness(void);
+void   fpga_set_backlight_brightness(uint16 brightness);
+void   fpga_set_translated_brightness(void);
 
 uint16 fpga_get_version(void);
 
-void fpga_check_ready(void);
+void   fpga_check_ready(void);
 
-void fpga_enable_system(void);
+void   fpga_enable_system(void);
 
-void fpga_set_channel_1_enable(void);
-void fpga_set_channel_1_coupling(void);
-void fpga_set_channel_1_voltperdiv(void);
-void fpga_set_channel_1_offset(void);
+void   fpga_set_channel_1_enable(void);
+void   fpga_set_channel_1_coupling(void);
+void   fpga_set_channel_1_voltperdiv(void);
+void   fpga_set_channel_1_offset(void);
 
-void fpga_set_channel_2_enable(void);
-void fpga_set_channel_2_coupling(void);
-void fpga_set_channel_2_voltperdiv(void);
-void fpga_set_channel_2_offset(void);
+void   fpga_set_channel_2_enable(void);
+void   fpga_set_channel_2_coupling(void);
+void   fpga_set_channel_2_voltperdiv(void);
+void   fpga_set_channel_2_offset(void);
 
-void fpga_set_trigger_timebase(void);
-void fpga_set_trigger_channel(void);
-void fpga_set_trigger_edge(void);
-void fpga_swap_trigger_channel(void);
-void fpga_set_trigger_level(void);
-void fpga_set_trigger_mode(void);
+void   fpga_set_trigger_timebase(void);
+void   fpga_set_trigger_channel(void);
+void   fpga_set_trigger_edge(void);
+void   fpga_swap_trigger_channel(void);
+void   fpga_set_trigger_level(void);
+void   fpga_set_trigger_mode(void);
 
-void fpga_set_long_timebase(void);
-void fpga_set_short_timebase(void);
+void   fpga_set_long_timebase(void);
+void   fpga_set_short_timebase(void);
 
 uint16 fpga_prepare_for_transfer(void);
 
-void fpga_read_trace_data(uint8 command, uint16 *buffer, int32 count);
+void   fpga_read_trace_data(uint8 command, uint16 *buffer, int32 count);
 
 uint16 fpga_average_trace_data(uint8 command);
 
-void fpga_set_battery_level(void);
+void   fpga_set_battery_level(void);
 
-void fpga_init_parameter_ic(void);
-void fpga_write_parameter_ic(uint8 id, uint32 value);
+void   fpga_init_parameter_ic(void);
+void   fpga_write_parameter_ic(uint8 id, uint32 value);
 uint32 fpga_read_parameter_ic(uint8 id, uint32 value);
 
-void fpga_delay(uint32 usec);
+void   fpga_delay(uint32 usec);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
