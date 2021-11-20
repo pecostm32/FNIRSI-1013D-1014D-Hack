@@ -209,9 +209,9 @@ int main(int argc,char **argv)
     //Calculate the duration in micro seconds
     duration = ((endtime.tv_sec - starttime.tv_sec) * 1000000) + (endtime.tv_usec - starttime.tv_usec);
 
-    //To allow for short pulse touch detect this needs to be 2500, otherwise it is to fast
+    //To allow for short pulse touch detect this needs to be 3000, otherwise it is to fast
     //Check if a timer tick needs to be added
-    if((duration % 2500) == 0)
+    if((duration % 3000) == 0)
     {
       //One millisecond went by
       timer0ticks++;

@@ -33,12 +33,17 @@ pthread_t scope_processing_thread;
 
 int quit_scopeprocessing_thread_on_zero = 0;
 
+int is_scopeprocessing_stopped = 0;
+
 //----------------------------------------------------------------------------------------------------------------------------------
 
 int startscopeprocessing(void)
 {
   //Setup for keeping the arm core thread running
   quit_scopeprocessing_thread_on_zero = 1;
+  
+  //Signal not stopped
+  is_scopeprocessing_stopped = 0;
   
   //Start up the arm core thread
   return(pthread_create(&scope_processing_thread, NULL, scopeprocessingthread, NULL));
@@ -50,6 +55,9 @@ void stopscopeprocessing(void)
 {
   //Stop the arm core thread
   quit_scopeprocessing_thread_on_zero = 0;
+  
+  //Wait until process is stopped
+  while(is_scopeprocessing_stopped == 0);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -143,12 +151,14 @@ void *scopeprocessingthread(void *arg)
   //Load configuration data from FLASH
   scope_load_configuration_data();
 
+#if 0
   //25nS/div testing first
   scopesettings.channel1.magnification = 0;
   scopesettings.channel1.voltperdiv = 4;
   scopesettings.timeperdiv = 29;
   scopesettings.triggerchannel = 0;
   saved_sample_buffers_count = 0;
+#endif
   
   //Enable or disable the channels based on the scope loaded settings
   fpga_set_channel_1_enable();
@@ -213,40 +223,22 @@ void *scopeprocessingthread(void *arg)
   }
 
   //Could emulate parameter save here
+  //Check if not in view mode
+  if(viewactive == VIEW_NOT_ACTIVE)
+  {
+    //Get the settings in the working buffer and write them to the flash
+    scope_save_configuration_data();
+  }
   
+  //Close possible open files
+  fpga_exit();
+
+  //Signal process is stopped
+  is_scopeprocessing_stopped = 1;
   
   //Exit the thread the way it is supposed to
   pthread_exit(NULL);
 
 }
-
-
-
-/* This can be used to emulate the timer ticks
-#include <sys/time.h>
-
-  timeval    starttime;
-  timeval    midtime;
-  timeval    endtime;
-  long int   duration;
-
-           //Get the current time for duration calculation
-          gettimeofday(&starttime, 0);
- 
-          //Get the current time for duration calculation
-          gettimeofday(&endtime, 0);
-
-          //Calculate the duration in micro seconds
-          duration = ((endtime.tv_sec - starttime.tv_sec) * 1000000) + (endtime.tv_usec - starttime.tv_usec);
-
-          //11-12-2016 Changed to 1 second instead of 10 seconds
-          //Calculate the needed delay for 1 second time slots
-          duration = 1000000 - duration;
-
-          //Go to sleep if the delay is bigger then 10 micro seconds
-          if(duration > 10)
-              usleep(duration);
-*/
-
 
 //----------------------------------------------------------------------------------------------------------------------------------
