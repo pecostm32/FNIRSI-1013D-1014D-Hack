@@ -28,8 +28,8 @@ struct tagByteBits
 
 union tagByteAndBits
 {
-  uint8 byte;
-  ByteBits      bits;
+  uint8    byte;
+  ByteBits bits;
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -541,7 +541,7 @@ void fpga_set_trigger_level(void)
     {
       //Above the trace
       //Use the trace screen offset plus half the delta of the screen offsets and scale it with the signal adjuster setting
-      level = ((traceoffset +- ((scopesettings.triggeroffset - traceoffset) / 2)) * 100) / adjuster;
+      level = ((traceoffset + ((scopesettings.triggeroffset - traceoffset) / 2)) * 100) / adjuster;
     }
   }
   else

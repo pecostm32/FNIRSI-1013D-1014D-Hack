@@ -4274,23 +4274,6 @@ skip_delay:
   //Need insight in the code that displays the data to get an understanding of the next bit of code
   //It is a more or less straight conversion from what Ghidra shows
   
-  //Check if data needs to be doubled
-  //This is missing in the original code  
-  //Since the trace offset is processed in the FPGA this does not work properly. The trace goes up on the screen, so needs a subtract to stay on the right position!!!
-  if(scopesettings.channel1.voltperdiv == 6)
-  {
-    //Only on highest sensitivity
-    channel1tracebuffer1[0] <<= 1;
-  }
-
-  //Check if data needs to be doubled
-  //This is missing in the original code  
-  if(scopesettings.channel2.voltperdiv == 6)
-  {
-    //Only on highest sensitivity
-    channel2tracebuffer1[0] <<= 1;
-  }
-  
   //Some fractional scaling on the signal to fit it on screen???
   //Adjust the channel 1 signal based on the volts per div setting
   signaladjust = channel1tracebuffer1[0] * signal_adjusters[scopesettings.channel1.voltperdiv];
@@ -4305,6 +4288,26 @@ skip_delay:
   
   //Store it somewhere
   channel1tracebuffer3[0] = temp1;                    //At address 0x801A916A in original code
+
+  //Check if data needs to be doubled
+  //This is missing in the original code  
+  if(scopesettings.channel1.voltperdiv == 6)
+  {
+    //Only on highest sensitivity
+    temp1 <<= 1;
+    
+    //Check if the data is smaller then the offset
+    if(temp1 < scopesettings.channel1.traceoffset)
+    {
+      //If so limit to top of the screen
+      temp1 = 0;
+    }
+    else
+    {
+      //Else take of the offset
+      temp1 = temp1 - scopesettings.channel1.traceoffset;
+    }
+  }
   
   //Destination buffer is declared as uint32 to be able to use it with file functions, so need to cast it to uint16 pointer here
   ptr = (uint16 *)channel1tracebuffer4;
@@ -4335,6 +4338,26 @@ skip_delay:
   
   //Store it somewhere
   channel2tracebuffer3[0] = temp1;               //At address 0x801AA8DA in original code
+
+  //Check if data needs to be doubled
+  //This is missing in the original code  
+  if(scopesettings.channel2.voltperdiv == 6)
+  {
+    //Only on highest sensitivity
+    temp1 <<= 1;
+    
+    //Check if the data is smaller then the offset
+    if(temp1 < scopesettings.channel2.traceoffset)
+    {
+      //If so limit to top of the screen
+      temp1 = 0;
+    }
+    else
+    {
+      //Else take of the offset
+      temp1 = temp1 - scopesettings.channel2.traceoffset;
+    }
+  }
   
   //Destination buffer is declared as uint32 to be able to use it with file functions, so need to cast it to uint16 pointer here
   ptr = (uint16 *)channel2tracebuffer4;
@@ -4575,8 +4598,10 @@ void scope_get_short_timebase_data(void)
 
     
     //Merge the samples from the two ADC's into the first trace buffer
-//    scope_interleave_samples(channel1tracebuffer1, channel1tracebuffer2, &channel1adc2calibration);
+    scope_interleave_samples(channel1tracebuffer1, channel1tracebuffer2, &channel1adc2calibration);
+#endif
 
+#if 0    
     //Check if data needs to be written to file
     if(saved_sample_buffers_count == 50)
     {
@@ -4716,7 +4741,7 @@ void scope_get_short_timebase_data(void)
 #endif
     
     
-#if 0    
+#if 0
     //Check if triggered on this channel
     if(scopesettings.triggerchannel == 0)
     {
@@ -4906,14 +4931,14 @@ void scope_adjust_data(uint16 *destination, uint16 *source, uint32 count, uint8 
   uint32 signaladjust;
   uint32 temp1, temp2, temp3;
 
-  //Translate the channel 1 volts per div setting
+  //Translate this channel volts per div setting
   signaladjust = fpga_read_parameter_ic(0x0B, voltperdiv) & 0x0000FFFF;
   
   //Process the samples
   while(count)
   {
     //Some fractional scaling on the signal to fit it on screen???
-    //Adjust the channel 1 signal based on the volts per div setting
+    //Adjust the channel signal based on the volts per div setting
     temp1 = *source * signaladjust;
     temp2 = ((0xA3D7 * temp1) + 0xA3D7) >> 0x16;
     temp3 = temp1 + (((uint64)(temp1 * 0x51EB851F) >> 0x25) * -100);
@@ -4970,10 +4995,10 @@ void scope_limit_data(uint16 *buffer, uint32 count)
   //Process the samples
   while(count)
   {
-    //Check if the data is smaller then the offset
+    //Check if the data is bigger then max allowed
     if(*buffer > 401)
     {
-      //If so limit to top of the screen
+      //If so limit to bottom of the screen
       *buffer = 401;
     }
 
@@ -6240,7 +6265,7 @@ void scope_display_trace_data(void)
     //Check if channel 2 is enabled
     if(scopesettings.channel2.enable)
     {
-      //Destination buffer is declared as uint32 to be able to use it with file functions, so need to cast it to uint16 pointer here
+      //Source buffer is declared as uint32 to be able to use it with file functions, so need to cast it to uint16 pointer here
       ptr = (uint16 *)channel2tracebuffer4;
 
       //Get the current sample for channel 1 coming up from the bottom of the screen
@@ -6374,11 +6399,11 @@ void scope_display_channel_trace(uint16 *buffer, uint16 xpos, uint16 count, uint
 
   display_set_fg_color(color);
   
-  sample1 = buffer[index++];
+  sample1 = 449 - buffer[index++];
   
   while(index < count)
   {
-    sample2 = buffer[index++];
+    sample2 = 449 - buffer[index++];
 
     display_draw_line(xpos, sample1, xpos + 1, sample2);
     
