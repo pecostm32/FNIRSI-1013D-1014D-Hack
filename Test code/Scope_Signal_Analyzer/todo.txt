@@ -1,0 +1,32 @@
+
+File                     Faulty buffers
+fnirsi_samples_15.bin    8, 
+
+fnirsi_samples_12.bin    13
+
+fnirsi_samples_13.bin    31
+
+fnirsi_samples_17.bin    0
+
+fnirsi_samples_18.bin    0
+
+fnirsi_samples_20.bin    1
+
+fnirsi_samples_21.bin    20
+
+fnirsi_samples_22.bin    30
+
+fnirsi_samples_23.bin    47
+
+fnirsi_samples_28.bin    21, 28
+
+fnirsi_samples_29.bin    47
+
+
+Found one buffer where the first set is a zero change line and the other is still a normal signal. Interleaved this will be crap
+
+Found a buffer where the first 750 samples have a lower frequency then the upper 750 samples
+
+Found a buffer where the last samples have some issue
+
+It looks like that the time base setting 17 takes less samples, since the last ?? samples are from previous time base capture

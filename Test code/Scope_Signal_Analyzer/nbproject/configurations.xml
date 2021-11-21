@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="100">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+      <itemPath>../../F1C100s/fnirsi_1013d_scope/display_lib.h</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1013d_scope/font_structs.h</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1013d_scope/sin_cos_math.h</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1013d_scope/types.h</itemPath>
+      <itemPath>xlibfunctions.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <itemPath>Scope_Signal_Analyzer.c</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1013d_scope/display_lib.c</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1013d_scope/font_0.c</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1013d_scope/font_2.c</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1013d_scope/font_3.c</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1013d_scope/font_4.c</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1013d_scope/font_5.c</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1013d_scope/font_7.c</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1013d_scope/icons.c</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1013d_scope/sin_cos_math.c</itemPath>
+      <itemPath>xlibfunctions.c</itemPath>
+    </logicalFolder>
+    <logicalFolder name="TestFiles"
+                   displayName="Test Files"
+                   projectFiles="false"
+                   kind="TEST_LOGICAL_FOLDER">
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+      <itemPath>todo.txt</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Debug" type="1">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <standard>3</standard>
+          <commandlineTool>gcc</commandlineTool>
+          <incDir>
+            <pElem>/usr/include/freetype2</pElem>
+          </incDir>
+        </cTool>
+        <linkerTool>
+          <linkerAddLib>
+            <pElem>/usr/lib/x86_64-linux-gnu</pElem>
+          </linkerAddLib>
+          <linkerLibItems>
+            <linkerLibStdlibItem>Mathematics</linkerLibStdlibItem>
+          </linkerLibItems>
+          <commandLine>-lX11 -lXft -lXrandr -lpthread</commandLine>
+        </linkerTool>
+      </compileType>
+      <item path="../../F1C100s/fnirsi_1013d_scope/display_lib.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/display_lib.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/font_0.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/font_2.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/font_3.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/font_4.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/font_5.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/font_7.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/font_structs.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/icons.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/sin_cos_math.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/sin_cos_math.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/types.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="Scope_Signal_Analyzer.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="xlibfunctions.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="xlibfunctions.h" ex="false" tool="3" flavor2="0">
+      </item>
+    </conf>
+    <conf name="Release" type="1">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+        </cTool>
+        <ccTool>
+          <developmentMode>5</developmentMode>
+        </ccTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <asmTool>
+          <developmentMode>5</developmentMode>
+        </asmTool>
+      </compileType>
+      <item path="../../F1C100s/fnirsi_1013d_scope/display_lib.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/display_lib.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/font_0.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/font_2.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/font_3.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/font_4.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/font_5.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/font_7.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/font_structs.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/icons.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/sin_cos_math.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/sin_cos_math.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/types.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="Scope_Signal_Analyzer.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="xlibfunctions.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="xlibfunctions.h" ex="false" tool="3" flavor2="0">
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>
