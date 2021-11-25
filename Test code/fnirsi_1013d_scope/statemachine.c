@@ -243,7 +243,7 @@ void scan_for_touch(void)
       }
     }
     //Check if in channel 1 settings button range
-    else if((xtouch >= 161) && (xtouch <= 260))
+    else if((xtouch >= CH1_BUTTON_XPOS) && (xtouch <= CH1_BUTTON_XPOS + CH1_BUTTON_BG_WIDTH))
     {
       //Set the button active
       scope_channel1_settings(1);
@@ -256,7 +256,7 @@ void scan_for_touch(void)
       
       //Save the screen rectangle where the menu will be displayed
       display_set_destination_buffer(displaybuffer2);
-      display_copy_rect_from_screen(161, 46, 183, 252);
+      display_copy_rect_from_screen(CH1_MENU_XPOS, CH1_MENU_YPOS, CH1_MENU_WIDTH, CH1_MENU_HEIGHT);
       
       //Go and setup the channel 1 menu
       scope_open_channel1_menu();
@@ -266,10 +266,10 @@ void scan_for_touch(void)
       
       //Restore the screen when done
       display_set_source_buffer(displaybuffer2);
-      display_copy_rect_to_screen(161, 46, 183, 252);
+      display_copy_rect_to_screen(CH1_MENU_XPOS, CH1_MENU_YPOS, CH1_MENU_WIDTH, CH1_MENU_HEIGHT);
     }
     //Check if in channel 2 settings button range
-    else if((xtouch >= 288) && (xtouch <= 387))
+    else if((xtouch >= CH2_BUTTON_XPOS) && (xtouch <= CH2_BUTTON_XPOS + CH2_BUTTON_BG_WIDTH))
     {
       //Set the button active
       scope_channel2_settings(1);
@@ -282,7 +282,7 @@ void scan_for_touch(void)
       
       //Save the screen rectangle where the menu will be displayed
       display_set_destination_buffer(displaybuffer2);
-      display_copy_rect_from_screen(288, 46, 183, 252);
+      display_copy_rect_from_screen(CH2_MENU_XPOS, CH2_MENU_YPOS, CH2_MENU_WIDTH, CH2_MENU_HEIGHT);
       
       //Go and setup the channel 1 menu
       scope_open_channel2_menu();
@@ -292,8 +292,34 @@ void scan_for_touch(void)
       
       //Restore the screen when done
       display_set_source_buffer(displaybuffer2);
-      display_copy_rect_to_screen(288, 46, 183, 252);
+      display_copy_rect_to_screen(CH2_MENU_XPOS, CH2_MENU_YPOS, CH2_MENU_WIDTH, CH2_MENU_HEIGHT);
     }
+    //Check if in acquisition button range
+    else if((xtouch >= ACQ_BUTTON_XPOS) && (xtouch <= ACQ_BUTTON_XPOS + ACQ_BUTTON_BG_WIDTH))
+    {
+      //Set the button active
+      scope_acqusition_settings(1);
+      
+      //Wait until touch is released
+      tp_i2c_wait_for_touch_release();
+      
+      //Set the button inactive
+      scope_acqusition_settings(0);
+      
+      //Save the screen rectangle where the menu will be displayed
+      display_set_destination_buffer(displaybuffer2);
+      display_copy_rect_from_screen(ACQ_MENU_XPOS, ACQ_MENU_YPOS, ACQ_MENU_WIDTH, ACQ_MENU_HEIGHT);
+      
+      //Go and setup the channel 1 menu
+      scope_open_acquisition_menu();
+      
+      //Go and handle the menu touch
+      handle_acquisition_menu_touch();
+      
+      //Restore the screen when done
+      display_set_source_buffer(displaybuffer2);
+      display_copy_rect_to_screen(ACQ_MENU_XPOS, ACQ_MENU_YPOS, ACQ_MENU_WIDTH, ACQ_MENU_HEIGHT);
+    }    
     //Check if in move speed button range
     else if((xtouch >= 493) && (xtouch <= 533))
     {
@@ -441,13 +467,8 @@ void scan_for_touch(void)
       //See if it was short touch for time base change. Needs to be less then 200mS for that
       if((timer0_get_ticks() - previoustimerticks) < 200)
       {
-        //Check if capture is running or a backed up time base setting is in range of 10mS/div - 10nS/div
-        //It is not possible to change the time base setting when stopped and the time base was in range of 50S/div - 20mS/div
-        if((scopesettings.runstate == 0) || (scopesettings.timeperdivbackup > 10))
-        {
-          //Change the time base setting within some restrictions
-          scope_adjust_timebase();
-        }
+        //Change the time base setting
+        scope_adjust_timebase();
       }
 
       //Done for now.
@@ -516,7 +537,8 @@ void scan_for_touch(void)
         }
 
         
-        //This bit needs to be skipped for time base 50S/div - 100mS/div
+        //This bit needs to be skipped for time base 200mS/div - 20mS/div
+        //Hardware trigger seems to be available only from 10mS/div - 10nS/div
         
         
         
@@ -976,13 +998,13 @@ void handle_channel1_menu_touch(void)
     if(havetouch)
     {
       //Check if touch within the menu field
-      if((xtouch >= 161) && (xtouch <= 344) && (ytouch >= 46) && (ytouch <= 298))
+      if((xtouch >= CH1_MENU_XPOS) && (xtouch <= CH1_MENU_XPOS + CH1_MENU_WIDTH) && (ytouch >= CH1_MENU_YPOS) && (ytouch <= CH1_MENU_YPOS + CH1_MENU_HEIGHT))
       {
         //Check on channel enable or disable
-        if((ytouch >= 62) && (ytouch <= 84))
+        if((ytouch >= CH1_MENU_YPOS + 16) && (ytouch <= CH1_MENU_YPOS + 38))
         {
           //Check on enable
-          if((xtouch >= 239) && (xtouch <= 271))
+          if((xtouch >= CH1_MENU_XPOS + 78) && (xtouch <= CH1_MENU_XPOS + 110))
           {
             //Enable the channel
             scopesettings.channel1.enable = 1;
@@ -995,7 +1017,7 @@ void handle_channel1_menu_touch(void)
             scope_channel1_settings(0);
           }
           //Check on disable
-          else if((xtouch >= 291) && (xtouch <= 323))
+          else if((xtouch >= CH1_MENU_XPOS + 130) && (xtouch <= CH1_MENU_XPOS + 162))
           {
             //Disable the channel
             scopesettings.channel1.enable = 0;
@@ -1015,10 +1037,10 @@ void handle_channel1_menu_touch(void)
           }
         }
         //Check on fft enable or disable
-        else if((ytouch >= 124) && (ytouch <= 146))
+        else if((ytouch >= CH1_MENU_YPOS + 78) && (ytouch <= CH1_MENU_YPOS + 100))
         {
           //Check on enable
-          if((xtouch >= 239) && (xtouch <= 271))
+          if((xtouch >= CH1_MENU_XPOS + 78) && (xtouch <= CH1_MENU_XPOS + 110))
           {
             //Enable the channel
             scopesettings.channel1.fftenable = 1;
@@ -1027,7 +1049,7 @@ void handle_channel1_menu_touch(void)
             scope_channel1_fft_show();
           }
           //Check on disable
-          else if((xtouch >= 291) && (xtouch <= 323))
+          else if((xtouch >= CH1_MENU_XPOS + 130) && (xtouch <= CH1_MENU_XPOS + 162))
           {
             //Disable the channel
             scopesettings.channel1.fftenable = 0;
@@ -1037,10 +1059,10 @@ void handle_channel1_menu_touch(void)
           }
         }
         //Check on coupling DC or AD
-        else if((ytouch >= 188) && (ytouch <= 210))
+        else if((ytouch >= CH1_MENU_YPOS + 142) && (ytouch <= CH1_MENU_YPOS + 164))
         {
           //Check on DC coupling
-          if((xtouch >= 239) && (xtouch <= 271))
+          if((xtouch >= CH1_MENU_XPOS + 78) && (xtouch <= CH1_MENU_XPOS + 110))
           {
             //Set the channel to DC coupling
             scopesettings.channel1.coupling = 0;
@@ -1053,7 +1075,7 @@ void handle_channel1_menu_touch(void)
             scope_channel1_settings(0);
           }
           //Check on AC coupling
-          else if((xtouch >= 291) && (xtouch <= 323))
+          else if((xtouch >= CH1_MENU_XPOS + 130) && (xtouch <= CH1_MENU_XPOS + 162))
           {
             //Set the channel to AC coupling
             scopesettings.channel1.coupling = 1;
@@ -1067,10 +1089,10 @@ void handle_channel1_menu_touch(void)
           }
         }
         //Check on probe magnification setting
-        else if((ytouch >= 245) && (ytouch <= 283))
+        else if((ytouch >= CH1_MENU_YPOS + 199) && (ytouch <= CH1_MENU_YPOS + 237))
         {
           //Check on 1x
-          if((xtouch >= 239) && (xtouch <= 259))
+          if((xtouch >= CH1_MENU_XPOS + 78) && (xtouch <= CH1_MENU_XPOS + 98))
           {
             //Enable the channel
             scopesettings.channel1.magnification = 0;
@@ -1080,7 +1102,7 @@ void handle_channel1_menu_touch(void)
             scope_channel1_settings(0);
           }
           //Check on 10x
-          else if((xtouch >= 270) && (xtouch <= 293))
+          else if((xtouch >= CH1_MENU_XPOS + 109) && (xtouch <= CH1_MENU_XPOS + 132))
           {
             //Disable the channel
             scopesettings.channel1.magnification = 1;
@@ -1090,7 +1112,7 @@ void handle_channel1_menu_touch(void)
             scope_channel1_settings(0);
           }
           //Check on 100x
-          else if((xtouch >= 299) && (xtouch <= 329))
+          else if((xtouch >= CH1_MENU_XPOS + 138) && (xtouch <= CH1_MENU_XPOS + 168))
           {
             //Disable the channel
             scopesettings.channel1.magnification = 2;
@@ -1129,13 +1151,13 @@ void handle_channel2_menu_touch(void)
     if(havetouch)
     {
       //Check if touch within the menu field
-      if((xtouch >= 288) && (xtouch <= 471) && (ytouch >= 46) && (ytouch <= 298))
+      if((xtouch >= CH2_MENU_XPOS) && (xtouch <= CH2_MENU_XPOS + CH2_MENU_WIDTH) && (ytouch >= CH2_MENU_YPOS) && (ytouch <= CH2_MENU_YPOS + CH2_MENU_HEIGHT))
       {
         //Check on channel enable or disable
-        if((ytouch >= 62) && (ytouch <= 84))
+        if((ytouch >= CH2_MENU_YPOS + 16) && (ytouch <= CH2_MENU_YPOS + 38))
         {
           //Check on enable
-          if((xtouch >= 366) && (xtouch <= 398))
+          if((xtouch >= CH2_MENU_XPOS + 78) && (xtouch <= CH2_MENU_XPOS + 110))
           {
             //Enable the channel
             scopesettings.channel2.enable = 1;
@@ -1148,7 +1170,7 @@ void handle_channel2_menu_touch(void)
             scope_channel2_settings(0);
           }
           //Check on disable
-          else if((xtouch >= 418) && (xtouch <= 450))
+          else if((xtouch >= CH2_MENU_XPOS + 130) && (xtouch <= CH2_MENU_XPOS + 162))
           {
             //Disable the channel
             scopesettings.channel2.enable = 0;
@@ -1160,18 +1182,18 @@ void handle_channel2_menu_touch(void)
             scopesettings.channel2.voltperdiv = 0;
 
             //Set volts per div in the FPGA
-            fpga_set_channel_2_voltperdiv();
-            
+            fpga_set_channel_1_voltperdiv();
+
             //Display this
             scope_channel2_enable_select();
             scope_channel2_settings(0);
           }
         }
         //Check on fft enable or disable
-        else if((ytouch >= 124) && (ytouch <= 146))
+        else if((ytouch >= CH2_MENU_YPOS + 78) && (ytouch <= CH2_MENU_YPOS + 100))
         {
           //Check on enable
-          if((xtouch >= 366) && (xtouch <= 398))
+          if((xtouch >= CH2_MENU_XPOS + 78) && (xtouch <= CH2_MENU_XPOS + 110))
           {
             //Enable the channel
             scopesettings.channel2.fftenable = 1;
@@ -1180,7 +1202,7 @@ void handle_channel2_menu_touch(void)
             scope_channel2_fft_show();
           }
           //Check on disable
-          else if((xtouch >= 418) && (xtouch <= 450))
+          else if((xtouch >= CH2_MENU_XPOS + 130) && (xtouch <= CH2_MENU_XPOS + 162))
           {
             //Disable the channel
             scopesettings.channel2.fftenable = 0;
@@ -1190,29 +1212,29 @@ void handle_channel2_menu_touch(void)
           }
         }
         //Check on coupling DC or AD
-        else if((ytouch >= 188) && (ytouch <= 210))
+        else if((ytouch >= CH2_MENU_YPOS + 142) && (ytouch <= CH2_MENU_YPOS + 164))
         {
           //Check on DC coupling
-          if((xtouch >= 366) && (xtouch <= 398))
+          if((xtouch >= CH2_MENU_XPOS + 78) && (xtouch <= CH2_MENU_XPOS + 110))
           {
             //Set the channel to DC coupling
             scopesettings.channel2.coupling = 0;
             
             //Update the FPGA
-            fpga_set_channel_2_coupling();
+            fpga_set_channel_1_coupling();
             
             //Display this
             scope_channel2_coupling_select();
             scope_channel2_settings(0);
           }
           //Check on AC coupling
-          else if((xtouch >= 418) && (xtouch <= 450))
+          else if((xtouch >= CH2_MENU_XPOS + 130) && (xtouch <= CH2_MENU_XPOS + 162))
           {
             //Set the channel to AC coupling
             scopesettings.channel2.coupling = 1;
             
             //Update the FPGA
-            fpga_set_channel_2_coupling();
+            fpga_set_channel_1_coupling();
             
             //Display this
             scope_channel2_coupling_select();
@@ -1220,10 +1242,10 @@ void handle_channel2_menu_touch(void)
           }
         }
         //Check on probe magnification setting
-        else if((ytouch >= 245) && (ytouch <= 283))
+        else if((ytouch >= CH2_MENU_YPOS + 199) && (ytouch <= CH2_MENU_YPOS + 237))
         {
           //Check on 1x
-          if((xtouch >= 366) && (xtouch <= 386))
+          if((xtouch >= CH2_MENU_XPOS + 78) && (xtouch <= CH2_MENU_XPOS + 98))
           {
             //Enable the channel
             scopesettings.channel2.magnification = 0;
@@ -1233,7 +1255,7 @@ void handle_channel2_menu_touch(void)
             scope_channel2_settings(0);
           }
           //Check on 10x
-          else if((xtouch >= 397) && (xtouch <= 420))
+          else if((xtouch >= CH2_MENU_XPOS + 109) && (xtouch <= CH2_MENU_XPOS + 132))
           {
             //Disable the channel
             scopesettings.channel2.magnification = 1;
@@ -1243,7 +1265,7 @@ void handle_channel2_menu_touch(void)
             scope_channel2_settings(0);
           }
           //Check on 100x
-          else if((xtouch >= 426) && (xtouch <= 456))
+          else if((xtouch >= CH2_MENU_XPOS + 138) && (xtouch <= CH2_MENU_XPOS + 168))
           {
             //Disable the channel
             scopesettings.channel2.magnification = 2;
@@ -1251,6 +1273,89 @@ void handle_channel2_menu_touch(void)
             //Display this
             scope_channel2_probe_magnification_select();
             scope_channel2_settings(0);
+          }
+        }
+        
+        //Wait until touch is released before checking on a new position
+        tp_i2c_wait_for_touch_release();
+      }
+      else
+      {
+        //Touch outside the menu so wait until touch is released and then quit
+        tp_i2c_wait_for_touch_release();
+        
+        return;
+      }
+    }
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void handle_acquisition_menu_touch(void)
+{
+  uint32 i,x,y;
+  
+  //Stay in the menu as long as there is no touch outside the menu  
+  while(1)
+  {
+    //Scan the touch panel for touch
+    tp_i2c_read_status();
+    
+    //Check if there is touch
+    if(havetouch)
+    {
+      //Check if touch within the menu field
+      if((xtouch >= ACQ_MENU_XPOS) && (xtouch <= ACQ_MENU_XPOS + ACQ_MENU_WIDTH) && (ytouch >= ACQ_MENU_YPOS) && (ytouch <= ACQ_MENU_YPOS + ACQ_MENU_HEIGHT))
+      {
+        //Check on acquisition frequency being set
+        if((ytouch >= ACQ_MENU_YPOS + 32) && (ytouch <= ACQ_MENU_YPOS + 126))
+        {
+          //Check on the different bounding boxes for the separate settings
+          for(i=0;i<(sizeof(acquisition_speed_texts) / sizeof(int8 *));i++)
+          {
+            //Calculate the coordinates for this setting
+            x = ((i & 3) * 72) + 10 + ACQ_MENU_XPOS;
+            y = ((i >> 2) * 23) + 33 + ACQ_MENU_YPOS;
+            
+            //Check if touch within this bounding box
+            if((xtouch >= x) && (xtouch <= x + 68) && (ytouch >= y) && (ytouch <= y + 20))
+            {
+              //Set the new speed
+              scopesettings.acqusitionspeed = i;
+              
+              //Set the FPGA time base setting without changing the current time per div setting
+              //This way the sampling is actually done with the set speed, but the display stays at the set time per div
+              fpga_set_trigger_timebase(sample_rate_time_per_div[i]);
+
+              //Display the new setting              
+              scope_acquisition_speed_select();
+              scope_acqusition_settings(0);
+              break;
+            }
+          }
+        }
+        //Check on time per div being set
+        else if((ytouch >= ACQ_MENU_YPOS + 167) && (ytouch <= ACQ_MENU_YPOS + 306))
+        {
+          //Check on the different bounding boxes for the separate settings
+          for(i=0;i<(sizeof(time_div_texts) / sizeof(int8 *));i++)
+          {
+            //Calculate the coordinates for this setting
+            x = ((i & 3) * 72) + 10 + ACQ_MENU_XPOS;
+            y = ((i >> 2) * 23) + 168 + ACQ_MENU_YPOS;
+            
+            //Check if touch within this bounding box
+            if((xtouch >= x) && (xtouch <= x + 68) && (ytouch >= y) && (ytouch <= y + 20))
+            {
+              //Set the new time per div
+              scopesettings.timeperdiv = ((sizeof(time_div_texts) / sizeof(int8 *)) - 1) - i;
+              
+              //Display the new setting              
+              scope_acquisition_timeperdiv_select();
+              scope_acqusition_settings(0);
+              break;
+            }
           }
         }
         
@@ -1475,34 +1580,14 @@ void handle_right_basic_menu_touch(void)
 
       //Toggle the run state
       scopesettings.runstate ^= 1;
-/*
-      if (pcVar5[0x3a] == '\0')  //scopesettings.runstate
-      {
-        pcVar5[0x3a] = '\x01';                            //stopped
-        *(ushort *)puVar19 = (ushort)(byte)pcVar5[3];     //Save the volts/div setting for each channel when runstate is enabled (In 0x80192ec6)
-        *(ushort *)puVar7 = (ushort)(byte)pcVar5[0xf];    //(In 0x80192ec8)
-      }
-      else
-      {
-        pcVar5[0x3a] = '\0';                              //running
-        *(undefined2 *)PTR_DAT_800202ec = 0;              //0x80192EC4   //State flag for getting start+end in sample buffers???
-        *(undefined2 *)PTR_DAT_800202f0 = 400;            //0x80192EBC
-        *(undefined2 *)PTR_DAT_800202f4 = 0;              //0x80192ECE
-        *(undefined2 *)PTR_DAT_800202f8 = 400;            //0x80192EBE
-      }
 
-         //Trigger mode              run state
-      if ((pcVar5[0x21] == '\0') || (pcVar5[0x3a] != '\0'))
+      //When the scope is switched back to running state, change the sample rate to the current time per div setting
+      if(scopesettings.runstate == 0)
       {
-        pcVar5[0x18] = '\x01';        triggerflag2
-        pcVar5[0x17] = '\x01';        triggerflag1
+        //Set the sample rate that belongs to the selected time per div setting
+        scopesettings.acqusitionspeed = time_per_div_sample_rate[scopesettings.timeperdiv];
       }
-      else
-      {
-        pcVar5[0x36] = '\0';     //triggerflag3
-        pcVar5[0x37] = '\x01';   //Update screen flag
-      }
-*/      
+      
       //Display the changed state
       scope_run_stop_text();
     }
@@ -1597,12 +1682,8 @@ void handle_right_basic_menu_touch(void)
     //Button back to inactive state
     scope_t_cursor_button(0);
     
-    //Time cursor only allowed for time base 50mS/div and lower
-    if(scopesettings.timeperdiv > 8)
-    {
-      //Toggle the enable setting
-      scopesettings.timecursorsenable ^= 1;
-    }
+    //Toggle the enable setting
+    scopesettings.timecursorsenable ^= 1;
   }
   //Check if volt cursor button is touched
   else if((ytouch >= 243) && (ytouch <= 297))
@@ -1616,12 +1697,8 @@ void handle_right_basic_menu_touch(void)
     //Button back to inactive state
     scope_v_cursor_button(0);
 
-    //Volt cursor only allowed for time base 50mS/div and lower
-    if(scopesettings.timeperdiv > 8)
-    {
-      //Toggle the enable setting
-      scopesettings.voltcursorsenable ^= 1;
-    }
+    //Toggle the enable setting
+    scopesettings.voltcursorsenable ^= 1;
   }
   //Check if measures button is touched
   else if((ytouch >= 303) && (ytouch <= 357))

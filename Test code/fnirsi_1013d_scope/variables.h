@@ -81,6 +81,65 @@
 #define MESSAGE_FILE_SEEK_FAILED          5
 
 //----------------------------------------------------------------------------------------------------------------------------------
+//Menu positions and dimensions
+//----------------------------------------------------------------------------------------------------------------------------------
+//Run and stop text
+
+#define RUN_STOP_TEXT_XPOS                  97
+#define RUN_STOP_TEXT_YPOS                  12
+#define RUN_STOP_TEXT_WIDTH                 38
+#define RUN_STOP_TEXT_HEIGHT                18
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Channel 1 button and menu
+
+#define CH1_BUTTON_XPOS                    150
+#define CH1_BUTTON_YPOS                      5
+#define CH1_BUTTON_WIDTH                    30
+#define CH1_BUTTON_HEIGHT                   35
+
+#define CH1_BUTTON_BG_WIDTH                103
+#define CH1_BUTTON_BG_HEIGHT                35
+
+#define CH1_MENU_XPOS          CH1_BUTTON_XPOS
+#define CH1_MENU_YPOS                       46
+#define CH1_MENU_WIDTH                     183
+#define CH1_MENU_HEIGHT                    252
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Channel 2 button and menu
+
+#define CH2_BUTTON_XPOS                    260
+#define CH2_BUTTON_YPOS                      5
+#define CH2_BUTTON_WIDTH                    30
+#define CH2_BUTTON_HEIGHT                   35
+
+#define CH2_BUTTON_BG_WIDTH                103
+#define CH2_BUTTON_BG_HEIGHT                35
+
+#define CH2_MENU_XPOS          CH2_BUTTON_XPOS
+#define CH2_MENU_YPOS                       46
+#define CH2_MENU_WIDTH                     183
+#define CH2_MENU_HEIGHT                    252
+
+//----------------------------------------------------------------------------------------------------------------------------------
+// Acquisition button and menu
+
+#define ACQ_BUTTON_XPOS                    380
+#define ACQ_BUTTON_YPOS                      5
+#define ACQ_BUTTON_WIDTH                    30
+#define ACQ_BUTTON_HEIGHT                   35
+
+#define ACQ_BUTTON_BG_WIDTH                103
+#define ACQ_BUTTON_BG_HEIGHT                35
+
+#define ACQ_MENU_XPOS          ACQ_BUTTON_XPOS
+#define ACQ_MENU_YPOS                       46
+#define ACQ_MENU_WIDTH                     304
+#define ACQ_MENU_HEIGHT                    313
+
+
+//----------------------------------------------------------------------------------------------------------------------------------
 //Typedefs
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -236,6 +295,20 @@ extern uint8 parameter_crypt_byte;
 
 extern uint16 settingsworkbuffer[250];
 
+
+//New variables for trace displaying
+extern double disp_xpos_per_sample;
+extern double disp_sample_step;
+
+extern int32 disp_first_sample;
+
+extern uint32 disp_have_trigger;
+extern uint32 disp_trigger_index;
+
+extern int32 disp_xstart;
+extern int32 disp_xend;
+
+
 //----------------------------------------------------------------------------------------------------------------------------------
 //Test data
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -290,11 +363,12 @@ extern uint16 channel2_calibration_data[];
 
 extern const int8 *volt_div_texts[3][7];
 
-extern const uint16 signal_adjusters[];
+extern const uint16 signal_adjusters[7];
 
-extern const uint16 timebase_adjusters[];
+extern const uint16 timebase_adjusters[5];
 
-extern const uint32 short_timebase_settings[];
+extern const uint8  timebase_translations[24];
+extern const uint32 short_timebase_settings[24];
 
 extern const uint8 zoom_select_settings[3][7];
 
@@ -304,7 +378,23 @@ extern const VOLTCALCDATA volt_calc_data[3][7];
 
 extern const char *magnitude_scaler[8];
 
+extern const char view_file_extension[2][5];
+extern const char list_file_name[2][13];
+extern const char system_file_name[2][16];
 extern const uint8 bmpheader[70];
+
+extern const uint32 frequency_per_div[24];
+extern const uint32 sample_rate[16];
+
+extern const uint8 time_per_div_sample_rate[24];
+extern const uint8 sample_rate_time_per_div[16];
+extern const uint8 viable_time_per_div[16][24];
+
+extern const int8 *time_div_texts[24];
+extern const int8 time_div_text_x_offsets[24];
+
+extern const int8 *acquisition_speed_texts[16];
+extern const int8 acquisition_speed_text_x_offsets[16];
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //For touch filtering on slider movement

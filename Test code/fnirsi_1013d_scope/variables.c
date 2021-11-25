@@ -119,6 +119,20 @@ uint8 parameter_crypt_byte;
 
 uint16 settingsworkbuffer[250];        //In original code at 0x8035344E. Used for loading from and writing to flash
 
+
+//New variables for trace displaying
+
+double disp_xpos_per_sample;
+double disp_sample_step;
+
+int32 disp_first_sample;
+
+uint32 disp_have_trigger;
+uint32 disp_trigger_index;            //Trigger point in the sample buffers
+
+int32 disp_xstart;
+int32 disp_xend;
+
 //----------------------------------------------------------------------------------------------------------------------------------
 //Test data
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -208,6 +222,165 @@ uint16 channel2_calibration_data[] = { 0x055B, 0x0556, 0x0561, 0x055B, 0x0560, 0
 //Predefined data
 //----------------------------------------------------------------------------------------------------------------------------------
 
+//Instead of a double time per division value using the 1 / "time per division" frequency value
+
+const uint32 frequency_per_div[24] =
+{
+         5,        10,        20,
+        50,       100,       200,
+       500,      1000,      2000,
+      5000,     10000,     20000,
+     50000,    100000,    200000,
+    500000,   1000000,   2000000,
+   5000000,  10000000,  20000000,
+  50000000, 100000000, 200000000
+};
+
+const uint32 sample_rate[16] =
+{
+  200000000,
+  100000000,
+   50000000,
+   20000000,
+   10000000,
+    5000000,
+    2000000,
+    1000000,
+     500000,
+     200000,
+     100000,
+      50000,
+      20000,
+      10000,
+       5000,
+       2000
+};
+
+
+const uint8 time_per_div_sample_rate[24] =
+{
+  15, 15, 15,     //200ms/div, 100ms/div and 50ms/div  use the 2KSa/s setting
+  14, 13, 12,     //20ms/div, 10ms/div, 5ms/div        use their respective settings
+  11, 10,  9,     //2ms/div, 1ms/div, 500us/div        use their respective settings
+   8,  7,  6,     //200us/div, 100us/div, 50us/div     use their respective settings
+   5,  4,  3,     //20us/div, 10us/div, 5us/div        use their respective settings
+   2,  1,  0,     //2us/div, 1us/div, 500ns/div        use their respective settings
+   0,  0,  0,     //200ns/div, 100ns/div, 50ns/div     use the 200MSa/s setting
+   0,  0,  0      //20ns/div, 10ns/div, 5ns/div        use the 200MSa/s setting
+};
+
+const uint8 sample_rate_time_per_div[16] =
+{
+  17,       //200MSa/s ==> 500ns/div
+  16,       //100MSa/s ==>   1us/div
+  15,       // 50MSa/s ==>   2us/div
+  14,       // 20MSa/s ==>   5us/div
+  13,       // 10MSa/s ==>  10us/div
+  12,       //  5MSa/s ==>  20us/div
+  11,       //  2MSa/s ==>  50us/div
+  10,       //  1MSa/s ==> 100us/div
+   9,       //500KSa/s ==> 200us/div
+   8,       //200KSa/s ==> 500us/div
+   7,       //100KSa/s ==>   1ms/div
+   6,       // 50KSa/s ==>   2ms/div
+   5,       // 20KSa/s ==>   5ms/div
+   4,       // 10KSa/s ==>  10ms/div
+   3,       //  5KSa/s ==>  20ms/div
+   2        //  2KSa/s ==>  50ms/div
+};
+
+const uint8 viable_time_per_div[16][24] =
+{
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1 },
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0 },
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0 },
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0 },
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0 },
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0 },
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 },
+  { 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0 },
+  { 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 },
+  { 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+  { 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+  { 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+  { 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+  { 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+  { 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+#if 0
+const int8 *time_div_texts[30] =
+{
+    "50s/div",   "20s/div",   "10s/div",
+     "5s/div",    "2s/div",    "1s/div",
+  "500ms/div", "200ms/div", "100ms/div",
+   "50ms/div",  "20ms/div",  "10ms/div",
+    "5ms/div",   "2ms/div",   "1ms/div",
+  "500us/div", "200us/div", "100us/div",
+   "50us/div",  "20us/div",  "10us/div",
+    "5us/div",   "2us/div",   "1us/div",
+  "500ns/div", "250ns/div", "100ns/div",
+   "50ns/div",  "25ns/div",  "10ns/div"
+};
+#endif
+
+const int8 *time_div_texts[24] =
+{
+  "200ms/div", "100ms/div",  "50ms/div",
+   "20ms/div",  "10ms/div",   "5ms/div",
+    "2ms/div",   "1ms/div", "500us/div",
+  "200us/div", "100us/div",  "50us/div",
+   "20us/div",  "10us/div",   "5us/div",
+    "2us/div",   "1us/div", "500ns/div",
+  "200ns/div", "100ns/div",  "50ns/div",
+   "20ns/div",  "10ns/div",   "5ns/div"
+};
+
+const int8 time_div_text_x_offsets[24] =
+{
+  13, 13, 20, 20,
+  20, 27, 27, 27,
+  17, 17, 17, 24,
+  24, 24, 31, 31,
+  31, 17, 17, 17,
+  24, 24, 24, 31,
+};
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+const int8 *acquisition_speed_texts[16] =
+{
+  "200MSa/s",
+  "100MSa/s",
+   "50MSa/s",
+   "20MSa/s",
+   "10MSa/s",
+    "5MSa/s",
+    "2MSa/s",
+    "1MSa/s",
+  "500KSa/s",
+  "200KSa/s",
+  "100KSa/s",
+   "50KSa/s",
+   "20KSa/s",
+   "10KSa/s",
+    "5KSa/s",
+    "2KSa/s"
+};
+
+const int8 acquisition_speed_text_x_offsets[16] =
+{
+  16, 16, 23, 23,
+  23, 30, 30, 30,
+  19, 19, 19, 26,
+  26, 26, 33, 33
+};
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 const int8 *volt_div_texts[3][7] =
 {
   { "5V/div", "2.5V/div", "1V/div", "500mV/div", "200mV/div", "100mV/div", "50mV/div" },
@@ -215,33 +388,66 @@ const int8 *volt_div_texts[3][7] =
   { "500V/div", "250V/div", "100V/div", "50V/div", "20V/div", "10V/div", "5V/div" }
 };
 
+//----------------------------------------------------------------------------------------------------------------------------------
+
 const uint16 signal_adjusters[7] = { 0xAD, 0xAF, 0xB4, 0xB4, 0xB8, 0xB8, 0xB8 };
 
 const uint16 timebase_adjusters[5] = { 0x01A9, 0x00AA, 0x0055, 0x002F, 0x0014 };
 
-const uint32 short_timebase_settings[] =
+const uint8 timebase_translations[24] =
 {
-     800,   // 50mS/div
-     800,   // 20mS/div
-    1800,   // 10mS/div
-    2500,   //  5mS/div
-    2500,   //  2mS/div
-    2500,   //  1mS/div
-    2500,   //500uS/div
-    2500,   //200uS/div
-    3000,   //100uS/div
-    5596,   // 50uS/div
-    9692,   // 20uS/div
-   21980,   // 10uS/div
-   21980,   //  5uS/div
-   83420,   //  2uS/div
-  206300,   //  1uS/div
-  411100,   //500nS/div
-  411100,   //250nS/div
-  411100,   //100nS/div
-  411100,   // 50nS/div
-  411100,   // 25nS/div
-  411100,   // 10nS/div
+   9,   //200ms/div
+   9,   //100ms/div
+   9,   // 50ms/div
+  10,   // 20ms/div
+  11,   // 10ms/div
+  12,   //  5ms/div
+  13,   //  2ms/div
+  14,   //  1ms/div
+  15,   //500us/div
+  16,   //200us/div
+  17,   //100us/div
+  18,   // 50us/div
+  19,   // 20us/div
+  20,   // 10us/div
+  21,   //  5us/div
+  22,   //  2us/div
+  23,   //  1us/div
+  24,   //500ns/div
+  25,   //200ns/div
+  26,   //100ns/div
+  27,   // 50ns/div
+  28,   // 20ns/div
+  29,   // 10ns/div
+  29,   //  5ns/div
+};
+
+const uint32 short_timebase_settings[24] =
+{
+     800,   //200ms/div
+     800,   //100ms/div
+     800,   // 50ms/div
+     800,   // 20ms/div
+    1800,   // 10ms/div
+    2500,   //  5ms/div
+    2500,   //  2ms/div
+    2500,   //  1ms/div
+    2500,   //500us/div
+    2500,   //200us/div
+    3000,   //100us/div
+    5596,   // 50us/div
+    9692,   // 20us/div
+   21980,   // 10us/div
+   21980,   //  5us/div
+   83420,   //  2us/div
+  206300,   //  1us/div
+  411100,   //500ns/div
+  411100,   //200ns/div
+  411100,   //100ns/div
+  411100,   // 50ns/div
+  411100,   // 20ns/div
+  411100,   // 10ns/div
+  411100,   //  5ns/div
 };
 
 const uint8 zoom_select_settings[3][7] =
@@ -253,27 +459,27 @@ const uint8 zoom_select_settings[3][7] =
 
 const TIMECALCDATA time_calc_data[21] =
 {
-  {    100, 3, 3 },         // 50mS/div
-  {  40000, 2, 4 },         // 20mS/div
-  {  20000, 2, 4 },         // 10mS/div
-  {  10000, 2, 4 },         //  5mS/div
-  {   4000, 2, 4 },         //  2mS/div
-  {   2000, 2, 4 },         //  1mS/div
-  {   1000, 2, 4 },         //500uS/div
-  {    400, 2, 4 },         //200uS/div
-  {    200, 2, 4 },         //100uS/div
-  {    100, 2, 4 },         // 50uS/div
-  {  40000, 1, 5 },         // 20uS/div
-  {  20000, 1, 5 },         // 10uS/div
-  {  10000, 1, 5 },         //  5uS/div
-  {   4000, 1, 5 },         //  2uS/div
-  {   2000, 1, 5 },         //  1uS/div
-  {   1000, 1, 5 },         //500nS/div
-  {    500, 1, 5 },         //250nS/div
-  {    200, 1, 5 },         //100nS/div
-  {    100, 1, 5 },         // 50nS/div
-  {  50000, 0, 6 },         // 25nS/div
-  {  20000, 0, 6 }          // 10nS/div
+  {    100, 3, 3 },         // 50ms/div
+  {  40000, 2, 4 },         // 20ms/div
+  {  20000, 2, 4 },         // 10ms/div
+  {  10000, 2, 4 },         //  5ms/div
+  {   4000, 2, 4 },         //  2ms/div
+  {   2000, 2, 4 },         //  1ms/div
+  {   1000, 2, 4 },         //500us/div
+  {    400, 2, 4 },         //200us/div
+  {    200, 2, 4 },         //100us/div
+  {    100, 2, 4 },         // 50us/div
+  {  40000, 1, 5 },         // 20us/div
+  {  20000, 1, 5 },         // 10us/div
+  {  10000, 1, 5 },         //  5us/div
+  {   4000, 1, 5 },         //  2us/div
+  {   2000, 1, 5 },         //  1us/div
+  {   1000, 1, 5 },         //500ns/div
+  {    500, 1, 5 },         //250ns/div
+  {    200, 1, 5 },         //100ns/div
+  {    100, 1, 5 },         // 50ns/div
+  {  50000, 0, 6 },         // 25ns/div
+  {  20000, 0, 6 }          // 10ns/div
 };
 
 const VOLTCALCDATA volt_calc_data[3][7] = 
@@ -284,6 +490,30 @@ const VOLTCALCDATA volt_calc_data[3][7] =
 };
 
 const char *magnitude_scaler[8] = { "p", "n", "u", "m", "", "K", "M", "G"};
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+const char view_file_extension[2][5] =
+{
+  { ".bmp" },
+  { ".wav" }
+};
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+const char list_file_name[2][13] =
+{
+  { "piclist.sys" },
+  { "wavelist.sys" }
+};
+
+const char system_file_name[2][16] =
+{
+  { "pic_system.sys" },
+  { "wave_system.sys" }
+};
+
+//----------------------------------------------------------------------------------------------------------------------------------
 
 //Setup the bitmap header
 //Consist of basic bitmap header followed by a DIB header (BITMAPINFOHEADER + BITMAPV3INFOHEADER)

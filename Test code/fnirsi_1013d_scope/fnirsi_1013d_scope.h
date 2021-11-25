@@ -52,7 +52,11 @@ struct tagScopeSettings
   CHANNELSETTINGS channel2;
   
   uint8 timeperdivbackup;
+
+  uint16 samplecount;
   
+  uint8 acqusitionspeed;
+          
   uint8 timeperdiv;
   uint8 triggermode;
   uint8 triggeredge;
@@ -66,6 +70,7 @@ struct tagScopeSettings
   uint8 triggerflag2;        //0x8019D5B8 in original code
   uint8 triggerflag3;        //0x8019D5D6 in original code
   uint8 triggerflag4;        //0x8019D5BE in original code
+  
   
   
   uint8 movespeed;

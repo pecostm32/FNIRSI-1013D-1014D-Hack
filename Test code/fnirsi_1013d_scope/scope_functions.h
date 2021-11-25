@@ -62,7 +62,7 @@ void scope_main_return_button(int mode);
 void scope_run_stop_text(void);
 void scope_channel1_settings(int mode);
 void scope_channel2_settings(int mode);
-void scope_time_div_setting(void);
+void scope_acqusition_settings(int mode);
 void scope_move_speed(int mode);
 void scope_trigger_settings(int mode);
 void scope_battery_status(void);
@@ -88,6 +88,10 @@ void scope_channel2_enable_select(void);
 void scope_channel2_fft_show(void);
 void scope_channel2_coupling_select(void);
 void scope_channel2_probe_magnification_select(void);
+
+void scope_open_acquisition_menu(void);
+void scope_acquisition_speed_select(void);
+void scope_acquisition_timeperdiv_select(void);
 
 void scope_open_trigger_menu(void);
 void scope_trigger_mode_select(void);
@@ -138,34 +142,12 @@ void scope_draw_volt_cursors(void);
 // Signal data processing functions
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_process_trace_data(void);
+void scope_acquire_trace_data(void);
 
-void scope_get_long_timebase_data(void);
-
-void scope_get_short_timebase_data(void);
-
-void scope_adjust_data(uint16 *destination, uint16 *source, uint32 count, uint8 voltperdiv);
-void scope_offset_data(uint16 *buffer, uint32 count, uint32 offset);
-void scope_limit_data(uint16 *buffer, uint32 count);
-void scope_filter_data(uint16 *buffer, uint32 count);
-void scope_double_data(uint16 *buffer, uint32 count);
-
-
-uint32 scope_process_trigger(void);
-
-void scope_up_sample_x_2(uint16 *buffer, uint32 count);
-void scope_up_sample_x_2_5(uint16 *buffer, uint32 count);
-void scope_up_sample_x_4(uint16 *buffer, uint32 count);
-void scope_up_sample_x_5(uint16 *buffer, uint32 count);
-void scope_up_sample_x_10(uint16 *buffer, uint32 count);
-void scope_up_sample_x_25(uint16 *buffer, uint32 count);
-
-void scope_interleave_samples(uint16 *buffer1, uint16 *buffer2, PADC2CALIBRATIONDATA calibration);   //scope_pre_process_ch1_25ns_data
+void scope_process_trigger(uint32 count);
 
 void scope_calculate_min_max_avg(uint16 *buffer, PMEASUREMENTS measurements);
-void scope_evaluate_trace_data(uint16 *buffer, PMEASUREMENTS measurements, uint32 voltperdiv, uint32 screenoffset);
 
-void scope_determine_sample_buffer_indexes(void);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 // Signal data display functions
@@ -173,7 +155,7 @@ void scope_determine_sample_buffer_indexes(void);
 
 void scope_display_trace_data(void);          //Needs work on long time base to fix problem when enabling a channel. previous y position is then wrong.
 
-void scope_display_channel_trace(uint16 *buffer, uint16 xpos, uint16 count, uint32 color);
+void scope_display_channel_trace(uint16 *buffer, uint32 color);
 
 void scope_display_cursor_measurements(void);
 

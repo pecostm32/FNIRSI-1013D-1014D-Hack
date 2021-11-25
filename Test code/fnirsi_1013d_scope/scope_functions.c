@@ -75,7 +75,7 @@ void scope_setup_main_screen(void)
   scope_channel2_settings(0);
   
   //Display the current time per div setting
-  scope_time_div_setting();
+  scope_acqusition_settings(0);
   
   //Show the user selected move speed
   scope_move_speed(0);
@@ -158,7 +158,7 @@ void scope_setup_view_screen(void)
   fpga_set_channel_2_coupling();
 
   //Setup the trigger system in the FPGA based on the loaded scope settings
-  fpga_set_trigger_timebase();
+  fpga_set_trigger_timebase(scopesettings.timeperdiv);
   fpga_set_trigger_channel();
   fpga_set_trigger_edge();
   fpga_set_trigger_level();
@@ -1288,7 +1288,7 @@ void scope_run_stop_text(void)
   }
   
   //Fill the box
-  display_fill_rect(102, 12, 38, 18);
+  display_fill_rect(RUN_STOP_TEXT_XPOS, RUN_STOP_TEXT_YPOS, RUN_STOP_TEXT_WIDTH, RUN_STOP_TEXT_HEIGHT);
 
   //Select the font for the text
   display_set_font(&font_3);
@@ -1298,13 +1298,13 @@ void scope_run_stop_text(void)
   {
     //Run mode. White text
     display_set_fg_color(0x00FFFFFF);
-    display_text(106, 13, "RUN");
+    display_text(RUN_STOP_TEXT_XPOS + 4, RUN_STOP_TEXT_YPOS + 1, "RUN");
   }
   else
   {
     //Stop mode. Black text
     display_set_fg_color(0x00000000);
-    display_text(103, 13, "STOP");
+    display_text(RUN_STOP_TEXT_XPOS + 1, RUN_STOP_TEXT_YPOS + 1, "STOP");
   }
 }
 
@@ -1316,7 +1316,7 @@ void scope_channel1_settings(int mode)
   
   //Clear the area first
   display_set_fg_color(0x00000000);
-  display_fill_rect(161, 5, 99, 35);
+  display_fill_rect(CH1_BUTTON_XPOS, CH1_BUTTON_YPOS, CH1_BUTTON_BG_WIDTH, CH1_BUTTON_BG_HEIGHT);
   
   //Check if channel is enabled or disabled
   if(scopesettings.channel1.enable == 0)
@@ -1351,7 +1351,7 @@ void scope_channel1_settings(int mode)
   }
   
   //Fill the button
-  display_fill_rect(161, 5, 30, 35);
+  display_fill_rect(CH1_BUTTON_XPOS, CH1_BUTTON_YPOS, CH1_BUTTON_WIDTH, CH1_BUTTON_HEIGHT);
 
   //Select the font for the text
   display_set_font(&font_2);
@@ -1368,11 +1368,11 @@ void scope_channel1_settings(int mode)
     display_set_fg_color(0x00FFFFFF);
     
     //Fill the settings background
-    display_fill_rect(191, 5, 69, 35);
+    display_fill_rect(CH1_BUTTON_XPOS + 30, CH1_BUTTON_YPOS, CH1_BUTTON_BG_WIDTH - 30, CH1_BUTTON_BG_HEIGHT);
   }
   
   //Display the channel identifier text
-  display_text(166, 16, "CH1");
+  display_text(CH1_BUTTON_XPOS + 5, CH1_BUTTON_YPOS + 11, "CH1");
 
   //Check if inactive or active
   if(mode == 0)
@@ -1390,12 +1390,12 @@ void scope_channel1_settings(int mode)
   if(scopesettings.channel1.coupling == 0)
   {
     //DC coupling
-    display_text(199, 8, "DC");
+    display_text(CH1_BUTTON_XPOS + 38, CH1_BUTTON_YPOS + 3, "DC");
   }
   else
   {
     //AC coupling
-    display_text(199, 8, "AC");
+    display_text(CH1_BUTTON_XPOS + 38, CH1_BUTTON_YPOS + 3, "AC");
   }
   
   //Print the probe magnification factor
@@ -1403,7 +1403,7 @@ void scope_channel1_settings(int mode)
   {
     case 0:
       //Times 1 magnification
-      display_text(224, 8, "1X");
+      display_text(CH1_BUTTON_XPOS + 63, CH1_BUTTON_YPOS + 3, "1X");
       
       //Set the volts per div text range to be used for this magnification
       vdtext = (int8 **)volt_div_texts[0];
@@ -1411,7 +1411,7 @@ void scope_channel1_settings(int mode)
       
     case 1:
       //Times 10 magnification
-      display_text(222, 8, "10X");
+      display_text(CH1_BUTTON_XPOS + 61, CH1_BUTTON_YPOS + 3, "10X");
       
       //Set the volts per div text range to be used for this magnification
       vdtext = (int8 **)volt_div_texts[1];
@@ -1419,7 +1419,7 @@ void scope_channel1_settings(int mode)
       
     default:
       //Times 100 magnification
-      display_text(220, 8, "100X");
+      display_text(CH1_BUTTON_XPOS + 59, CH1_BUTTON_YPOS + 3, "100X");
       
       //Set the volts per div text range to be used for this magnification
       vdtext = (int8 **)volt_div_texts[2];
@@ -1429,7 +1429,7 @@ void scope_channel1_settings(int mode)
   //Display the sensitivity when in range
   if(scopesettings.channel1.voltperdiv < 7)
   {
-    display_text(199, 24, vdtext[scopesettings.channel1.voltperdiv]);
+    display_text(CH1_BUTTON_XPOS + 38, CH1_BUTTON_YPOS + 19, vdtext[scopesettings.channel1.voltperdiv]);
   }
 }
 
@@ -1441,7 +1441,7 @@ void scope_channel2_settings(int mode)
   
   //Clear the area first
   display_set_fg_color(0x00000000);
-  display_fill_rect(288, 5, 99, 35);
+  display_fill_rect(CH2_BUTTON_XPOS, CH2_BUTTON_YPOS, CH2_BUTTON_BG_WIDTH, CH2_BUTTON_BG_HEIGHT);
   
   //Check if channel is enabled or disabled
   if(scopesettings.channel2.enable == 0)
@@ -1476,7 +1476,7 @@ void scope_channel2_settings(int mode)
   }
   
   //Fill the button
-  display_fill_rect(288, 5, 30, 35);
+  display_fill_rect(CH2_BUTTON_XPOS, CH2_BUTTON_YPOS, CH2_BUTTON_WIDTH, CH2_BUTTON_HEIGHT);
 
   //Select the font for the text
   display_set_font(&font_2);
@@ -1493,11 +1493,11 @@ void scope_channel2_settings(int mode)
     display_set_fg_color(0x00FFFFFF);
     
     //Fill the settings background
-    display_fill_rect(318, 5, 69, 35);
+    display_fill_rect(CH2_BUTTON_XPOS + 30, CH2_BUTTON_YPOS, CH2_BUTTON_BG_WIDTH - 30, CH2_BUTTON_BG_HEIGHT);
   }
   
   //Display the channel identifier text
-  display_text(293, 16, "CH2");
+  display_text(CH2_BUTTON_XPOS + 5, CH2_BUTTON_YPOS + 11, "CH2");
 
   //Check if inactive or active
   if(mode == 0)
@@ -1515,12 +1515,12 @@ void scope_channel2_settings(int mode)
   if(scopesettings.channel2.coupling == 0)
   {
     //DC coupling
-    display_text(326, 8, "DC");
+    display_text(CH2_BUTTON_XPOS + 38, CH2_BUTTON_YPOS + 3, "DC");
   }
   else
   {
     //AC coupling
-    display_text(326, 8, "AC");
+    display_text(CH2_BUTTON_XPOS + 38, CH2_BUTTON_YPOS + 3, "AC");
   }
   
   //Print the probe magnification factor
@@ -1528,7 +1528,7 @@ void scope_channel2_settings(int mode)
   {
     case 0:
       //Times 1 magnification
-      display_text(351, 8, "1X");
+      display_text(CH2_BUTTON_XPOS + 63, CH2_BUTTON_YPOS + 3, "1X");
       
       //Set the volts per div text range to be used for this magnification
       vdtext = (int8 **)volt_div_texts[0];
@@ -1536,7 +1536,7 @@ void scope_channel2_settings(int mode)
       
     case 1:
       //Times 10 magnification
-      display_text(349, 8, "10X");
+      display_text(CH2_BUTTON_XPOS + 61, CH2_BUTTON_YPOS + 3, "10X");
       
       //Set the volts per div text range to be used for this magnification
       vdtext = (int8 **)volt_div_texts[1];
@@ -1544,7 +1544,7 @@ void scope_channel2_settings(int mode)
       
     default:
       //Times 10 magnification
-      display_text(347, 8, "100X");
+      display_text(CH2_BUTTON_XPOS + 59, CH2_BUTTON_YPOS + 3, "100X");
       
       //Set the volts per div text range to be used for this magnification
       vdtext = (int8 **)volt_div_texts[2];
@@ -1554,45 +1554,78 @@ void scope_channel2_settings(int mode)
   //Display the sensitivity when in range
   if(scopesettings.channel2.voltperdiv < 7)
   {
-    display_text(326, 24, vdtext[scopesettings.channel2.voltperdiv]);
+    display_text(CH2_BUTTON_XPOS + 38, CH2_BUTTON_YPOS + 19, vdtext[scopesettings.channel2.voltperdiv]);
   }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-const int8 *time_div_texts[30] =
-{
-    "50S/div",   "20S/div",   "10S/div",
-     "5S/div",    "2S/div",    "1S/div",
-  "500mS/div", "200mS/div", "100mS/div",
-   "50mS/div",  "20mS/div",  "10mS/div",
-    "5mS/div",   "2mS/div",   "1mS/div",
-  "500uS/div", "200uS/div", "100uS/div",
-   "50uS/div",  "20uS/div",  "10uS/div",
-    "5uS/div",   "2uS/div",   "1uS/div",
-  "500nS/div", "250nS/div", "100nS/div",
-   "50nS/div",  "25nS/div",  "10nS/div",
-};
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-void scope_time_div_setting(void)
+void scope_acqusition_settings(int mode)
 {
   //Clear the area first
   display_set_fg_color(0x00000000);
-  display_fill_rect(395, 5, 93, 35);
+  display_fill_rect(ACQ_BUTTON_XPOS, ACQ_BUTTON_YPOS, ACQ_BUTTON_BG_WIDTH, ACQ_BUTTON_BG_HEIGHT);
   
-  //Only display the text when in range
-  if(scopesettings.timeperdiv < 30)
+  //Check if inactive or active
+  if(mode == 0)
   {
-    //White text
+    //Inactive, green menu button
+    display_set_fg_color(TRIGGER_COLOR);
+  }
+  else
+  {
+    //Active, magenta menu button
+    display_set_fg_color(0x00FF00FF);
+  }
+
+  //Fill the button
+  display_fill_rect(ACQ_BUTTON_XPOS, ACQ_BUTTON_YPOS, ACQ_BUTTON_WIDTH, ACQ_BUTTON_HEIGHT);
+  
+  //Select the font for the text
+  display_set_font(&font_2);
+  
+  //Check if inactive or active
+  if(mode == 0)
+  {
+    //Inactive, black text
+    display_set_fg_color(0x00000000);
+  }
+  else
+  {
+    //Active, white text
     display_set_fg_color(0x00FFFFFF);
-
-    //Select the font for the text
-    display_set_font(&font_0);
-
+    
+    //Fill the settings background
+    display_fill_rect(ACQ_BUTTON_XPOS + 30, ACQ_BUTTON_YPOS, ACQ_BUTTON_BG_WIDTH - 30, ACQ_BUTTON_BG_HEIGHT);
+  }
+  
+  //Display the acquisition identifier text
+  display_text(ACQ_BUTTON_XPOS + 4, ACQ_BUTTON_YPOS + 11, "ACQ");
+  
+  //Check if inactive or active
+  if(mode == 0)
+  {
+    //Inactive, white text
+    display_set_fg_color(0x00FFFFFF);
+  }
+  else
+  {
+    //Active, black text
+    display_set_fg_color(0x00000000);
+  }
+  
+  //Only display the text when in range of the text array
+  if(scopesettings.acqusitionspeed < (sizeof(acquisition_speed_texts) / sizeof(int8 *)))
+  {
     //Display the text from the table
-    display_text(402, 16, (int8 *)time_div_texts[scopesettings.timeperdiv]);
+    display_text(ACQ_BUTTON_XPOS + 38, ACQ_BUTTON_YPOS + 3, (int8 *)acquisition_speed_texts[scopesettings.acqusitionspeed]);
+  }
+  
+  //Only display the text when in range of the text array
+  if(scopesettings.timeperdiv < (sizeof(time_div_texts) / sizeof(int8 *)))
+  {
+    //Display the text from the table
+    display_text(ACQ_BUTTON_XPOS + 38, ACQ_BUTTON_YPOS + 19, (int8 *)time_div_texts[scopesettings.timeperdiv]);
   }
 }
 
@@ -2104,19 +2137,19 @@ void scope_open_channel1_menu(void)
   display_set_fg_color(0x00181818);
   
   //Fill the background
-  display_fill_rect(161, 46, 183, 252);
+  display_fill_rect(CH1_MENU_XPOS, CH1_MENU_YPOS, CH1_MENU_WIDTH, CH1_MENU_HEIGHT);
 
   //Draw the edge in a lighter grey
   display_set_fg_color(0x00333333);
   
   //Draw the edge
-  display_draw_rect(161, 46, 183, 252);
+  display_draw_rect(CH1_MENU_XPOS, CH1_MENU_YPOS, CH1_MENU_WIDTH, CH1_MENU_HEIGHT);
   
   //Three black lines between the settings
   display_set_fg_color(0x00000000);
-  display_draw_horz_line(108, 175, 330);
-  display_draw_horz_line(170, 175, 330);
-  display_draw_horz_line(234, 175, 330);
+  display_draw_horz_line(CH1_MENU_YPOS +  62, CH1_MENU_XPOS + 14, CH1_MENU_XPOS + CH1_MENU_WIDTH - 14);
+  display_draw_horz_line(CH1_MENU_YPOS + 124, CH1_MENU_XPOS + 14, CH1_MENU_XPOS + CH1_MENU_WIDTH - 14);
+  display_draw_horz_line(CH1_MENU_YPOS + 188, CH1_MENU_XPOS + 14, CH1_MENU_XPOS + CH1_MENU_WIDTH - 14);
   
   //Main texts in white  
   display_set_fg_color(0x00FFFFFF);
@@ -2125,14 +2158,14 @@ void scope_open_channel1_menu(void)
   display_set_font(&font_3);
   
   //Display the texts
-  display_text(176,  56, "open");
-  display_text(183,  75, "CH");
-  display_text(176, 118, "open");
-  display_text(180, 137, "FFT");
-  display_text(176, 182, "coup");
-  display_text(179, 200, "ling");
-  display_text(176, 247, "probe");
-  display_text(176, 265, "mode");
+  display_text(CH1_MENU_XPOS + 15, CH1_MENU_YPOS +  10, "open");
+  display_text(CH1_MENU_XPOS + 22, CH1_MENU_YPOS +  29, "CH");
+  display_text(CH1_MENU_XPOS + 15, CH1_MENU_YPOS +  72, "open");
+  display_text(CH1_MENU_XPOS + 19, CH1_MENU_YPOS +  91, "FFT");
+  display_text(CH1_MENU_XPOS + 15, CH1_MENU_YPOS + 136, "coup");
+  display_text(CH1_MENU_XPOS + 18, CH1_MENU_YPOS + 154, "ling");
+  display_text(CH1_MENU_XPOS + 15, CH1_MENU_YPOS + 201, "probe");
+  display_text(CH1_MENU_XPOS + 15, CH1_MENU_YPOS + 219, "mode");
 
   //Display the actual settings
   scope_channel1_enable_select();
@@ -2145,7 +2178,7 @@ void scope_open_channel1_menu(void)
   display_set_screen_buffer((uint16 *)maindisplaybuffer);
 
   //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
-  display_slide_top_rect_onto_screen(161, 46, 183, 252, 69906);
+  display_slide_top_rect_onto_screen(CH1_MENU_XPOS, CH1_MENU_YPOS, CH1_MENU_WIDTH, CH1_MENU_HEIGHT, 69906);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -2162,12 +2195,12 @@ void scope_channel1_enable_select(void)
   if(scopesettings.channel1.enable == 0)
   {
     //Disabled so dark grey box behind on
-    display_fill_rect(239, 62, 32, 22);
+    display_fill_rect(CH1_MENU_XPOS + 78, CH1_MENU_YPOS + 16, 32, 22);
   }
   else
   {
     //Enabled so dark grey box behind off
-    display_fill_rect(291, 62, 32, 22);
+    display_fill_rect(CH1_MENU_XPOS + 130, CH1_MENU_YPOS + 16, 32, 22);
   }
   
   //Set channel 1 color for the box behind the selected text
@@ -2177,12 +2210,12 @@ void scope_channel1_enable_select(void)
   if(scopesettings.channel1.enable == 0)
   {
     //Disabled so channel 1 color box behind off
-    display_fill_rect(291, 62, 32, 22);
+    display_fill_rect(CH1_MENU_XPOS + 130, CH1_MENU_YPOS + 16, 32, 22);
   }
   else
   {
     //Enabled so channel 1 color box behind on
-    display_fill_rect(239, 62, 32, 22);
+    display_fill_rect(CH1_MENU_XPOS + 78, CH1_MENU_YPOS + 16, 32, 22);
   }
 
   //Check if channel is disabled or enabled
@@ -2198,7 +2231,7 @@ void scope_channel1_enable_select(void)
   }
 
   //Display the on text
-  display_text(245, 65, "ON");
+  display_text(CH1_MENU_XPOS + 84, CH1_MENU_YPOS + 19, "ON");
 
   //Check if channel is disabled or enabled
   if(scopesettings.channel1.enable == 0)
@@ -2213,7 +2246,7 @@ void scope_channel1_enable_select(void)
   }
 
   //Display the off text
-  display_text(294, 65, "OFF");
+  display_text(CH1_MENU_XPOS + 133, CH1_MENU_YPOS + 19, "OFF");
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -2230,12 +2263,12 @@ void scope_channel1_fft_show(void)
   if(scopesettings.channel1.fftenable == 0)
   {
     //Disabled so dark grey box behind on
-    display_fill_rect(239, 124, 32, 22);
+    display_fill_rect(CH1_MENU_XPOS + 78, CH1_MENU_YPOS + 78, 32, 22);
   }
   else
   {
     //Enabled so dark grey box behind off
-    display_fill_rect(291, 124, 32, 22);
+    display_fill_rect(CH1_MENU_XPOS + 130, CH1_MENU_YPOS + 78, 32, 22);
   }
   
   //Set channel 1 color for the box behind the selected text
@@ -2245,12 +2278,12 @@ void scope_channel1_fft_show(void)
   if(scopesettings.channel1.fftenable == 0)
   {
     //Disabled so channel 1 color box behind off
-    display_fill_rect(291, 124, 32, 22);
+    display_fill_rect(CH1_MENU_XPOS + 130, CH1_MENU_YPOS + 78, 32, 22);
   }
   else
   {
     //Enabled so channel 1 color box behind on
-    display_fill_rect(239, 124, 32, 22);
+    display_fill_rect(CH1_MENU_XPOS + 78, CH1_MENU_YPOS + 78, 32, 22);
   }
 
   //Check if fft is disabled or enabled
@@ -2266,7 +2299,7 @@ void scope_channel1_fft_show(void)
   }
 
   //Display the on text
-  display_text(245, 127, "ON");
+  display_text(CH1_MENU_XPOS + 84, CH1_MENU_YPOS + 81, "ON");
 
   //Check if fft is disabled or enabled
   if(scopesettings.channel1.fftenable == 0)
@@ -2281,7 +2314,7 @@ void scope_channel1_fft_show(void)
   }
 
   //Display the off text
-  display_text(294, 127, "OFF");
+  display_text(CH1_MENU_XPOS + 133, CH1_MENU_YPOS + 81, "OFF");
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -2298,12 +2331,12 @@ void scope_channel1_coupling_select(void)
   if(scopesettings.channel1.coupling == 0)
   {
     //DC so dark grey box behind ac text
-    display_fill_rect(291, 188, 32, 22);
+    display_fill_rect(CH1_MENU_XPOS + 130, CH1_MENU_YPOS + 142, 32, 22);
   }
   else
   {
     //AC so dark grey box behind dc text
-    display_fill_rect(239, 188, 32, 22);
+    display_fill_rect(CH1_MENU_XPOS + 78, CH1_MENU_YPOS + 142, 32, 22);
   }
 
   //Set channel 1 color for the box behind the selected text
@@ -2313,12 +2346,12 @@ void scope_channel1_coupling_select(void)
   if(scopesettings.channel1.coupling == 0)
   {
     //DC so channel 1 color box behind dc text
-    display_fill_rect(239, 188, 32, 22);
+    display_fill_rect(CH1_MENU_XPOS + 78, CH1_MENU_YPOS + 142, 32, 22);
   }
   else
   {
     //AC so channel 1 color box behind ac text
-    display_fill_rect(291, 188, 32, 22);
+    display_fill_rect(CH1_MENU_XPOS + 130, CH1_MENU_YPOS + 142, 32, 22);
   }
 
   //Check if coupling is dc or ac
@@ -2334,7 +2367,7 @@ void scope_channel1_coupling_select(void)
   }
 
   //Display the dc text
-  display_text(245, 191, "DC");
+  display_text(CH1_MENU_XPOS + 84, CH1_MENU_YPOS + 145, "DC");
 
   //Check if coupling is dc or ac
   if(scopesettings.channel1.coupling == 0)
@@ -2349,7 +2382,7 @@ void scope_channel1_coupling_select(void)
   }
 
   //Display the off text
-  display_text(296, 191, "AC");
+  display_text(CH1_MENU_XPOS + 135, CH1_MENU_YPOS + 145, "AC");
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -2367,20 +2400,20 @@ void scope_channel1_probe_magnification_select(void)
   {
     case 0:
       //dark grey times 10 and 100 magnification
-      display_fill_rect(270, 245, 23, 38);
-      display_fill_rect(299, 245, 30, 38);
+      display_fill_rect(CH1_MENU_XPOS + 109, CH1_MENU_YPOS + 199, 23, 38);
+      display_fill_rect(CH1_MENU_XPOS + 138, CH1_MENU_YPOS + 199, 30, 38);
       break;
       
     case 1:
       //dark grey times 1 and 100 magnification
-      display_fill_rect(239, 245, 20, 38);
-      display_fill_rect(299, 245, 30, 38);
+      display_fill_rect(CH1_MENU_XPOS +  78, CH1_MENU_YPOS + 199, 20, 38);
+      display_fill_rect(CH1_MENU_XPOS + 138, CH1_MENU_YPOS + 199, 30, 38);
       break;
       
     default:
       //dark grey times 1 and 10 magnification
-      display_fill_rect(239, 245, 20, 38);
-      display_fill_rect(270, 245, 23, 38);
+      display_fill_rect(CH1_MENU_XPOS +  78, CH1_MENU_YPOS + 199, 20, 38);
+      display_fill_rect(CH1_MENU_XPOS + 109, CH1_MENU_YPOS + 199, 23, 38);
       break;
   }
   
@@ -2392,17 +2425,17 @@ void scope_channel1_probe_magnification_select(void)
   {
     case 0:
       //Highlight times 1 magnification
-      display_fill_rect(239, 245, 20, 38);
+      display_fill_rect(CH1_MENU_XPOS + 78, CH1_MENU_YPOS + 199, 20, 38);
       break;
       
     case 1:
       //Highlight times 10 magnification
-      display_fill_rect(270, 245, 23, 38);
+      display_fill_rect(CH1_MENU_XPOS + 109, CH1_MENU_YPOS + 199, 23, 38);
       break;
       
     default:
       //Highlight times 100 magnification
-      display_fill_rect(299, 245, 30, 38);
+      display_fill_rect(CH1_MENU_XPOS + 138, CH1_MENU_YPOS + 199, 30, 38);
       break;
   }
 
@@ -2419,8 +2452,8 @@ void scope_channel1_probe_magnification_select(void)
   }
 
   //Display the 1X text
-  display_text(245, 247, "1");
-  display_text(244, 265, "X");
+  display_text(CH1_MENU_XPOS + 84, CH1_MENU_YPOS + 201, "1");
+  display_text(CH1_MENU_XPOS + 83, CH1_MENU_YPOS + 219, "X");
 
   //Check if magnification is 10x
   if(scopesettings.channel1.magnification == 1)
@@ -2435,8 +2468,8 @@ void scope_channel1_probe_magnification_select(void)
   }
 
   //Display the 10X text
-  display_text(274, 247, "10");
-  display_text(276, 265, "X");
+  display_text(CH1_MENU_XPOS + 113, CH1_MENU_YPOS + 201, "10");
+  display_text(CH1_MENU_XPOS + 115, CH1_MENU_YPOS + 219, "X");
 
   //Check if magnification is 100x
   if(scopesettings.channel1.magnification > 1)
@@ -2451,33 +2484,33 @@ void scope_channel1_probe_magnification_select(void)
   }
 
   //Display the 100X text
-  display_text(303, 247, "100");
-  display_text(310, 265, "X");
+  display_text(CH1_MENU_XPOS + 142, CH1_MENU_YPOS + 201, "100");
+  display_text(CH1_MENU_XPOS + 149, CH1_MENU_YPOS + 219, "X");
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 void scope_open_channel2_menu(void)
 {
-  //Setup the menu in a separate buffer to be able to slide it onto the screen
+ //Setup the menu in a separate buffer to be able to slide it onto the screen
   display_set_screen_buffer(displaybuffer1);
   
   //Draw the background in dark grey
   display_set_fg_color(0x00181818);
   
   //Fill the background
-  display_fill_rect(288, 46, 183, 252);
+  display_fill_rect(CH2_MENU_XPOS, CH2_MENU_YPOS, CH2_MENU_WIDTH, CH2_MENU_HEIGHT);
 
   //Draw the edge in a lighter grey
   display_set_fg_color(0x00333333);
   
   //Draw the edge
-  display_draw_rect(288, 46, 183, 252);
+  display_draw_rect(CH2_MENU_XPOS, CH2_MENU_YPOS, CH2_MENU_WIDTH, CH2_MENU_HEIGHT);
   
   //Three black lines between the settings
   display_set_fg_color(0x00000000);
-  display_draw_horz_line(108, 302, 457);
-  display_draw_horz_line(170, 302, 457);
-  display_draw_horz_line(234, 302, 457);
+  display_draw_horz_line(CH2_MENU_YPOS +  62, CH2_MENU_XPOS + 14, CH2_MENU_XPOS + CH2_MENU_WIDTH - 14);
+  display_draw_horz_line(CH2_MENU_YPOS + 124, CH2_MENU_XPOS + 14, CH2_MENU_XPOS + CH2_MENU_WIDTH - 14);
+  display_draw_horz_line(CH2_MENU_YPOS + 188, CH2_MENU_XPOS + 14, CH2_MENU_XPOS + CH2_MENU_WIDTH - 14);
   
   //Main texts in white  
   display_set_fg_color(0x00FFFFFF);
@@ -2486,14 +2519,14 @@ void scope_open_channel2_menu(void)
   display_set_font(&font_3);
   
   //Display the texts
-  display_text(303,  56, "open");
-  display_text(310,  75, "CH");
-  display_text(303, 118, "open");
-  display_text(307, 137, "FFT");
-  display_text(303, 182, "coup");
-  display_text(306, 200, "ling");
-  display_text(303, 247, "probe");
-  display_text(303, 265, "mode");
+  display_text(CH2_MENU_XPOS + 15, CH2_MENU_YPOS +  10, "open");
+  display_text(CH2_MENU_XPOS + 22, CH2_MENU_YPOS +  29, "CH");
+  display_text(CH2_MENU_XPOS + 15, CH2_MENU_YPOS +  72, "open");
+  display_text(CH2_MENU_XPOS + 19, CH2_MENU_YPOS +  91, "FFT");
+  display_text(CH2_MENU_XPOS + 15, CH2_MENU_YPOS + 136, "coup");
+  display_text(CH2_MENU_XPOS + 18, CH2_MENU_YPOS + 154, "ling");
+  display_text(CH2_MENU_XPOS + 15, CH2_MENU_YPOS + 201, "probe");
+  display_text(CH2_MENU_XPOS + 15, CH2_MENU_YPOS + 219, "mode");
 
   //Display the actual settings
   scope_channel2_enable_select();
@@ -2506,7 +2539,7 @@ void scope_open_channel2_menu(void)
   display_set_screen_buffer((uint16 *)maindisplaybuffer);
 
   //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
-  display_slide_top_rect_onto_screen(288, 46, 183, 252, 69906);
+  display_slide_top_rect_onto_screen(CH2_MENU_XPOS, CH2_MENU_YPOS, CH2_MENU_WIDTH, CH2_MENU_HEIGHT, 69906);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -2523,12 +2556,12 @@ void scope_channel2_enable_select(void)
   if(scopesettings.channel2.enable == 0)
   {
     //Disabled so dark grey box behind on
-    display_fill_rect(366, 62, 32, 22);
+    display_fill_rect(CH2_MENU_XPOS + 78, CH2_MENU_YPOS + 16, 32, 22);
   }
   else
   {
     //Enabled so dark grey box behind off
-    display_fill_rect(418, 62, 32, 22);
+    display_fill_rect(CH2_MENU_XPOS + 130, CH2_MENU_YPOS + 16, 32, 22);
   }
   
   //Set channel 2 color for the box behind the selected text
@@ -2538,12 +2571,12 @@ void scope_channel2_enable_select(void)
   if(scopesettings.channel2.enable == 0)
   {
     //Disabled so channel 2 color box behind off
-    display_fill_rect(418, 62, 32, 22);
+    display_fill_rect(CH2_MENU_XPOS + 130, CH2_MENU_YPOS + 16, 32, 22);
   }
   else
   {
     //Enabled so channel 2 color box behind on
-    display_fill_rect(366, 62, 32, 22);
+    display_fill_rect(CH2_MENU_XPOS + 78, CH2_MENU_YPOS + 16, 32, 22);
   }
 
   //Check if channel is disabled or enabled
@@ -2559,7 +2592,7 @@ void scope_channel2_enable_select(void)
   }
 
   //Display the on text
-  display_text(372, 65, "ON");
+  display_text(CH2_MENU_XPOS + 84, CH2_MENU_YPOS + 19, "ON");
 
   //Check if channel is disabled or enabled
   if(scopesettings.channel2.enable == 0)
@@ -2574,7 +2607,7 @@ void scope_channel2_enable_select(void)
   }
 
   //Display the off text
-  display_text(421, 65, "OFF");
+  display_text(CH2_MENU_XPOS + 133, CH2_MENU_YPOS + 19, "OFF");
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -2591,12 +2624,12 @@ void scope_channel2_fft_show(void)
   if(scopesettings.channel2.fftenable == 0)
   {
     //Disabled so dark grey box behind on
-    display_fill_rect(366, 124, 32, 22);
+    display_fill_rect(CH2_MENU_XPOS + 78, CH2_MENU_YPOS + 78, 32, 22);
   }
   else
   {
     //Enabled so dark grey box behind off
-    display_fill_rect(418, 124, 32, 22);
+    display_fill_rect(CH2_MENU_XPOS + 130, CH2_MENU_YPOS + 78, 32, 22);
   }
   
   //Set channel 2 color for the box behind the selected text
@@ -2606,12 +2639,12 @@ void scope_channel2_fft_show(void)
   if(scopesettings.channel2.fftenable == 0)
   {
     //Disabled so channel 2 color box behind off
-    display_fill_rect(418, 124, 32, 22);
+    display_fill_rect(CH2_MENU_XPOS + 130, CH2_MENU_YPOS + 78, 32, 22);
   }
   else
   {
     //Enabled so channel 2 color box behind on
-    display_fill_rect(366, 124, 32, 22);
+    display_fill_rect(CH2_MENU_XPOS + 78, CH2_MENU_YPOS + 78, 32, 22);
   }
 
   //Check if fft is disabled or enabled
@@ -2627,7 +2660,7 @@ void scope_channel2_fft_show(void)
   }
 
   //Display the on text
-  display_text(372, 127, "ON");
+  display_text(CH2_MENU_XPOS + 84, CH2_MENU_YPOS + 81, "ON");
 
   //Check if fft is disabled or enabled
   if(scopesettings.channel2.fftenable == 0)
@@ -2642,7 +2675,7 @@ void scope_channel2_fft_show(void)
   }
 
   //Display the off text
-  display_text(421, 127, "OFF");
+  display_text(CH2_MENU_XPOS + 133, CH2_MENU_YPOS + 81, "OFF");
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -2659,12 +2692,12 @@ void scope_channel2_coupling_select(void)
   if(scopesettings.channel2.coupling == 0)
   {
     //DC so dark grey box behind ac text
-    display_fill_rect(418, 188, 32, 22);
+    display_fill_rect(CH2_MENU_XPOS + 130, CH2_MENU_YPOS + 142, 32, 22);
   }
   else
   {
     //AC so dark grey box behind dc text
-    display_fill_rect(366, 188, 32, 22);
+    display_fill_rect(CH2_MENU_XPOS + 78, CH2_MENU_YPOS + 142, 32, 22);
   }
 
   //Set channel 2 color for the box behind the selected text
@@ -2674,12 +2707,12 @@ void scope_channel2_coupling_select(void)
   if(scopesettings.channel2.coupling == 0)
   {
     //DC so channel 2 color box behind dc text
-    display_fill_rect(366, 188, 32, 22);
+    display_fill_rect(CH2_MENU_XPOS + 78, CH2_MENU_YPOS + 142, 32, 22);
   }
   else
   {
     //AC so channel 2 color box behind ac text
-    display_fill_rect(418, 188, 32, 22);
+    display_fill_rect(CH2_MENU_XPOS + 130, CH2_MENU_YPOS + 142, 32, 22);
   }
 
   //Check if coupling is dc or ac
@@ -2695,7 +2728,7 @@ void scope_channel2_coupling_select(void)
   }
 
   //Display the dc text
-  display_text(372, 191, "DC");
+  display_text(CH2_MENU_XPOS + 84, CH2_MENU_YPOS + 145, "DC");
 
   //Check if coupling is dc or ac
   if(scopesettings.channel2.coupling == 0)
@@ -2710,7 +2743,7 @@ void scope_channel2_coupling_select(void)
   }
 
   //Display the off text
-  display_text(423, 191, "AC");
+  display_text(CH2_MENU_XPOS + 135, CH2_MENU_YPOS + 145, "AC");
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -2728,20 +2761,20 @@ void scope_channel2_probe_magnification_select(void)
   {
     case 0:
       //dark grey times 10 and 100 magnification
-      display_fill_rect(397, 245, 23, 38);
-      display_fill_rect(426, 245, 30, 38);
+      display_fill_rect(CH2_MENU_XPOS + 109, CH2_MENU_YPOS + 199, 23, 38);
+      display_fill_rect(CH2_MENU_XPOS + 138, CH2_MENU_YPOS + 199, 30, 38);
       break;
       
     case 1:
       //dark grey times 1 and 100 magnification
-      display_fill_rect(366, 245, 20, 38);
-      display_fill_rect(426, 245, 30, 38);
+      display_fill_rect(CH2_MENU_XPOS +  78, CH2_MENU_YPOS + 199, 20, 38);
+      display_fill_rect(CH2_MENU_XPOS + 138, CH2_MENU_YPOS + 199, 30, 38);
       break;
       
     default:
       //dark grey times 1 and 10 magnification
-      display_fill_rect(366, 245, 20, 38);
-      display_fill_rect(397, 245, 23, 38);
+      display_fill_rect(CH2_MENU_XPOS +  78, CH2_MENU_YPOS + 199, 20, 38);
+      display_fill_rect(CH2_MENU_XPOS + 109, CH2_MENU_YPOS + 199, 23, 38);
       break;
   }
   
@@ -2753,17 +2786,17 @@ void scope_channel2_probe_magnification_select(void)
   {
     case 0:
       //Highlight times 1 magnification
-      display_fill_rect(366, 245, 20, 38);
+      display_fill_rect(CH2_MENU_XPOS + 78, CH2_MENU_YPOS + 199, 20, 38);
       break;
       
     case 1:
       //Highlight times 10 magnification
-      display_fill_rect(397, 245, 23, 38);
+      display_fill_rect(CH2_MENU_XPOS + 109, CH2_MENU_YPOS + 199, 23, 38);
       break;
       
     default:
       //Highlight times 100 magnification
-      display_fill_rect(426, 245, 30, 38);
+      display_fill_rect(CH2_MENU_XPOS + 138, CH2_MENU_YPOS + 199, 30, 38);
       break;
   }
 
@@ -2780,8 +2813,8 @@ void scope_channel2_probe_magnification_select(void)
   }
 
   //Display the 1X text
-  display_text(372, 247, "1");
-  display_text(371, 265, "X");
+  display_text(CH2_MENU_XPOS + 84, CH2_MENU_YPOS + 201, "1");
+  display_text(CH2_MENU_XPOS + 83, CH2_MENU_YPOS + 219, "X");
 
   //Check if magnification is 10x
   if(scopesettings.channel2.magnification == 1)
@@ -2796,8 +2829,8 @@ void scope_channel2_probe_magnification_select(void)
   }
 
   //Display the 10X text
-  display_text(401, 247, "10");
-  display_text(403, 265, "X");
+  display_text(CH2_MENU_XPOS + 113, CH2_MENU_YPOS + 201, "10");
+  display_text(CH2_MENU_XPOS + 115, CH2_MENU_YPOS + 219, "X");
 
   //Check if magnification is 100x
   if(scopesettings.channel2.magnification > 1)
@@ -2812,8 +2845,184 @@ void scope_channel2_probe_magnification_select(void)
   }
 
   //Display the 100X text
-  display_text(430, 247, "100");
-  display_text(437, 265, "X");
+  display_text(CH2_MENU_XPOS + 142, CH2_MENU_YPOS + 201, "100");
+  display_text(CH2_MENU_XPOS + 149, CH2_MENU_YPOS + 219, "X");
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_open_acquisition_menu(void)
+{
+  //Setup the menu in a separate buffer to be able to slide it onto the screen
+  display_set_screen_buffer(displaybuffer1);
+  
+  //Draw the background in dark grey
+  display_set_fg_color(0x00181818);
+  
+  //Fill the background
+  display_fill_rect(ACQ_MENU_XPOS, ACQ_MENU_YPOS, ACQ_MENU_WIDTH, ACQ_MENU_HEIGHT);
+
+  //Draw the edge in a lighter grey
+  display_set_fg_color(0x00333333);
+  
+  //Draw the edge
+  display_draw_rect(ACQ_MENU_XPOS, ACQ_MENU_YPOS, ACQ_MENU_WIDTH, ACQ_MENU_HEIGHT);
+
+  //A black line between the settings
+  display_set_fg_color(0x00000000);
+  display_draw_horz_line(ACQ_MENU_YPOS +  135, ACQ_MENU_XPOS + 8, ACQ_MENU_XPOS + ACQ_MENU_WIDTH - 8);
+  
+  //Main texts in white  
+  display_set_fg_color(0x00FFFFFF);
+
+  //Select the font for the texts
+  display_set_font(&font_3);
+  
+  //Display the texts
+  display_text(ACQ_MENU_XPOS + 111, ACQ_MENU_YPOS +   8, "Sample Rate");
+  display_text(ACQ_MENU_XPOS +  97, ACQ_MENU_YPOS + 143, "Time per Division");
+
+  //Display the actual settings
+  scope_acquisition_speed_select();
+  scope_acquisition_timeperdiv_select();
+  
+  //Set source and target for getting it on the actual screen
+  display_set_source_buffer(displaybuffer1);
+  display_set_screen_buffer((uint16 *)maindisplaybuffer);
+
+  //Slide the image onto the actual screen. The speed factor makes it start fast and end slow, Smaller value makes it slower.
+  display_slide_top_rect_onto_screen(ACQ_MENU_XPOS, ACQ_MENU_YPOS, ACQ_MENU_WIDTH, ACQ_MENU_HEIGHT, 69906);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_acquisition_speed_select(void)
+{
+  uint32 i,x,y;
+  
+  //Select the font for the texts
+  display_set_font(&font_2);
+
+  //Set dark grey color for the boxes behind the not selected texts
+  display_set_fg_color(0x00383838);
+  
+  //Clear the boxes for the not selected items
+  for(i=0;i<(sizeof(acquisition_speed_texts) / sizeof(int8 *));i++)
+  {
+    if(i != scopesettings.acqusitionspeed)
+    {
+      x = ((i & 3) * 72) + 10;
+      y = ((i >> 2) * 23) + 33;
+      
+      display_fill_rect(ACQ_MENU_XPOS + x, ACQ_MENU_YPOS + y, 68, 20);
+    }
+  }
+  
+  //Set channel 2 color for the box behind the selected text
+  display_set_fg_color(TRIGGER_COLOR);
+
+  //Get the position of the selected item
+  x = ((scopesettings.acqusitionspeed & 3) * 72) + 10;
+  y = ((scopesettings.acqusitionspeed >> 2) * 23) + 33;
+  
+  //Highlight the selected item
+  display_fill_rect(ACQ_MENU_XPOS + x, ACQ_MENU_YPOS + y, 68, 20);
+
+  
+  for(i=0;i<(sizeof(acquisition_speed_texts) / sizeof(int8 *));i++)
+  {
+    if(i != scopesettings.acqusitionspeed)
+    {
+      //Available not selected texts in white  
+      display_set_fg_color(0x00FFFFFF);
+    }
+    else
+    {
+      //Selected texts in black
+      display_set_fg_color(0x00000000);
+    }
+    
+    //Calculate the position of this text
+    x = ((i & 3) * 72) + acquisition_speed_text_x_offsets[i];
+    y = ((i >> 2) * 23) + 36;
+
+    //Display the text from the table
+    display_text(ACQ_MENU_XPOS + x, ACQ_MENU_YPOS + y, (int8 *)acquisition_speed_texts[i]);
+  }  
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_acquisition_timeperdiv_select(void)
+{
+  uint32 c,i,x,y;
+  
+  //Select the font for the texts
+  display_set_font(&font_2);
+
+  //Set dark grey color for the boxes behind the not selected texts
+  display_set_fg_color(0x00383838);
+  
+  //Clear the boxes for the not selected items
+  for(i=0;i<(sizeof(time_div_texts) / sizeof(int8 *));i++)
+  {
+    //Settings displayed from smallest to highest value
+    c = ((sizeof(time_div_texts) / sizeof(int8 *)) - 1) - i;
+    
+    if(c != scopesettings.timeperdiv)
+    {
+      x = ((i & 3) * 72) + 10;
+      y = ((i >> 2) * 23) + 168;
+      
+      display_fill_rect(ACQ_MENU_XPOS + x, ACQ_MENU_YPOS + y, 68, 20);
+    }
+  }
+  
+  //Set channel 2 color for the box behind the selected text
+  display_set_fg_color(TRIGGER_COLOR);
+
+  //Get the position of the selected item
+  c = ((sizeof(time_div_texts) / sizeof(int8 *)) - 1) - scopesettings.timeperdiv;
+  x = ((c & 3) * 72) + 10;
+  y = ((c >> 2) * 23) + 168;
+
+  
+  //Highlight the selected item
+  display_fill_rect(ACQ_MENU_XPOS + x, ACQ_MENU_YPOS + y, 68, 20);
+  
+  for(i=0;i<(sizeof(time_div_texts) / sizeof(int8 *));i++)
+  {
+    //Settings displayed from smallest to highest value
+    c = ((sizeof(time_div_texts) / sizeof(int8 *)) - 1) - i;
+    
+    //Check if the current text is the selected on
+    if(c != scopesettings.timeperdiv)
+    {
+      //When not check if the current on is a viable candidate for full screen trace display
+      if(viable_time_per_div[scopesettings.acqusitionspeed][c])
+      {
+        //Available but viable not selected texts in white  
+        display_set_fg_color(0x00FFFFFF);
+      }
+      else
+      {
+        //Not viable but available not selected texts in grey
+        display_set_fg_color(0x00686868);
+      }
+    }
+    else
+    {
+      //Selected texts in black
+      display_set_fg_color(0x00000000);
+    }
+    
+    //Calculate the position of this text
+    x = ((i & 3) * 72) + time_div_text_x_offsets[c];
+    y = ((i >> 2) * 23) + 171;
+
+    //Display the text from the table
+    display_text(ACQ_MENU_XPOS + x, ACQ_MENU_YPOS + y, (int8 *)time_div_texts[c]);
+  }  
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -3836,8 +4045,6 @@ void scope_display_ok_button(uint16 xpos, uint16 ypos, uint8 mode)
 
 void scope_adjust_timebase(void)
 {
-  int32 diff;
-  
   //Check if touch within the trace display region
   if((previousxtouch > 2) && (previousxtouch < 720) && (previousytouch > 50) && (previousytouch < 470))
   {
@@ -3859,7 +4066,7 @@ void scope_adjust_timebase(void)
     else if(previousxtouch > 362)
     {
       //Check if not already on the lowest setting (10nS/div)
-      if(scopesettings.timeperdiv < 29)
+      if(scopesettings.timeperdiv < ((sizeof(time_div_texts) / sizeof(int8 *)) - 1))
       {
         //Go down in time by adding one to the setting
         scopesettings.timeperdiv++;
@@ -3870,61 +4077,19 @@ void scope_adjust_timebase(void)
       }
     }
     
-    //Check if in stopped state to limit on selectable range
-    if(scopesettings.runstate)    
-    {
-      //Check if new setting above 10mS/div. (below 11)
-      if(scopesettings.timeperdiv < 11)
-      {
-        //Keep it on 10mS/div if so
-        scopesettings.timeperdiv = 11;
-      }
-
-      //Check if new setting within allowed range from backed up setting, which is time base of last sample data
-      //Calculate the step difference between the two settings
-      diff = scopesettings.timeperdiv - scopesettings.timeperdivbackup;
-
-      //Limit it on 3 steps either side
-      if(diff > 3)
-      {
-        //Add three if the new setting is above the old
-        scopesettings.timeperdiv = scopesettings.timeperdivbackup + 3;
-
-        //Limit on max for table index
-        diff = 3;
-      }
-      else if(diff < -3)
-      {
-        //Subtract three if the new setting is below the old
-        scopesettings.timeperdiv = scopesettings.timeperdivbackup - 3;
-
-        //Limit on min for table index
-        diff = -3;
-      }
-
-      //Set sample buffer position select for zoom in stop mode. This also selects an up sampling function as needed
-      zoom_select = zoom_select_settings[scopesettings.timeperdivbackup % 3][diff + 3];
-    }
-
-    //For trigger modes single and normal the time base setting can't go up beyond 50mS/div
-    if((scopesettings.triggermode) && (scopesettings.timeperdiv < 9))
-    {
-      //In that case limit it on 50mS/div
-      scopesettings.timeperdiv = 9;
-    }
-    
-    //When in run state save the new setting in the backup
+    //For time per div set with tapping on the screen the direct relation between the time per div and the sample rate is set
+    //but only when the scope is running. Otherwise the sample rate of the acquired buffer still is valid.
     if(scopesettings.runstate == 0)
     {
-      //Save the setting
-      scopesettings.timeperdivbackup = scopesettings.timeperdiv;
+      //Set the sample rate that belongs to the selected time per div setting
+      scopesettings.acqusitionspeed = time_per_div_sample_rate[scopesettings.timeperdiv];
     }
     
     //Set the new setting in the FPGA
-    fpga_set_trigger_timebase();
+    fpga_set_trigger_timebase(scopesettings.timeperdiv);
     
     //Show he new setting on the display
-    scope_time_div_setting();
+    scope_acqusition_settings(0);
   }
 }
 
@@ -4063,8 +4228,11 @@ void scope_draw_pointers(void)
     display_left_pointer(2, position, '2');
   }
   
-  //Draw trigger position and level pointer when time base in range of 10mS/div - 10nS/div and in normal display mode
-  if((scopesettings.timeperdiv > 10) && (scopesettings.xymodedisplay == 0))
+  //Need to think about trigger position in 200mS - 20mS/div settings. Not sure if they work or need to be done in software
+  //The original scope does not show them for 50mS and 20mS/div
+  
+  //Draw trigger position and level pointer when in normal display mode
+  if(scopesettings.xymodedisplay == 0)
   {
     //x position for the trigger position pointer
     position = scopesettings.triggerposition + 2;
@@ -4146,1719 +4314,324 @@ void scope_draw_volt_cursors(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_process_trace_data(void)
-{
-  //Based on the time base setting different actions are needed for getting the trace data
-  //Check on time base setting if range is between 50S/div and 100ms/div
-  if(scopesettings.timeperdiv < 9)
-  {
-    //Reads an average of ten data points for each channel, active or not
-    scope_get_long_timebase_data();
-    
-    //Point needs to be drawn twice to be on the correct time base speed
-    //So called here as well as in the main loop
-    scope_display_trace_data();
-  }
-  else
-  {
-    //Check if running and not in a trace or cursor displacement state
-    if((scopesettings.runstate == 0) && (touchstate == 0))
-    {
-      //Read trace data for active channels
-      scope_get_short_timebase_data();
-      
-      //scope_process_short_timebase_data();
-    }
-    else
-    {
-      //Makes not a lot of sense since the scope is not running or being touched and the next function is also called in the main loop directly after this one
-      scope_display_trace_data();
-    }
-  }
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-void scope_get_long_timebase_data(void)
-{
-  //Default timeout for 50S/div
-  uint32 timeout = 2000;
-  uint32 curticks;
-  uint32 signaladjust;
-  uint32 temp1, temp2;
-  uint16 *ptr;
-  
-  //Send the time base command for the longer settings
-  fpga_set_long_timebase();
-  
-  //Get the delay setting based on the time base
-  switch(scopesettings.timeperdiv)
-  {
-    //20S/div
-    case 1:
-      timeout = 1000;
-      break;
-
-    //10S/div
-    case 2:
-      timeout = 400;
-      break;
-
-    //5S/div
-    case 3:
-      timeout = 200;
-      break;
-
-    //2S/div
-    case 4:
-      timeout = 80;
-      break;
-
-    //1S/div
-    case 5:
-      timeout = 40;
-      break;
-
-    //500mS/div
-    case 6:
-      timeout = 20;
-      break;
-
-    //200mS/div
-    case 7:
-      timeout = 8;
-      break;
-
-    //100mS/div
-    case 8:
-      timeout = 4;
-      break;
-  }
-  
-  //Make the timeout timer tick related by adding it to the previous capture
-  timeout += scopesettings.previoustimerticks;
-  
-  //For smaller timeouts (500mS/div, 200mS/div and 100mS/div) stay in the wait loop even if there is touch
-  while((scopesettings.timeperdiv > 5) || (havetouch == 0))
-  {
-    //Get the current ticks
-    curticks = timer0_get_ticks();
-  
-    //Check if there is a timeout
-    //While technically prone to error on timer ticks overflow the scope has to be running for >49 days before it occurs
-    if(curticks >= timeout)
-    {
-      //Save the current ticks for next timeout and bail out the loop
-      scopesettings.previoustimerticks = curticks;
-      goto skip_delay;
-    }
-    
-    //Scan the touch panel to see if there is user input
-    tp_i2c_read_status();
-  }
-    
-  //Wait an extra 40 milliseconds when there was touch
-  timer0_delay(40);
-  
-skip_delay:
-  //Some mode select command for the FPGA (0x01 for long time base)
-  fpga_write_cmd(0x28);
-  fpga_write_byte(0x01);
-  
-  //Read, accumulate and average 10 bytes of channel 1 trace data
-  channel1tracebuffer1[0] = fpga_average_trace_data(0x24);
-  
-  //Read, accumulate and average 10 bytes of channel 2 trace data
-  channel2tracebuffer1[0] = fpga_average_trace_data(0x26);
-  
-  //Need insight in the code that displays the data to get an understanding of the next bit of code
-  //It is a more or less straight conversion from what Ghidra shows
-  
-  //Some fractional scaling on the signal to fit it on screen???
-  //Adjust the channel 1 signal based on the volts per div setting
-  signaladjust = channel1tracebuffer1[0] * signal_adjusters[scopesettings.channel1.voltperdiv];
-  temp1 = ((0xA3D7 * signaladjust) + 0xA3D7) >> 0x16;
-  temp2 = signaladjust + (((uint64)((uint64)signaladjust * (uint64)0x51EB851F) >> 0x25) * -100);
-  
-  //If above half the pixel up to next one?????
-  if(temp2 > 50)
-  {
-    temp1++;
-  }
-  
-  //Store it somewhere
-  channel1tracebuffer3[0] = temp1;                    //At address 0x801A916A in original code
-
-  //Check if data needs to be doubled
-  //This is missing in the original code  
-  if(scopesettings.channel1.voltperdiv == 6)
-  {
-    //Only on highest sensitivity
-    temp1 <<= 1;
-    
-    //Check if the data is smaller then the offset
-    if(temp1 < scopesettings.channel1.traceoffset)
-    {
-      //If so limit to top of the screen
-      temp1 = 0;
-    }
-    else
-    {
-      //Else take of the offset
-      temp1 = temp1 - scopesettings.channel1.traceoffset;
-    }
-  }
-  
-  //Destination buffer is declared as uint32 to be able to use it with file functions, so need to cast it to uint16 pointer here
-  ptr = (uint16 *)channel1tracebuffer4;
-  
-  //Check if outside displayable range??
-  if(temp1 > 401)
-  {
-    //Keep it on max allowed
-    *ptr = 401;                    //At address 0x801AC04A in original code
-  }
-  else
-  {
-    //Else store it again in an other location
-    *ptr = temp1;
-  }
-  
-  //Some fractional scaling on the signal to fit it on screen???
-  //Adjust the channel 2 signal based on the volts per div setting
-  signaladjust = channel2tracebuffer1[0] * signal_adjusters[scopesettings.channel2.voltperdiv];
-  temp1 = ((0xA3D7 * signaladjust) + 0xA3D7) >> 0x16;
-  temp2 = signaladjust + (((uint64)((uint64)signaladjust * (uint64)0x51EB851F) >> 0x25) * -100);
-  
-  //If above half the pixel up to next one?????
-  if(temp2 > 50)
-  {
-    temp1++;
-  }
-  
-  //Store it somewhere
-  channel2tracebuffer3[0] = temp1;               //At address 0x801AA8DA in original code
-
-  //Check if data needs to be doubled
-  //This is missing in the original code  
-  if(scopesettings.channel2.voltperdiv == 6)
-  {
-    //Only on highest sensitivity
-    temp1 <<= 1;
-    
-    //Check if the data is smaller then the offset
-    if(temp1 < scopesettings.channel2.traceoffset)
-    {
-      //If so limit to top of the screen
-      temp1 = 0;
-    }
-    else
-    {
-      //Else take of the offset
-      temp1 = temp1 - scopesettings.channel2.traceoffset;
-    }
-  }
-  
-  //Destination buffer is declared as uint32 to be able to use it with file functions, so need to cast it to uint16 pointer here
-  ptr = (uint16 *)channel2tracebuffer4;
-  
-  //Check if outside displayable range??
-  if(temp1 > 401)
-  {
-    //Keep it on max allowed
-    *ptr = 401;               //At address 0x801AD7BA in original code
-  }
-  else
-  {
-    //Else store it again in an other location
-    *ptr = temp1;
-  }
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-void scope_get_short_timebase_data(void)
+void scope_acquire_trace_data(void)
 {
   uint32 data;
   uint32 count;
   uint32 command;
-  uint32 triggered = 0;
   uint32 signaladjust;
+  uint32 multiply;
   
-  //Check if time base in range 50mS/div - 50nS/div or trigger mode is single or normal
-  if((scopesettings.timeperdiv < 28) || scopesettings.triggermode)
+  //Check if running and not in a trace or cursor displacement state
+  if((scopesettings.runstate == 0) && (touchstate == 0))
   {
-    //Set the trigger level if so
+    //Set the trigger level
     fpga_set_trigger_level();
-  }
-  
-  //Write the short time base setting to the FPGA
-  fpga_set_short_timebase();
-  
-  //Some bounds setting. Zero here, One after trigger???
-  fpga_write_cmd(0x0F);
-  fpga_write_byte(0x00);
 
-  //Some mode select command for the FPGA (0x00 for short time base)
-  fpga_write_cmd(0x28);
-  fpga_write_byte(0x00);
+    //Write the short time base setting to the FPGA
+    fpga_set_short_timebase();
 
-  //Some start command??
-  fpga_write_cmd(0x01);
-  fpga_write_byte(0x01);
-  
-  //Send check on ready command
-  fpga_write_cmd(0x05);
-  
-  //Wait for the flag to become 1
-  while((fpga_read_byte() & 1) == 0);
-  
-  //Test again to make sure it was no glitch?????
-  while((fpga_read_byte() & 1) == 0);
-  
-  //Some stop command??
-  fpga_write_cmd(0x01);
-  fpga_write_byte(0x00);
-  
-  //Backup the settings
-  scopesettings.timeperdivbackup = scopesettings.timeperdiv;
-  scopesettings.channel1.voltperdivbackup = scopesettings.channel1.voltperdiv;
-  scopesettings.channel2.voltperdivbackup = scopesettings.channel2.voltperdiv;
-  
-  //Check if screen needs to be redrawn
-  if(scopesettings.updatescreen)
-  {
-    //Reset the flag so only done once until new request
-    scopesettings.updatescreen = 0;
+    //Some bounds setting. Zero here, One after trigger???
+    fpga_write_cmd(0x0F);
+    fpga_write_byte(0x00);
 
-    //Use a separate buffer to clear the screen
-    display_set_screen_buffer(displaybuffer1);
-      
-    //Clear the trace portion of the screen
-    display_set_fg_color(0x00000000);
-    display_fill_rect(2, 46, 728, 434);
-    
-    //Draw the grid lines and dots based on the grid brightness setting
-    scope_draw_grid();
-    
-    //Draw the signal center, trigger level and trigger position pointers
-    scope_draw_pointers();
+    //Some mode select command for the FPGA (0x00 for short time base)
+    fpga_write_cmd(0x28);
+    fpga_write_byte(0x00);
 
-    //Copy it to the actual screen buffer
-    display_set_source_buffer(displaybuffer1);
-    display_set_screen_buffer((uint16 *)maindisplaybuffer);
-    display_copy_rect_to_screen(2, 46, 728, 434);
-  }
-  
-  //Send check on triggered command to the FPGA
-  fpga_write_cmd(0x0A);
-  
-  //Wait for the FPGA to signal triggered or touch panel is touched or signals or cursors are being moved
-  while(((fpga_read_byte() & 1) == 0) && (havetouch == 0) && (touchstate == 0))
-  {
-    //Scan the touch panel
-    tp_i2c_read_status();
-  }
-  
-  //Some bounds setting. Zero before, one here after trigger???
-  fpga_write_cmd(0x0F);
-  fpga_write_byte(0x01);
-  
-  //Check on trigger mode not being auto
-  if(scopesettings.triggermode)
-  {
-    //Check if there is touch
-    if(havetouch)
+    //Some start command??
+    fpga_write_cmd(0x01);
+    fpga_write_byte(0x01);
+
+    //Send check on ready command
+    fpga_write_cmd(0x05);
+
+    //Wait for the flag to become 1
+    while((fpga_read_byte() & 1) == 0);
+
+    //Test again to make sure it was no glitch?????
+    while((fpga_read_byte() & 1) == 0);
+
+    //Some stop command??
+    fpga_write_cmd(0x01);
+    fpga_write_byte(0x00);
+
+    //Send check on triggered command to the FPGA
+    fpga_write_cmd(0x0A);
+
+    //Wait for the FPGA to signal triggered or touch panel is touched or signals or cursors are being moved
+    while(((fpga_read_byte() & 1) == 0) && (havetouch == 0))
     {
-      //Signal this in some state variables
-      scopesettings.triggerflag2 = 1;
-      
-      //Check if single mode
-      if(scopesettings.triggermode == 1)
+      //Scan the touch panel
+      tp_i2c_read_status();
+    }
+
+    //Some bounds setting. Zero before, one here after trigger???
+    fpga_write_cmd(0x0F);
+    fpga_write_byte(0x01);
+
+    //Check on trigger mode not being auto
+    if(scopesettings.triggermode)
+    {
+      //Check if there is touch
+      if(havetouch)
       {
-        //Signal this in the flags
-        scopesettings.triggerflag1 = 0;
-        scopesettings.triggerflag3 = 0;
-      }
-      else
-      {
-        //In normal mode
-        if(scopesettings.triggerflag3 == 0)
+        //Signal this in some state variables
+        scopesettings.triggerflag2 = 1;
+
+        //Check if single mode
+        if(scopesettings.triggermode == 1)
         {
+          //Signal this in the flags
           scopesettings.triggerflag1 = 0;
+          scopesettings.triggerflag3 = 0;
         }
         else
         {
-          scopesettings.triggerflag1 = 1;
+          //In normal mode
+          if(scopesettings.triggerflag3 == 0)
+          {
+            scopesettings.triggerflag1 = 0;
+          }
+          else
+          {
+            scopesettings.triggerflag1 = 1;
+          }
         }
+
+        return;
       }
-      
-      return;
-    }
-    
-    //Check if in single mode
-    if(scopesettings.triggermode == 1)
-    {
-      //Switch to stopped
-      scopesettings.runstate = 1;
-      
-      //Show this on the screen
-      scope_run_stop_text();
-      
-      //Backup the settings
-      scopesettings.channel1.voltperdivbackup = scopesettings.channel1.voltperdiv;
-      scopesettings.channel2.voltperdivbackup = scopesettings.channel2.voltperdiv;
-    }
-    
-    //Switch some mode
-    scopesettings.triggerflag3 = 1;
-  }
 
-  //Not sure if this name is correct. Sends command 0x14 and formats and translates returned data
-  //Later on used to send to the FPGA with command 0x1F
-  data = fpga_prepare_for_transfer();
-
-  //Handle the returned data based on the time base setting
-  //For the range 50mS/div - 500nS/div (50S/div - 100mS/div are handled in the long time base function)
-  if(scopesettings.timeperdiv < 25)
-  {
-    //Check if range is 50mS/div - 20mS/div or 10mS/div - 500nS/div
-    if(scopesettings.timeperdiv < 11)
-    {
-      //For 50mS/div and 20mS/div use 10
-      data = 10;
-    }
-    else
-    {
-      //For 10mS/div - 500nS/div add or subtract data based on from FPGA returned value
-      if(data < 750)
+      //Check if in single mode
+      if(scopesettings.triggermode == 1)
       {
-        //Less then 750 make it bigger
-        data = data + 3345;
+        //Switch to stopped
+        scopesettings.runstate = 1;
+
+        //Show this on the screen
+        scope_run_stop_text();
+      }
+
+      //Switch some mode
+      scopesettings.triggerflag3 = 1;
+    }
+
+    //Not sure if this name is correct. Sends special ic command 0x14 and formats and translates returned data
+    //Later on used to send to the FPGA with command 0x1F
+    data = fpga_prepare_for_transfer();
+
+    //Handle the returned data based on the time base setting
+    //For the range 50mS/div - 500nS/div
+    if(scopesettings.timeperdiv < 18)
+    {
+      //Check if range is 50mS/div - 20mS/div or 10mS/div - 500nS/div
+      if(scopesettings.timeperdiv < 4)
+      {
+        //For 50mS/div and 20mS/div use 10
+        data = 10;
       }
       else
       {
-        //More then 750 make it smaller
-        data = data - 750;
+        //For 10mS/div - 500nS/div add or subtract data based on from FPGA returned value
+        if(data < 750)
+        {
+          //Less then 750 make it bigger
+          data = data + 3345;
+        }
+        else
+        {
+          //More then 750 make it smaller
+          data = data - 750;
+        }
       }
-    }
-  }
-  else
-  {
-    //Get correction value for the time base range 250nS/div - 10nS/div
-    signaladjust = timebase_adjusters[scopesettings.timeperdiv - 25];
-    
-    //Check if need to add or subtract
-    if(data < signaladjust)
-    {
-      //Perform some other adjustment
-      data = 4095 - (signaladjust - data);
     }
     else
     {
-      //Take adjuster of
-      data = data - signaladjust;
+      //Get correction value for the time base range 250nS/div - 10nS/div
+      signaladjust = timebase_adjusters[scopesettings.timeperdiv - 18];
+
+      //Check if need to add or subtract
+      if(data < signaladjust)
+      {
+        //Perform some other adjustment
+        data = 4095 - (signaladjust - data);
+      }
+      else
+      {
+        //Take adjuster of
+        data = data - signaladjust;
+      }
     }
-  }
-  
-  //Check if channel 1 is enabled
-  if(scopesettings.channel1.enable)
-  {
-    //Send command 0x1F to the FPGA followed by the translated data returned from command 0x14
-    fpga_write_cmd(0x1F);
-    fpga_write_short(data);
-    
+
+    //Only need a single count variable for both channels, since they run on the same sample rate
+    //Have to see if an additional counter for multiple buffers is needed for 100 and 200ms settings
     //Determine the number of bytes to read based on the time base setting
-    if(scopesettings.timeperdiv < 11)
+    if(scopesettings.timeperdiv < 4)
     {
       //For 50mS/div and 20mS/div only 750 bytes
       count = 750;
+      
+      //For now set here, but could be moved to where the time base is set
+      scopesettings.samplecount = 1500;
     }
     else
     {
       //For 10mS/div - 10nS/div 1500 bytes
       count = 1500;
+
+      //For now set here, but could be moved to where the time base is set
+      scopesettings.samplecount = 3000;
     }
-    
-    //It seems it actually needs this. Using a fixed command 0x20 with or without the call to the special chip makes the trace garbage
-    //Get the FPGA command to read from based on the trigger channel
-    command = fpga_read_parameter_ic(0x0C, scopesettings.triggerchannel);
-  
-    //Read the bytes into a trace buffer
-    fpga_read_trace_data(command, channel1tracebuffer1, count);
 
-#if 1
-    //Prepare FPGA for reading again
-    //Send command 0x1F to the FPGA followed by the translated data returned from command 0x14
-    fpga_write_cmd(0x1F);
-    fpga_write_short(data);
-
-    //Read the bytes into a trace buffer
-    fpga_read_trace_data(0x21, channel1tracebuffer2, count);
-
-    
-    //Merge the samples from the two ADC's into the first trace buffer
-    scope_interleave_samples(channel1tracebuffer1, channel1tracebuffer2, &channel1adc2calibration);
-#endif
-
-#if 0    
-    //Check if data needs to be written to file
-    if(saved_sample_buffers_count == 50)
+    //Check if channel 1 is enabled
+    if(scopesettings.channel1.enable)
     {
-      int8 filename[100];
-      int8 *ptr;
-      
-      memcpy(filename, "fnirsi_samples_", 15);
-      
-      ptr = scope_print_decimal(&filename[15], scopesettings.timeperdiv, 0);
-      
-      memcpy(ptr, ".bin", 5);
-      
-      //Create a file for the touch panel configuration. Fails if it already exists
-      if(f_open(&viewfp, filename, FA_CREATE_NEW | FA_WRITE | FA_READ) == FR_OK)
-      {
-        //Write the sample data to the sd card  
-        f_write(&viewfp, viewthumbnaildata, sizeof(viewthumbnaildata), 0);
+      //Send command 0x1F to the FPGA followed by the translated data returned from command 0x14
+      fpga_write_cmd(0x1F);
+      fpga_write_short(data);
 
-        //Close the file to finish the write
-        f_close(&viewfp);
+      //Translate this channel volts per div setting
+      signaladjust = fpga_read_parameter_ic(0x0B, scopesettings.channel1.voltperdiv) & 0x0000FFFF;
 
-        //Show the saved successful message
-        scope_display_file_status_message(MESSAGE_SAVE_SUCCESSFUL, 1);
-      }
+      //Set the flag for possibly doubling and offsetting the sample data
+      multiply = scopesettings.channel1.voltperdiv == 6;
 
-      //Only do it once
-      saved_sample_buffers_count++;
+      //It seems it actually needs this. Using a fixed command 0x20 with or without the call to the special chip makes the trace garbage
+      //Get the FPGA command to read from based on the trigger channel
+      command = fpga_read_parameter_ic(0x0C, scopesettings.triggerchannel);
+
+      //The first read function can also do the check on corrupted data (need to determine what the faulty value is 0x00 or 0xFF or all samples equal)
+      //Have to decide if this should then signal this capture routine that it should discard this buffer and don't update the screen.
+      //This would need a flag!!!!!!
+
+      //Read the ADC1 bytes into a trace buffer and skip samples for ADC2 data
+      fpga_read_adc1_data(command, channel1tracebuffer1, count, signaladjust, multiply, scopesettings.channel1.traceoffset);
+
+      //Prepare FPGA for reading again
+      //Send command 0x1F to the FPGA followed by the translated data returned from command 0x14
+      fpga_write_cmd(0x1F);
+      fpga_write_short(data);
+
+      //Read and calibrate the ADC2 bytes into a trace buffer while skipping over the ADC1 samples
+      fpga_read_adc2_data(0x21, channel1tracebuffer1, count, signaladjust, multiply, scopesettings.channel1.traceoffset, &channel1adc2calibration);
+
+      //For 200mS and 100mS additional action is needed. Have to see if it will work
+      //Additional sample buffers are needed but the question is if they are consecutive
+
+      //Calculate some of the basic measurements like min, max, average, peak peak an another one (max + (min >> 1))???
+  //    scope_calculate_min_max_avg((uint16 *)channel1tracebuffer1, &channel1measurements);
+
     }
-    else if(saved_sample_buffers_count < 50)
+
+    //Check if channel 2 is enabled
+    if(scopesettings.channel2.enable)
     {
-      //Copy the sample buffers for writing to file
-      uint16 *dptr = (uint16 *)(viewthumbnaildata + (saved_sample_buffers_count * 6080));
+      //Send command 0x1F to the FPGA followed by the translated data returned from command 0x14
+      fpga_write_cmd(0x1F);
+      fpga_write_short(data);
 
-      //Copy first set of samples
-//      memcpy(dptr, channel1tracebuffer1, 6000);
-      memcpy(dptr, channel1tracebuffer1, 3000);
+      //Translate this channel volts per div setting
+      signaladjust = fpga_read_parameter_ic(0x0B, scopesettings.channel2.voltperdiv) & 0x0000FFFF;
 
-      //Point to next location
-      dptr += 1520;
+      //Set the flag for possibly doubling and offsetting the sample data
+      multiply = scopesettings.channel2.voltperdiv == 6;
 
-      //Copy second set of samples
-      memcpy(dptr, channel1tracebuffer2, 3000);
+      //It seems it actually needs this. Using a fixed command 0x22 with or without the call to the special chip makes the trace garbage
+      //Get the FPGA command to read from based on the trigger channel
+      command = fpga_read_parameter_ic(0x0D, scopesettings.triggerchannel);
 
-      //One set of buffers done
-      saved_sample_buffers_count++;
-    }
-#endif        
-    
-    
-#if 0
-    //Process the data to screen data
-    for(inpidx=0,prvidx=1;inpidx<pscopesettings->iNeededSamples;inpidx+=pscopesettings->dTimeBaseStep)
-    {
-      //Get the current integer index into the sample buffer
-      index = inpidx;
+      //The first read function can also do the check on corrupted data (need to determine what the faulty value is 0x00 or 0xFF or all samples equal)
+      //Have to decide if this should then signal this capture routine that it should discard this buffer and don't update the screen.
+      //This would need a flag!!!!!!
 
-      //Check if linear approximation needs to be done. (Only when step < 1) pixels are skipped if so.
-      if(index != prvidx)
-      {
-        //Set new previous index
-        prvidx = index;
+      //Read the ADC1 bytes into a trace buffer and skip samples for ADC2 data
+      fpga_read_adc1_data(command, channel2tracebuffer1, count, signaladjust, multiply, scopesettings.channel2.traceoffset);
 
-        //Setup pointer to the sample
-        ptr = sptr + index;
+      //Prepare FPGA for reading again
+      //Send command 0x1F to the FPGA followed by the translated data returned from command 0x14
+      fpga_write_cmd(0x1F);
+      fpga_write_short(data);
 
-        //Check if beyond end of the buffer
-        if(ptr >= eptr)
-          ptr -= TRIGGERBUFFERSIZE;
+      //Read and calibrate the ADC2 bytes into a trace buffer while skipping over the ADC1 samples
+      fpga_read_adc2_data(0x23, channel2tracebuffer1, count, signaladjust, multiply, scopesettings.channel2.traceoffset, &channel2adc2calibration);
 
-        //Calculate y point based on input value and gain
-        y = *ptr * pscopesettings->dVerticalGain;
-        
-        //Find max value for DC offset calculation
-        if(y > max)
-          max = y;
-        
-        //Find min value for DC offset calculation
-        if(y < min)
-          min = y;
+      //For 200mS and 100mS additional action is needed. Have to see if it will work
+      //Additional sample buffers are needed but the question is if they are consecutive
 
-        //Calculate y position based on vertical position, gain and input value
-        y = pscopesettings->iVerticalPosition - y;
 
-        //Remember last pixel used for drawing to calculate last screen pixel
-        lastx = x;
-        py = y;
+      //Calculate some of the basic measurements like min, max, average, peak peak an another one (max + (min >> 1))???
+  //    scope_calculate_min_max_avg((uint16 *)channel1tracebuffer2, &channel2measurements);
 
-        //Store the current pixel coordinates
-        xbuffer[idx] = x;
-        ybuffer[idx] = y;
-        
-        idx++;
-      }
-
-      //Point to next pixel
-      x++;
     }
 
-    //When step less then 1 the last pixel needs to be interpolated between current sample and next sample.
-    if(pscopesettings->dTimeBaseStep < 1)
-    {
-      //Calculate the scaler for the last y value based on the x distance from the last drawn position to the end of the screen
-      //divided by the x distance it takes to where the next position should be drawn (Number of x steps per sample)
-      double scaler =  (pscopesettings->iScreenWidth - lastx) / (1 / pscopesettings->dTimeBaseStep);
 
-      //Get the current integer index into the sample buffer for retrieving the last sample
-      index = inpidx;
 
-      //Setup pointer to the last sample
-      ptr = sptr + index;
 
-      //Check if beyond end of the buffer
-      if(ptr >= eptr)
-        ptr -= TRIGGERBUFFERSIZE;
-
-      //Calculate y point based on input value and gain
-      y = *ptr * pscopesettings->dVerticalGain;
-
-      //Find max value for DC offset calculation
-      if(y > max)
-        max = y;
-
-      //Find min value for DC offset calculation
-      if(y < min)
-        min = y;
-
-      //Calculate y position based on vertical position, gain and input value
-      y = pscopesettings->iVerticalPosition - y;
-      
-      //Calculate the y position for the last pixel based on linear interpolation
-      xbuffer[idx] = pscopesettings->iScreenWidth;
-      ybuffer[idx] = py + ((y - py) / scaler);
-      
-      //Make sure all coordinates are stored in the database
-      idx++;
-    }
-#endif
+    //Determine the trigger position based on the selected trigger channel
+    scope_process_trigger(count);
     
     
-#if 0
-    //Check if triggered on this channel
-    if(scopesettings.triggerchannel == 0)
-    {
-      triggered = scope_process_trigger();
-    }
+      //Need to find the trigger point near the center of the buffer
+      //And calculate the sample starting point based on the trigger position on the screen and the acquisition speed and time per div setting??
     
-    //Pre process data based on time base setting
-    switch(scopesettings.timeperdiv)
-    {
-      //250nS/div
-      case 25:
-        //Call up sampling function for it
-        scope_up_sample_x_2(channel1tracebuffer1, 1500);
-        break;
 
-      //100nS/div
-      case 26:
-        //Call up sampling function for it
-        scope_up_sample_x_5(channel1tracebuffer1, 1500);
-        break;
-
-      //50nS/div
-      case 27:
-        //Call up sampling function for it
-        scope_up_sample_x_10(channel1tracebuffer1, 1500);
-        break;
-
-      //25nS/div and 10nS/div
-      case 28:
-      case 29:
-        //Prepare FPGA for reading again
-        //Send command 0x1F to the FPGA followed by the translated data returned from command 0x14
-        fpga_write_cmd(0x1F);
-        fpga_write_short(data);
-        
-        //Read the bytes into a trace buffer
-        fpga_read_trace_data(0x21, channel1tracebuffer2, 1500);
-        
-        //Merge the samples from the two ADC's into the first trace buffer
-        scope_interleave_samples(channel1tracebuffer1, channel1tracebuffer2, &channel1adc2calibration);
-        
-#if 0        
-        //Check if data needs to be written to file
-        if(saved_sample_buffers_count == 50)
-        {
-          //Create a file for the touch panel configuration. Fails if it already exists
-          if(f_open(&viewfp, "fnirsi_25ns_samples.bin", FA_CREATE_NEW | FA_WRITE | FA_READ) == FR_OK)
-          {
-            //Write the touch panel configuration to the sd card  
-            f_write(&viewfp, viewthumbnaildata, sizeof(viewthumbnaildata), 0);
-
-            //Close the file to finish the write
-            f_close(&viewfp);
-            
-            //Show the saved successful message
-            scope_display_file_status_message(MESSAGE_SAVE_SUCCESSFUL, 1);
-          }
-          
-          //Only do this once
-          saved_sample_buffers_count++;
-        }
-        else if(saved_sample_buffers_count < 50)
-        {
-          //Copy the sample buffers for writing to file
-          uint16 *dptr = (uint16 *)((uint32)viewthumbnaildata + (saved_sample_buffers_count * 6048));
-          
-          //Copy first set of samples
-          memcpy(dptr, channel1tracebuffer1, 6000);
-          
-          //Point to next location
-//          dptr += 1504;
-          
-          //Copy second set of samples
-//          memcpy(dptr, channel1tracebuffer2, 3000);
-          
-          //One set of buffers done
-          saved_sample_buffers_count++;
-        }
-#endif        
-        
-        //No special signal generation when input frequency is high
-        //For now just do the correct up sampling for either 25nS/div or 10nS/div
-        if(scopesettings.timeperdiv == 28)
-        {
-          //For 25nS/div need to up sample by 10
-          scope_up_sample_x_10(channel1tracebuffer1, 1500);
-        }
-        else
-        {
-          //For 10nS/div need to up sample by 25
-          scope_up_sample_x_25(channel1tracebuffer1, 1500);
-        }
-        break;
-    }
-#endif
-    
-    //Set sample count based on time base setting
-    if(scopesettings.timeperdiv >= 25)
-    {
-      //For settings 250nS/div - 10nS/div. This would mean that for 250nS/div, 100nS/div and 50nS/div samples are interpolated???
-      count = 2500;
-    }
-    else if(scopesettings.timeperdiv >= 11)  //In original code this is 9, but below that is handled in long time base function
-    {                                        //And based on the code before I guessed it to be 11. Needs to be confirmed
-      //For settings 10mS/div - 250nS/div
-      count = 1500;
-    }
-    else
-    {
-      //For settings 50mS/div and 20mS/div
-      count = 750;
-    }
-
-    //Adjust the data into another buffer
-    scope_adjust_data(channel1tracebuffer3, channel1tracebuffer1, count, scopesettings.channel1.voltperdiv);
-    
-    //Copy the buffer to another buffer
-    memcpy((uint8*)channel1tracebuffer4, (uint8*)channel1tracebuffer3, count);
-    
-    //Check if on highest sensitivity (50mV/div on 1x probe setting)
-    if(scopesettings.channel1.voltperdiv == 6)
-    {
-      //Adjust data in buffer 4 to be twice the magnitude
-      scope_double_data((uint16 *)channel1tracebuffer4, count);
-      
-      //Adjust the data for trace offset???
-      scope_offset_data((uint16 *)channel1tracebuffer4, count, scopesettings.channel1.traceoffset);
-    }
-
-    //Limit the data to max range
-    scope_limit_data((uint16 *)channel1tracebuffer4, count);   //In the original they process 2500 samples no matter what
-    
-    //Do additional handling for time base range 50mS/div - 500nS/div
-    if(scopesettings.timeperdiv < 25)
-    {
-      //Filter the data
-      scope_filter_data((uint16 *)channel1tracebuffer4, count - 2);    //In the original they do 2998 samples no matter what
-    }
-    
-    //Calculate some of the basic measurements like min, max, average, peak peak an another one (max + (min >> 1))???
-    scope_calculate_min_max_avg((uint16 *)channel1tracebuffer4, &channel1measurements);
-    
-    //Check on signal being large enough and otherwise clear it with some noise
-    //scope_evaluate_trace_data((uint16 *)channel1tracebuffer4, &channel1measurements, scopesettings.channel1.voltperdiv, scopesettings.channel1.traceoffset);
-    
-    //SKip for now
-    //And if some variable is 0 call another one
-    //Basically only turned off in perform auto set
-    //Is this frequency determination??????
-    //if (pcVar2[0x48] == '\0')
-    //{
-    //  FUN_80003ec8();
-    //}
-  }
-  
-  //Handle channel 2 here
-  
-  
-  
-  
-  //Handle some trigger stuff here
-  
-  
-  
-  
-  //Set flags based on being triggered
-  if(triggered)
-  {
-    //Triggered????
-    scopesettings.triggerflag4 = 1;
-    scopesettings.triggerflag1 = 0;
-    scopesettings.triggerflag2 = 0;
-  }
-  else
-  {
-    //Not triggered????
-    scopesettings.triggerflag4 = 0;
-    scopesettings.triggerflag1 = 1;
-    scopesettings.triggerflag2 = 1;
+      //Implement the correct FPGA configuration on new sample rate and time per div setting selection!!!!!
+      //Tapping on the screen needs to change both according to their original relation
+      //Via the menu the sample rate is the base for the FPGA and the user can select the intended time per div
+      //Show with grey text which time per div settings do not work well with the chosen sample rate.
   }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_adjust_data(uint16 *destination, uint16 *source, uint32 count, uint8 voltperdiv)
-{
-  uint32 signaladjust;
-  uint32 temp1, temp2, temp3;
-
-  //Translate this channel volts per div setting
-  signaladjust = fpga_read_parameter_ic(0x0B, voltperdiv) & 0x0000FFFF;
-  
-  //Process the samples
-  while(count)
-  {
-    //Some fractional scaling on the signal to fit it on screen???
-    //Adjust the channel signal based on the volts per div setting
-    temp1 = *source * signaladjust;
-    temp2 = ((0xA3D7 * temp1) + 0xA3D7) >> 0x16;
-    temp3 = temp1 + (((uint64)(temp1 * 0x51EB851F) >> 0x25) * -100);
-
-    //If above half the pixel up to next one?????
-    if(temp3 > 50)
-    {
-      temp2++;
-    }
-
-    //Store it for further handling
-    *destination = temp2;
-
-    //Point to next source and destination
-    source++;
-    destination++;
-
-    //One more sample done
-    count--;
-  }
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-void scope_offset_data(uint16 *buffer, uint32 count, uint32 offset)
-{
-  //Process the samples
-  while(count)
-  {
-    //Check if the data is smaller then the offset
-    if(*buffer < offset)
-    {
-      //If so limit to top of the screen
-      *buffer = 0;
-    }
-    else
-    {
-      //Else take of the offset
-      *buffer = *buffer - offset;
-    }
-
-    //Point to next sample
-    buffer++;
-
-    //One more sample done
-    count--;
-  }
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-void scope_limit_data(uint16 *buffer, uint32 count)
-{
-  //Process the samples
-  while(count)
-  {
-    //Check if the data is bigger then max allowed
-    if(*buffer > 401)
-    {
-      //If so limit to bottom of the screen
-      *buffer = 401;
-    }
-
-    //Point to next sample
-    buffer++;
-
-    //One more sample done
-    count--;
-  }
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-void scope_filter_data(uint16 *buffer, uint32 count)
-{
-  uint32 sample1, sample2, sample3;
-  uint32 midlow, midhigh;
-  
-  //Process the samples
-  while(count)
-  {
-    //Get three consecutive samples
-    sample1 = buffer[0];
-    sample2 = buffer[1];
-    sample3 = buffer[2];
-    
-    //Set filter ranges
-    midlow  = sample2 - 6;
-    midhigh = sample2 + 6;
-    
-    //Check if first and last sample not near the middle sample and at the same side of it. (both below or above)
-    if(((sample1 < midlow) && (sample3 < midlow)) || ((midhigh < sample1) && (midhigh < sample3)))
-    {
-      //If so set the middle sample to the average of the other two
-      buffer[1] = (sample1 + sample3) >> 1;
-    }
-
-    //Point to next sample
-    buffer++;
-
-    //One more sample done
-    count--;
-  }
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-void scope_double_data(uint16 *buffer, uint32 count)
-{
-  //Process the samples
-  while(count)
-  {
-    //Multiply the sample by two
-    *buffer <<= 1;
-
-    //Point to next sample
-    buffer++;
-
-    //One more sample done
-    count--;
-  }
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-uint32 scope_process_trigger(void)
+void scope_process_trigger(uint32 count)
 {
   uint16 *buffer;
   uint32  index;
   uint32  level = scopesettings.triggerlevel;
-  uint32  havetrigger = 1;
-  uint32  lower  = 0;
-  uint32  higher = 0;
+  uint32 sample1;
+  uint32 sample2;
   
-  //Process based on time base setting and trigger mode
-  //Skip for 50mS/div, 20mS/div, 250nS/div, 100nS/div, 50nS/div, 25nS/div and 10nS/div or single and normal trigger modes
-  if((scopesettings.timeperdiv > 10) && (scopesettings.timeperdiv < 25) && (scopesettings.triggermode = 0))
+  //Select the trace buffer to process based on the trigger channel
+  if(scopesettings.triggerchannel == 0)
   {
-    //Select the trace buffer to process based on the trigger channel
-    if(scopesettings.triggerchannel == 0)
-    {
-      //Channel 1 buffer
-      buffer = channel1tracebuffer1;
-    }
-    else
-    {
-      //Channel 2 buffer
-      buffer = channel2tracebuffer1;
-    }
-
-    //Set a starting point for checking on trigger
-    index = 745;
-    
-    //Check on which edge to trigger
-    if(scopesettings.triggeredge == 0)
-    {
-      //Rising edge
-      //Only check around center point of the buffer
-      while(index < 755)
-      {
-        //Check if previous sample lower then level and next sample equal or higher then level
-        if((buffer[index - 1] < level) && (level <= buffer[index + 1]))
-        {
-          //Is this a triggered signal or not???
-          havetrigger = 0;
-          break;
-        }
-        
-        //One sample done
-        index++;
-      }
-    }
-    else
-    {
-      //Falling edge
-      //Only check around center point of the buffer
-      while(index < 755)
-      {
-        //Check if previous sample higher then level and next sample equal or lower then level
-        if((level < buffer[index - 1]) && (buffer[index + 1] <= level))
-        {
-          //Is this a triggered signal or not???
-          havetrigger = 0;
-          break;
-        }
-        
-        //One sample done
-        index++;
-      }
-    }
-    
-    //Set a new starting point for checking
-    index = 100;
-    
-    //Process the buffer from sample 100 to sample 1400
-    while(index < 1400)
-    {
-      //Check if sample lower then level
-      if(buffer[index] < level)
-      {
-        //Signal had sample lower then level
-        lower = 1;
-      }
-      //Check if sample higher then level
-      else if(buffer[index] > level)
-      {
-        //Signal had sample higher then level
-        higher = 1;
-      }
-        
-      //One sample done
-      index++;
-    }
-    
-    //Check if all samples where on trigger level
-    if((lower == 0) || (higher == 0))
-    {
-      //Return zero if so
-      return(0);
-    }
-    
-    //Otherwise return the flag from edge scan
-    return(havetrigger);  
-  }
-  
-  //No valid time base or trigger setting just return 0
-  return(0);
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-void scope_up_sample_x_2(uint16 *buffer, uint32 count)
-{
-  register uint32  cnt;
-  register uint16 *sptr;
-  register uint16 *dptr;
-  register uint32  sample1, sample2;
-  
-  //Only do half the samples
-  cnt = count / 2;
-  
-  //For the source point to the last sample to use
-  sptr = &buffer[cnt];
-  
-  //For the destination point to the last result sample
-  dptr = &buffer[count];
-  
-  //Get the first sample to use
-  sample1 = *sptr--;
-  
-  //Process all the needed samples
-  while(cnt)
-  {
-    //Store the first sample
-    *dptr-- = sample1;
-    
-    //Get the second sample
-    sample2 = *sptr--;
-    
-    //Store the average of the two samples
-    *dptr-- = (sample1 + sample2) / 2;
-    
-    //Save the second sample as the first sample
-    sample1 = sample2;
-    
-    //One set of samples done
-    cnt--;
-  }
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-//This is a special case where there is a need for two different interpolations.
-//Between 1st and 2nd sample two new samples and between 2nd and 3rd sample only one new sample making 5 samples for every two samples
-//The original code uses four loops for this. The first loop to copy every other sample to the 1st, 6th, 11th, etc. position
-//A second loop to copy every other sample starting from the second sample to the 4th, 9th, 14th, etc. position
-//And a third loop to do the interpolation between the samples. At last a fourth loop to copy the data back to the input buffer
-
-void scope_up_sample_x_2_5(uint16 *buffer, uint32 count)
-{
-  register uint32  cnt;
-  register uint16 *sptr;
-  register uint16 *dptr;
-  register uint32  sample1, sample2, sample3;
-  register int32   delta;
-  
-  //Only do two and a half the samples
-  cnt = (count * 2) / 5;
-  
-  //For the source point to the last sample to use
-  sptr = &buffer[cnt];
-  
-  //For the destination point to the last result sample
-  dptr = &buffer[count];
-  
-  //Get the first sample to use
-  sample1 = *sptr--;
-  
-  //Since the loop processes two samples per loop do half the count
-  cnt /= 2;
-  
-  //Process all the needed samples
-  while(cnt)
-  {
-    //Store the first sample
-    *dptr-- = sample1;
-    
-    //Get the second sample
-    sample2 = *sptr--;
-    
-    //Store the average of the two samples
-    *dptr-- = (sample1 + sample2) / 2;
-    
-    //Get the third sample
-    sample3 = *sptr--;
-    
-    //Fill in the in between samples
-    //Get the samples shifted up for fractional calculations 10.22 bits
-    sample2 <<= 22;
-    
-    //Calculate a delta step between the samples
-    delta = (sample2 - (sample3 << 22)) / 3;
-
-    //Calculate the next sample with fixed point calculation
-    //Since the direction is from last sample to first sample the step needs to be taken off
-    sample2 -= delta;
-
-    //Store the decimal part of it
-    *dptr-- = sample2 >> 22;
-    
-    //Repeat this
-    sample2 -= delta;
-
-    //Store the decimal part of it
-    *dptr-- = sample2 >> 22;
-
-    //Save the third sample as the first sample
-    sample1 = sample3;
-    
-    //One set of samples done
-    cnt--;
-  }
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-//The up sample code can be reduced in size by creating a function for the basic up sampling with the times as input (4, 5, 10, 25)
-//A second function for the interpolating with averaging with the interpolation factor as input (5, 6, 10, 12, 25)
-
-void scope_up_sample_x_4(uint16 *buffer, uint32 count)
-{
-  register uint32  cnt, idx;
-  register uint16 *sptr;
-  register uint16 *dptr;
-  register int32   sample1, sample2;
-  register int32   delta;
-  
-  //Only do one fourth of the samples
-  cnt = count / 4;
-  
-  //For the source point to the last sample to use
-  sptr = &buffer[cnt];
-  
-  //For the destination point to the last result sample
-  dptr = &buffer[count];
-  
-  //Get the first sample to use
-  sample1 = *sptr--;
-  
-  //Process all the needed samples
-  while(cnt)
-  {
-    //Store the first sample
-    *dptr-- = sample1;
-    
-    //Get the second sample
-    sample2 = *sptr--;
-    
-    //Fill in the in between samples
-    //The original code uses a different approach
-    //Get the samples shifted up for fractional calculations 10.22 bits
-    sample1 <<= 22;
-    
-    //Calculate a delta step between the samples
-    delta = (sample1 - (sample2 << 22)) / 4;
-    
-    for(idx=0;idx<3;idx++)
-    {
-      //Calculate the next sample with fixed point calculation
-      //Since the direction is from last sample to first sample the step needs to be taken off
-      sample1 -= delta;
-      
-      //Store the decimal part of it
-      *dptr-- = sample1 >> 22;
-    }
-    
-    //Save the second sample as the first sample
-    sample1 = sample2;
-    
-    //One set of samples done
-    cnt--;
-  }
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-void scope_up_sample_x_5(uint16 *buffer, uint32 count)
-{
-  register uint32  cnt, idx;
-  register uint16 *sptr;
-  register uint16 *dptr;
-  register int32   sample1, sample2;
-  register int32   delta;
-  
-  //Only do one fifth of the samples
-  cnt = count / 5;
-  
-  //For the source point to the last sample to use
-  sptr = &buffer[cnt];
-  
-  //For the destination point to the last result sample
-  dptr = &buffer[count];
-  
-  //Get the first sample to use
-  sample1 = *sptr--;
-  
-  //Process all the needed samples
-  while(cnt)
-  {
-    //Store the first sample
-    *dptr-- = sample1;
-    
-    //Get the second sample
-    sample2 = *sptr--;
-    
-    //Fill in the in between samples
-    //The original code uses a different approach
-    //Get the samples shifted up for fractional calculations 10.22 bits
-    sample1 <<= 22;
-    
-    //Calculate a delta step between the samples
-    delta = (sample1 - (sample2 << 22)) / 5;
-    
-    for(idx=0;idx<4;idx++)
-    {
-      //Calculate the next sample with fixed point calculation
-      //Since the direction is from last sample to first sample the step needs to be taken off
-      sample1 -= delta;
-      
-      //Store the decimal part of it
-      *dptr-- = sample1 >> 22;
-    }
-    
-    //Save the second sample as the first sample
-    sample1 = sample2;
-    
-    //One set of samples done
-    cnt--;
-  }
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-void scope_up_sample_x_10(uint16 * buffer, uint32 count)
-{
-  register uint32  cnt, idx;
-  register uint16 *sptr;
-  register uint16 *dptr;
-  register int32   sample1, sample2;
-  register int32   delta;
-  
-  //Only do one tenth of the samples
-  cnt = count / 10;
-  
-  //For the source point to the last sample to use
-  sptr = &buffer[cnt];
-  
-  //For the destination point to the last result sample
-  dptr = &buffer[count];
-  
-  //Get the first sample to use
-  sample1 = *sptr--;
-  
-  //Process all the needed samples
-  while(cnt)
-  {
-    //Store the first sample
-    *dptr-- = sample1;
-    
-    //Get the second sample
-    sample2 = *sptr--;
-    
-    //Fill in the in between samples
-    //The original code uses a different approach
-    //Get the samples shifted up for fractional calculations 10.22 bits
-    sample1 <<= 22;
-    
-    //Calculate a delta step between the samples
-    delta = (sample1 - (sample2 << 22)) / 10;
-    
-    for(idx=0;idx<9;idx++)
-    {
-      //Calculate the next sample with fixed point calculation
-      //Since the direction is from last sample to first sample the step needs to be taken off
-      sample1 -= delta;
-      
-      //Store the decimal part of it
-      *dptr-- = sample1 >> 22;
-    }
-    
-    //Save the second sample as the first sample
-    sample1 = sample2;
-    
-    //One set of samples done
-    cnt--;
-  }
-  
-  //Create a second interpolated set of data based on the initially interpolated samples and average the two sets
-  //Only take one tenth of the samples, minus one since the data is shifted, as input
-  cnt = (count / 10) - 1;
-
-  //For the source point to the last sample to use
-  sptr = &buffer[count - 5];
-  
-  //For the destination point to the last result sample
-  dptr = &buffer[count - 5];
-  
-  //Get the first sample to use and skip ten samples
-  sample1 = *sptr;
-  sptr -= 10;
-  
-  //Process all the needed samples
-  while(cnt)
-  {
-    //Average and store the first sample
-    *dptr = (*dptr + sample1) / 2;
-    
-    //Point to the previous sample
-    dptr--;
-    
-    //Get the second sample and skip ten samples
-    sample2 = *sptr;
-    sptr -= 10;
-    
-    //Fill in the in between samples
-    //Get the samples shifted up for fractional calculations 10.22 bits
-    sample1 <<= 22;
-    
-    //Calculate a delta step between the samples
-    delta = (sample1 - (sample2 << 22)) / 10;
-    
-    for(idx=0;idx<9;idx++)
-    {
-      //Calculate the next sample with fixed point calculation
-      //Since the direction is from last sample to first sample the step needs to be taken off
-      sample1 -= delta;
-      
-      //Average and store the decimal part of it
-      *dptr = (*dptr + (sample1 >> 22)) / 2;
-      
-      //Point to the previous sample
-      dptr--;
-    }
-    
-    //Save the second sample as the first sample
-    sample1 = sample2;
-    
-    //One set of samples done
-    cnt--;
-  }
-  
-  //Create a third interpolated set of data based on the previous interpolated and averaged samples and also average these two sets
-  //Only take one fifth of the samples, minus one since the data is shifted, as input
-  cnt = (count / 5) - 1;
-
-  //For the source point to the last sample to use
-  //Takes the second sample as last input
-  sptr = &buffer[count - 8];
-  
-  //For the destination point to the last result sample
-  dptr = &buffer[count];
-  
-  //Get the first sample to use and skip five samples
-  sample1 = *sptr;
-  sptr -= 5;
-  
-  //Process all the needed samples
-  while(cnt)
-  {
-    //Average and store the first sample
-    *dptr = (*dptr + sample1) / 2;
-    
-    //Point to the previous sample
-    dptr--;
-    
-    //Get the second sample and skip ten samples
-    sample2 = *sptr;
-    sptr -= 5;
-    
-    //Fill in the in between samples
-    //Get the samples shifted up for fractional calculations 10.22 bits
-    sample1 <<= 22;
-    
-    //Calculate a delta step between the samples
-    delta = (sample1 - (sample2 << 22)) / 5;
-    
-    for(idx=0;idx<4;idx++)
-    {
-      //Calculate the next sample with fixed point calculation
-      //Since the direction is from last sample to first sample the step needs to be taken off
-      sample1 -= delta;
-      
-      //Average and store the decimal part of it
-      *dptr = (*dptr + (sample1 >> 22)) / 2;
-      
-      //Point to the previous sample
-      dptr--;
-    }
-    
-    //Save the second sample as the first sample
-    sample1 = sample2;
-    
-    //One set of samples done
-    cnt--;
-  }
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-void scope_up_sample_x_25(uint16 *buffer, uint32 count)
-{
-  register uint32  cnt, idx;
-  register uint16 *sptr;
-  register uint16 *dptr;
-  register int32   sample1, sample2;
-  register int32   delta;
-  
-  //Only do one twenty fifth of the samples
-  cnt = count / 25;
-  
-  //For the source point to the last sample to use
-  sptr = &buffer[cnt];
-  
-  //For the destination point to the last result sample
-  dptr = &buffer[count];
-  
-  //Get the first sample to use
-  sample1 = *sptr--;
-  
-  //Process all the needed samples
-  while(cnt)
-  {
-    //Store the first sample
-    *dptr-- = sample1;
-    
-    //Get the second sample
-    sample2 = *sptr--;
-    
-    //Fill in the in between samples
-    //The original code uses a different approach
-    //Get the samples shifted up for fractional calculations 10.22 bits
-    sample1 <<= 22;
-    
-    //Calculate a delta step between the samples
-    delta = (sample1 - (sample2 << 22)) / 25;
-    
-    for(idx=0;idx<24;idx++)
-    {
-      //Calculate the next sample with fixed point calculation
-      //Since the direction is from last sample to first sample the step needs to be taken off
-      sample1 -= delta;
-      
-      //Store the decimal part of it
-      *dptr-- = sample1 >> 22;
-    }
-    
-    //Save the second sample as the first sample
-    sample1 = sample2;
-    
-    //One set of samples done
-    cnt--;
-  }
-  
-  //Create a second interpolated set of data based on the interpolated samples
-  //Only do one twenty fifth of the samples minus one since the data is shifted
-  cnt = (count / 25) - 1;
-
-  //For the source point to the last sample to use
-  sptr = &buffer[count - 13];
-  
-  //For the destination point to the last result sample
-  //Also on shifted sample to end where needed
-  dptr = &buffer[count - 13];
-  
-  //Get the first sample to use and skip twenty five samples
-  sample1 = *sptr;
-  sptr -= 25;
-  
-  //Process all the needed samples
-  while(cnt)
-  {
-    //Average and store the first sample
-    *dptr = (*dptr + sample1) / 2;
-      
-    //Point to the previous sample
-    dptr--;
-    
-    //Get the second sample and skip twenty five samples
-    sample2 = *sptr;
-    sptr -= 25;
-    
-    //Fill in the in between samples
-    //Get the samples shifted up for fractional calculations 10.22 bits
-    sample1 <<= 22;
-    
-    //Calculate a delta step between the samples
-    delta = (sample1 - (sample2 << 22)) / 25;
-    
-    for(idx=0;idx<24;idx++)
-    {
-      //Calculate the next sample with fixed point calculation
-      //Since the direction is from last sample to first sample the step needs to be taken off
-      sample1 -= delta;
-      
-      //Store the averaged decimal part of it
-      *dptr = (*dptr + (sample1 >> 22)) / 2;
-      
-      //Point to the previous sample
-      dptr--;
-    }
-    
-    //Save the second sample as the first sample
-    sample1 = sample2;
-    
-    //One set of samples done
-    cnt--;
-  }
-  
-  //The next step is a 12 step interpolating of the processed data and averaging that with the processed data
-  //Only do one twelfth of the samples
-  cnt = (count / 12);
-  
-  //For the source point to the last sample to use
-  //Takes the second sample as last input
-  sptr = &buffer[count];
-  
-  //For the destination point to the last result sample
-  dptr = &buffer[count];
-  
-  //Get the first sample to use and skip twelve samples
-  sample1 = *sptr;
-  sptr -= 12;
-  
-  //Process all the needed samples
-  while(cnt)
-  {
-    //Average and store the first sample
-    *dptr = (*dptr + sample1) / 2;
-      
-    //Point to the previous sample
-    dptr--;
-    
-    //Get the second sample and skip twelve samples
-    sample2 = *sptr;
-    sptr -= 12;
-    
-    //Fill in the in between samples
-    //The original code uses a different approach
-    //Get the samples shifted up for fractional calculations 10.22 bits
-    sample1 <<= 22;
-    
-    //Calculate a delta step between the samples
-    delta = (sample1 - (sample2 << 22)) / 12;
-    
-    for(idx=0;idx<11;idx++)
-    {
-      //Calculate the next sample with fixed point calculation
-      //Since the direction is from last sample to first sample the step needs to be taken off
-      sample1 -= delta;
-      
-      //Store the averaged decimal part of it
-      *dptr = (*dptr + (sample1 >> 22)) / 2;
-      
-      //Point to the previous sample
-      dptr--;
-    }
-    
-    //Save the second sample as the first sample
-    sample1 = sample2;
-    
-    //One set of samples done
-    cnt--;
-  }
-  
-  //The next step is a 6 step interpolating of the processed data and averaging that with the processed data
-  //Only do one sixth of the samples
-  cnt = (count / 6);
-  
-  //For the source point to the last sample to use
-  //Takes the second sample as last input
-  sptr = &buffer[count];
-  
-  //For the destination point to the last result sample
-  dptr = &buffer[count];
-  
-  //Get the first sample to use and skip 6 samples
-  sample1 = *sptr;
-  sptr -= 6;
-  
-  //Process all the needed samples
-  while(cnt)
-  {
-    //Average and store the first sample
-    *dptr = (*dptr + sample1) / 2;
-      
-    //Point to the previous sample
-    dptr--;
-    
-    //Get the second sample and skip 6 samples
-    sample2 = *sptr;
-    sptr -= 6;
-    
-    //Fill in the in between samples
-    //The original code uses a different approach
-    //Get the samples shifted up for fractional calculations 10.22 bits
-    sample1 <<= 22;
-    
-    //Calculate a delta step between the samples
-    delta = (sample1 - (sample2 << 22)) / 6;
-    
-    for(idx=0;idx<5;idx++)
-    {
-      //Calculate the next sample with fixed point calculation
-      //Since the direction is from last sample to first sample the step needs to be taken off
-      sample1 -= delta;
-      
-      //Store the averaged decimal part of it
-      *dptr = (*dptr + (sample1 >> 22)) / 2;
-      
-      //Point to the previous sample
-      dptr--;
-    }
-    
-    //Save the second sample as the first sample
-    sample1 = sample2;
-    
-    //One set of samples done
-    cnt--;
-  }
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-void scope_interleave_samples(uint16 *buffer1, uint16 *buffer2, PADC2CALIBRATIONDATA calibration)
-{
-  //Fixed number of samples to do
-  //In the original code it is 1490, but the read from the FPGA is for 1500, so all data done here
-  register uint32 count = 1500;
-  
-  //Buffers have a fixed size of 3000 samples
-  //Destination pointer on the last entry in the first buffer
-  register  uint16 *dptr = &buffer1[2999];
-  
-  //Source pointers on the last sample in each buffer
-  register uint16 *sptr1 = &buffer1[1499];
-  register uint16 *sptr2 = &buffer2[1499];
-  
-  //Get the compensation into a register for better performance
-  register uint32 compensation = calibration->compensation;
-  
-  register uint32 sample;
-  
-  //Check on what to do with the calibration compensation
-  if(calibration->flag == 0)
-  {
-    //On zero subtract from second buffer samples
-    
-    //Loop until all the samples are done
-    while(count)
-    {
-      //Copy the sample of the first buffer to the upper entries
-      *dptr-- = *sptr1--;
-      
-      //Get the sample from the second ADC
-      sample = *sptr2--;
-      
-      //Check if there is data to compensate
-      if(sample > compensation)
-      {
-        //Store the compensated sample to the lower entries
-        *dptr-- = sample - compensation;
-      }
-      else
-      {
-        //Zero the sample if to small
-        *dptr-- = 0;
-      }
-      
-      //One set of samples done
-      count--;
-    }
+    //Channel 1 buffer
+    buffer = channel1tracebuffer1;
   }
   else
   {
-    //On one add to second buffer samples
-    
-    //Loop until all the samples are done
-    while(count)
-    {
-      //Copy the sample of the first buffer to the upper entries
-      *dptr-- = *sptr1--;
-      
-      //Get the sample from the second ADC
-      sample = *sptr2--;
-      
-      //Compensate and store the sample to the lower entries
-      *dptr-- = sample + compensation;
-      
-      //One set of samples done
-      count--;
-    }
+    //Channel 2 buffer
+    buffer = channel2tracebuffer1;
   }
+
+  disp_have_trigger = 0;
+  
+  //Set a starting point for checking on trigger
+  //Count is half a sample buffer!!
+  index = count - 5;
+  count = 10;
+
+  while(count--)
+  {
+    sample1 = buffer[index];
+    sample2 = buffer[index + 1];
+
+    if(((scopesettings.triggeredge == 0) && (sample1 < level) && (sample2 > level)) ||
+       ((scopesettings.triggeredge == 1) && (sample1 > level) && (sample2 < level)))
+    {
+      //Set the current index as trigger point
+      disp_trigger_index = index;
+      
+      //Signal trigger has been found
+      disp_have_trigger = 1;
+      
+      //Done with checking
+      break;
+    }
+    
+    //Select next sample to check
+    index++;
+  }  
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -5932,117 +4705,142 @@ void scope_calculate_min_max_avg(uint16 *buffer, PMEASUREMENTS measurements)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_evaluate_trace_data(uint16 *buffer, PMEASUREMENTS measurements, uint32 voltperdiv, uint32 screenoffset)
-{
-  uint32 minsignalneeded;
-  uint32 cnt1, cnt2;
-  uint32 sample;
-  uint32 index;
-  
-  //Check if on highest sensitivity (lowest volt/div setting)
-  if(voltperdiv == 6)
-  {
-    //Set the compensation factor for this
-    minsignalneeded = 35;
-  }
-  else
-  {
-    //Otherwise use a lower compensation
-    minsignalneeded = 20;
-  }
-  
-  //Check on time base setting for the number of samples to process
-  if(scopesettings.timeperdiv < 25)
-  {
-    //For 50mS/div - 500nS/div use 1500 samples
-    cnt1 = 1500;
-  }
-  else
-  {
-    //For 250nS/div - 10nS/div use 2500 samples
-    cnt1 = 2500;
-  }
-  
-  //Check if peak peak measurement of the signal is less then the minimum signal needed
-  if(measurements->peakpeak < minsignalneeded)
-  {
-    //Check if the center of the signal is outside the minimal signal band around the center line
-    if((measurements->avg < (screenoffset - minsignalneeded)) || (measurements->avg > (screenoffset + minsignalneeded)))
-    {
-      //Remove the small signal from the buffer by using the average
-      while(cnt1)
-      {
-        //Count is either 1500 or 2500 so even and therfore ok to handle two samples at once
-        //Set the current sample with average value
-        *buffer++ = measurements->avg;
-        *buffer++ = measurements->avg;
-        
-        //Two samples done
-        cnt1 -= 2;
-      }
-    }
-    else
-    {
-      //signal center within the minimal signal band around the center line
-      index = 0;
-      cnt2 = 0;
-      
-      //Process the samples
-      while(cnt1)
-      {
-        //Get a sample
-        sample = buffer[index];
-
-        //Overwrite it with the screen offset
-        buffer[index] = screenoffset;
-        
-        //Check if it is above the average
-        if(sample > measurements->avg)
-        {
-          //Every so many counts introduce some noise?????
-          if(cnt2 >= 21)
-          {
-            //No idea on the why of this
-            cnt2 = 0;
-            buffer[index] += 1;
-          }
-        }
-        else
-        {
-          //Check is sample on the average
-          if(sample == measurements->avg)
-          {
-            //Every so many samples a bit of noise is introduced???
-            cnt2++;
-          }
-          else if(cnt2 >= 21)
-          {
-            //No idea on the why of this
-            cnt2 = 0;
-            buffer[index] -= 1;
-          }
-        }
-        
-        //One sample done
-        cnt1--;
-      }
-    }
-  }
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-void scope_determine_sample_buffer_indexes(void)
-{
-  //Needs to set these based on the zoom_select variable
-  //disp_x_start = 0;
-  //disp_sample_count = 0;
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
 void scope_display_trace_data(void)
 {
+  //See if it is possible to rework this to fixed point. A 32 bit mantissa is not accurate enough though
+  
+  //On the scope the last pixel interleaving is not working properly. Don't know why.
+  
+  //Check out the sin x/x interpolation downloaded from keysight (Sine wave reproduction using Sinc interpolation - v.1.0.py)
+  
+  //This needs more code to skip when stopped and no changes are made. It seems to be ok without this, but what is not needed is not needed
+  //In the display trace routine the display only needs to be redrawn when certain conditions apply
+  //  The user changes the sample rate or the time per div setting. Might need to block the setting of the sample rate when stopped because that makes no change to the current sample buffer.
+  //  The user moves pointers around. Trace up and down should work, and trigger left and right. Changing the trigger level should not do anything, or even be disabled
+  
+  //Have to allow for moving the traces when either stopped or moving the traces without new samples coming in!!!!
+
+  //For trace moving this requires additional code to overcome the offset being done in the FPGA
+
+
+  //Need to compensate for the position being on the left side of the pointer
+  uint32 triggerposition = scopesettings.triggerposition + 9;
+  
+  //Check if a trigger position has been found
+  if(disp_have_trigger == 0)
+  {
+    //When not use the center of the sample buffer
+    disp_trigger_index = scopesettings.samplecount / 2;
+  }
+
+  //Make sure the two settings are in range of the tables!!!!
+  //SKipp displaying if not????
+
+
+  //The amount of x positions needed per sample is based on the number of pixels per division, the set time per division and the sample rate.
+  disp_xpos_per_sample = (50.0 * frequency_per_div[scopesettings.timeperdiv]) / sample_rate[scopesettings.acqusitionspeed];
+
+  //This gives the step size for going through the samples. Is also the linear interleaving step for the y direction
+  disp_sample_step = 1.0 / disp_xpos_per_sample;
+
+  //The displayable x range is based on the number of samples and the number of x positions needed per sample
+  //Halved to allow trigger position to be in the center
+  double xrange = (scopesettings.samplecount * disp_xpos_per_sample) / 2.0;
+
+  //x range needs to be at least 1 pixel  
+  if(xrange < 1.0)
+  {
+    xrange = 1.0;
+  }
+  else if(xrange > 725.0)
+  {
+    //Limit on max screen pixels to avoid disp_xend becoming 0x80000000 due to overflow
+    xrange = 725.0;
+  }
+
+  //Calculate the start end end x coordinates
+  disp_xstart = triggerposition - xrange;
+  disp_xend = triggerposition + xrange;
+  
+  //Limit on actual start of trace display
+  if(disp_xstart < 3)
+  {
+    disp_xstart = 3;
+  }
+  
+  //And limit on the actual end of the trace display
+  if(disp_xend > 725)
+  {
+    disp_xend = 725;
+  }
+  
+  //Determine first sample to use based on a full screen worth of samples and the trigger position in relation to the number of pixels on the screen
+  disp_first_sample = disp_trigger_index - (((725.0 / disp_xpos_per_sample) * triggerposition) / 725.0) - 1;
+  
+  //If below the first sample limit it on the first sample
+  if(disp_first_sample < 0)
+  {
+    disp_first_sample = 0;
+  }
+
+  //This makes sure no reading outside the buffer can occur
+  if(disp_sample_step > ((scopesettings.samplecount) / 2))
+  {
+    disp_sample_step = (scopesettings.samplecount) / 2;
+  }
+    
+    
+    
+
+  //If samplestep > 1 might be an idea to draw the in between samples on the same x position to avoid aliasing
+  //If sample step < 1 then skip drawing on x positions. The draw line function does the linear interpolation
+
+
+
+  //Use a separate buffer to clear the screen
+  display_set_screen_buffer(displaybuffer1);
+
+  //Clear the trace portion of the screen
+  display_set_fg_color(0x00000000);
+  display_fill_rect(2, 46, 728, 434);
+
+  //Draw the grid lines and dots based on the grid brightness setting
+  scope_draw_grid();
+
+  
+  
+  //Need to determine if x y mode is enabled here
+
+
+  //Check if channel1 is enabled
+  if(scopesettings.channel1.enable)
+  {
+    //Go and do the actual trace drawing
+    scope_display_channel_trace(channel1tracebuffer1, CHANNEL1_COLOR);
+  }
+
+  //Check if channel2 is enabled
+  if(scopesettings.channel2.enable)
+  {
+    //Go and do the actual trace drawing
+    scope_display_channel_trace(channel2tracebuffer1, CHANNEL2_COLOR);
+  }
+
+
+
+
+
+  //Draw the signal center, trigger level and trigger position pointers
+  scope_draw_pointers();
+
+  //Copy it to the actual screen buffer
+  display_set_source_buffer(displaybuffer1);
+  display_set_screen_buffer((uint16 *)maindisplaybuffer);
+  display_copy_rect_to_screen(2, 46, 728, 434);
+
+
+  
+#if 0
   uint32 xpos1;
   uint32 xpos2;
   uint32 dy;
@@ -6077,8 +4875,6 @@ void scope_display_trace_data(void)
     //Check on another flag if this next bit needs to be done
     if(scopesettings.triggerflag1)
     {
-      //Get the sample buffer indexes based on the sample_index_select variable
-      scope_determine_sample_buffer_indexes();
       
       //Check if channel 1 is enabled
       if(scopesettings.channel1.enable)
@@ -6388,28 +5184,101 @@ void scope_display_trace_data(void)
       disp_xpos = 0;
     }
   }
+#endif  
+
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_display_channel_trace(uint16 *buffer, uint16 xpos, uint16 count, uint32 color)
+void scope_display_channel_trace(uint16 *buffer, uint32 color)
 {
-  register uint32 index = 0;
-  register uint32 sample1, sample2;
+  double inputindex;
+  
+  register int32 previousindex;
+  register int32 currentindex;
+  register int32 sample1 = 0;
+  register int32 sample2 = 0;
+  register uint32 lastx = 0;
+  register uint32 xpos = disp_xstart;
 
+  uint32 firstpixel = 0;
+  
   display_set_fg_color(color);
   
-  sample1 = 449 - buffer[index++];
+  //Get the first sample here!!
   
-  while(index < count)
-  {
-    sample2 = 449 - buffer[index++];
+  
 
-    display_draw_line(xpos, sample1, xpos + 1, sample2);
-    
-    xpos++;
-    
-    sample1 = sample2;
+  //Process the sample data to screen data
+  for(inputindex=disp_first_sample, previousindex = -1; xpos < disp_xend; inputindex += disp_sample_step, xpos++)
+  {
+    //Get the current integer index into the sample buffer
+    currentindex = inputindex;
+
+    //Check if linear approximation needs to be done. (Only when step < 1) pixels are skipped if so.
+    if(currentindex != previousindex)
+    {
+      //Set new previous index
+      previousindex = currentindex;
+
+      //Get the sample
+      sample2 = buffer[currentindex];
+
+      //Limit the data to screen limits
+      //Check if the data is bigger then max allowed
+      if(sample2 > 401)
+      {
+        //If so limit to bottom of the screen
+        sample2 = 401;
+      }
+
+      //Display y coordinates are inverted to signal orientation
+      sample2 = 449 - sample2;
+
+
+      if(firstpixel == 0)
+      {
+        firstpixel = 1;
+      }
+      else
+      {
+        //Need to draw a line here
+        display_draw_line(lastx, sample1, xpos, sample2);
+      }
+
+      sample1 = sample2;
+
+      lastx = xpos;
+    }
+  }
+
+  //When step less then 1 the last pixel needs to be interpolated between current sample and next sample.
+  if(disp_sample_step < 1.0)
+  {
+    //Calculate the scaler for the last y value based on the x distance from the last drawn position to the end of the screen
+    //divided by the x distance it takes to where the next position should be drawn (Number of x steps per sample)
+    double scaler =  (725.0 - lastx) / disp_xpos_per_sample;    // (1 / samplestep);
+
+    //Get the current integer index into the sample buffer for retrieving the last sample
+    currentindex = inputindex;
+
+    //Signal adjust for correct voltage display
+    //Need to check if this is correct
+    sample2 = buffer[currentindex];
+
+    //The limit the data to screen limits
+    //Check if the data is bigger then max allowed
+    if(sample2 > 401)
+    {
+      //If so limit to bottom of the screen
+      sample2 = 401;
+    }
+
+    sample2 = 449 - sample2;
+
+    sample2 = sample1 + ((double)((double)sample2 - (double)sample1) / scaler);
+
+    display_draw_line(lastx, sample1, xpos, sample2);
   }
 }
 
@@ -6916,14 +5785,6 @@ void scope_restore_setup_from_file(void)
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
-
-const char view_file_extension[2][5] =
-{
-  { ".bmp" },
-  { ".wav" }
-};
-
-//----------------------------------------------------------------------------------------------------------------------------------
 //In the original code they setup a list with all the available file names and index into that list when a file is used
 //Here the file name is made on the fly when needed
 
@@ -6961,20 +5822,6 @@ void scope_print_file_name(uint32 filenumber)
   //Add the extension
   memcpy(&viewfilename[s], view_file_extension[viewtype & VIEW_TYPE_MASK], 5);
 }
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-const char list_file_name[2][13] =
-{
-  { "piclist.sys" },
-  { "wavelist.sys" }
-};
-
-const char system_file_name[2][16] =
-{
-  { "pic_system.sys" },
-  { "wave_system.sys" }
-};
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -8185,7 +7032,10 @@ void scope_reset_config_data(void)
   scopesettings.movespeed = 0;
   
   //Set time base to 20uS/div
-  scopesettings.timeperdiv = 19;
+  scopesettings.timeperdiv = 12;
+  
+  //Set the related acquisition speed which is 5MHz
+  scopesettings.acqusitionspeed = 5;
   
   //Enable some default measurements
   //Not yet implemented display wise and am thinking of a different way of doing it so left for later
@@ -8251,6 +7101,9 @@ void scope_save_config_data(void)
   //Save the time base
   settingsworkbuffer[10] = scopesettings.timeperdiv;
 
+  //Save the acquisition speed
+  settingsworkbuffer[17] = scopesettings.acqusitionspeed;
+  
   //Save the move speed
   settingsworkbuffer[11] = scopesettings.movespeed;
   
@@ -8349,6 +7202,9 @@ void scope_restore_config_data(void)
   //Restore the time base
   scopesettings.timeperdiv = settingsworkbuffer[10];
 
+  //Restore the acquisition speed
+  scopesettings.acqusitionspeed = settingsworkbuffer[17];
+  
   //Restore the move speed
   scopesettings.movespeed = settingsworkbuffer[11];
   

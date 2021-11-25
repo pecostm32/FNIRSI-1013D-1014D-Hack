@@ -112,13 +112,15 @@ int main(void)
   //Load configuration data from FLASH
   scope_load_configuration_data();
 
+#if 0  
   //25nS/div testing first
   scopesettings.channel1.magnification = 0;
   scopesettings.channel1.voltperdiv = 4;
   scopesettings.timeperdiv = 29;
   scopesettings.triggerchannel = 0;
   saved_sample_buffers_count = 0;
-  
+#endif
+
   //Enable or disable the channels based on the scope loaded settings
   fpga_set_channel_1_enable();
   fpga_set_channel_2_enable();
@@ -138,7 +140,7 @@ int main(void)
   fpga_init_parameter_ic();
   
   //Setup the trigger system in the FPGA based on the loaded scope settings
-  fpga_set_trigger_timebase();
+  fpga_set_trigger_timebase(scopesettings.timeperdiv);
   fpga_set_trigger_channel();
   fpga_swap_trigger_channel();   //This is a bit redundant since the correct channel should be in the loaded settings.
   fpga_set_trigger_edge();
@@ -172,7 +174,7 @@ int main(void)
     battery_check_status();
     
     //Go through the trace data and make it ready for displaying
-    scope_process_trace_data();
+    scope_acquire_trace_data();
     
     //Display the trace data
     scope_display_trace_data();

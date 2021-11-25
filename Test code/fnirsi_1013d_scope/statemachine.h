@@ -16,6 +16,7 @@ void scan_for_touch(void);
 void handle_main_menu_touch(void);
 void handle_channel1_menu_touch(void);
 void handle_channel2_menu_touch(void);
+void handle_acquisition_menu_touch(void);
 void handle_trigger_menu_touch(void);
 
 void handle_right_basic_menu_touch(void);

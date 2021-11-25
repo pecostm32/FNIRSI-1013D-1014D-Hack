@@ -6,6 +6,7 @@
 //----------------------------------------------------------------------------------------------------------------------------------
 
 #include "types.h"
+#include "variables.h"
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -71,7 +72,7 @@ void   fpga_set_channel_2_coupling(void);
 void   fpga_set_channel_2_voltperdiv(void);
 void   fpga_set_channel_2_offset(void);
 
-void   fpga_set_trigger_timebase(void);
+void   fpga_set_trigger_timebase(uint32 timeperdiv);
 void   fpga_set_trigger_channel(void);
 void   fpga_set_trigger_edge(void);
 void   fpga_swap_trigger_channel(void);
@@ -83,7 +84,8 @@ void   fpga_set_short_timebase(void);
 
 uint16 fpga_prepare_for_transfer(void);
 
-void   fpga_read_trace_data(uint8 command, uint16 *buffer, int32 count);
+void   fpga_read_adc1_data(uint8 command, uint16 *buffer, int32 count, uint32 signaladjust, uint32 multiply, uint32 offset);
+void   fpga_read_adc2_data(uint8 command, uint16 *buffer, int32 count, uint32 signaladjust, uint32 multiply, uint32 offset, PADC2CALIBRATIONDATA calibration);
 
 uint16 fpga_average_trace_data(uint8 command);
 
