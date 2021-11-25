@@ -81,7 +81,7 @@ int main(int argc,char **argv)
 
   tagXlibContext xc;
 
-  int numsizes;  
+  int numsizes;
   XRRScreenSize *scrsize;
   
   //Get the size of the primary monitor

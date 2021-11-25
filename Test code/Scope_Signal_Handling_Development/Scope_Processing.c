@@ -20,12 +20,7 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-//#define maindisplaybuffer   scope_data->displaymemory
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
 int interrupthandlers[64];
-
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -179,7 +174,7 @@ void *scopeprocessingthread(void *arg)
   fpga_init_parameter_ic();
   
   //Setup the trigger system in the FPGA based on the loaded scope settings
-  fpga_set_trigger_timebase();
+  fpga_set_trigger_timebase(scopesettings.timeperdiv);
   fpga_set_trigger_channel();
   fpga_swap_trigger_channel();   //This is a bit redundant since the correct channel should be in the loaded settings.
   fpga_set_trigger_edge();
@@ -213,7 +208,7 @@ void *scopeprocessingthread(void *arg)
     battery_check_status();
     
     //Go through the trace data and make it ready for displaying
-    scope_process_trace_data();
+    scope_acquire_trace_data();
     
     //Display the trace data
     scope_display_trace_data();

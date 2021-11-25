@@ -10,6 +10,10 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+extern int quit_scopeprocessing_thread_on_zero;
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 typedef struct tagByteBits    ByteBits;
 
 typedef union tagByteAndBits  ByteAndBits;
@@ -87,6 +91,12 @@ struct tagFPGA_DATA
 //----------------------------------------------------------------------------------------------------------------------------------
 
 FPGA_DATA fpga_data;
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void   fpga_init_parameter_ic(void);
+void   fpga_write_parameter_ic(uint8 id, uint32 value);
+uint32 fpga_read_parameter_ic(uint8 id, uint32 value);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -445,7 +455,7 @@ void fpga_write_cmd(uint8 command)
   
     case 0x0A:  //For this one the software tests against one and continues if so, else it waits for touch
       //Select next trace buffer
-//      fpga_data.channel1_sample_buffer_index++;
+      fpga_data.channel1_sample_buffer_index++;
       
       //Only 50 buffers
       if(fpga_data.channel1_sample_buffer_index >= 50)
@@ -633,7 +643,7 @@ void fpga_set_channel_2_offset(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void fpga_set_trigger_timebase(void)
+void fpga_set_trigger_timebase(uint32 timeperdiv)
 {
   //Open a signal file based on the new time base setting
   char file_name[256];
@@ -645,7 +655,7 @@ void fpga_set_trigger_timebase(void)
     fclose(fpga_data.channel1_trace_data);
   }
   
-  snprintf(file_name, 256, "signals/fnirsi_samples_%d.bin", scopesettings.timeperdiv);
+  snprintf(file_name, 256, "signals/fnirsi_samples_%d.bin", timeperdiv + 7);
 
   //Open the new file
   fpga_data.channel1_trace_data = fopen(file_name, "rb");
@@ -673,6 +683,63 @@ void fpga_swap_trigger_channel(void)
 
 void fpga_set_trigger_level(void)
 {
+  uint32 voltperdiv;
+  uint32 traceoffset;
+  uint32 adjuster;
+  uint32 level;
+  
+  //Check which channel is used for triggering
+  if(scopesettings.triggerchannel == 0)
+  {
+    //Channel 1, so use its data
+    voltperdiv  = scopesettings.channel1.voltperdiv;
+    traceoffset = scopesettings.channel1.traceoffset;
+  }
+  else
+  {
+    //Channel 2, so use its data
+    voltperdiv  = scopesettings.channel2.voltperdiv;
+    traceoffset = scopesettings.channel2.traceoffset;
+  }
+  
+  //Get the adjuster for the level based on the volts per div setting
+  adjuster = signal_adjusters[voltperdiv];
+  
+  //Process the data different when on lowest volts per div setting
+  if(voltperdiv == 6)
+  {
+    //check if trigger trace offset below channel trace offset
+    if(scopesettings.triggeroffset < traceoffset)
+    {
+      //Below the trace
+      //Use the trace screen offset minus half the delta of the screen offsets and scale it with the signal adjuster setting
+      level = ((traceoffset - ((traceoffset - scopesettings.triggeroffset) / 2)) * 100) / adjuster;
+    }
+    else
+    {
+      //Above the trace
+      //Use the trace screen offset plus half the delta of the screen offsets and scale it with the signal adjuster setting
+      level = ((traceoffset + ((scopesettings.triggeroffset - traceoffset) / 2)) * 100) / adjuster;
+    }
+  }
+  else
+  {
+    //Scale the screen offset with the signal adjuster setting
+    level = (scopesettings.triggeroffset * 100) / adjuster;
+  }
+  
+  //This needs to hold the adjusted level since the sample data checked is also adjusted
+  //Translate the trigger channels volts per div setting
+  adjuster = fpga_read_parameter_ic(0x0B, voltperdiv) & 0x0000FFFF;
+  
+  //Store the result in the global settings
+  scopesettings.triggerlevel = (41954 * level * adjuster) >> 22;
+  
+  //Send the command for setting the trigger level to the FPGA
+  fpga_write_cmd(0x17);
+  
+  //Write the actual level to the FPGA
+  fpga_write_byte(level);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -701,8 +768,66 @@ uint16 fpga_prepare_for_transfer(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void fpga_read_trace_data(uint8 command, uint16 *buffer, int32 count)
+void fpga_read_adc1_data(uint8 command, uint16 *buffer, int32 count, uint32 signaladjust, uint32 multiply, uint32 offset)
 {
+  register uint32 sample;
+  
+  //Send a command for getting trace data from the FPGA
+  fpga_write_cmd(command);
+
+  //Start on the second sample location
+  //First ADC samples after the second ADC
+  buffer++;
+  
+  //Read the data as long as there is count
+  while(count)
+  {
+    //Read the data
+    sample = fpga_read_byte() | (fpga_read_byte() << 8);
+    
+    //Adjust the data for the correct voltage per div setting
+    sample = (41954 * sample * signaladjust) >> 22;
+
+    //Check on lowest volt per div setting for doubling and offsetting
+    if(multiply)
+    {
+      //Multiply the sample by two
+      sample <<= 1;
+
+      //Correct the position for the set trace offset
+      //Check if the data is smaller then the offset
+      if(sample < offset)
+      {
+        //If so limit to top of the screen
+        sample = 0;
+      }
+      else
+      {
+        //Else take of the offset
+        sample -= offset;
+      }
+    }
+    
+    //Store the data
+    *buffer = sample;
+
+    //Skip a sample for ADC2 data
+    buffer += 2;
+    
+    //One read done
+    count--;
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_read_adc2_data(uint8 command, uint16 *buffer, int32 count, uint32 signaladjust, uint32 multiply, uint32 offset, PADC2CALIBRATIONDATA calibration)
+{
+  register uint32 sample;
+  
+  //Get the compensation into a register for better performance
+  register uint32 compensation = calibration->compensation;
+  
   //Send a command for getting trace data from the FPGA
   fpga_write_cmd(command);
 
@@ -710,7 +835,57 @@ void fpga_read_trace_data(uint8 command, uint16 *buffer, int32 count)
   while(count)
   {
     //Read the data
-    *buffer++ = fpga_read_byte() | (fpga_read_byte() << 8);
+    sample = fpga_read_byte() | (fpga_read_byte() << 8);
+    
+    //Check on what to do with the calibration compensation
+    if(calibration->flag == 0)
+    {
+      //Check if there is data to compensate
+      if(sample > compensation)
+      {
+        //Store the compensated sample to the lower entries
+        sample -= compensation;
+      }
+      else
+      {
+        //Zero the sample if to small
+        sample = 0;
+      }
+    }
+    else
+    {
+      //Compensate and store the sample
+      sample += compensation;
+    }
+    
+    //Adjust the data for the correct voltage per div setting
+    sample = (41954 * sample * signaladjust) >> 22;
+
+    //Check on lowest volt per div setting for doubling and offsetting
+    if(multiply)
+    {
+      //Multiply the sample by two
+      sample <<= 1;
+
+      //Correct the position for the set trace offset
+      //Check if the data is smaller then the offset
+      if(sample < offset)
+      {
+        //If so limit to top of the screen
+        sample = 0;
+      }
+      else
+      {
+        //Else take of the offset
+        sample -= offset;
+      }
+    }
+    
+    //Store the data
+    *buffer = sample;
+
+    //Skip a sample since it holds ADC1 data
+    buffer += 2;
     
     //One read done
     count--;
@@ -1008,14 +1183,22 @@ void tp_i2c_setup(void)
 
 void tp_i2c_read_status(void)
 {
+  if(quit_scopeprocessing_thread_on_zero == 0)
+  {
+    //Fake coordinates to force any menu to close and the process to stop
+    havetouch = 1;
+    
+    xtouch = 780;
+    ytouch = 10;
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void tp_i2c_wait_for_touch_release(void)
 {
-  //Wait until touch is released
-  while(havetouch);
+  //Wait until touch is released or process stopped
+  while(havetouch && quit_scopeprocessing_thread_on_zero);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
