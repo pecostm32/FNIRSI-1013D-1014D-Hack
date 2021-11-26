@@ -36,6 +36,8 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/_ext/4a4fb115/display_lib.o \
+	${OBJECTDIR}/_ext/4a4fb115/ff.o \
+	${OBJECTDIR}/_ext/4a4fb115/ffunicode.o \
 	${OBJECTDIR}/_ext/4a4fb115/font_0.o \
 	${OBJECTDIR}/_ext/4a4fb115/font_2.o \
 	${OBJECTDIR}/_ext/4a4fb115/font_3.o \
@@ -82,6 +84,16 @@ ${OBJECTDIR}/_ext/4a4fb115/display_lib.o: ../../F1C100s/fnirsi_1013d_scope/displ
 	${MKDIR} -p ${OBJECTDIR}/_ext/4a4fb115
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/4a4fb115/display_lib.o ../../F1C100s/fnirsi_1013d_scope/display_lib.c
+
+${OBJECTDIR}/_ext/4a4fb115/ff.o: ../../F1C100s/fnirsi_1013d_scope/ff.c
+	${MKDIR} -p ${OBJECTDIR}/_ext/4a4fb115
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/4a4fb115/ff.o ../../F1C100s/fnirsi_1013d_scope/ff.c
+
+${OBJECTDIR}/_ext/4a4fb115/ffunicode.o: ../../F1C100s/fnirsi_1013d_scope/ffunicode.c
+	${MKDIR} -p ${OBJECTDIR}/_ext/4a4fb115
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/4a4fb115/ffunicode.o ../../F1C100s/fnirsi_1013d_scope/ffunicode.c
 
 ${OBJECTDIR}/_ext/4a4fb115/font_0.o: ../../F1C100s/fnirsi_1013d_scope/font_0.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/4a4fb115

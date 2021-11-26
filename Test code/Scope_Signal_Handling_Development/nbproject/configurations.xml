@@ -6,7 +6,10 @@
                    projectFiles="true">
       <itemPath>Scope_Processing.h</itemPath>
       <itemPath>Scope_Signal_Handling_Development.h</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1013d_scope/diskio.h</itemPath>
       <itemPath>../../F1C100s/fnirsi_1013d_scope/display_lib.h</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1013d_scope/ff.h</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1013d_scope/ffconf.h</itemPath>
       <itemPath>../../F1C100s/fnirsi_1013d_scope/fnirsi_1013d_scope.h</itemPath>
       <itemPath>../../F1C100s/fnirsi_1013d_scope/font_structs.h</itemPath>
       <itemPath>../../F1C100s/fnirsi_1013d_scope/fpga_control.h</itemPath>
@@ -31,6 +34,8 @@
       <itemPath>Scope_Processing.c</itemPath>
       <itemPath>Scope_Signal_Handling_Development.c</itemPath>
       <itemPath>../../F1C100s/fnirsi_1013d_scope/display_lib.c</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1013d_scope/ff.c</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1013d_scope/ffunicode.c</itemPath>
       <itemPath>../../F1C100s/fnirsi_1013d_scope/font_0.c</itemPath>
       <itemPath>../../F1C100s/fnirsi_1013d_scope/font_2.c</itemPath>
       <itemPath>../../F1C100s/fnirsi_1013d_scope/font_3.c</itemPath>
@@ -86,6 +91,11 @@
           <commandLine>-lX11 -lXft -lXrandr -lpthread</commandLine>
         </linkerTool>
       </compileType>
+      <item path="../../F1C100s/fnirsi_1013d_scope/diskio.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
       <item path="../../F1C100s/fnirsi_1013d_scope/display_lib.c"
             ex="false"
             tool="0"
@@ -94,6 +104,26 @@
       <item path="../../F1C100s/fnirsi_1013d_scope/display_lib.h"
             ex="false"
             tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/ff.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/ff.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/ffconf.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/ffunicode.c"
+            ex="false"
+            tool="0"
             flavor2="0">
       </item>
       <item path="../../F1C100s/fnirsi_1013d_scope/fnirsi_1013d_scope.h"
@@ -239,6 +269,11 @@
           <developmentMode>5</developmentMode>
         </asmTool>
       </compileType>
+      <item path="../../F1C100s/fnirsi_1013d_scope/diskio.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
       <item path="../../F1C100s/fnirsi_1013d_scope/display_lib.c"
             ex="false"
             tool="0"
@@ -247,6 +282,26 @@
       <item path="../../F1C100s/fnirsi_1013d_scope/display_lib.h"
             ex="false"
             tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/ff.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/ff.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/ffconf.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1013d_scope/ffunicode.c"
+            ex="false"
+            tool="0"
             flavor2="0">
       </item>
       <item path="../../F1C100s/fnirsi_1013d_scope/fnirsi_1013d_scope.h"

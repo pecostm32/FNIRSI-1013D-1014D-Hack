@@ -6,6 +6,7 @@
 
 #include "stub_functions.h"
 #include "ff.h"
+#include "diskio.h"
 #include "variables.h"
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -1183,13 +1184,23 @@ void tp_i2c_setup(void)
 
 void tp_i2c_read_status(void)
 {
+  //Check if stop of process requested
   if(quit_scopeprocessing_thread_on_zero == 0)
   {
-    //Fake coordinates to force any menu to close and the process to stop
-    havetouch = 1;
-    
-    xtouch = 780;
-    ytouch = 10;
+    //If so check if there was no touch
+    if(havetouch == 0)
+    {
+      //Fake coordinates to force any menu to close and the process to stop
+      havetouch = 1;
+
+      xtouch = 10;
+      ytouch = 470;
+    }
+    else
+    {
+      //Otherwise remove touch when stop is requested
+      havetouch = 0;
+    }
   }
 }
 
@@ -1221,62 +1232,179 @@ void usb_device_enable(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-FRESULT f_open (FIL* fp, const TCHAR* path, BYTE mode)
+//Definitions of physical drive number for each drive
+#define DEV_FILE     0 
+
+FILE *sd_emu_file = NULL;
+
+DSTATUS disk_initialize(BYTE pdrv)
 {
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-FRESULT f_close (FIL* fp)
-{
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-FRESULT f_read (FIL* fp, void* buff, UINT btr, UINT* br)
-{
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-FRESULT f_write (FIL* fp, const void* buff, UINT btw, UINT* bw)
-{
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-FRESULT f_lseek (FIL* fp, FSIZE_t ofs)
-{
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-FRESULT f_unlink (const TCHAR* path)
-{
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-FRESULT f_mount (FATFS* fs, const TCHAR* path, BYTE opt)
-{
- return 0;
+  //Check if the SD card device is addressed
+  if(pdrv == DEV_FILE)
+  {
+    if(sd_emu_file == NULL)
+    {
+      //Try to initialize the interface and the card
+      if((sd_emu_file = fopen("scope_sd_card.img", "rb+")) == NULL)
+      {
+        //Some error then signal no disk
+        return(STA_NODISK);
+      }
+    }
+  }
+  else
+  {
+    //Not the SD card emulation drive then no init
+    return(STA_NOINIT);
+  }
+  
+  //All went well
+  return(RES_OK);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-//----------------------------------------------------------------------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
+void disk_exit(void)
+{
+  //Check if the sd card emulation file is open
+  if(sd_emu_file)
+  {
+    //Close it if so
+    fclose(sd_emu_file);
+  }
+}
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+DSTATUS disk_status(BYTE pdrv)
+{
+  //Check if the sd card emulation file is opened
+  if(sd_emu_file == NULL)
+  {
+    //Not then signal no disk available
+    return(STA_NODISK);
+  }
+  
+  //Else everything ok
+  return(RES_OK);
+}
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+DRESULT disk_read(BYTE pdrv, BYTE *buff, LBA_t sector, UINT count)
+{
+  //Check if the SD card device is addressed
+  if(pdrv == DEV_FILE)
+  {
+    //Check if the sd card emulation file is opened
+    if(sd_emu_file == NULL)
+    {
+      //Not then signal no disk available
+      return(STA_NODISK);
+    }
+    
+    //Seek the requested location
+    if(fseek(sd_emu_file, sector * 512, SEEK_SET))
+    {
+      //Error while seeking
+      return(RES_ERROR);
+    }
+    
+    //Read the data from the card emulation file
+    fread(buff, 1, count * 512, sd_emu_file);
+  }
+  else
+  {
+    //Not the SD card drive selected
+    return(RES_PARERR);
+  }
+  
+  //All went well
+  return(RES_OK);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+DRESULT disk_write(BYTE pdrv, const BYTE *buff, LBA_t sector, UINT count)
+{
+  //Check if the SD card device is addressed
+  if(pdrv == DEV_FILE)
+  {
+    //Check if the sd card emulation file is opened
+    if(sd_emu_file == NULL)
+    {
+      //Not then signal no disk available
+      return(STA_NODISK);
+    }
+    
+    //Seek the requested location
+    if(fseek(sd_emu_file, sector * 512, SEEK_SET))
+    {
+      //Error while seeking
+      return(RES_ERROR);
+    }
+    
+    //Write the data to the card emulation file
+    fwrite(buff, 1, count * 512, sd_emu_file);
+  }
+  else
+  {
+    //Not the SD card drive selected
+    return(RES_PARERR);
+  }
+  
+  //All went well
+  return(RES_OK);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void *buff)
+{
+  //Check if the SD card device is addressed
+  if(pdrv == DEV_FILE)
+  {
+    //Check if the sd card emulation file is opened
+    if(sd_emu_file == NULL)
+    {
+      //Not then signal no disk available
+      return(STA_NODISK);
+    }
+    
+    //Check if buffer is valid
+    if(buff)
+    {
+      if(cmd == CTRL_SYNC)
+      {
+        return(RES_OK);
+      }
+      else if(cmd == GET_SECTOR_COUNT)
+      {
+        //Seek the requested location
+        if(fseek(sd_emu_file, 0, SEEK_END))
+        {
+          //Error while seeking
+          return(RES_ERROR);
+        }
+        
+        *(uint32 *)buff = (ftell(sd_emu_file) + 511) / 512;
+        
+        return(RES_OK);
+      }
+    }
+  }
+  
+  //Invalid input parameters given
+  return(RES_PARERR);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+DWORD get_fattime (void)
+{
+  //Some date and time value
+  return(1349957149);
+}
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

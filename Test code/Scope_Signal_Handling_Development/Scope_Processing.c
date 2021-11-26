@@ -26,9 +26,9 @@ int interrupthandlers[64];
 
 pthread_t scope_processing_thread;
 
-int quit_scopeprocessing_thread_on_zero = 0;
+volatile int quit_scopeprocessing_thread_on_zero = 0;
 
-int is_scopeprocessing_stopped = 0;
+volatile int is_scopeprocessing_stopped = 0;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -133,6 +133,8 @@ void *scopeprocessingthread(void *arg)
     //On error just hang, as long as system is up
     while(quit_scopeprocessing_thread_on_zero);
     
+    is_scopeprocessing_stopped = 1;
+    
     //Exit the thread the way it is supposed to
     pthread_exit(NULL);
   }
@@ -227,6 +229,7 @@ void *scopeprocessingthread(void *arg)
   
   //Close possible open files
   fpga_exit();
+  disk_exit();
 
   //Signal process is stopped
   is_scopeprocessing_stopped = 1;
