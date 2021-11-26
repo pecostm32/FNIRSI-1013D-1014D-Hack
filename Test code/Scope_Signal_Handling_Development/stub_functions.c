@@ -3,6 +3,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
+#include <fcntl.h>
+
+#include <linux/loop.h>
+
+#include <sys/ioctl.h>
 
 #include "stub_functions.h"
 #include "ff.h"
@@ -88,6 +94,12 @@ struct tagFPGA_DATA
   uint32  channel1_sample_buffer_index;
   
 };
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+FILE *sd_emu_file = NULL;
+
+int loop_device_open = 0;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -1193,8 +1205,18 @@ void tp_i2c_read_status(void)
       //Fake coordinates to force any menu to close and the process to stop
       havetouch = 1;
 
-      xtouch = 10;
-      ytouch = 470;
+      //Check if the loop device is opened (USB connected)
+      if(loop_device_open)
+      {
+        //Signal touch to turn it off
+        xtouch = 120;
+        ytouch = 250;
+      }
+      else
+      {
+        xtouch = 10;
+        ytouch = 470;
+      }
     }
     else
     {
@@ -1222,20 +1244,34 @@ void usb_device_init(void)
 
 void usb_device_disable(void)
 {
+  if(loop_device_open)
+  {
+    //Not the most elegant solution but it works more or less
+    system("sudo umount /dev/loop0p1");
+    system("sudo losetup -d /dev/loop0");
+    
+    loop_device_open = 0;
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void usb_device_enable(void)
 {
+  if(loop_device_open == 0)
+  {
+    //Not the most elegant solution but it works more or less
+    system("sudo losetup /dev/loop0 scope_sd_card.img");
+    system("sudo partprobe /dev/loop0");
+    
+    loop_device_open = 1;
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 //Definitions of physical drive number for each drive
 #define DEV_FILE     0 
-
-FILE *sd_emu_file = NULL;
 
 DSTATUS disk_initialize(BYTE pdrv)
 {

@@ -231,6 +231,8 @@ void *scopeprocessingthread(void *arg)
   fpga_exit();
   disk_exit();
 
+  usb_device_disable();
+  
   //Signal process is stopped
   is_scopeprocessing_stopped = 1;
   
