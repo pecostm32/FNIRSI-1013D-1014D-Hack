@@ -1330,6 +1330,11 @@ void handle_acquisition_menu_touch(void)
 
               //Display the new setting              
               scope_acquisition_speed_select();
+              
+              //Update the viable time per div settings
+              scope_acquisition_timeperdiv_select();
+              
+              //Update the top menu bar display
               scope_acqusition_settings(0);
               break;
             }

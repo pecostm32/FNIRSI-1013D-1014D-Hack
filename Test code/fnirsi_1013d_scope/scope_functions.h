@@ -153,7 +153,7 @@ void scope_calculate_min_max_avg(uint16 *buffer, PMEASUREMENTS measurements);
 // Signal data display functions
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_display_trace_data(void);          //Needs work on long time base to fix problem when enabling a channel. previous y position is then wrong.
+void scope_display_trace_data(void);
 
 void scope_display_channel_trace(uint16 *buffer, uint32 color);
 

@@ -4056,10 +4056,6 @@ void scope_adjust_timebase(void)
       {
         //Go up in time by taking one of the setting
         scopesettings.timeperdiv--;
-        
-        //18-11-2021 Temp for saving sample files
-        saved_sample_buffers_count = 0;
-        
       }
     }
     //Check if touch on the right of the center line
@@ -4070,10 +4066,6 @@ void scope_adjust_timebase(void)
       {
         //Go down in time by adding one to the setting
         scopesettings.timeperdiv++;
-        
-        //18-11-2021 Temp for saving sample files
-        saved_sample_buffers_count = 0;
-        
       }
     }
     
@@ -4573,12 +4565,7 @@ void scope_acquire_trace_data(void)
     
       //Need to find the trigger point near the center of the buffer
       //And calculate the sample starting point based on the trigger position on the screen and the acquisition speed and time per div setting??
-    
 
-      //Implement the correct FPGA configuration on new sample rate and time per div setting selection!!!!!
-      //Tapping on the screen needs to change both according to their original relation
-      //Via the menu the sample rate is the base for the FPGA and the user can select the intended time per div
-      //Show with grey text which time per div settings do not work well with the chosen sample rate.
   }
 }
 
@@ -4809,30 +4796,83 @@ void scope_display_trace_data(void)
 
   
   
-  //Need to determine if x y mode is enabled here
-
-
-  //Check if channel1 is enabled
-  if(scopesettings.channel1.enable)
+  //Check if scope is in normal display mode
+  if(scopesettings.xymodedisplay == 0)
   {
-    //Go and do the actual trace drawing
-    scope_display_channel_trace(channel1tracebuffer1, CHANNEL1_COLOR);
-  }
+    //The calculations done above need to go here??
+    
+    
+    //Check if channel1 is enabled
+    if(scopesettings.channel1.enable)
+    {
+      //Go and do the actual trace drawing
+      scope_display_channel_trace(channel1tracebuffer1, CHANNEL1_COLOR);
+    }
 
-  //Check if channel2 is enabled
-  if(scopesettings.channel2.enable)
+    //Check if channel2 is enabled
+    if(scopesettings.channel2.enable)
+    {
+      //Go and do the actual trace drawing
+      scope_display_channel_trace(channel2tracebuffer1, CHANNEL2_COLOR);
+    }
+    
+    //Displaying of FFT needs to be added here.
+    
+  }
+  else
   {
-    //Go and do the actual trace drawing
-    scope_display_channel_trace(channel2tracebuffer1, CHANNEL2_COLOR);
+    //Scope set to x y display mode
+    //Set x-y mode display trace color
+    display_set_fg_color(XYMODE_COLOR);
+    
+    uint32 index;
+    
+    uint16 *sptr1,*sptr2;
+    
+    //Need two samples per buffer
+    uint32 x1,x2;
+    uint32 y1,y2;
+    
+    
+    index = disp_trigger_index - 325;
+    
+    sptr1 = &channel1tracebuffer1[index];
+    sptr2 = &channel2tracebuffer1[index];
+      
+      
+    //In this mode just use the available samples based on the trigger sample
+    //limit to a fixed number of samples or process them all? Best to skip the first few samples since they are crap.
+    //Start a test with just 750 samples as these are always available
+    //Channel 1 is x and channel 2 is y
+    //The offsets do not put it on center screen so needs adjusting
+    
+    x1 = sptr1[0] + 150;
+    y1 = 449 - sptr2[0];
+    
+    
+    for(index=1;index<750;index++)
+    {
+      x2 = sptr1[index] + 150;
+      y2 = 449 - sptr2[index];
+
+      display_draw_line(x1, y1, x2, y2);
+      
+      x1 = x2;
+      y1 = y2;
+    }
   }
-
-
-
-
+  
+  //Draw the cursors with their measurement displays
+  scope_draw_time_cursors();
+  scope_draw_volt_cursors();
+  scope_display_cursor_measurements();
 
   //Draw the signal center, trigger level and trigger position pointers
   scope_draw_pointers();
 
+  //Show the enabled measurements on the screen
+  scope_display_measurements();    //Still needs implementing
+  
   //Copy it to the actual screen buffer
   display_set_source_buffer(displaybuffer1);
   display_set_screen_buffer((uint16 *)maindisplaybuffer);
@@ -4846,295 +4886,27 @@ void scope_display_trace_data(void)
   uint32 dy;
   uint16 *ptr;
  
-  //Reset some flags if display touched for trace and cursor movement and stopped or in auto or normal mode
-  if((touchstate) && ((scopesettings.triggermode != 1) || (scopesettings.runstate)))
-  {
-    //Set some flags
-    scopesettings.triggerflag1 = 1;
-    scopesettings.triggerflag2 = 1;
-  }
+    if(x1 > 401)
+    {
+      x1 = 401;
+    }
+
+    if(y1 > 401)
+    {
+      y1 = 401;
+    }
+
+      if(x2 > 401)
+      {
+        x2 = 401;
+      }
+
+      if(y2 > 401)
+      {
+        y2 = 401;
+      }
+      
   
-  //Depending on the time base setting use different methods
-  //Check if time base on 50mS/div - 10nS/div
-  if(scopesettings.timeperdiv > 8)
-  {
-    //Use a separate display buffer
-    display_set_screen_buffer(displaybuffer1);
-
-    //Check if screen needs to be redrawn
-    if(scopesettings.triggerflag2)
-    {
-      //Clear the trace portion of the screen
-      display_set_fg_color(0x00000000);
-      display_fill_rect(2, 46, 728, 434);
-
-      //Draw the grid lines and dots based on the grid brightness setting
-      scope_draw_grid();
-    }
-    
-    //Check on another flag if this next bit needs to be done
-    if(scopesettings.triggerflag1)
-    {
-      
-      //Check if channel 1 is enabled
-      if(scopesettings.channel1.enable)
-      {
-        //Check if running and not moving traces, cursors or pointers
-        if((scopesettings.runstate == 0) && (touchstate == 0))
-        {
-          //Set some variable here
-          //*(undefined2 *)(puVar8 + 0x12) = 400; 
-        }
-        
-        //Call the zoom processing function
-        //FUN_8000410c();
-        
-        //Check if auto or normal trigger mode and the time base in range of 50nS/div - 10nS/div and (trigger channel is channel 2 or some variable is set)
-        if(((scopesettings.triggermode == 0) || (scopesettings.triggermode == 2)) &&  (scopesettings.timeperdiv > 26) && ((scopesettings.triggerchannel == 1) || channel_1_process_anyway))
-        {
-          //Process channel 1 trigger???
-          //FUN_8000583c();
-        }
-        
-        //Temporarily set to fixed values for testing
-        disp_x_start = 3;
-        disp_sample_count = 720;
-        
-        //Check if in normal display mode
-        if(scopesettings.xymodedisplay == 0)
-        {
-          //Draw the trace on the screen
-          scope_display_channel_trace((uint16 *)channel1tracebuffer4, disp_x_start, disp_sample_count, CHANNEL1_COLOR);
-        }
-      }
-      
-
-      //Do channel 2 here
-
-
-      //Check on channel 1 FFT here
-      
-      
-      //Check on channel 2 FFT here
-
-    }
-    
-    
-    //Check if screen needs to be redrawn
-    if(scopesettings.triggerflag2)
-    {
-      //Draw the cursors with their measurement displays
-      scope_draw_time_cursors();
-      scope_draw_volt_cursors();
-      scope_display_cursor_measurements();    //Still needs implementing
-
-      //Draw the signal center, trigger level and trigger position pointers
-      scope_draw_pointers();
-      
-      //Show the enabled measurements on the screen
-      scope_display_measurements();    //Still needs implementing
-
-      //Copy it to the actual screen buffer
-      display_set_source_buffer(displaybuffer1);
-      display_set_screen_buffer((uint16 *)maindisplaybuffer);
-      display_copy_rect_to_screen(2, 46, 728, 434);
-    }
-  }
-  else
-  {
-    //Long time base data 50S/div - 100mS/div
-    //Check if not running
-    if(scopesettings.runstate != 0)
-    {
-      //Done for now
-      return;
-    }
-    
-    //Based on touchstate in move trace or cursor lines use either the previous x position or reset it
-    if(touchstate)
-    {
-      disp_xpos = 0;
-    }
-    
-    //Check if back on start of screen
-    if(disp_xpos == 0)
-    {
-      //Use a separate buffer to clear the screen
-      display_set_screen_buffer(displaybuffer1);
-
-      //Clear the trace portion of the screen
-      display_set_fg_color(0x00000000);
-      display_fill_rect(2, 46, 728, 434);
-
-      //Draw the grid lines and dots based on the grid brightness setting
-      scope_draw_grid();
-      
-      //Draw the signal center, trigger level and trigger position pointers
-      scope_draw_pointers();
-
-      //Copy it to the actual screen buffer
-      display_set_source_buffer(displaybuffer1);
-      display_set_screen_buffer((uint16 *)maindisplaybuffer);
-      display_copy_rect_to_screen(2, 46, 728, 434);
-    }
-
-    //Draw the traces directly to the screen
-    display_set_screen_buffer((uint16 *)maindisplaybuffer);
-    
-    //Check if channel 1 is enabled
-    if(scopesettings.channel1.enable)
-    {
-      //Destination buffer is declared as uint32 to be able to use it with file functions, so need to cast it to uint16 pointer here
-      ptr = (uint16 *)channel1tracebuffer4;
-
-      //Get the current sample for channel 1 coming up from the bottom of the screen
-      disp_ch1_y = 449 - *ptr;
-      
-      //Check if it is within displayable region
-      if(disp_ch1_y < 47)
-      {
-        //Limit on the top of the screen
-        disp_ch1_y = 47;
-      }
-      else if(disp_ch1_y > 448)
-      {
-        //Limit on the bottom of the screen
-        disp_ch1_y = 448;
-      }
-      
-      //Skip drawing if in x-y mode
-      if(scopesettings.xymodedisplay == 0)
-      {
-        //On start of screen need to start with fresh previous
-        if(disp_xpos == 0)
-        {
-          //Make previous the current
-          disp_ch1_prev_y = disp_ch1_y;
-        }
-
-        //Set x-y mode display trace color
-        display_set_fg_color(CHANNEL1_COLOR);
-
-        //Current x positions for drawing the trace lines
-        xpos1 = disp_xpos + 3;
-        xpos2 = disp_xpos + 4;
-
-        //Check on rise speed of the signal
-        if(disp_ch1_y < disp_ch1_prev_y)
-        {
-          //previous bigger then current so subtract from it to get positive delta
-          dy = disp_ch1_prev_y - disp_ch1_y;
-        }
-        else
-        {
-          //current bigger then previous so subtract from it to get positive delta
-          dy = disp_ch1_y - disp_ch1_prev_y;
-        }
-        
-        //Take action based on the delta
-        if(dy < 15)
-        {
-          //Less then 15 apart slow the trace by stopping on the average of the two points
-          disp_ch1_y = (disp_ch1_y + disp_ch1_prev_y) >> 1;
-        }
-        else if(dy > 20)
-        {
-          //Else if delta bigger then 20 draw on a single x position 
-          xpos2--;
-        }
-
-        //Draw the lines. Needs improvement
-        display_draw_line(xpos1, disp_ch1_prev_y, xpos2, disp_ch1_y);
-        display_draw_line(xpos1, disp_ch1_prev_y + 1, xpos2, disp_ch1_y + 1);
-
-        //Copy the new points to the previous one
-        disp_ch1_prev_y = disp_ch1_y;
-
-        //Destination buffer is declared as uint32 to be able to use it with file functions, so need to cast it to uint16 pointer here
-        ptr = (uint16 *)channel1ypoints;
-        
-        //Save in a point array for picture and waveform save
-        ptr[disp_xpos] = disp_ch1_y;
-      }
-    }
-
-    //Check if channel 2 is enabled
-    if(scopesettings.channel2.enable)
-    {
-      //Source buffer is declared as uint32 to be able to use it with file functions, so need to cast it to uint16 pointer here
-      ptr = (uint16 *)channel2tracebuffer4;
-
-      //Get the current sample for channel 1 coming up from the bottom of the screen
-      disp_ch2_y = 449 - *ptr;
-      
-      //Check if it is within displayable region
-      if(disp_ch2_y < 47)
-      {
-        //Limit on the top of the screen
-        disp_ch2_y = 47;
-      }
-      else if(disp_ch2_y > 448)
-      {
-        //Limit on the bottom of the screen
-        disp_ch2_y = 448;
-      }
-      
-      //Skip drawing if in x-y mode
-      if(scopesettings.xymodedisplay == 0)
-      {
-        //On start of screen need to start with fresh previous
-        if(disp_xpos == 0)
-        {
-          //Make previous the current
-          disp_ch2_prev_y = disp_ch2_y;
-        }
-
-        //Set x-y mode display trace color
-        display_set_fg_color(CHANNEL2_COLOR);
-
-        //Current x positions for drawing the trace lines
-        xpos1 = disp_xpos + 3;
-        xpos2 = disp_xpos + 4;
-
-        //Check on rise speed of the signal
-        if(disp_ch2_y < disp_ch2_prev_y)
-        {
-          //previous bigger then current so subtract from it to get positive delta
-          dy = disp_ch2_prev_y - disp_ch2_y;
-        }
-        else
-        {
-          //current bigger then previous so subtract from it to get positive delta
-          dy = disp_ch2_y - disp_ch2_prev_y;
-        }
-        
-        //Take action based on the delta
-        if(dy < 15)
-        {
-          //Less then 15 apart slow the trace by stopping on the average of the two points
-          disp_ch2_y = (disp_ch2_y + disp_ch2_prev_y) >> 1;
-        }
-        else if(dy > 20)
-        {
-          //Else if delta bigger then 20 draw on a single x position 
-          xpos2--;
-        }
-
-        //Draw the lines
-        display_draw_line(xpos1, disp_ch2_prev_y, xpos2, disp_ch2_y);
-        display_draw_line(xpos1, disp_ch2_prev_y + 1, xpos2, disp_ch2_y + 1);
-
-        //Copy the new points to the previous one
-        disp_ch2_prev_y = disp_ch2_y;
-
-        //Destination buffer is declared as uint32 to be able to use it with file functions, so need to cast it to uint16 pointer here
-        ptr = (uint16 *)channel2ypoints;
-        
-        //Save in a point array for picture and waveform save
-        ptr[disp_xpos] = disp_ch2_y;
-      }
-    }
-
     //Check if in x-y mode
     if(scopesettings.xymodedisplay)
     {
