@@ -143,10 +143,11 @@ void sys_init_display(uint16 xsize, uint16 ysize, uint16 *address)
   //1014D new version 0x041E0043, 0x041A0019
   //1014D old version 0x041E006D, 0x041A0022
   //1013D version 1   0x041E0044, 0x041A0017
-  //1013D version 2   0x041E004A, 0x041A0017
+  //1013D version 2   0x041E004A, 0x041A0017   Most common version??
+  //1013D version 3   0x041E0072, 0x041A001F
   
   //Horizontal total time and horizontal back porch
-  *TCON0_BASIC_TIMING1 = 0x041E0044;
+  *TCON0_BASIC_TIMING1 = 0x041E004A;
   
   //Vertical front porch and vertical back porch
   *TCON0_BASIC_TIMING2 = 0x041A0017;
