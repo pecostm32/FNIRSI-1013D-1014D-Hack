@@ -6,6 +6,7 @@
                    projectFiles="true">
       <itemPath>Scope_Processing.h</itemPath>
       <itemPath>Scope_Signal_Handling_Development.h</itemPath>
+      <itemPath>buttons.h</itemPath>
       <itemPath>../../F1C100s/fnirsi_1013d_scope/diskio.h</itemPath>
       <itemPath>../../F1C100s/fnirsi_1013d_scope/display_lib.h</itemPath>
       <itemPath>../../F1C100s/fnirsi_1013d_scope/ff.h</itemPath>
@@ -13,9 +14,13 @@
       <itemPath>../../F1C100s/fnirsi_1013d_scope/fnirsi_1013d_scope.h</itemPath>
       <itemPath>../../F1C100s/fnirsi_1013d_scope/font_structs.h</itemPath>
       <itemPath>../../F1C100s/fnirsi_1013d_scope/fpga_control.h</itemPath>
+      <itemPath>led.h</itemPath>
       <itemPath>mousehandling.h</itemPath>
       <itemPath>resources.h</itemPath>
+      <itemPath>rotary_dial.h</itemPath>
       <itemPath>../../F1C100s/fnirsi_1013d_scope/scope_functions.h</itemPath>
+      <itemPath>signal_generator.h</itemPath>
+      <itemPath>signal_generator_functions.h</itemPath>
       <itemPath>../../F1C100s/fnirsi_1013d_scope/sin_cos_math.h</itemPath>
       <itemPath>../../F1C100s/fnirsi_1013d_scope/statemachine.h</itemPath>
       <itemPath>stub_functions.h</itemPath>
@@ -33,6 +38,7 @@
                    projectFiles="true">
       <itemPath>Scope_Processing.c</itemPath>
       <itemPath>Scope_Signal_Handling_Development.c</itemPath>
+      <itemPath>buttons.c</itemPath>
       <itemPath>../../F1C100s/fnirsi_1013d_scope/display_lib.c</itemPath>
       <itemPath>../../F1C100s/fnirsi_1013d_scope/ff.c</itemPath>
       <itemPath>../../F1C100s/fnirsi_1013d_scope/ffunicode.c</itemPath>
@@ -42,8 +48,12 @@
       <itemPath>../../F1C100s/fnirsi_1013d_scope/font_4.c</itemPath>
       <itemPath>../../F1C100s/fnirsi_1013d_scope/font_5.c</itemPath>
       <itemPath>../../F1C100s/fnirsi_1013d_scope/icons.c</itemPath>
+      <itemPath>led.c</itemPath>
       <itemPath>mousehandling.c</itemPath>
+      <itemPath>rotary_dial.c</itemPath>
       <itemPath>../../F1C100s/fnirsi_1013d_scope/scope_functions.c</itemPath>
+      <itemPath>signal_generator.c</itemPath>
+      <itemPath>signal_generator_functions.c</itemPath>
       <itemPath>../../F1C100s/fnirsi_1013d_scope/sin_cos_math.c</itemPath>
       <itemPath>../../F1C100s/fnirsi_1013d_scope/statemachine.c</itemPath>
       <itemPath>stub_functions.c</itemPath>
@@ -61,6 +71,7 @@
                    projectFiles="false"
                    kind="IMPORTANT_FILES_FOLDER">
       <itemPath>Makefile</itemPath>
+      <itemPath>backup/analyzer_setup.js.c</itemPath>
       <itemPath>todo.txt</itemPath>
     </logicalFolder>
   </logicalFolder>
@@ -230,11 +241,31 @@
             tool="3"
             flavor2="0">
       </item>
+      <item path="buttons.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="buttons.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="led.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="led.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="mousehandling.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="mousehandling.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="resources.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="rotary_dial.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="rotary_dial.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="signal_generator.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="signal_generator.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="signal_generator_functions.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="signal_generator_functions.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="stub_functions.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -408,11 +439,31 @@
             tool="3"
             flavor2="0">
       </item>
+      <item path="buttons.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="buttons.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="led.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="led.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="mousehandling.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="mousehandling.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="resources.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="rotary_dial.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="rotary_dial.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="signal_generator.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="signal_generator.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="signal_generator_functions.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="signal_generator_functions.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="stub_functions.c" ex="false" tool="0" flavor2="0">
       </item>

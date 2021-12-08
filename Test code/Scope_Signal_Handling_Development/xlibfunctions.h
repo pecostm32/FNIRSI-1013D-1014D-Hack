@@ -15,7 +15,7 @@
 #include <X11/extensions/Xrandr.h>
 
 #define NOF_FONTS_USED        5
-#define NOF_TEXT_COLORS_USED  2
+#define NOF_TEXT_COLORS_USED  5
 
 #define ALIGN_TEXT_LEFT       0
 #define ALIGN_TEXT_RIGHT      1
@@ -72,6 +72,8 @@ int DrawLines(tagXlibContext *xc, XPoint *points, int npoints, int linecolor, in
 int DrawSegments(tagXlibContext *xc, XSegment *segments, int nsegments, int linecolor, int linewidth);
 
 int DrawRect(tagXlibContext *xc, int xpos, int ypos, int width, int height, int linecolor, int linewidth);
+int DrawRoundedRect(tagXlibContext *xc, int xpos, int ypos, int radius, int width, int height, int linecolor, int linewidth);
+
 int DrawFillRect(tagXlibContext *xc, int xpos, int ypos, int width, int height, int fillcolor, int linecolor, int linewidth);
 int DrawFillRoundedRect(tagXlibContext *xc, int xpos, int ypos, int radius, int width, int height, int fillcolor, int linecolor, int linewidth);
 

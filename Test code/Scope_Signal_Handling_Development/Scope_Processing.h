@@ -14,6 +14,8 @@ void stopscopeprocessing(void);
 
 void *scopeprocessingthread(void *arg);
 
+void usb_device_disable(void);
+
 //----------------------------------------------------------------------------------------------------------------------------------
 
 

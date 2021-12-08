@@ -1,8 +1,14 @@
+//----------------------------------------------------------------------------------------------------------------------------------
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+//----------------------------------------------------------------------------------------------------------------------------------
+
 #include "xlibfunctions.h"
+
+//----------------------------------------------------------------------------------------------------------------------------------
 
 int PlaceText(tagXlibContext *xc, int xpos, int ypos, char *text, int fontid, int colorid, int align)
 {
@@ -30,6 +36,8 @@ int PlaceText(tagXlibContext *xc, int xpos, int ypos, char *text, int fontid, in
   return 0;
 }
 
+//----------------------------------------------------------------------------------------------------------------------------------
+
 int DrawLine(tagXlibContext *xc, int xp1, int yp1, int xp2, int yp2, int linecolor, int linewidth)
 {
   //Setup for drawing
@@ -50,6 +58,8 @@ int DrawLine(tagXlibContext *xc, int xp1, int yp1, int xp2, int yp2, int linecol
   return 0;  
 }
 
+//----------------------------------------------------------------------------------------------------------------------------------
+
 int DrawLines(tagXlibContext *xc, XPoint *points, int npoints, int linecolor, int linewidth)
 {
   //Setup for drawing the line based on the given width
@@ -62,6 +72,8 @@ int DrawLines(tagXlibContext *xc, XPoint *points, int npoints, int linecolor, in
   return 0;  
 }
 
+//----------------------------------------------------------------------------------------------------------------------------------
+
 int DrawSegments(tagXlibContext *xc, XSegment *segments, int nsegments, int linecolor, int linewidth)
 {
   //Setup for drawing the line based on the given width
@@ -73,6 +85,8 @@ int DrawSegments(tagXlibContext *xc, XSegment *segments, int nsegments, int line
 
   return 0;
 }
+
+//----------------------------------------------------------------------------------------------------------------------------------
 
 int DrawRect(tagXlibContext *xc, int xpos, int ypos, int width, int height, int linecolor, int linewidth)
 {
@@ -92,6 +106,97 @@ int DrawRect(tagXlibContext *xc, int xpos, int ypos, int width, int height, int 
   return 0;  
 }
 
+//----------------------------------------------------------------------------------------------------------------------------------
+
+int DrawRoundedRect(tagXlibContext *xc, int xpos, int ypos, int radius, int width, int height, int linecolor, int linewidth)
+{
+  //Setup coordinates for drawing the different parts
+  int x = BORDER_SIZE + (xpos * xc->scaler);
+  int y = BORDER_SIZE + (ypos * xc->scaler);
+  int r = radius * xc->scaler;
+  int w = width * xc->scaler;
+  int h = height * xc->scaler;
+  int cd = r * 2;
+  int x1 = x + r;
+  int x2 = x + w;
+  int x3 = x2 - r;
+  int x4 = x2 - cd;
+  int y1 = y + r;
+  int y2 = y + h;
+  int y3 = y2 - r;
+  int y4 = y2 - cd;
+  int w1 = w - cd;
+  int h1 = h - cd;
+  
+  //By using arrays of object structs single function calls can be done  
+  XArc       arcs[4];
+  XSegment   lines[4];
+  
+  //Setup for drawing the 4 arcs
+  arcs[0].x      = x;
+  arcs[0].y      = y;
+  arcs[0].width  = cd;
+  arcs[0].height = cd;
+  arcs[0].angle1 = Angle90;
+  arcs[0].angle2 = Angle90;
+
+  arcs[1].x      = x4;
+  arcs[1].y      = y;
+  arcs[1].width  = cd;
+  arcs[1].height = cd;
+  arcs[1].angle1 = Angle0;
+  arcs[1].angle2 = Angle90;
+  
+  arcs[2].x      = x4;
+  arcs[2].y      = y4;
+  arcs[2].width  = cd;
+  arcs[2].height = cd;
+  arcs[2].angle1 = Angle270;
+  arcs[2].angle2 = Angle90;
+  
+  arcs[3].x      = x;
+  arcs[3].y      = y4;
+  arcs[3].width  = cd;
+  arcs[3].height = cd;
+  arcs[3].angle1 = Angle180;
+  arcs[3].angle2 = Angle90;
+  
+  //Setup for drawing the four outer lines
+  lines[0].x1 = x1;
+  lines[0].x2 = x3;
+  lines[0].y1 = y;
+  lines[0].y2 = y;
+  
+  lines[1].x1 = x2;
+  lines[1].x2 = x2;
+  lines[1].y1 = y1;
+  lines[1].y2 = y3;
+  
+  lines[2].x1 = x1;
+  lines[2].x2 = x3;
+  lines[2].y1 = y2;
+  lines[2].y2 = y2;
+
+  lines[3].x1 = x;
+  lines[3].x2 = x;
+  lines[3].y1 = y1;
+  lines[3].y2 = y3;
+  
+  //Filling the arcs from the center point
+  XSetArcMode(xc->display, xc->gc, ArcPieSlice);
+  
+  //Setup the line based on given line width
+  XSetLineAttributes(xc->display, xc->gc, linewidth, LineSolid, CapButt, JoinMiter);
+  
+  //Draw the lines on top of the fills and use the line color
+  XSetForeground(xc->display, xc->gc, linecolor);
+  XDrawArcs(xc->display, xc->win, xc->gc, arcs, 4);
+  XDrawSegments(xc->display, xc->win, xc->gc, lines, 4);
+  
+  return 0;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
 
 int DrawFillRect(tagXlibContext *xc, int xpos, int ypos, int width, int height, int fillcolor, int linecolor, int linewidth)
 {
@@ -114,6 +219,8 @@ int DrawFillRect(tagXlibContext *xc, int xpos, int ypos, int width, int height, 
   
   return 0;
 }
+
+//----------------------------------------------------------------------------------------------------------------------------------
 
 int DrawFillRoundedRect(tagXlibContext *xc, int xpos, int ypos, int radius, int width, int height, int fillcolor, int linecolor, int linewidth)
 {
@@ -225,6 +332,8 @@ int DrawFillRoundedRect(tagXlibContext *xc, int xpos, int ypos, int radius, int 
   return 0;
 }
 
+//----------------------------------------------------------------------------------------------------------------------------------
+
 int FillRect(tagXlibContext *xc, int xpos, int ypos, int width, int height, int fillcolor)
 {
   //Setup for filling
@@ -240,6 +349,8 @@ int FillRect(tagXlibContext *xc, int xpos, int ypos, int width, int height, int 
   return 0;
 }
 
+//----------------------------------------------------------------------------------------------------------------------------------
+
 int FillPolygon(tagXlibContext *xc, XPoint *points, int npoints, int fillcolor)
 {
   XSetForeground(xc->display, xc->gc, fillcolor);
@@ -247,3 +358,5 @@ int FillPolygon(tagXlibContext *xc, XPoint *points, int npoints, int fillcolor)
   
   return 0;
 }
+
+//----------------------------------------------------------------------------------------------------------------------------------

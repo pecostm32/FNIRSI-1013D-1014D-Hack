@@ -12,6 +12,8 @@
 
 #include "Scope_Signal_Handling_Development.h"
 
+#include "signal_generator.h"
+
 #include "Scope_Processing.h"
 
 #include "resources.h"
@@ -110,7 +112,7 @@ int main(int argc,char **argv)
   height = (DESIGN_HEIGHT * xc.scaler) + BORDER_SIZE_2;
   
   //Calculate a nice position on the screen
-  x = 1350;
+  x = 1500;
   y = 50;
   
   //Set the window to the new position and dimensions
@@ -148,6 +150,9 @@ int main(int argc,char **argv)
   
   //Setup the image based on a capture of the screen
   XImage *scopedisplay = XGetImage(display, win, x, y, width, height, 0, ZPixmap);
+  
+  //Start the signal generator thread
+  startsignalgenerator();
   
   //Start the scope processing
   startscopeprocessing();
@@ -246,11 +251,17 @@ int main(int argc,char **argv)
 
       //Draw the image on the screen
       XPutImage(display, win, gc, scopedisplay, 0, 0, x, y, width, height);
+
+      //Make sure the change is processed on screen
+      XFlush(display);
     }
 	}
   
   //Stop the scope processing
   stopscopeprocessing();
+  
+  //Stop the signal generator thread
+  stopsignalgenerator();
   
   //Cleanup on close  
   XftColorFree(display, xc.visual, xc.cmap, &xc.color[0]);

@@ -50,7 +50,12 @@ OBJECTFILES= \
 	${OBJECTDIR}/_ext/4a4fb115/variables.o \
 	${OBJECTDIR}/Scope_Processing.o \
 	${OBJECTDIR}/Scope_Signal_Handling_Development.o \
+	${OBJECTDIR}/buttons.o \
+	${OBJECTDIR}/led.o \
 	${OBJECTDIR}/mousehandling.o \
+	${OBJECTDIR}/rotary_dial.o \
+	${OBJECTDIR}/signal_generator.o \
+	${OBJECTDIR}/signal_generator_functions.o \
 	${OBJECTDIR}/stub_functions.o \
 	${OBJECTDIR}/touchpanel.o \
 	${OBJECTDIR}/xlibfunctions.o
@@ -155,10 +160,35 @@ ${OBJECTDIR}/Scope_Signal_Handling_Development.o: Scope_Signal_Handling_Developm
 	${RM} "$@.d"
 	$(COMPILE.c) -g -I/usr/include/freetype2 -I../../F1C100s/fnirsi_1013d_scope -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Scope_Signal_Handling_Development.o Scope_Signal_Handling_Development.c
 
+${OBJECTDIR}/buttons.o: buttons.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -I/usr/include/freetype2 -I../../F1C100s/fnirsi_1013d_scope -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/buttons.o buttons.c
+
+${OBJECTDIR}/led.o: led.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -I/usr/include/freetype2 -I../../F1C100s/fnirsi_1013d_scope -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/led.o led.c
+
 ${OBJECTDIR}/mousehandling.o: mousehandling.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -g -I/usr/include/freetype2 -I../../F1C100s/fnirsi_1013d_scope -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/mousehandling.o mousehandling.c
+
+${OBJECTDIR}/rotary_dial.o: rotary_dial.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -I/usr/include/freetype2 -I../../F1C100s/fnirsi_1013d_scope -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/rotary_dial.o rotary_dial.c
+
+${OBJECTDIR}/signal_generator.o: signal_generator.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -I/usr/include/freetype2 -I../../F1C100s/fnirsi_1013d_scope -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/signal_generator.o signal_generator.c
+
+${OBJECTDIR}/signal_generator_functions.o: signal_generator_functions.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -g -I/usr/include/freetype2 -I../../F1C100s/fnirsi_1013d_scope -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/signal_generator_functions.o signal_generator_functions.c
 
 ${OBJECTDIR}/stub_functions.o: stub_functions.c
 	${MKDIR} -p ${OBJECTDIR}

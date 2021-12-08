@@ -1,5 +1,21 @@
 //----------------------------------------------------------------------------------------------------------------------------------
 
+#if 0
+Take the armthread.c file from the emulator and drawing functions of the SIEL opera 6 controller to make
+a new window to setup the signal generator. Need a design with easy setting the different parameters
+and the abbility to control 2 channels. Look at the soft signal generator project on the laptop.
+
+When that is working integrate it with the fpga functions.
+The scope sensitivity needs to be taken into the signal path
+The scope should be able to trigger on the signal so have to think about the need for separate threads
+or use the scope trigger level and channel as starting point for generating two sides of the signal
+before and after trigger. Maybe a slight random ness to emulate a real live signal
+
+
+#endif
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,6 +29,7 @@
 #include "stub_functions.h"
 #include "ff.h"
 #include "diskio.h"
+#include "scope_functions.h"
 #include "variables.h"
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -177,6 +194,12 @@ void battery_check_init(void)
 
 void battery_check_status(void)
 {
+  scopesettings.batterycharging = 1;
+
+  scopesettings.batterychargelevel = 20;
+  
+  //Display the level on the screen
+  scope_battery_status();
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -277,6 +300,14 @@ void fpga_write_cmd(uint8 command)
       break;
 
     case 0x20:  //Channel 1
+      
+      //Need new code here
+      //On a start command, or wait for trigger generate a buffer worth of data. Make sure to split the samples over the two read buffers and have them be slightly different in amplitude
+      //Would be nice to have generator interface with which two channels can be generated
+      //Work in a trigger determination on the selected channel
+      //Also add a random error where the ADC1 buffer is cleared before reading.
+      
+      
       if(fpga_data.channel1_trace_data)
       {
         uint32 seekpoint = fpga_data.channel1_sample_buffer_index * 6080;
