@@ -1406,18 +1406,17 @@ void handle_trigger_menu_touch(void)
             //Set the new mode in the hardware
             fpga_set_trigger_mode();
             
+            //Make sure the scope is running
+            scopesettings.runstate = 0;
+            
+            //Show this on the screen
+            scope_run_stop_text();
             
             //Need to call some function here
 /*
-            pcVar5[0x21] = '\0';    //Trigger mode auto
-            FUN_80026828();         //Set FPGA trigger mode
-
-            pcVar5[0x3a] = '\0';    //Scope run state
-
+//Some trigger flags but not sure if they are needed any longer
             pcVar5[0x18] = '\x01';
             pcVar5[0x17] = '\x01';
-
-            display_run_stop_text((uint)(byte)pcVar5[0x3a]);
 */
 
             //Display this
@@ -1433,6 +1432,11 @@ void handle_trigger_menu_touch(void)
             //Set the new mode in the hardware
             fpga_set_trigger_mode();
             
+            //Make sure the scope is running
+            scopesettings.runstate = 0;
+            
+            //Show this on the screen
+            scope_run_stop_text();
             
             //Need to call some function here
             
@@ -1468,13 +1472,15 @@ void handle_trigger_menu_touch(void)
             //Set the new mode in the hardware
             fpga_set_trigger_mode();
             
+            //Make sure the scope is running
+            scopesettings.runstate = 0;
+            
+            //Show this on the screen
+            scope_run_stop_text();
+            
             //Need to call some function here
 /*
-            FUN_80026828();
-
-            pcVar5[0x3a] = '\0';
-
-            display_run_stop_text((uint)(byte)pcVar5[0x3a]);
+//Normal and single only allowed from 10ms/div to 10ns/div
 
             pcVar5[0x36] = '\0';
             pcVar5[0x37] = '\x01';
