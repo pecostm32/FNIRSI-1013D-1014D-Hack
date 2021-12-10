@@ -59,21 +59,6 @@ void stopscopeprocessing(void)
 
 void *scopeprocessingthread(void *arg)
 {
-  //Initialize the scope
-  
-  //Load a program to arm memory
-//  FILE *fp = fopen("scope_spl.bin", "rb");
-//  FILE *fp = fopen("fnirsi_1013d_bootloader.bin", "rb");
-  
-  
-  
-//  if(fp)
-//  {
-//    fread(parm_core->sram1, 1, 32768, fp);
-    
-//    fclose(fp);
-//  }
-  
   //Initialize the clock system
   sys_clock_init();
   
@@ -238,7 +223,6 @@ void *scopeprocessingthread(void *arg)
   
   //Exit the thread the way it is supposed to
   pthread_exit(NULL);
-
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

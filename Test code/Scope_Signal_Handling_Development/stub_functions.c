@@ -1,16 +1,12 @@
 //----------------------------------------------------------------------------------------------------------------------------------
 
 #if 0
-Take the armthread.c file from the emulator and drawing functions of the SIEL opera 6 controller to make
-a new window to setup the signal generator. Need a design with easy setting the different parameters
-and the abbility to control 2 channels. Look at the soft signal generator project on the laptop.
-
-When that is working integrate it with the fpga functions.
-The scope sensitivity needs to be taken into the signal path
-The scope should be able to trigger on the signal so have to think about the need for separate threads
-or use the scope trigger level and channel as starting point for generating two sides of the signal
-before and after trigger. Maybe a slight random ness to emulate a real live signal
-
+The channel offset system needs more attention because it is not correct and need to figure out what the values need to be
+No idea what the designers of this thing had in mind, but it is utter crap. It would have been far simpler if the FPGA just returned
+the conversion data as is. The position on the display is simple to do in software. For the trigger level simple calculations
+could have been used to determine the actual ADC level.
+  
+Some scaling per input sensitivity setting is normal calibration but needs user interaction and calibrated voltage levels at the input.
 
 #endif
 
@@ -25,6 +21,8 @@ before and after trigger. Maybe a slight random ness to emulate a real live sign
 #include <linux/loop.h>
 
 #include <sys/ioctl.h>
+
+#include "signal_generator.h"
 
 #include "stub_functions.h"
 #include "ff.h"
@@ -105,11 +103,6 @@ struct tagFPGA_DATA
   uint8   param_0x0B_data;
   
   uint8   cmd0x14count[2];
-  
-  FILE   *channel1_trace_data;
-  
-  uint32  channel1_sample_buffer_index;
-  
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -250,12 +243,6 @@ void fpga_init(void)
 
 void fpga_exit(void)
 {
-  //Check if file open
-  if(fpga_data.channel1_trace_data)
-  {
-    //Close it
-    fclose(fpga_data.channel1_trace_data);
-  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -275,18 +262,116 @@ const uint8 scope_ch1_long_data[] =
 
 uint32 ch1_long_idx = 0;
 
+
+#define NUMBER_OF_SAMPLES            10000
+#define HALF_NUMBER_OF_SAMPLES       (NUMBER_OF_SAMPLES / 2)
+
+
+uint8 cmd0F_input;
+
 uint8 cmd40_response = 40;
 
 uint8 no_data_response = 0;
 
-uint16 channel1_signal_data_1[1500];
-uint16 channel1_signal_data_2[1500];
+double channel1_samples[NUMBER_OF_SAMPLES];
+double channel2_samples[NUMBER_OF_SAMPLES];
+
+uint8 channel1_signal_data_1[NUMBER_OF_SAMPLES];
+uint8 channel1_signal_data_2[NUMBER_OF_SAMPLES];
+
+uint8 channel2_signal_data_1[NUMBER_OF_SAMPLES];
+uint8 channel2_signal_data_2[NUMBER_OF_SAMPLES];
+
+double channel1_scaler = 272.108843537414934;
+double channel2_scaler = 272.108843537414934;
+
+double channel1_offset = 128;
+double channel2_offset = 128;
+
+uint32 trigger_channel = 0;
+uint32 trigger_edge    = 0;
+uint32 trigger_mode    = 0;
+
+uint8  trigger_level   = 0;
+
+uint32 sample_index = 1500;
+uint32 sample_count = 1500;
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+uint8 calculatesample(double sample, double scaler, double offset, int adccalib)
+{
+  sample = (sample * scaler) + offset + adccalib;
+  
+  if(sample < 0)
+  {
+    sample = 0;
+  }
+  else if(sample > 255)
+  {
+    sample = 255;
+  }
+  
+  return((uint8)sample);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+uint32 findtriggerpoint(void)
+{
+  uint8 *buffer;  
+  uint32 index;
+  uint32 count;
+  uint32 sample1;
+  uint32 sample2;
+  
+  //Select the trace buffer to process based on the trigger channel
+  if(trigger_channel == 0)
+  {
+    //Channel 1 buffer
+    buffer = channel1_signal_data_1;
+  }
+  else
+  {
+    //Channel 2 buffer
+    buffer = channel2_signal_data_1;
+  }
+  
+  //Set a starting point for checking on trigger. Half way a normal buffer
+  index = 750;
+  count = NUMBER_OF_SAMPLES - 750;
+
+  while(count--)
+  {
+    sample1 = buffer[index];
+    sample2 = buffer[index + 1];
+
+    if(((trigger_edge == 0) && (sample1 < trigger_level) && (sample2 > trigger_level)) ||
+       ((trigger_edge == 1) && (sample1 > trigger_level) && (sample2 < trigger_level)))
+    {
+      //Set the current index as trigger point
+      sample_index = index - (sample_count / 2);
+      
+      //Done with checking and trigger found so signal that
+      return(1);
+    }
+    
+    //Select next sample to check
+    index++;
+  }
+  
+  //No trigger found so signal this
+  return(0);
+}
+
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void fpga_write_cmd(uint8 command)
 {
   int i;
+  double *sptr1;
+  double *sptr2;
   
   //Set the new command as current
   fpga_data.current_command = command;
@@ -294,55 +379,60 @@ void fpga_write_cmd(uint8 command)
   //Decide on which action to take
   switch(fpga_data.current_command)
   {
+    case 0x0A:
+      //Get a bunch of samples for both channels
+      //Needs the sample interval to be set based on the time base setting
+      signalgeneratorgetsamples(0, channel1_samples, NUMBER_OF_SAMPLES, 5);
+      signalgeneratorgetsamples(1, channel2_samples, NUMBER_OF_SAMPLES, 5);
+
+      //Point to the first samples
+      sptr1 = channel1_samples;
+      sptr2 = channel2_samples;
+
+      //Separate and convert all the samples into the two adc buffers per channel
+      for(i=0;i<HALF_NUMBER_OF_SAMPLES;i++)
+      {
+        //Adjust the samples based on a scaler and an offset. Also put in a calibration error between the two converters.
+        channel1_signal_data_2[i] = calculatesample(*sptr1++, channel1_scaler, channel1_offset, 3);
+        channel1_signal_data_1[i] = calculatesample(*sptr1++, channel1_scaler, channel1_offset, 0);
+
+        channel2_signal_data_2[i] = calculatesample(*sptr2++, channel2_scaler, channel2_offset, -7);
+        channel2_signal_data_1[i] = calculatesample(*sptr2++, channel2_scaler, channel2_offset, 0);
+      }
+      
+
+      //Add a random error where the ADC1 buffer is cleared before reading.
+      break;
+     
+    //Start sampling command when data is 1
+    case 0x0F:
+      fpga_data.write_ptr = &cmd0F_input;
+      fpga_data.write_count = 1;
+      break;
+      
     case 0x14:
       fpga_data.read_count = 2;
       fpga_data.read_ptr = fpga_data.cmd0x14count;
       break;
 
     case 0x20:  //Channel 1
-      
-      //Need new code here
-      //On a start command, or wait for trigger generate a buffer worth of data. Make sure to split the samples over the two read buffers and have them be slightly different in amplitude
-      //Would be nice to have generator interface with which two channels can be generated
-      //Work in a trigger determination on the selected channel
-      //Also add a random error where the ADC1 buffer is cleared before reading.
-      
-      
-      if(fpga_data.channel1_trace_data)
-      {
-        uint32 seekpoint = fpga_data.channel1_sample_buffer_index * 6080;
-        
-        fseek(fpga_data.channel1_trace_data, seekpoint, SEEK_SET);
-        
-        fread(channel1_signal_data_1, 2, 1500, fpga_data.channel1_trace_data);
-      }
-      
-      fpga_data.read_count = 3000;
-      fpga_data.read_ptr = (uint8 *)channel1_signal_data_1;
+      fpga_data.read_count = sample_count;
+      fpga_data.read_ptr = &channel1_signal_data_1[sample_index];
       break;
 
     case 0x21:
-      if(fpga_data.channel1_trace_data)
-      {
-        uint32 seekpoint = (fpga_data.channel1_sample_buffer_index * 6080) + 3040;
-        
-        fseek(fpga_data.channel1_trace_data, seekpoint, SEEK_SET);
-        
-        fread(channel1_signal_data_2, 2, 1500, fpga_data.channel1_trace_data);
-      }
-      
-      fpga_data.read_count = 3000;
-      fpga_data.read_ptr = (uint8 *)channel1_signal_data_2;
+      fpga_data.read_count = sample_count;
+      fpga_data.read_ptr = &channel1_signal_data_2[sample_index];
       break;
 
     case 0x22:
-        fpga_data.read_count = 1;
-        fpga_data.read_ptr = &no_data_response;
+      fpga_data.read_count = sample_count;
+      fpga_data.read_ptr = &channel2_signal_data_1[sample_index];
       break;
 
     case 0x23:
-        fpga_data.read_count = 1;
-        fpga_data.read_ptr = &no_data_response;
+      fpga_data.read_count = sample_count;
+      fpga_data.read_ptr = &channel2_signal_data_2[sample_index];
       break;
 
     case 0x24:
@@ -489,29 +579,7 @@ void fpga_write_cmd(uint8 command)
         }
       }
       break;
-
-    case 0x67:
-      //Since the process is synchronous just respond with ready status
-      fpga_data.read_ptr = &param_status_byte;
-      fpga_data.read_count = 1;
-      break;
-
   
-    case 0x0A:  //For this one the software tests against one and continues if so, else it waits for touch
-      //Select next trace buffer
-      fpga_data.channel1_sample_buffer_index++;
-      
-      //Only 50 buffers
-      if(fpga_data.channel1_sample_buffer_index >= 50)
-      {
-        fpga_data.channel1_sample_buffer_index = 0;
-      }
-      
-      //Since the process is synchronous just respond with ready status
-      fpga_data.read_ptr = &param_status_byte;
-      fpga_data.read_count = 1;
-      break;
-
     case 0x68:
     case 0x69:
     case 0x6A:
@@ -550,6 +618,26 @@ void fpga_write_byte(uint8 data)
 
     fpga_data.write_ptr++;
     fpga_data.write_count--;
+    
+    //Handle the input data when all bytes are in
+    if(fpga_data.write_count == 0)
+    {
+      switch(fpga_data.current_command)
+      {
+        case 0x0F:
+          if(cmd0F_input == 1)
+          {
+            //Freeze the signal generator to allow for proper sampling
+            signalgeneratorfreeze();
+          }
+          else
+          {
+            //Unfreeze the signal generator
+            signalgeneratorunfreeze();
+          }
+          break;
+      }
+    }
   }
 }
 
@@ -559,12 +647,53 @@ uint8 fpga_read_byte(void)
 {
   uint8 retval = 0xFF;
 
-  if(fpga_data.read_count)
+  switch(fpga_data.current_command)
   {
-    retval = *fpga_data.read_ptr;
+    default:
+      if(fpga_data.read_count)
+      {
+        retval = *fpga_data.read_ptr;
 
-    fpga_data.read_ptr++;
-    fpga_data.read_count--;
+        fpga_data.read_ptr++;
+        fpga_data.read_count--;
+      }
+      break;
+      
+    case 0x05:
+      retval = 1;
+      break;
+      
+    case 0x0A:
+      //Check on what mode the trigger system is set to
+      if(trigger_mode == 0)
+      {
+        //Auto mode needs to find a trigger point, but when not found just use center buffer and signal done
+        if(findtriggerpoint() == 0)
+        {
+          sample_index = 1500;
+        }
+        
+        retval = 1;
+      }
+      else
+      {
+        //For normal and single triggering the system needs to find a valid trigger. If not signal not done and load more samples on next call
+        retval = findtriggerpoint();
+        
+      }
+      
+      
+      //Look for trigger point in the first adc sample buffers depending on the trigger channel
+      
+      //When trigger point is found use the sample index as center point for both channels
+      //otherwise use the center point
+      
+      
+      break;
+      
+    case 0x67:
+      retval = 1;
+      break;
   }
 
   return(retval);
@@ -641,6 +770,34 @@ void fpga_set_channel_1_coupling(void)
 
 void fpga_set_channel_1_voltperdiv(void)
 {
+  //Check if setting in range of what is allowed
+  switch(scopesettings.channel1.voltperdiv)
+  {
+    case 0:
+      channel1_scaler = 5.746347581618066;
+      break;
+
+    case 1:
+      channel1_scaler = 11.52832674571805;
+      break;
+
+    case 2:
+      channel1_scaler = 27.870680044593088;
+      break;
+
+    case 3:
+      channel1_scaler = 55.741360089186154;
+      break;
+
+    case 4:
+      channel1_scaler = 137.151634847487382;
+      break;
+
+    default:
+    case 5:
+      channel1_scaler = 272.108843537414934;
+      break;
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -654,11 +811,8 @@ void fpga_set_channel_1_offset(void)
   offset = ((uint64)((uint64)0x51EB851F * (uint64)(scopesettings.channel1.traceoffset * channel1_calibration_factor)) >> 37);
   offset = (signal_adjusters[0] * offset) / signal_adjusters[scopesettings.channel1.voltperdiv];
   
-  //Send the command for channel 1 offset to the FPGA
-  fpga_write_cmd(0x32);
-
-  //Write the calibrated offset data  
-  fpga_write_short(channel1_calibration_data[scopesettings.channel1.voltperdiv] - offset);
+  //Write the calibrated offset data
+  channel1_offset = (1350 - (channel1_calibration_data[scopesettings.channel1.voltperdiv] - offset)) * 0.2795031;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -677,50 +831,105 @@ void fpga_set_channel_2_coupling(void)
 
 void fpga_set_channel_2_voltperdiv(void)
 {
+  //Check if setting in range of what is allowed
+  switch(scopesettings.channel2.voltperdiv)
+  {
+    case 0:
+      channel2_scaler = 5.746347581618066;
+      break;
+
+    case 1:
+      channel2_scaler = 11.52832674571805;
+      break;
+
+    case 2:
+      channel2_scaler = 27.870680044593088;
+      break;
+
+    case 3:
+      channel2_scaler = 55.741360089186154;
+      break;
+
+    case 4:
+      channel2_scaler = 137.151634847487382;
+      break;
+
+    default:
+    case 5:
+      channel2_scaler = 272.108843537414934;
+      break;
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void fpga_set_channel_2_offset(void)
 {
+  uint32 offset;
+
+  //Do some fractional calculation with sign correction?????
+  //For now a copy of what Ghidra made of it
+  offset = ((uint64)((uint64)0x51EB851F * (uint64)(scopesettings.channel2.traceoffset * channel2_calibration_factor)) >> 37);
+  offset = (signal_adjusters[0] * offset) / signal_adjusters[scopesettings.channel2.voltperdiv];
+  
+  //Write the calibrated offset data
+  channel2_offset = (1350 - (channel2_calibration_data[scopesettings.channel2.voltperdiv] - offset)) * 0.2795031;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void fpga_set_trigger_timebase(uint32 timeperdiv)
 {
-  //Open a signal file based on the new time base setting
-  char file_name[256];
+  //Need to fill in the time base
   
-  //Check if file already open
-  if(fpga_data.channel1_trace_data)
-  {
-    //Close it before opening the new one
-    fclose(fpga_data.channel1_trace_data);
-  }
   
-  snprintf(file_name, 256, "signals/fnirsi_samples_%d.bin", timeperdiv + 7);
-
-  //Open the new file
-  fpga_data.channel1_trace_data = fopen(file_name, "rb");
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void fpga_set_trigger_channel(void)
 {
+  trigger_channel = scopesettings.triggerchannel;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void fpga_set_trigger_edge(void)
 {
+  trigger_edge = scopesettings.triggeredge;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void fpga_swap_trigger_channel(void)
 {
+  //Check if channel 1 is disabled or channel 2 is enabled
+  if((scopesettings.channel1.enable == 0) || (scopesettings.channel2.enable))
+  {
+    //Check if both channels are disabled
+    if(scopesettings.channel2.enable == 0)
+    {
+      //If so do nothing
+      return;
+    }
+    
+    //Else check if channel 1 is enabled
+    if(scopesettings.channel1.enable)
+    {
+      //Assume the correct setting is already in the FPGA and do nothing
+      return;
+    }
+    
+    //Only channel 2 enabled so set it as source
+    scopesettings.triggerchannel = 1;
+  }
+  else
+  {
+    //Only channel 1 enabled so set that as source
+    scopesettings.triggerchannel = 0;
+  }
+  
+  trigger_channel = scopesettings.triggerchannel;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -779,17 +988,15 @@ void fpga_set_trigger_level(void)
   //Store the result in the global settings
   scopesettings.triggerlevel = (41954 * level * adjuster) >> 22;
   
-  //Send the command for setting the trigger level to the FPGA
-  fpga_write_cmd(0x17);
-  
-  //Write the actual level to the FPGA
-  fpga_write_byte(level);
+  //Save it for usage by FPGA emulator code
+  trigger_level = level;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void fpga_set_trigger_mode(void)
 {
+  trigger_mode = scopesettings.triggermode;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -827,7 +1034,7 @@ void fpga_read_adc1_data(uint8 command, uint16 *buffer, int32 count, uint32 sign
   while(count)
   {
     //Read the data
-    sample = fpga_read_byte() | (fpga_read_byte() << 8);
+    sample = (uint16)fpga_read_byte(); // | (fpga_read_byte() << 8);
     
     //Adjust the data for the correct voltage per div setting
     sample = (41954 * sample * signaladjust) >> 22;
@@ -879,7 +1086,7 @@ void fpga_read_adc2_data(uint8 command, uint16 *buffer, int32 count, uint32 sign
   while(count)
   {
     //Read the data
-    sample = fpga_read_byte() | (fpga_read_byte() << 8);
+    sample = (uint16)fpga_read_byte(); // | (fpga_read_byte() << 8);
     
     //Check on what to do with the calibration compensation
     if(calibration->flag == 0)

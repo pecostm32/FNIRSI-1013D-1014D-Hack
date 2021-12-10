@@ -127,10 +127,17 @@ typedef struct tagSignalGeneratorChannelSettings         SIGNALGENERATORCHANNELS
 
 struct tagSignalGeneratorChannelSettings
 {
-  int    waveform;
-  int    channelenable;
-  int    pulsewidthenable;
-  int    frequencymagnitude;
+  int waveform;
+  int channelenable;
+  int pulsewidthenable;
+  int frequencymagnitude;
+  
+  int amplitudechanged;
+  int dcoffsetchanged;
+  int frequencychanged;
+  int pulsewidthchanged;
+  int pulsewidthenablechanged;
+  int phasechanged;
   
   double amplitude;
   double maxamplitude;
@@ -138,6 +145,14 @@ struct tagSignalGeneratorChannelSettings
   double frequency;
   double pulsewidth;
   double phase;
+  double previousphase;
+  
+  double signalphase;
+  double signalstep1;
+  double signalstep2;
+  
+  double maxsignal;
+  double minsignal;
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -146,6 +161,13 @@ int startsignalgenerator(void);
 void stopsignalgenerator(void);
 
 void *signalgeneratorthread(void *arg);
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void signalgeneratorfreeze(void);
+void signalgeneratorunfreeze(void);
+
+void signalgeneratorgetsamples(int channel, double *buffer, int count, int interval);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

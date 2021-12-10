@@ -123,6 +123,34 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+#define Q1PI                                     1.5707963267948966192
+#define Q2PI                                     3.1415926535897932384
+#define Q3PI                                     4.7123889803846898576
+#define Q4PI                                     6.2831853071795864769
+
+#define PI                                       3.1415926535897932384
+#define PI2                                      6.2831853071795864769
+#define PI4                                     12.5663706143591729538
+
+#define PIx100                                 314.15926535897932384
+
+
+#define SIGNAL_GENERATOR_SAMPLE_RATE    1000000000
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+double triangle(double phase);
+double rampup(double phase);
+double rampdown(double phase);
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void checksettingsupdate(int channel);
+
+void signalstep(int channel);
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 const tagPlaceText texts[] =
 {
   //Text,                 xpos,       ypos, fontid,          colorid,             align
@@ -241,6 +269,9 @@ char textbuffer[128];
 
 int currentchannel = 0;
 int currentmagnitude = 0;
+
+int signalgeneratorfrozen = 0;
+int signalgeneratorready = 0;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -368,27 +399,43 @@ void *signalgeneratorthread(void *arg)
   
   signalgeneratorxc.draw = XftDrawCreate(display, win, signalgeneratorxc.visual, signalgeneratorxc.cmap);
   
-  channelsettings[0].waveform = 1;
+  channelsettings[0].waveform = 0;
   channelsettings[0].channelenable = 1;
-  channelsettings[0].pulsewidthenable = 1;
+  channelsettings[0].pulsewidthenable = 0;
   channelsettings[0].frequencymagnitude = 0;
-  channelsettings[0].amplitude = 10.0;  
+  channelsettings[0].amplitude = 0.1;
   channelsettings[0].dcoffset = 0;  
-  channelsettings[0].frequency = 10;
+  channelsettings[0].frequency = 5000000.0;
   channelsettings[0].maxamplitude = 25;
   channelsettings[0].phase = 0;
+  channelsettings[0].previousphase = 0;
   channelsettings[0].pulsewidth = 20;
 
-  channelsettings[1].waveform = 4;
+  channelsettings[0].amplitudechanged        = 1;
+  channelsettings[0].dcoffsetchanged         = 1;
+  channelsettings[0].frequencychanged        = 1;
+  channelsettings[0].pulsewidthchanged       = 1;
+  channelsettings[0].pulsewidthenablechanged = 1;
+  channelsettings[0].phasechanged            = 1;
+  
+  channelsettings[1].waveform = 0;
   channelsettings[1].channelenable = 1;
-  channelsettings[1].pulsewidthenable = 1;
+  channelsettings[1].pulsewidthenable = 0;
   channelsettings[1].frequencymagnitude = 2;
-  channelsettings[1].amplitude = 10;  
+  channelsettings[1].amplitude = 0.1;  
   channelsettings[1].dcoffset = 0;  
-  channelsettings[1].frequency = 100000000;
+  channelsettings[1].frequency = 10000000;
   channelsettings[1].maxamplitude = 25;
   channelsettings[1].phase = 0;
+  channelsettings[1].previousphase = 0;
   channelsettings[1].pulsewidth = 78.27;
+
+  channelsettings[1].amplitudechanged        = 1;
+  channelsettings[1].dcoffsetchanged         = 1;
+  channelsettings[1].frequencychanged        = 1;
+  channelsettings[1].pulsewidthchanged       = 1;
+  channelsettings[1].pulsewidthenablechanged = 1;
+  channelsettings[1].phasechanged            = 1;
   
   //Get the current time for duration calculation
   gettimeofday(&starttime, 0);
@@ -456,7 +503,22 @@ void *signalgeneratorthread(void *arg)
       
       //Go and handle cursor blinking
       blinkcursor();
-    }    
+    }
+    
+    //Update the parameters based on the settings when changed
+    checksettingsupdate(0);
+    checksettingsupdate(1);
+    
+    //Signal generator is ready for business
+    signalgeneratorready = 1;
+    
+    //Check if the signal generation is not frozen
+    if(signalgeneratorfrozen == 0)
+    {
+      //Keep the signal phase running
+      signalstep(0);
+      signalstep(1);
+    }
   }
 
   //Cleanup on close  
@@ -865,10 +927,6 @@ void SignalGeneratorShowSignal(tagXlibContext *xc, int channel)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-#define PI                         3.1415926535897932384
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
 void SignalGeneratorDrawSignal(tagXlibContext *xc, int xpos, int channel)
 {
   int    x,i,j;
@@ -913,7 +971,7 @@ void SignalGeneratorDrawSignal(tagXlibContext *xc, int xpos, int channel)
   x = xpos;
 
   //Calculate the first pixel
-  y1 = d + (calcsample(channelsettings[channel].waveform, pw, PI + PI) * channelsettings[channel].amplitude);
+  y1 = d + (calcsample(channelsettings[channel].waveform, pw, PI2) * channelsettings[channel].amplitude);
 
   //Limit to extremes
   if(y1 > amx)
@@ -971,13 +1029,6 @@ void SignalGeneratorDrawSignal(tagXlibContext *xc, int xpos, int channel)
   //Draw a line to center level to finish it of
   DrawLine(xc, x, y1, x + 1, y3, ScreenSignalColor, 1);
 }
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-#define Q1PI   (PI / 2)
-#define Q2PI   (PI)
-#define Q3PI   (PI * 1.5)
-#define Q4PI   (PI * 2)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -1110,6 +1161,266 @@ void formatwavetime(double time)
   }
 
   snprintf(textbuffer, sizeof(textbuffer), "%.2f%s", time, magnitude);
+}
+
+//--------------------------------------------------------------------------------------------------
+
+double triangle(double phase)
+{
+  double sample = 0;
+  
+  if(phase < Q1PI)
+    sample = phase / Q1PI;
+  else if(phase < Q2PI)
+    sample = 1 - ((phase - Q1PI) / Q1PI);
+  else if(phase < Q3PI)
+    sample = -1 * ((phase - Q2PI) / Q1PI);
+  else
+    sample = -1 * (1 - ((phase - Q3PI) / Q1PI));
+  
+  return(sample);
+}
+
+//--------------------------------------------------------------------------------------------------
+
+double rampup(double phase)
+{
+  double sample = 0;
+  
+  if(phase < Q2PI)
+    sample = phase / Q2PI;
+  else if(phase == Q2PI)
+    sample = 0;
+  else if(phase < Q4PI)
+    sample = -1 * (1 - ((phase - Q2PI) / Q2PI));
+  else if(phase == Q4PI)
+    sample = 0;
+  
+  return(sample);
+}
+
+//--------------------------------------------------------------------------------------------------
+
+double rampdown(double phase)
+{
+  double sample = 0;
+  
+  if(phase < Q2PI)
+    sample = 1 - (phase / Q2PI);
+  else if(phase == Q2PI)
+    sample = 0;
+  else if(phase < Q4PI)
+    sample = -1 * ((phase - Q2PI) / Q2PI);
+  else if(phase == Q4PI)
+    sample = 0;
+  
+  return(sample);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void signalgeneratorfreeze(void)
+{
+  signalgeneratorfrozen = 1;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void signalgeneratorunfreeze(void)
+{
+  signalgeneratorfrozen = 0;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void signalgeneratorgetsamples(int channel, double *buffer, int count, int interval)
+{
+  int i,j;
+  double sample;
+  
+  if((signalgeneratorready == 0) || (channelsettings[channel].channelenable == 0))
+  {
+    for(i=0;i<count;i++)
+    {
+      //Return a zero buffer is not ready or channel switched off
+      *buffer++ = 0.0;
+    }
+  }
+  else
+  {
+    //Make the samples    
+    for(i=0;i<count;i++)
+    {
+      //Take action based on the selected waveform
+      switch(channelsettings[channel].waveform)
+      {
+        //Sine wave
+        default:
+        case 0:
+          sample = channelsettings[channel].amplitude * sin(channelsettings[channel].signalphase);
+          break;
+
+        //Square wave
+        case 1:
+          if(channelsettings[channel].signalphase < PI)    
+            sample = channelsettings[channel].amplitude;
+          else
+            sample = -1 * channelsettings[channel].amplitude;
+          break;
+
+        //Triangle wave
+        case 2:
+          sample = channelsettings[channel].amplitude * triangle(channelsettings[channel].signalphase);
+          break;
+
+        //Ramp up wave
+        case 3:
+          sample = channelsettings[channel].amplitude * rampup(channelsettings[channel].signalphase);
+          break;
+
+        //Ramp down wave
+        case 4:
+          sample = channelsettings[channel].amplitude * rampdown(channelsettings[channel].signalphase);
+          break;
+      }
+
+      //Add the DC offset
+      sample += channelsettings[channel].dcoffset;
+
+      //Step through the signal based on the scope sample interval
+      //Can be done in a more clever way, but the pulse width option makes it difficult math.
+      //As is there will be pulse width and phase errors and might cause jitter
+      for(j=0;j<interval;j++)
+      {
+        //Check which part of the signal is current
+        if(channelsettings[channel].signalphase < PI)
+        {
+          //For the positive part of the signal use the first step value
+          channelsettings[channel].signalphase += channelsettings[channel].signalstep1;
+        }
+        else
+        {
+          //For the negative part of the signal use the second step value
+          channelsettings[channel].signalphase += channelsettings[channel].signalstep2;
+        }
+      }
+
+      //Check if phase beyond max phase
+      if(channelsettings[channel].signalphase > PI2)
+      {
+        //Bring it back in phase if so
+        channelsettings[channel].signalphase -= PI2;
+      }
+
+      //Check if sample within the signal limits
+      if(sample < channelsettings[channel].minsignal)
+      {
+        //Below then limit on minimum value
+        sample = channelsettings[channel].minsignal;
+      }
+      else if(sample > channelsettings[channel].maxsignal)
+      {
+        //Above then limit on maximum value
+        sample = channelsettings[channel].maxsignal;
+      }
+
+      //Store the sample in the buffer
+      *buffer++ = sample;
+    }  
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void checksettingsupdate(int channel)
+{
+  double phasediff;
+  
+  //Check if any signal frequency related setting has changed
+  if(channelsettings[channel].frequencychanged || channelsettings[channel].pulsewidthchanged || channelsettings[channel].pulsewidthenablechanged)
+  {
+    //Signal all changes handled
+    channelsettings[channel].frequencychanged        = 0;
+    channelsettings[channel].pulsewidthchanged       = 0;
+    channelsettings[channel].pulsewidthenablechanged = 0;
+
+    //Check if pulse width is enabled
+    if(channelsettings[channel].pulsewidthenable)
+    {
+      //Check if it is 0% 
+      if(channelsettings[channel].pulsewidth == 0)
+      {
+        //If so for the first part take a full step and for the second part normal signal increments
+        channelsettings[channel].signalstep1 = PI;
+        channelsettings[channel].signalstep2 = PI / (SIGNAL_GENERATOR_SAMPLE_RATE / channelsettings[channel].frequency);
+      }
+      //If not check if 100%
+      else if(channelsettings[channel].pulsewidth == 100)
+      {
+        //If so for the first part normal signal increments and for the second part take a full step
+        channelsettings[channel].signalstep1 = PI / (SIGNAL_GENERATOR_SAMPLE_RATE / channelsettings[channel].frequency);
+        channelsettings[channel].signalstep2 = PI;
+      }
+      else
+      {
+        //In between setting so calculate both steps based on their respective widths
+        channelsettings[channel].signalstep1 = (PIx100 / channelsettings[channel].pulsewidth) / (SIGNAL_GENERATOR_SAMPLE_RATE / channelsettings[channel].frequency);
+        channelsettings[channel].signalstep2 = (PIx100 / (100 - channelsettings[channel].pulsewidth)) / (SIGNAL_GENERATOR_SAMPLE_RATE / channelsettings[channel].frequency);
+      }
+    }
+    else
+    {
+      //No pulse width enabled so calculate equal steps for both parts of the signal
+      channelsettings[channel].signalstep1 = PI2 / (SIGNAL_GENERATOR_SAMPLE_RATE / channelsettings[channel].frequency);
+      channelsettings[channel].signalstep2 = channelsettings[channel].signalstep1;
+    }
+  }
+
+  //Check if the phase has been changed
+  if(channelsettings[channel].phasechanged)
+  {
+    //Signal change has been handled
+    channelsettings[channel].phasechanged = 0;
+
+    //Calculate the difference between the two phase for adjusting the signal
+    phasediff = channelsettings[channel].phase - channelsettings[channel].previousphase;
+    
+    //Save the new phase for next change
+    channelsettings[channel].previousphase = channelsettings[channel].phase;
+    
+    //SHift the signal with the phase difference
+    channelsettings[channel].signalphase += phasediff;
+  }
+
+  //Not really needed for now, but when max amplitude can be changed it is
+  if(channelsettings[channel].amplitudechanged || channelsettings[channel].dcoffsetchanged)
+  {
+    channelsettings[channel].amplitudechanged = 0;
+    channelsettings[channel].dcoffsetchanged  = 0;
+    
+    channelsettings[channel].maxsignal = channelsettings[channel].maxamplitude;
+    channelsettings[channel].minsignal = -1 * channelsettings[channel].maxamplitude;
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void signalstep(int channel)
+{
+  //Keep the signal phase running
+  if(channelsettings[channel].signalphase < PI)
+  {
+    channelsettings[channel].signalphase += channelsettings[channel].signalstep1;
+  }
+  else
+  {
+    channelsettings[channel].signalphase += channelsettings[channel].signalstep2;
+  }
+
+  if(channelsettings[channel].signalphase > PI2)
+  {
+    channelsettings[channel].signalphase -= PI2;
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

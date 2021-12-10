@@ -164,6 +164,9 @@ void frequencyeditenter(void)
   //Update the setting
   channelsettings[currentchannel].frequency = edititemdouble / edititemdecimaldivider;
   
+  //Signal setting has been changed
+  channelsettings[currentchannel].frequencychanged = 1;
+  
   //Refresh the display. This function clears all the edit items and calls the display update function
   finishedit();
 }
@@ -184,6 +187,9 @@ void phaseeditenter(void)
 {
   //Update the setting
   channelsettings[currentchannel].phase = edititemdouble / edititemdecimaldivider;
+  
+  //Signal setting has been changed
+  channelsettings[currentchannel].phasechanged = 1;
   
   //Refresh the display. This function clears all the edit items and calls the display update function
   finishedit();
@@ -206,6 +212,9 @@ void amplitudeeditenter(void)
   //Update the setting
   channelsettings[currentchannel].amplitude = edititemdouble / edititemdecimaldivider;
   
+  //Signal setting has been changed
+  channelsettings[currentchannel].amplitudechanged = 1;
+  
   //Refresh the display. This function clears all the edit items and calls the display update function
   finishedit();
 }
@@ -227,6 +236,9 @@ void dcoffseteditenter(void)
   //Update the setting
   channelsettings[currentchannel].dcoffset = edititemdouble / edititemdecimaldivider;
   
+  //Signal setting has been changed
+  channelsettings[currentchannel].dcoffsetchanged = 1;
+  
   //Refresh the display. This function clears all the edit items and calls the display update function
   finishedit();
 }
@@ -247,6 +259,9 @@ void pulsewidtheditenter(void)
 {
   //Update the setting
   channelsettings[currentchannel].pulsewidth = edititemdouble / edititemdecimaldivider;
+  
+  //Signal setting has been changed
+  channelsettings[currentchannel].pulsewidthchanged = 1;
   
   //Refresh the display. This function clears all the edit items and calls the display update function
   finishedit();
@@ -548,6 +563,9 @@ void togglepulsewidthenable(int channel, int led)
 {
   //Toggle the channel pulse width enable setting
   channelsettings[channel].pulsewidthenable ^= 1;
+  
+  //Signal setting has been changed
+  channelsettings[channel].pulsewidthenablechanged = 1;
   
   //Update the led state
   LedSetState(&leds[led], channelsettings[channel].pulsewidthenable);
