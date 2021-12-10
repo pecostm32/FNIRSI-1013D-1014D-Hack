@@ -1400,8 +1400,12 @@ void handle_trigger_menu_touch(void)
           //Check on auto
           if((xtouch >= 629) && (xtouch <= 649))
           {
-            //Enable the channel
+            //Set to auto mode
             scopesettings.triggermode = 0;
+            
+            //Set the new mode in the hardware
+            fpga_set_trigger_mode();
+            
             
             //Need to call some function here
 /*
@@ -1423,9 +1427,13 @@ void handle_trigger_menu_touch(void)
           //Check on single
           else if((xtouch >= 661) && (xtouch <= 681))
           {
-            //Disable the channel
+            //Set to single mode
             scopesettings.triggermode = 1;
 
+            //Set the new mode in the hardware
+            fpga_set_trigger_mode();
+            
+            
             //Need to call some function here
             
             //Limit time base setting to 10ms/div and down
@@ -1454,9 +1462,12 @@ void handle_trigger_menu_touch(void)
           //Check on normal
           else if((xtouch >= 692) && (xtouch <= 713))
           {
-            //Disable the channel
+            //Set to normal mode
             scopesettings.triggermode = 2;
 
+            //Set the new mode in the hardware
+            fpga_set_trigger_mode();
+            
             //Need to call some function here
 /*
             FUN_80026828();

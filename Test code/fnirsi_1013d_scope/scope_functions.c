@@ -1898,6 +1898,7 @@ void scope_battery_status(void)
   //Draw the battery charging indicator when plugged in
   if(scopesettings.batterycharging)
   {
+#if 0    
     //Some light blue color
     display_set_fg_color(0x002222FF);
 
@@ -1909,6 +1910,25 @@ void scope_battery_status(void)
     display_draw_vert_line(720, 9, 13);
     display_draw_vert_line(721, 10, 12);
     display_draw_vert_line(722, 11, 11);
+#else
+    //Some orange color
+    display_set_fg_color(0x00FF6A00);
+
+    //Draw a lightning bolt when charging
+    display_draw_horz_line( 7, 715, 716);
+    display_draw_horz_line( 8, 713, 716);
+    display_draw_horz_line( 9, 711, 715);
+    display_draw_horz_line(10, 709, 715);
+    display_draw_horz_line(11, 707, 711);
+    display_draw_horz_line(12, 705, 709);
+    display_draw_horz_line(11, 713, 715);
+    display_draw_horz_line(10, 719, 723);
+    display_draw_horz_line(11, 717, 721);
+    display_draw_horz_line(12, 713, 719);
+    display_draw_horz_line(13, 713, 717);
+    display_draw_horz_line(14, 712, 715);
+    display_draw_horz_line(15, 712, 713);
+#endif
   }
   
   //Copy it to the actual screen
@@ -4336,6 +4356,7 @@ void scope_acquire_trace_data(void)
     fpga_write_byte(0x01);
 
     //Send check on ready command
+    //Could this be check on triggered and then the 0x0A command on buffer complete?
     fpga_write_cmd(0x05);
 
     //Wait for the flag to become 1
