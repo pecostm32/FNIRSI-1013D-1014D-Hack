@@ -266,6 +266,10 @@ uint32 ch1_long_idx = 0;
 #define NUMBER_OF_SAMPLES            10000
 #define HALF_NUMBER_OF_SAMPLES       (NUMBER_OF_SAMPLES / 2)
 
+#define TRIGGER_FOUND_NEW_BUFFER     0
+#define TRIGGER_FOUND_NOT_YET        1
+#define TRIGGER_FOUND_YES            2
+
 
 uint8 cmd0F_input;
 
@@ -276,11 +280,11 @@ uint8 no_data_response = 0;
 double channel1_samples[NUMBER_OF_SAMPLES];
 double channel2_samples[NUMBER_OF_SAMPLES];
 
-uint8 channel1_signal_data_1[NUMBER_OF_SAMPLES];
-uint8 channel1_signal_data_2[NUMBER_OF_SAMPLES];
+uint8 channel1_signal_data_1[HALF_NUMBER_OF_SAMPLES];
+uint8 channel1_signal_data_2[HALF_NUMBER_OF_SAMPLES];
 
-uint8 channel2_signal_data_1[NUMBER_OF_SAMPLES];
-uint8 channel2_signal_data_2[NUMBER_OF_SAMPLES];
+uint8 channel2_signal_data_1[HALF_NUMBER_OF_SAMPLES];
+uint8 channel2_signal_data_2[HALF_NUMBER_OF_SAMPLES];
 
 double channel1_scaler = 272.108843537414934;
 double channel2_scaler = 272.108843537414934;
@@ -291,6 +295,8 @@ double channel2_offset = 128;
 uint32 trigger_channel = 0;
 uint32 trigger_edge    = 0;
 uint32 trigger_mode    = 0;
+
+uint32 trigger_found   = TRIGGER_FOUND_NEW_BUFFER;
 
 uint8  trigger_level   = 0;
 
@@ -317,6 +323,43 @@ uint8 calculatesample(double sample, double scaler, double offset, int adccalib)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+void getsamples(void)
+{
+  int i;
+  double *sptr1;
+  double *sptr2;
+  
+  //Get a bunch of samples for both channels
+  //Needs the sample interval to be set based on the time base setting
+  signalgeneratorgetsamples(0, channel1_samples, NUMBER_OF_SAMPLES, 5);
+  signalgeneratorgetsamples(1, channel2_samples, NUMBER_OF_SAMPLES, 5);
+
+  //Point to the first samples
+  sptr1 = channel1_samples;
+  sptr2 = channel2_samples;
+
+  //Separate and convert all the samples into the two adc buffers per channel
+  for(i=0;i<HALF_NUMBER_OF_SAMPLES;i++)
+  {
+    //Adjust the samples based on a scaler and an offset. Also put in a calibration error between the two converters.
+    channel1_signal_data_2[i] = calculatesample(*sptr1++, channel1_scaler, channel1_offset, 3);
+    channel1_signal_data_1[i] = calculatesample(*sptr1++, channel1_scaler, channel1_offset, 0);
+
+    channel2_signal_data_2[i] = calculatesample(*sptr2++, channel2_scaler, channel2_offset, -7);
+    channel2_signal_data_1[i] = calculatesample(*sptr2++, channel2_scaler, channel2_offset, 0);
+  }
+
+      
+  //Add a random error where the ADC1 buffer is cleared before reading.
+  
+  
+  
+  //No trigger yet when data is fresh from new capture
+  trigger_found = TRIGGER_FOUND_NEW_BUFFER;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 uint32 findtriggerpoint(void)
 {
   uint8 *buffer;  
@@ -339,7 +382,7 @@ uint32 findtriggerpoint(void)
   
   //Set a starting point for checking on trigger. Half way a normal buffer
   index = 750;
-  count = NUMBER_OF_SAMPLES - 750;
+  count = HALF_NUMBER_OF_SAMPLES - 750;
 
   while(count--)
   {
@@ -370,9 +413,7 @@ uint32 findtriggerpoint(void)
 void fpga_write_cmd(uint8 command)
 {
   int i;
-  double *sptr1;
-  double *sptr2;
-  
+
   //Set the new command as current
   fpga_data.current_command = command;
 
@@ -381,27 +422,7 @@ void fpga_write_cmd(uint8 command)
   {
     case 0x0A:
       //Get a bunch of samples for both channels
-      //Needs the sample interval to be set based on the time base setting
-      signalgeneratorgetsamples(0, channel1_samples, NUMBER_OF_SAMPLES, 5);
-      signalgeneratorgetsamples(1, channel2_samples, NUMBER_OF_SAMPLES, 5);
-
-      //Point to the first samples
-      sptr1 = channel1_samples;
-      sptr2 = channel2_samples;
-
-      //Separate and convert all the samples into the two adc buffers per channel
-      for(i=0;i<HALF_NUMBER_OF_SAMPLES;i++)
-      {
-        //Adjust the samples based on a scaler and an offset. Also put in a calibration error between the two converters.
-        channel1_signal_data_2[i] = calculatesample(*sptr1++, channel1_scaler, channel1_offset, 3);
-        channel1_signal_data_1[i] = calculatesample(*sptr1++, channel1_scaler, channel1_offset, 0);
-
-        channel2_signal_data_2[i] = calculatesample(*sptr2++, channel2_scaler, channel2_offset, -7);
-        channel2_signal_data_1[i] = calculatesample(*sptr2++, channel2_scaler, channel2_offset, 0);
-      }
-      
-
-      //Add a random error where the ADC1 buffer is cleared before reading.
+      getsamples();
       break;
      
     //Start sampling command when data is 1
@@ -646,6 +667,9 @@ void fpga_write_byte(uint8 data)
 uint8 fpga_read_byte(void)
 {
   uint8 retval = 0xFF;
+  double *sptr1;
+  double *sptr2;
+  int i;
 
   switch(fpga_data.current_command)
   {
@@ -667,7 +691,7 @@ uint8 fpga_read_byte(void)
       //Check on what mode the trigger system is set to
       if(trigger_mode == 0)
       {
-        //Auto mode needs to find a trigger point, but when not found just use center buffer and signal done
+        //Auto mode needs to find a trigger point, but when not found just use fixed point in the buffer and signal done
         if(findtriggerpoint() == 0)
         {
           sample_index = 1500;
@@ -678,15 +702,44 @@ uint8 fpga_read_byte(void)
       else
       {
         //For normal and single triggering the system needs to find a valid trigger. If not signal not done and load more samples on next call
-        retval = findtriggerpoint();
-        
+        if(trigger_found == TRIGGER_FOUND_NEW_BUFFER)
+        {
+          //When a new buffer is loaded scan for a trigger in it
+          retval = findtriggerpoint();
+          
+          //Check if the trigger is found
+          if(retval == 1)
+          {
+            //Trigger has been found so done for now
+            trigger_found = TRIGGER_FOUND_YES;
+          }
+          else
+          {
+            //No trigger found so signal this
+            trigger_found = TRIGGER_FOUND_NOT_YET;
+          }
+        }
+        else if(trigger_found == TRIGGER_FOUND_NOT_YET)
+        {
+          //No trigger found in previous data so read some more data and look for a trigger in it
+          //Not a proper solution in respect to pre trigger data but the simplest way for now
+          
+          //Get a bunch of samples for both channels
+          getsamples();
+          
+          //Signal still looking for trigger
+          retval = 0;
+        }
+      }
+      
+      //Make sure sample index is within proper limits
+      if(sample_index > (HALF_NUMBER_OF_SAMPLES - sample_count))
+      {
+        sample_index = (HALF_NUMBER_OF_SAMPLES - sample_count);
       }
       
       
-      //Look for trigger point in the first adc sample buffers depending on the trigger channel
       
-      //When trigger point is found use the sample index as center point for both channels
-      //otherwise use the center point
       
       
       break;
