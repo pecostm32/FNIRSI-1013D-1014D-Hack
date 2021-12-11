@@ -16,6 +16,8 @@
 //Defines
 //----------------------------------------------------------------------------------------------------------------------------------
 
+#define DISPLAY_TYPE                      0    //0 For most common display, 1 for shifted display
+
 #define VIEW_NOT_ACTIVE                   0
 #define VIEW_ACTIVE                       1
 

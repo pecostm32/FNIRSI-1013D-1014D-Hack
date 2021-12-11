@@ -646,11 +646,10 @@ uint16 fpga_prepare_for_transfer(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void fpga_read_adc1_data(uint8 command, uint16 *buffer, int32 count, uint32 signaladjust, uint32 multiply, uint32 offset)
+uint32 fpga_read_adc1_data(uint8 command, uint16 *buffer, int32 count, uint32 signaladjust, uint32 multiply, uint32 offset)
 {
   register uint32 sample;
-  
-  //This first read function can also do the check on corrupted data (need to determine what the faulty value is 0x00 or 0xFF or all samples equal)
+  register uint32 skip = 1;
   
   //Send a command for getting trace data from the FPGA
   fpga_write_cmd(command);
@@ -673,6 +672,14 @@ void fpga_read_adc1_data(uint8 command, uint16 *buffer, int32 count, uint32 sign
 
     //Read the data
     sample = (uint16)FPGA_GET_DATA();
+    
+    //Check if there is some data
+    //One a bit frequent error seems to be that all the samples are 0 for this ADC
+    if(sample)
+    {
+      //If so signal no skipping needed
+      skip = 0;
+    }
  
 #if 0
     uint32 temp1, temp3;
@@ -722,6 +729,8 @@ void fpga_read_adc1_data(uint8 command, uint16 *buffer, int32 count, uint32 sign
     //One read done
     count--;
   }
+  
+  return(skip);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -732,6 +741,7 @@ void fpga_read_adc2_data(uint8 command, uint16 *buffer, int32 count, uint32 sign
   
   //Get the compensation into a register for better performance
   register uint32 compensation = calibration->compensation;
+  register uint32 halfcomp = compensation / 2;
   
   //Send a command for getting trace data from the FPGA
   fpga_write_cmd(command);
@@ -768,8 +778,13 @@ void fpga_read_adc2_data(uint8 command, uint16 *buffer, int32 count, uint32 sign
     }
     else
     {
-      //Compensate and store the sample
-      sample += compensation;
+      //In case of positive compensation only when other ADC sample is high enough
+      //Check the belonging sample of the first ADC. (Index 0 is ADC2 data)
+      if(buffer[1] > halfcomp)
+      {
+        //Compensate and store the sample
+        sample += compensation;
+      }
     }
 
 #if 0    

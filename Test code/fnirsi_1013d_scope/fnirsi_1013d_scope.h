@@ -71,6 +71,7 @@ struct tagScopeSettings
   uint8 triggerflag3;        //0x8019D5D6 in original code
   uint8 triggerflag4;        //0x8019D5BE in original code
   
+  uint8 skipbuffers;         //New for filtering bad sample buffers
   
   
   uint8 movespeed;

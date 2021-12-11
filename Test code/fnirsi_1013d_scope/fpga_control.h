@@ -84,7 +84,7 @@ void   fpga_set_short_timebase(void);
 
 uint16 fpga_prepare_for_transfer(void);
 
-void   fpga_read_adc1_data(uint8 command, uint16 *buffer, int32 count, uint32 signaladjust, uint32 multiply, uint32 offset);
+uint32 fpga_read_adc1_data(uint8 command, uint16 *buffer, int32 count, uint32 signaladjust, uint32 multiply, uint32 offset);
 void   fpga_read_adc2_data(uint8 command, uint16 *buffer, int32 count, uint32 signaladjust, uint32 multiply, uint32 offset, PADC2CALIBRATIONDATA calibration);
 
 uint16 fpga_average_trace_data(uint8 command);

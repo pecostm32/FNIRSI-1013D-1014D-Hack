@@ -4496,6 +4496,9 @@ void scope_acquire_trace_data(void)
       scopesettings.samplecount = 3000;
     }
 
+    //Assume no sample error yet
+    scopesettings.skipbuffers = 0;
+    
     //Check if channel 1 is enabled
     if(scopesettings.channel1.enable)
     {
@@ -4513,12 +4516,9 @@ void scope_acquire_trace_data(void)
       //Get the FPGA command to read from based on the trigger channel
       command = fpga_read_parameter_ic(0x0C, scopesettings.triggerchannel);
 
-      //The first read function can also do the check on corrupted data (need to determine what the faulty value is 0x00 or 0xFF or all samples equal)
-      //Have to decide if this should then signal this capture routine that it should discard this buffer and don't update the screen.
-      //This would need a flag!!!!!!
-
+      //This first read function checks on corrupted data (need to determine what the faulty value is 0x00 or 0xFF or all samples equal)
       //Read the ADC1 bytes into a trace buffer and skip samples for ADC2 data
-      fpga_read_adc1_data(command, channel1tracebuffer1, count, signaladjust, multiply, scopesettings.channel1.traceoffset);
+      scopesettings.skipbuffers |= fpga_read_adc1_data(command, channel1tracebuffer1, count, signaladjust, multiply, scopesettings.channel1.traceoffset);
 
       //Prepare FPGA for reading again
       //Send command 0x1F to the FPGA followed by the translated data returned from command 0x14
@@ -4558,7 +4558,7 @@ void scope_acquire_trace_data(void)
       //This would need a flag!!!!!!
 
       //Read the ADC1 bytes into a trace buffer and skip samples for ADC2 data
-      fpga_read_adc1_data(command, channel2tracebuffer1, count, signaladjust, multiply, scopesettings.channel2.traceoffset);
+      scopesettings.skipbuffers |= fpga_read_adc1_data(command, channel2tracebuffer1, count, signaladjust, multiply, scopesettings.channel2.traceoffset);
 
       //Prepare FPGA for reading again
       //Send command 0x1F to the FPGA followed by the translated data returned from command 0x14
@@ -4730,6 +4730,12 @@ void scope_display_trace_data(void)
 
   //For trace moving this requires additional code to overcome the offset being done in the FPGA
 
+  //Check if the current buffers need to be skipped from displaying due to sample errors
+  if(scopesettings.skipbuffers == 1)
+  {
+    return;
+  }
+  
 
   //Need to compensate for the position being on the left side of the pointer
   uint32 triggerposition = scopesettings.triggerposition + 9;
@@ -4949,7 +4955,7 @@ void scope_display_channel_trace(uint16 *buffer, uint32 color)
       }
 
       //Display y coordinates are inverted to signal orientation
-      sample2 = 449 - sample2;
+      sample2 = 448 - sample2;
 
 
       if(firstpixel == 0)
