@@ -147,9 +147,11 @@ struct tagSignalGeneratorChannelSettings
   double phase;
   double previousphase;
   
-  double signalphase;
-  double signalstep1;
-  double signalstep2;
+  double signalperiod;
+  double signaltime;
+  double signaltimestep;
+  double signaltimepart1;
+  double signaltimepart2;
   
   double maxsignal;
   double minsignal;
@@ -167,7 +169,7 @@ void *signalgeneratorthread(void *arg);
 void signalgeneratorfreeze(void);
 void signalgeneratorunfreeze(void);
 
-void signalgeneratorgetsamples(int channel, double *buffer, int count, int interval);
+void signalgeneratorgetsamples(int channel, double *buffer, int count, double samplerate);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 

@@ -418,6 +418,9 @@ void *signalgeneratorthread(void *arg)
   channelsettings[0].pulsewidthenablechanged = 1;
   channelsettings[0].phasechanged            = 1;
   
+  channelsettings[0].signaltime = 0.0;
+  
+  
   channelsettings[1].waveform = 0;
   channelsettings[1].channelenable = 1;
   channelsettings[1].pulsewidthenable = 0;
@@ -436,6 +439,9 @@ void *signalgeneratorthread(void *arg)
   channelsettings[1].pulsewidthchanged       = 1;
   channelsettings[1].pulsewidthenablechanged = 1;
   channelsettings[1].phasechanged            = 1;
+  
+  channelsettings[1].signaltime = 0.0;
+  
   
   //Get the current time for duration calculation
   gettimeofday(&starttime, 0);
@@ -1233,10 +1239,15 @@ void signalgeneratorunfreeze(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void signalgeneratorgetsamples(int channel, double *buffer, int count, int interval)
+void signalgeneratorgetsamples(int channel, double *buffer, int count, double samplerate)
 {
-  int i,j;
+  int i;
   double sample;
+  
+  double sampletimestep = 1.0 / samplerate;
+  double signalphase;
+  
+  int periods;
   
   if((signalgeneratorready == 0) || (channelsettings[channel].channelenable == 0))
   {
@@ -1251,18 +1262,38 @@ void signalgeneratorgetsamples(int channel, double *buffer, int count, int inter
     //Make the samples    
     for(i=0;i<count;i++)
     {
+      //Determine the signal phase based on the scope sample rate and the signal period
+      channelsettings[channel].signaltime += sampletimestep;
+      
+      //Take of the full signal periods
+      periods = channelsettings[channel].signaltime / channelsettings[channel].signalperiod;
+      channelsettings[channel].signaltime -= (periods * channelsettings[channel].signalperiod);
+
+      //Check if in positive part of the signal
+      if(channelsettings[channel].signaltime < channelsettings[channel].signaltimepart1)
+      {
+        //Determine the signal phase in radians for the positive part of the signal
+        signalphase = (channelsettings[channel].signaltime / channelsettings[channel].signaltimepart1) * PI;
+        
+      }
+      else
+      {
+        //Determine the signal phase in radians for the negative part of the signal
+        signalphase = PI + (((channelsettings[channel].signaltime - channelsettings[channel].signaltimepart1) / channelsettings[channel].signaltimepart2) * PI);
+      }
+      
       //Take action based on the selected waveform
       switch(channelsettings[channel].waveform)
       {
         //Sine wave
         default:
         case 0:
-          sample = channelsettings[channel].amplitude * sin(channelsettings[channel].signalphase);
+          sample = channelsettings[channel].amplitude * sin(signalphase);
           break;
 
         //Square wave
         case 1:
-          if(channelsettings[channel].signalphase < PI)    
+          if(signalphase < PI)    
             sample = channelsettings[channel].amplitude;
           else
             sample = -1 * channelsettings[channel].amplitude;
@@ -1270,47 +1301,22 @@ void signalgeneratorgetsamples(int channel, double *buffer, int count, int inter
 
         //Triangle wave
         case 2:
-          sample = channelsettings[channel].amplitude * triangle(channelsettings[channel].signalphase);
+          sample = channelsettings[channel].amplitude * triangle(signalphase);
           break;
 
         //Ramp up wave
         case 3:
-          sample = channelsettings[channel].amplitude * rampup(channelsettings[channel].signalphase);
+          sample = channelsettings[channel].amplitude * rampup(signalphase);
           break;
 
         //Ramp down wave
         case 4:
-          sample = channelsettings[channel].amplitude * rampdown(channelsettings[channel].signalphase);
+          sample = channelsettings[channel].amplitude * rampdown(signalphase);
           break;
       }
 
       //Add the DC offset
       sample += channelsettings[channel].dcoffset;
-
-      //Step through the signal based on the scope sample interval
-      //Can be done in a more clever way, but the pulse width option makes it difficult math.
-      //As is there will be pulse width and phase errors and might cause jitter
-      for(j=0;j<interval;j++)
-      {
-        //Check which part of the signal is current
-        if(channelsettings[channel].signalphase < PI)
-        {
-          //For the positive part of the signal use the first step value
-          channelsettings[channel].signalphase += channelsettings[channel].signalstep1;
-        }
-        else
-        {
-          //For the negative part of the signal use the second step value
-          channelsettings[channel].signalphase += channelsettings[channel].signalstep2;
-        }
-      }
-
-      //Check if phase beyond max phase
-      if(channelsettings[channel].signalphase > PI2)
-      {
-        //Bring it back in phase if so
-        channelsettings[channel].signalphase -= PI2;
-      }
 
       //Check if sample within the signal limits
       if(sample < channelsettings[channel].minsignal)
@@ -1344,35 +1350,21 @@ void checksettingsupdate(int channel)
     channelsettings[channel].pulsewidthchanged       = 0;
     channelsettings[channel].pulsewidthenablechanged = 0;
 
+    channelsettings[channel].signalperiod   = 1.0 / channelsettings[channel].frequency;
+    channelsettings[channel].signaltimestep = 1.0 / SIGNAL_GENERATOR_SAMPLE_RATE;
+
     //Check if pulse width is enabled
     if(channelsettings[channel].pulsewidthenable)
     {
-      //Check if it is 0% 
-      if(channelsettings[channel].pulsewidth == 0)
-      {
-        //If so for the first part take a full step and for the second part normal signal increments
-        channelsettings[channel].signalstep1 = PI;
-        channelsettings[channel].signalstep2 = PI / (SIGNAL_GENERATOR_SAMPLE_RATE / channelsettings[channel].frequency);
-      }
-      //If not check if 100%
-      else if(channelsettings[channel].pulsewidth == 100)
-      {
-        //If so for the first part normal signal increments and for the second part take a full step
-        channelsettings[channel].signalstep1 = PI / (SIGNAL_GENERATOR_SAMPLE_RATE / channelsettings[channel].frequency);
-        channelsettings[channel].signalstep2 = PI;
-      }
-      else
-      {
-        //In between setting so calculate both steps based on their respective widths
-        channelsettings[channel].signalstep1 = (PIx100 / channelsettings[channel].pulsewidth) / (SIGNAL_GENERATOR_SAMPLE_RATE / channelsettings[channel].frequency);
-        channelsettings[channel].signalstep2 = (PIx100 / (100 - channelsettings[channel].pulsewidth)) / (SIGNAL_GENERATOR_SAMPLE_RATE / channelsettings[channel].frequency);
-      }
+      //Calculate the time per signal part based on the pulse width setting
+      channelsettings[channel].signaltimepart1 = (channelsettings[channel].pulsewidth / 100.0) * channelsettings[channel].signalperiod;
+      channelsettings[channel].signaltimepart2 = ((100.0 - channelsettings[channel].pulsewidth) / 100.0) * channelsettings[channel].signalperiod;
     }
     else
     {
-      //No pulse width enabled so calculate equal steps for both parts of the signal
-      channelsettings[channel].signalstep1 = PI2 / (SIGNAL_GENERATOR_SAMPLE_RATE / channelsettings[channel].frequency);
-      channelsettings[channel].signalstep2 = channelsettings[channel].signalstep1;
+      //Calculate the time per signal part based on 50% pulse width
+      channelsettings[channel].signaltimepart1 = 0.5 * channelsettings[channel].signalperiod;
+      channelsettings[channel].signaltimepart2 = channelsettings[channel].signaltimepart1;
     }
   }
 
@@ -1388,8 +1380,8 @@ void checksettingsupdate(int channel)
     //Save the new phase for next change
     channelsettings[channel].previousphase = channelsettings[channel].phase;
     
-    //SHift the signal with the phase difference
-    channelsettings[channel].signalphase += phasediff;
+    //Shift the signal with the phase difference
+//    channelsettings[channel].signalphase += phasediff;
   }
 
   //Not really needed for now, but when max amplitude can be changed it is
@@ -1407,19 +1399,14 @@ void checksettingsupdate(int channel)
 
 void signalstep(int channel)
 {
-  //Keep the signal phase running
-  if(channelsettings[channel].signalphase < PI)
+  //Keep the signal time running
+  channelsettings[channel].signaltime += channelsettings[channel].signaltimestep;
+  
+  //Check if beyond period time
+  if(channelsettings[channel].signaltime > channelsettings[channel].signalperiod)
   {
-    channelsettings[channel].signalphase += channelsettings[channel].signalstep1;
-  }
-  else
-  {
-    channelsettings[channel].signalphase += channelsettings[channel].signalstep2;
-  }
-
-  if(channelsettings[channel].signalphase > PI2)
-  {
-    channelsettings[channel].signalphase -= PI2;
+    //Keep it in range of the period time
+    channelsettings[channel].signaltime -= channelsettings[channel].signalperiod;
   }
 }
 

@@ -271,6 +271,31 @@ uint32 ch1_long_idx = 0;
 #define TRIGGER_FOUND_YES            2
 
 
+const uint32 timebase_interval_settings[24] =
+{
+  500000, 500000, 500000,     //200ms/div, 100ms/div and 50ms/div  use the 2KSa/s setting
+  200000, 100000,  50000,     //20ms/div, 10ms/div, 5ms/div        use their respective settings
+   20000,  10000,   5000,     //2ms/div, 1ms/div, 500us/div        use their respective settings
+    2000,   1000,    500,     //200us/div, 100us/div, 50us/div     use their respective settings
+     200,    100,     50,     //20us/div, 10us/div, 5us/div        use their respective settings
+      20,     10,      5,     //2us/div, 1us/div, 500ns/div        use their respective settings
+       5,      5,      5,     //200ns/div, 100ns/div, 50ns/div     use the 200MSa/s setting
+       5,      5,      5      //20ns/div, 10ns/div, 5ns/div        use the 200MSa/s setting
+};
+
+const uint32 timebase_rate_settings[24] =
+{
+       2000,      2000,      2000,     //200ms/div, 100ms/div and 50ms/div  use the 2KSa/s setting
+       5000,     10000,     20000,     //20ms/div, 10ms/div, 5ms/div        use their respective settings
+      50000,    100000,    200000,     //2ms/div, 1ms/div, 500us/div        use their respective settings
+     500000,   1000000,   2000000,     //200us/div, 100us/div, 50us/div     use their respective settings
+    5000000,  10000000,  20000000,     //20us/div, 10us/div, 5us/div        use their respective settings
+   50000000, 100000000, 200000000,     //2us/div, 1us/div, 500ns/div        use their respective settings
+  200000000, 200000000, 200000000,     //200ns/div, 100ns/div, 50ns/div     use the 200MSa/s setting
+  200000000, 200000000, 200000000      //20ns/div, 10ns/div, 5ns/div        use the 200MSa/s setting
+};
+
+
 uint8 cmd0F_input;
 
 uint8 cmd40_response = 40;
@@ -292,6 +317,7 @@ double channel2_scaler = 272.108843537414934;
 double channel1_offset = 128;
 double channel2_offset = 128;
 
+
 uint32 trigger_channel = 0;
 uint32 trigger_edge    = 0;
 uint32 trigger_mode    = 0;
@@ -299,6 +325,8 @@ uint32 trigger_mode    = 0;
 uint32 trigger_found   = TRIGGER_FOUND_NEW_BUFFER;
 
 uint8  trigger_level   = 0;
+
+double sample_rate_set  = 200000000.0;
 
 uint32 sample_index = 1500;
 uint32 sample_count = 1500;
@@ -331,9 +359,12 @@ void getsamples(void)
   
   //Get a bunch of samples for both channels
   //Needs the sample interval to be set based on the time base setting
-  signalgeneratorgetsamples(0, channel1_samples, NUMBER_OF_SAMPLES, 5);
-  signalgeneratorgetsamples(1, channel2_samples, NUMBER_OF_SAMPLES, 5);
+  signalgeneratorgetsamples(0, channel1_samples, NUMBER_OF_SAMPLES, sample_rate_set);
+  signalgeneratorgetsamples(1, channel2_samples, NUMBER_OF_SAMPLES, sample_rate_set);
 
+  //Need some DC filter system here when channel on AC
+  
+  
   //Point to the first samples
   sptr1 = channel1_samples;
   sptr2 = channel2_samples;
@@ -933,9 +964,22 @@ void fpga_set_channel_2_offset(void)
 
 void fpga_set_trigger_timebase(uint32 timeperdiv)
 {
-  //Need to fill in the time base
+  //Set the sample interval based on the time base
+  if(scopesettings.timeperdiv < (sizeof(short_timebase_settings) / sizeof(uint32)))
+  {
+    //Table settings ranges from setting 0 (200mS/div) to 23 (5nS/div)
+    sample_rate_set = timebase_rate_settings[scopesettings.timeperdiv];
+  }
   
-  
+  //For the 200ms - 20ms/div settings only 750 samples
+  if(scopesettings.timeperdiv > 3)
+  {
+    sample_count = 1500;
+  }
+  else
+  {
+    sample_count = 750;
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
