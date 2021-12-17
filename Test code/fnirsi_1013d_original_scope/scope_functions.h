@@ -167,6 +167,10 @@ void scope_evaluate_trace_data(uint16 *buffer, PMEASUREMENTS measurements, uint3
 
 void scope_determine_sample_buffer_indexes(void);
 
+uint32 scope_do_baseline_calibration(void);
+uint32 scope_do_trace_offset_calibration(void);
+uint32 scope_do_adc1_adc2_difference_calibration(void);
+
 //----------------------------------------------------------------------------------------------------------------------------------
 // Signal data display functions
 //----------------------------------------------------------------------------------------------------------------------------------

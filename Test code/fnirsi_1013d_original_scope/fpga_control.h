@@ -89,6 +89,20 @@ uint16 fpga_average_trace_data(uint8 command);
 
 void   fpga_set_battery_level(void);
 
+void   fpga_setup_for_calibration(void);
+
+void   fpga_do_conversion(void);
+
+void   fpga_set_channel_1_trace_offset(uint32 offset);
+void   fpga_set_channel_2_trace_offset(uint32 offset);
+
+void   fpga_write_command_0x1F(uint32 data);
+
+uint32 fpga_process_channel_adc1_samples(uint32 channelid, uint32 voltperdiv);
+
+uint32 fpga_average_adc1_samples(uint32 channelid);
+uint32 fpga_average_adc2_samples(uint32 channelcmd);
+
 void   fpga_init_parameter_ic(void);
 void   fpga_write_parameter_ic(uint8 id, uint32 value);
 uint32 fpga_read_parameter_ic(uint8 id, uint32 value);

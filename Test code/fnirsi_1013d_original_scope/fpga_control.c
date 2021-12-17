@@ -2,6 +2,7 @@
 
 #include "fpga_control.h"
 #include "fnirsi_1013d_scope.h"
+#include "timer.h"
 #include "variables.h"
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -702,6 +703,288 @@ void fpga_set_battery_level(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+void fpga_setup_for_calibration(void)
+{
+  //Set the channels to lowest sensitivity and trace offset
+  scopesettings.channel1.voltperdiv  = 0;
+  scopesettings.channel1.traceoffset = 200;
+  scopesettings.channel2.voltperdiv  = 0;
+  scopesettings.channel2.traceoffset = 200;
+  
+  //Set the time base to 100us/div
+  scopesettings.timeperdiv = 17;
+  
+  //Load the settings into the FPGA
+  fpga_set_channel_1_voltperdiv();
+  fpga_set_channel_1_offset();
+
+  fpga_set_channel_2_voltperdiv();
+  fpga_set_channel_2_offset();
+  
+  fpga_set_trigger_timebase();
+  
+  //Send the command for setting the trigger level to the FPGA
+  fpga_write_cmd(0x17);
+  
+  //Write zero level to the FPGA
+  fpga_write_byte(0);
+  
+  //Wait 100ms to settle
+  timer0_delay(100);
+  
+  //Disable the trigger circuit??
+  fpga_write_cmd(0x0F);
+  fpga_write_byte(0x01);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_do_conversion(void)
+{
+  //Set the FPGA for short time base mode
+  fpga_write_cmd(0x28);
+  fpga_write_byte(0x00);
+  
+  //Reset the sample system
+  fpga_write_cmd(0x01);
+  fpga_write_byte(0x01);
+  
+  //Send check on ready command
+  fpga_write_cmd(0x05);
+  
+  //Wait for the flag to become 1
+  while((fpga_read_byte() & 1) == 0);
+  
+  //Test again to make sure it was no glitch?????
+  while((fpga_read_byte() & 1) == 0);
+  
+  //Done with reset
+  fpga_write_cmd(0x01);
+  fpga_write_byte(0x00);
+  
+  //Send check on triggered or buffer full command to the FPGA
+  fpga_write_cmd(0x0A);
+  
+  //Wait for the FPGA to signal triggered or buffer full
+  while((fpga_read_byte() & 1) == 0);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_set_channel_1_trace_offset(uint32 offset)
+{
+  fpga_write_cmd(0x32);
+  fpga_write_short(offset);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_set_channel_2_trace_offset(uint32 offset)
+{
+  fpga_write_cmd(0x35);
+  fpga_write_short(offset);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_write_command_0x1F(uint32 data)
+{
+  fpga_write_cmd(0x1F);
+  fpga_write_short(data);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+uint32 fpga_process_channel_adc1_samples(uint32 channelid, uint32 voltperdiv)
+{
+  register uint32 count;
+  register uint32 sample;
+  register uint32 signaladjust;
+  register uint32 command;
+  register uint32 sum = 0;
+  register uint32 divider;  
+  
+  //Set the number of samples to process based on the time base setting
+  if(scopesettings.timeperdiv < 11)
+  {
+    //For 50ms and 20ms it is only 750 samples
+    count = 750;
+  }
+  else
+  {
+    //For 10ms - 10ns it is 1500 samples
+    count = 1500;
+  }
+  
+  //Set the divider for calculating the average
+  divider = count;
+  
+  //No idea what this is for, but in normal sample processing this is a value obtained from the special ic
+  fpga_write_command_0x1F(100);
+
+  //Translate this channel volts per div setting
+  signaladjust = fpga_read_parameter_ic(0x0B, voltperdiv) & 0x0000FFFF;
+  
+  //Get the FPGA command to read from based on the trigger channel
+  command = fpga_read_parameter_ic(channelid, scopesettings.triggerchannel);
+  
+  //Send the command for selecting the channels sample buffer
+  fpga_write_cmd(command);
+  
+  //Set the bus for reading
+  FPGA_BUS_DIR_IN();
+  
+  //Set the control lines for reading a command
+  FPGA_DATA_READ();
+  
+  //Read the data as long as there is count
+  while(count)
+  {
+    //Clock the data to the output of the FPGA
+    FPGA_PULSE_CLK();
+
+    //Read the data
+    sample = FPGA_GET_DATA();
+    
+    //Adjust the data for the correct voltage per div setting
+    sample = (41954 * sample * signaladjust) >> 22;
+    
+    //Limit the sample on max displayable
+    if(sample > 401)
+    {
+      sample = 401;
+    }
+    
+    //Add to the total sum for averaging
+    sum += sample;
+    
+    //One read done
+    count--;
+  }  
+  
+  //In the original code the first 10 samples are discarded and only 1470 samples are used for the average
+  //Need to see if this is necessary or if it is good as it is now
+  
+  //Calculate the average and return it
+  return(sum / divider);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+uint32 fpga_average_adc1_samples(uint32 channelid)
+{
+  register uint32 count;
+  register uint32 command;
+  register uint32 sum = 0;
+  register uint32 divider;  
+  
+  //Set the number of samples to process based on the time base setting
+  if(scopesettings.timeperdiv < 11)
+  {
+    //For 50ms and 20ms it is only 750 samples
+    count = 750;
+  }
+  else
+  {
+    //For 10ms - 10ns it is 1500 samples
+    count = 1500;
+  }
+  
+  //Set the divider for calculating the average
+  divider = count;
+  
+  //No idea what this is for, but in normal sample processing this is a value obtained from the special ic
+  fpga_write_command_0x1F(100);
+
+  //Get the FPGA command to read from based on the trigger channel
+  command = fpga_read_parameter_ic(channelid, scopesettings.triggerchannel);
+  
+  //Send the command for selecting the channels sample buffer
+  fpga_write_cmd(command);
+  
+  //Set the bus for reading
+  FPGA_BUS_DIR_IN();
+  
+  //Set the control lines for reading a command
+  FPGA_DATA_READ();
+  
+  //Read the data as long as there is count
+  while(count)
+  {
+    //Clock the data to the output of the FPGA
+    FPGA_PULSE_CLK();
+
+    //Add the sample to the total sum for averaging
+    sum += FPGA_GET_DATA();
+    
+    //One read done
+    count--;
+  }  
+  
+  //In the original code the first 10 samples are discarded and only 1470 samples are used for the average
+  //Need to see if this is necessary or if it is good as it is now
+  
+  //Calculate the average and return it
+  return(sum / divider);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+uint32 fpga_average_adc2_samples(uint32 channelcmd)
+{
+  register uint32 count;
+  register uint32 sum = 0;
+  register uint32 divider;  
+  
+  //Set the number of samples to process based on the time base setting
+  if(scopesettings.timeperdiv < 11)
+  {
+    //For 50ms and 20ms it is only 750 samples
+    count = 750;
+  }
+  else
+  {
+    //For 10ms - 10ns it is 1500 samples
+    count = 1500;
+  }
+  
+  //Set the divider for calculating the average
+  divider = count;
+  
+  //No idea what this is for, but in normal sample processing this is a value obtained from the special ic
+  fpga_write_command_0x1F(100);
+
+  //Send the command for selecting the channels sample buffer
+  fpga_write_cmd(channelcmd);
+  
+  //Set the bus for reading
+  FPGA_BUS_DIR_IN();
+  
+  //Set the control lines for reading a command
+  FPGA_DATA_READ();
+  
+  //Read the data as long as there is count
+  while(count)
+  {
+    //Clock the data to the output of the FPGA
+    FPGA_PULSE_CLK();
+
+    //Add the sample to the total sum for averaging
+    sum += FPGA_GET_DATA();
+    
+    //One read done
+    count--;
+  }  
+  
+  //In the original code the first 10 samples are discarded and only 1470 samples are used for the average
+  //Need to see if this is necessary or if it is good as it is now
+  
+  //Calculate the average and return it
+  return(sum / divider);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 void fpga_init_parameter_ic(void)
 {
   int i;
@@ -765,26 +1048,26 @@ void fpga_write_parameter_ic(uint8 id, uint32 value)
     
     //Take one of the length
     length--;
-  }
 
-  //Check if MLSB is actually used
-  if(parameter_buffer[4] == 0x00)
-  {
-    //Set the MLSB to a fixed value if not used
-    parameter_buffer[4] = 0x96;
-    
-    //Take one of the length
-    length--;
-  }
+    //When MSB is not used check if MLSB is actually used
+    if(parameter_buffer[4] == 0x00)
+    {
+      //Set the MLSB to a fixed value if not used
+      parameter_buffer[4] = 0x96;
+      
+      //Take one of the length
+      length--;
 
-  //Check if LMSB is actually used
-  if(parameter_buffer[5] == 0x00)
-  {
-    //Set the LMSB to a fixed value if not used
-    parameter_buffer[5] = 0x99;
-    
-    //Take one of the length
-    length--;
+      //When MSB and MLSB are not used check if LMSB is actually used
+      if(parameter_buffer[5] == 0x00)
+      {
+        //Set the LMSB to a fixed value if not used
+        parameter_buffer[5] = 0x99;
+        
+        //Take one of the length
+        length--;
+      }
+    }
   }
 
   //Set the parameter id mixed with the length of the value
@@ -796,7 +1079,7 @@ void fpga_write_parameter_ic(uint8 id, uint32 value)
     //Crypting is an xor with the crypt byte
     parameter_buffer[i] ^= parameter_crypt_byte;
   }
-  
+
   //Mangle the crypt byte
   crypt_in.byte = parameter_buffer[0];
 
@@ -949,7 +1232,7 @@ uint32 fpga_read_parameter_ic(uint8 id, uint32 value)
       
       //Need a delay here. In the scope it is delay(100) but not sure what the base of the delay is
       //It works without this one
-//      fpga_delay(50);
+      fpga_delay(100);
       
       //One more try if not valid
       j++;

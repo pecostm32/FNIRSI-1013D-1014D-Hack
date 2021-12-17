@@ -4278,7 +4278,7 @@ skip_delay:
   //Adjust the channel 1 signal based on the volts per div setting
   signaladjust = channel1tracebuffer1[0] * signal_adjusters[scopesettings.channel1.voltperdiv];
   temp1 = ((0xA3D7 * signaladjust) + 0xA3D7) >> 0x16;
-  temp2 = signaladjust + (((uint64)((uint64)signaladjust * (uint64)0x51EB851F) >> 0x25) * -100);
+  temp2 = signaladjust + (((int64)((int64)signaladjust * (int64)0x51EB851F) >> 0x25) * -100);
   
   //If above half the pixel up to next one?????
   if(temp2 > 50)
@@ -4328,7 +4328,7 @@ skip_delay:
   //Adjust the channel 2 signal based on the volts per div setting
   signaladjust = channel2tracebuffer1[0] * signal_adjusters[scopesettings.channel2.voltperdiv];
   temp1 = ((0xA3D7 * signaladjust) + 0xA3D7) >> 0x16;
-  temp2 = signaladjust + (((uint64)((uint64)signaladjust * (uint64)0x51EB851F) >> 0x25) * -100);
+  temp2 = signaladjust + (((int64)((int64)signaladjust * (int64)0x51EB851F) >> 0x25) * -100);
   
   //If above half the pixel up to next one?????
   if(temp2 > 50)
@@ -4881,7 +4881,7 @@ void scope_get_short_timebase_data(void)
       scope_filter_data((uint16 *)channel1tracebuffer4, count - 2);    //In the original they do 2998 samples no matter what
     }
     
-    //Calculate some of the basic measurements like min, max, average, peak peak an another one (max + (min >> 1))???
+    //Calculate some of the basic measurements like min, max, average, peak peak and another one (max + (min >> 1))???
     scope_calculate_min_max_avg((uint16 *)channel1tracebuffer4, &channel1measurements);
     
     //Check on signal being large enough and otherwise clear it with some noise
@@ -4941,7 +4941,7 @@ void scope_adjust_data(uint16 *destination, uint16 *source, uint32 count, uint8 
     //Adjust the channel signal based on the volts per div setting
     temp1 = *source * signaladjust;
     temp2 = ((0xA3D7 * temp1) + 0xA3D7) >> 0x16;
-    temp3 = temp1 + (((uint64)(temp1 * 0x51EB851F) >> 0x25) * -100);
+    temp3 = temp1 + (((int64)(temp1 * 0x51EB851F) >> 0x25) * -100);
 
     //If above half the pixel up to next one?????
     if(temp3 > 50)
@@ -6037,6 +6037,383 @@ void scope_determine_sample_buffer_indexes(void)
   //Needs to set these based on the zoom_select variable
   //disp_x_start = 0;
   //disp_sample_count = 0;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+uint32 scope_do_baseline_calibration(void)
+{
+  uint32 flag = 1;
+  
+  //Save the current settings
+  scope_save_setup(&savedscopesettings1);
+
+  //Calibrate the trace offsets
+  flag &= scope_do_trace_offset_calibration();
+  
+  //Determine the interleaving ADC compensation values
+  flag &= scope_do_adc1_adc2_difference_calibration();
+  
+  //Restore the settings from before calibration
+  scope_restore_setup(&savedscopesettings1);
+  
+  //Load the settings back into the FPGA
+  fpga_set_channel_1_voltperdiv();
+  fpga_set_channel_1_offset();
+
+  fpga_set_channel_2_voltperdiv();
+  fpga_set_channel_2_offset();
+  
+  fpga_set_trigger_timebase();
+  fpga_set_trigger_level();
+  
+  return(flag);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+uint32 scope_do_trace_offset_calibration(void)
+{
+  int32 offset;
+  int32 voltperdiv;
+  int32 signaladjust5v;
+  int32 signaladjust;
+  int32 testbit;
+  int32 channel1_done = 0;
+  int32 channel2_done = 0;
+  int32 channel1_top_offset     = 200;
+  int32 channel1_top_average    = 380;
+  int32 channel1_bottom_offset  = 1500;
+  int32 channel1_bottom_average = 20;
+  int32 channel2_top_offset     = 200;
+  int32 channel2_top_average    = 380;
+  int32 channel2_bottom_offset  = 1500;
+  int32 channel2_bottom_average = 20;
+  
+  //Initialize the FPGA for calibration
+  fpga_setup_for_calibration();
+  
+  //Find the top offset value by going from bottom 200 to top 1500 in increments of 50
+  for(offset=200;offset<1500;offset+=50)
+  {
+    //Write the offset for both channels to the FPGA
+    fpga_set_channel_1_trace_offset(offset);
+    fpga_set_channel_2_trace_offset(offset);
+  
+    //Wait 50ms to settle
+    timer0_delay(50);
+    
+    //Do a conversion run and wait until it is done
+    fpga_do_conversion();
+    
+    //Only do this channel when not already done
+    if(channel1_done == 0)
+    {
+      //Average the samples from the first ADC for channel 1. 0x0C is the parameter for the special IC
+      channel1_top_average = fpga_process_channel_adc1_samples(0x0C, scopesettings.channel1.voltperdiv);
+      
+      //Check if the value is below a required value
+      if(channel1_top_average < 381)
+      {
+        //If so signal this channel as done
+        channel1_done = 1;
+        
+        //And save the offset value it happened on
+        channel1_top_offset = offset;
+      }
+    }
+
+    //Only do this channel when not already done
+    if(channel2_done == 0)
+    {
+      //Average the samples from the first ADC for channel 1. 0x0D is the parameter for the special IC
+      channel2_top_average = fpga_process_channel_adc1_samples(0x0D, scopesettings.channel2.voltperdiv);
+      
+      //Check if the value is below a required value
+      if(channel2_top_average < 381)
+      {
+        //If so signal this channel as done
+        channel2_done = 1;
+        
+        //And save the offset value it happened on
+        channel2_top_offset = offset;
+      }
+    }
+    
+    //Check if both channels done
+    if((channel1_done) && (channel2_done))
+    {
+      //Quit the loop if so
+      break;
+    }
+  }  
+
+  //Reset for bottom offset detection
+  channel1_done = 0;
+  channel2_done = 0;
+  
+  //Find the bottom offset value by going from top 1500 to bottom 200 in decrements of 50
+  for(offset=1500;offset>200;offset-=50)
+  {
+    //Write the offset for both channels to the FPGA
+    fpga_set_channel_1_trace_offset(offset);
+    fpga_set_channel_2_trace_offset(offset);
+  
+    //Wait 50ms to settle
+    timer0_delay(50);
+    
+    //Do a conversion run and wait until it is done
+    fpga_do_conversion();
+    
+    //Only do this channel when not already done
+    if(channel1_done == 0)
+    {
+      //Average the samples from the first ADC for channel 1. 0x0C is the parameter for the special IC
+      channel1_bottom_average = fpga_process_channel_adc1_samples(0x0C, scopesettings.channel1.voltperdiv);
+      
+      //Check if the value is above a required value
+      if(channel1_bottom_average > 19)
+      {
+        //If so signal this channel as done
+        channel1_done = 1;
+        
+        //And save the offset value it happened on
+        channel1_bottom_offset = offset;
+      }
+    }
+
+    //Only do this channel when not already done
+    if(channel2_done == 0)
+    {
+      //Average the samples from the first ADC for channel 1. 0x0D is the parameter for the special IC
+      channel2_bottom_average = fpga_process_channel_adc1_samples(0x0D, scopesettings.channel2.voltperdiv);
+      
+      //Check if the value is above a required value
+      if(channel2_bottom_average > 19)
+      {
+        //If so signal this channel as done
+        channel2_done = 1;
+        
+        //And save the offset value it happened on
+        channel2_bottom_offset = offset;
+      }
+    }
+    
+    //Check if both channels done
+    if((channel1_done) && (channel2_done))
+    {
+      //Quit the loop if so
+      break;
+    }
+  }  
+  
+  //Determine the channel 1 calibration factor and first calibration value based on the found data
+  //Use the special IC to get some value, based on the offsets found
+  offset = fpga_read_parameter_ic(0x12, (channel1_top_offset & 0x0000FFFF) | (channel1_bottom_offset << 16));
+  
+  //Divide the result by the difference of the two averages
+  offset = offset / (channel1_top_average - channel1_bottom_average);
+  
+  //Save the new channel1 calibration factor
+  channel1_calibration_factor = offset;
+  
+  //Calculate the calibration data for 5V/div setting
+  channel1_calibration_data[0] = channel1_bottom_offset + ((int64)((int64)0x51EB851F * (int64)offset * (int64)channel1_bottom_average) >> 37);
+  
+  //Do the same for channel 2
+  //Use the special IC to get some value, based on the offsets found
+  offset = fpga_read_parameter_ic(0x12, (channel2_top_offset & 0x0000FFFF) | (channel2_bottom_offset << 16));
+  
+  //Divide the result by the difference of the two averages
+  offset = offset / (channel2_top_average - channel2_bottom_average);
+  
+  //Save the new channel1 calibration factor
+  channel2_calibration_factor = offset;
+  
+  //Calculate the calibration data for 5V/div setting
+  channel2_calibration_data[0] = channel2_bottom_offset + ((int64)((int64)0x51EB851F * (int64)offset * (int64)channel2_bottom_average) >> 37);
+  
+  //Determine the calibration values for the other sensitivity settings
+  //Set the trace offsets in the FPGA based on the new found 5V/div calibration
+  fpga_set_channel_1_offset();
+  fpga_set_channel_2_offset();
+
+  //Get the 5V/div signal adjuster
+  signaladjust5v = fpga_read_parameter_ic(0x0B, 0);
+  
+  //Loop through the settings
+  //Setting 0 is already done and the last setting (6) is the same as the fore last setting
+  for(voltperdiv=1;voltperdiv<6;voltperdiv++)
+  {
+    //Set the current sensitivity in the scope settings
+    scopesettings.channel1.voltperdiv = voltperdiv;
+    scopesettings.channel2.voltperdiv = voltperdiv;
+    
+    //Write them to the FPGA
+    fpga_set_channel_1_voltperdiv();
+    fpga_set_channel_2_voltperdiv();
+
+    //Wait 100ms to settle
+    timer0_delay(100);
+
+    //Do a conversion run and wait until it is done
+    fpga_do_conversion();
+
+    //Get the signal adjuster for this setting
+    signaladjust = fpga_read_parameter_ic(0x0B, voltperdiv);
+    
+    //Average the samples from the first ADC for channel 1. 0x0C is the parameter for the special IC
+    channel1_bottom_average = fpga_process_channel_adc1_samples(0x0C, scopesettings.channel1.voltperdiv) + 1;
+
+    //Based on the level of the found average some different calculation is done
+    if(channel1_bottom_average < 200)
+    {
+      //Some fixed point fractional calculations
+      channel1_calibration_data[voltperdiv] = channel1_calibration_data[0] - ((int64)((int64)channel1_calibration_factor * (int64)200 * (int64)0x51EB851F) >> 37) - ((signaladjust5v * ((int64)((int64)0x51EB851F * (int64)channel1_calibration_factor * (int64)channel1_bottom_average) >> 37)) / signaladjust);
+    }
+    else
+    {
+      //Some fixed point fractional calculations
+      channel1_calibration_data[voltperdiv] = ((int64)((int64)0x51EB851F * (int64)channel1_calibration_factor * (int64)channel1_bottom_average) >> 37) - (((int64)((int64)signaladjust * (int64)channel1_calibration_factor * (int64)200 * (int64)0x51EB851F) >> 37) / signaladjust5v) + channel1_calibration_data[0];
+    }
+    
+    //Average the samples from the first ADC for channel 2. 0x0D is the parameter for the special IC
+    channel2_bottom_average = fpga_process_channel_adc1_samples(0x0D, scopesettings.channel2.voltperdiv) + 1;
+
+    //Based on the level of the found average some different calculation is done
+    if(channel2_bottom_average < 200)
+    {
+      //Some fixed point fractional calculations
+      channel2_calibration_data[voltperdiv] = channel2_calibration_data[0] - ((int64)((int64)channel2_calibration_factor * (int64)200 * (int64)0x51EB851F) >> 37) - ((signaladjust5v * ((int64)((int64)0x51EB851F * (int64)channel2_calibration_factor * (int64)channel2_bottom_average) >> 37)) / signaladjust);
+    }
+    else
+    {
+      //Some fixed point fractional calculations
+      channel2_calibration_data[voltperdiv] = ((int64)((int64)0x51EB851F * (int64)channel2_calibration_factor * (int64)channel2_bottom_average) >> 37) - (((int64)((int64)signaladjust * (int64)channel2_calibration_factor * (int64)200 * (int64)0x51EB851F) >> 37) / signaladjust5v) + channel2_calibration_data[0];
+    }
+  }
+
+  //Test the found settings
+  //Initialize the FPGA for calibration again
+  fpga_setup_for_calibration();
+  
+  //Reset for fault detection
+  channel1_done = 0;
+  channel2_done = 0;
+  
+  //Test on 5V/div, 500mV/div and 200mV/div
+  for(voltperdiv=0,testbit=1;testbit<8;testbit<<=1)
+  {
+    //Set the current sensitivity in the scope settings
+    scopesettings.channel1.voltperdiv = voltperdiv;
+    scopesettings.channel2.voltperdiv = voltperdiv;
+    
+    //Write them to the FPGA
+    fpga_set_channel_1_voltperdiv();
+    fpga_set_channel_2_voltperdiv();
+
+    //Set the adjusted offsets in the FPGA
+    fpga_set_channel_1_offset();
+    fpga_set_channel_2_offset();
+    
+    //Wait 100ms to settle
+    timer0_delay(100);
+    
+    //Do a conversion run and wait until it is done
+    fpga_do_conversion();
+    
+    //Average the samples from the first ADC for channel 1. 0x0C is the parameter for the special IC
+    channel1_bottom_average = fpga_process_channel_adc1_samples(0x0C, scopesettings.channel1.voltperdiv);
+    
+    //Check if the averaged value is in range
+    if((channel1_bottom_average - 193) < 15)
+    {
+      //If so flag this test as passed
+      channel1_done |= testbit;
+    }
+    
+    //Average the samples from the first ADC for channel 1. 0x0C is the parameter for the special IC
+    channel2_bottom_average = fpga_process_channel_adc1_samples(0x0D, scopesettings.channel2.voltperdiv);
+    
+    //Check if the averaged value is in range
+    if((channel2_bottom_average - 193) < 15)
+    {
+      //If so flag this test as passed
+      channel2_done |= testbit;
+    }
+    
+    //Select the next test sensitivity based on the current one
+    if(voltperdiv == 0)
+    {
+      voltperdiv = 3;
+    }
+    else if(voltperdiv == 3)
+    {
+      voltperdiv = 4;
+    }
+  }
+  
+  //Return the result of the tests. True if all tests passed
+  return((channel1_done == 7) && (channel2_done == 7));
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+uint32 scope_do_adc1_adc2_difference_calibration(void)
+{
+  int32 adc1_avg = 0;
+  int32 adc2_avg = 0;
+  
+  //Initialize the FPGA for calibration again
+  fpga_setup_for_calibration();
+
+  //Switch to 10ns/div
+  scopesettings.timeperdiv = 29;
+  
+  //Set the new time base setting in the FPGA
+  fpga_set_trigger_timebase();
+
+  //Do a conversion run and wait until it is done
+  fpga_do_conversion();
+  
+  //Get the channel 1 averages
+  adc1_avg = fpga_average_adc1_samples(0x0C);
+  adc2_avg = fpga_average_adc2_samples(0x21);
+  
+  //Set the channel 1 compensation value based on which is higher
+  if(adc1_avg < adc2_avg)
+  {
+    //Negative compensation
+    channel1adc2calibration.flag = 0;
+    channel1adc2calibration.compensation = adc2_avg - adc1_avg;
+  }
+  else
+  {
+    //Positive compensation
+    channel1adc2calibration.flag = 1;
+    channel1adc2calibration.compensation = adc1_avg - adc2_avg;
+  }
+  
+  //Get the channel 2 averages
+  adc1_avg = fpga_average_adc1_samples(0x0D);
+  adc2_avg = fpga_average_adc2_samples(0x23);
+  
+  //Set the channel 2 compensation value based on which is higher
+  if(adc1_avg < adc2_avg)
+  {
+    //Negative compensation
+    channel2adc2calibration.flag = 0;
+    channel2adc2calibration.compensation = adc2_avg - adc1_avg;
+  }
+  else
+  {
+    //Positive compensation
+    channel2adc2calibration.flag = 1;
+    channel2adc2calibration.compensation = adc1_avg - adc2_avg;
+  }
+  
+  //Signal ok when the differences are less then 26
+  return((channel1adc2calibration.compensation < 26) && (channel2adc2calibration.compensation < 26));
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

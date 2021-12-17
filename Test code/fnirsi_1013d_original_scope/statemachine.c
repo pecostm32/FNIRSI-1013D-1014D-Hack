@@ -933,7 +933,11 @@ void handle_main_menu_touch(void)
           scope_show_calibrating_text();
           
           //Start the calibration process
-          
+          if(scope_do_baseline_calibration() == 1)
+          {
+            //Need to write the calibration and configuration data to FLASH
+//          signal_sys_ok();
+          }
           
           //Show the calibration successful text if all went well
           scope_show_calibration_done_text();
