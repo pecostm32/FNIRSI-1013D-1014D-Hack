@@ -87,7 +87,7 @@ struct tagScopeSettings
   
   uint8 screenbrightness;
   uint8 gridbrightness;
-  uint8 alwaystrigger50;
+  uint8 alwaystrigger50;     //0x8036137c in original code
   uint8 xymodedisplay;
   uint8 confirmationmode;
   

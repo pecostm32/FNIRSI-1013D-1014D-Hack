@@ -28,7 +28,7 @@ void touch_handler(void)
   {
     //No touch yet so scan for it
     scan_for_touch();
-    
+
     //When movement of object initiated previous settings need to be saved for updating
     if(touchstate)
     {
@@ -38,7 +38,7 @@ void touch_handler(void)
         //Save the current position for it
         previous_trigger_point_position = scopesettings.triggerposition;
       }
-      
+
       //Save the data for the selected object
       switch(touchstate & TOUCH_STATE_MASK)
       {
@@ -49,7 +49,7 @@ void touch_handler(void)
 
         case TOUCH_STATE_MOVE_CHANNEL_1:
           previous_channel_1_offset = scopesettings.channel1.traceoffset;
-        
+
           //Check if trigger on this channel and if so save it's current offset
           if(scopesettings.triggerchannel == 0)
           {
@@ -59,7 +59,7 @@ void touch_handler(void)
 
         case TOUCH_STATE_MOVE_CHANNEL_2:
           previous_channel_2_offset = scopesettings.channel2.traceoffset;
-        
+
           //Check if trigger on this channel and if so save it's current offset
           if(scopesettings.triggerchannel)
           {
@@ -94,27 +94,27 @@ void touch_handler(void)
     //At this point the movement of the traces, cursors and pointers is handled
     //Read the touch panel status to get a new position or be done
     tp_i2c_read_status();
-    
+
     //When no longer touched reset and quit
     if(havetouch == 0)
     {
       //Signal done with moving
       touchstate = TOUCH_STATE_INACTIVE;
-      
+
       //That's it for now
       return;
     }
-    
+
     //Slow things down a bit. This is not a proper solution but will do for now
     timer0_delay(50);
-    
+
     //Check if the trigger point position can be moved
     if(touchstate & TOUCH_STATE_MOVE_TRIGGER_POINT)
     {
       //Move the trigger point position
       move_trigger_point_position();
     }
-    
+
     //Handle the selected object
     switch(touchstate & TOUCH_STATE_MASK)
     {
@@ -122,52 +122,52 @@ void touch_handler(void)
         change_channel_1_offset();
         change_channel_2_offset();
         break;
-        
+
       case TOUCH_STATE_MOVE_CHANNEL_1:
         change_channel_1_offset();
-        
+
         //Check if trigger on this channel and if so move it accordingly
         if(scopesettings.triggerchannel == 0)
         {
           change_trigger_level_offset();
         }
         break;
-        
+
       case TOUCH_STATE_MOVE_CHANNEL_2:
         change_channel_2_offset();
-        
+
         //Check if trigger on this channel and if so move it accordingly
         if(scopesettings.triggerchannel)
         {
           change_trigger_level_offset();
         }
         break;
-        
+
       case TOUCH_STATE_MOVE_TRIGGER_LEVEL:
         change_trigger_level_offset();
         break;
-        
+
       case TOUCH_STATE_MOVE_TIME_CURSOR_LEFT:
         move_left_time_cursor_position();
         break;
-        
+
       case TOUCH_STATE_MOVE_TIME_CURSOR_RIGHT:
         move_right_time_cursor_position();
         break;
-        
+
       case TOUCH_STATE_MOVE_VOLT_CURSOR_TOP:
         move_top_volt_cursor_position();
         break;
-        
+
       case TOUCH_STATE_MOVE_VOLT_CURSOR_BOTTOM:
         move_bottom_volt_cursor_position();
         break;
     }
-    
-    
+
+
     //In x-y mode only the channel offsets can be changed. Needs a better pointer setup for this. The top pointer needs to be the x trace (channel 1)
     //and the left pointer the y trace. Colors changed to show the change. The other two pointers should not be shown
-    
+
   }
 }
 
@@ -180,17 +180,17 @@ void touch_handler(void)
 void scan_for_touch(void)
 {
   uint32 offset;
-  
+
   //Read the touch panel status
   tp_i2c_read_status();
-  
+
   //Check if the panel is not touched
   if(havetouch == 0)
   {
     //Quit if so
     return;
   }
-  
+
   //Draw directly to screen
   display_set_screen_buffer((uint16 *)maindisplaybuffer);
 
@@ -247,23 +247,23 @@ void scan_for_touch(void)
     {
       //Set the button active
       scope_channel1_settings(1);
-      
+
       //Wait until touch is released
       tp_i2c_wait_for_touch_release();
-      
+
       //Set the button inactive
       scope_channel1_settings(0);
-      
+
       //Save the screen rectangle where the menu will be displayed
       display_set_destination_buffer(displaybuffer2);
       display_copy_rect_from_screen(CH1_MENU_XPOS, CH1_MENU_YPOS, CH1_MENU_WIDTH, CH1_MENU_HEIGHT);
-      
+
       //Go and setup the channel 1 menu
       scope_open_channel1_menu();
-      
+
       //Go and handle the menu touch
       handle_channel1_menu_touch();
-      
+
       //Restore the screen when done
       display_set_source_buffer(displaybuffer2);
       display_copy_rect_to_screen(CH1_MENU_XPOS, CH1_MENU_YPOS, CH1_MENU_WIDTH, CH1_MENU_HEIGHT);
@@ -273,23 +273,23 @@ void scan_for_touch(void)
     {
       //Set the button active
       scope_channel2_settings(1);
-      
+
       //Wait until touch is released
       tp_i2c_wait_for_touch_release();
-      
+
       //Set the button inactive
       scope_channel2_settings(0);
-      
+
       //Save the screen rectangle where the menu will be displayed
       display_set_destination_buffer(displaybuffer2);
       display_copy_rect_from_screen(CH2_MENU_XPOS, CH2_MENU_YPOS, CH2_MENU_WIDTH, CH2_MENU_HEIGHT);
-      
+
       //Go and setup the channel 1 menu
       scope_open_channel2_menu();
-      
+
       //Go and handle the menu touch
       handle_channel2_menu_touch();
-      
+
       //Restore the screen when done
       display_set_source_buffer(displaybuffer2);
       display_copy_rect_to_screen(CH2_MENU_XPOS, CH2_MENU_YPOS, CH2_MENU_WIDTH, CH2_MENU_HEIGHT);
@@ -299,27 +299,27 @@ void scan_for_touch(void)
     {
       //Set the button active
       scope_acqusition_settings(1);
-      
+
       //Wait until touch is released
       tp_i2c_wait_for_touch_release();
-      
+
       //Set the button inactive
       scope_acqusition_settings(0);
-      
+
       //Save the screen rectangle where the menu will be displayed
       display_set_destination_buffer(displaybuffer2);
       display_copy_rect_from_screen(ACQ_MENU_XPOS, ACQ_MENU_YPOS, ACQ_MENU_WIDTH, ACQ_MENU_HEIGHT);
-      
+
       //Go and setup the channel 1 menu
       scope_open_acquisition_menu();
-      
+
       //Go and handle the menu touch
       handle_acquisition_menu_touch();
-      
+
       //Restore the screen when done
       display_set_source_buffer(displaybuffer2);
       display_copy_rect_to_screen(ACQ_MENU_XPOS, ACQ_MENU_YPOS, ACQ_MENU_WIDTH, ACQ_MENU_HEIGHT);
-    }    
+    }
     //Check if in move speed button range
     else if((xtouch >= 493) && (xtouch <= 533))
     {
@@ -328,10 +328,10 @@ void scan_for_touch(void)
 
       //Wait until touch is released
       tp_i2c_wait_for_touch_release();
-      
+
       //Toggle the speed
       scopesettings.movespeed ^= 1;
-      
+
       //Set the button inactive and show the new state
       scope_move_speed(0);
     }
@@ -340,23 +340,23 @@ void scan_for_touch(void)
     {
       //Set the button active
       scope_trigger_settings(1);
-      
+
       //Wait until touch is released
       tp_i2c_wait_for_touch_release();
-      
+
       //Set the button inactive
       scope_trigger_settings(0);
-      
+
       //Save the screen rectangle where the menu will be displayed
       display_set_destination_buffer(displaybuffer2);
       display_copy_rect_from_screen(560, 46, 172, 186);
-      
+
       //Go and setup the channel 1 menu
       scope_open_trigger_menu();
-      
+
       //Go and handle the menu touch
       handle_trigger_menu_touch();
-      
+
       //Restore the screen when done
       display_set_source_buffer(displaybuffer2);
       display_copy_rect_to_screen(560, 46, 172, 186);
@@ -369,16 +369,16 @@ void scan_for_touch(void)
     {
       //Highlight the button if touched
       scope_control_button(1);
-      
+
       //Wait until touch is released
       tp_i2c_wait_for_touch_release();
 
       //Button back to inactive state
       scope_control_button(0);
-      
+
       //Toggle the right menu state
       scopesettings.rightmenustate ^= 1;
-      
+
       //Display the changed state
       scope_setup_right_control_menu();
     }
@@ -394,7 +394,7 @@ void scan_for_touch(void)
       else
       {
         //Volts per div adjust state
-        handle_right_volts_div_menu_touch();      
+        handle_right_volts_div_menu_touch();
       }
     }
   }
@@ -474,7 +474,7 @@ void scan_for_touch(void)
       //Done for now.
       return;
     }
-  
+
     //Check if there is displacement that needs to be processed for trace and cursor movement
     if(touchstate)
     {
@@ -521,7 +521,7 @@ void scan_for_touch(void)
           {
             //Signal channel 1 trace is being moved and that the trigger point position can also be moved
             touchstate = TOUCH_STATE_MOVE_CHANNEL_1 | TOUCH_STATE_MOVE_TRIGGER_POINT;
-            
+
             //Go and handle it
             return;
           }
@@ -530,18 +530,18 @@ void scan_for_touch(void)
           {
             //Signal channel 2 trace is being moved and that the trigger point position can also be moved
             touchstate = TOUCH_STATE_MOVE_CHANNEL_2 | TOUCH_STATE_MOVE_TRIGGER_POINT;
-            
+
             //Go and handle it
             return;
           }
         }
 
-        
+
         //This bit needs to be skipped for time base 200mS/div - 20mS/div
         //Hardware trigger seems to be available only from 10mS/div - 10nS/div
-        
-        
-        
+
+
+
         //Check on x above 660 to decide early on move of trigger level offset
         if(xtouch > 660)
         {
@@ -559,13 +559,13 @@ void scan_for_touch(void)
             //Otherwise take the offset of the touch point for the distance
             distance_trigger_level =  ytouch - offset;
           }
-          
+
           //Check if close to trigger level pointer
           if(distance_trigger_level < 30)
           {
             //Signal trigger level is being moved
             touchstate = TOUCH_STATE_MOVE_TRIGGER_LEVEL;
-            
+
             //Go and handle it
             return;
           }
@@ -597,13 +597,13 @@ void scan_for_touch(void)
             //Otherwise take the offset of the touch point for the distance
             distance_time_cursor_right =  xtouch - scopesettings.timecursor2position;
           }
-          
+
           //Check if touch closer to left cursor then right cursor
           if((distance_time_cursor_left < 30) && (distance_time_cursor_left < distance_time_cursor_right))
           {
             //Signal left time cursor is being moved
             touchstate = TOUCH_STATE_MOVE_TIME_CURSOR_LEFT;
-            
+
             //Go and handle it
             return;
           }
@@ -612,12 +612,12 @@ void scan_for_touch(void)
           {
             //Signal right time cursor is being moved
             touchstate = TOUCH_STATE_MOVE_TIME_CURSOR_RIGHT;
-            
+
             //Go and handle it
             return;
           }
         }
-      
+
         //Check if volt cursor is enabled
         if(scopesettings.voltcursorsenable)
         {
@@ -644,13 +644,13 @@ void scan_for_touch(void)
             //Otherwise take the offset of the touch point for the distance
             distance_volt_cursor_bottom =  ytouch - scopesettings.voltcursor2position;
           }
-          
+
           //Check if touch closer to top cursor then bottom cursor
           if((distance_volt_cursor_top < 30) && (distance_volt_cursor_top < distance_volt_cursor_bottom))
           {
             //Signal top volt cursor is being moved
             touchstate = TOUCH_STATE_MOVE_VOLT_CURSOR_TOP;
-            
+
             //Go and handle it
             return;
           }
@@ -659,18 +659,18 @@ void scan_for_touch(void)
           {
             //Signal bottom volt cursor is being moved
             touchstate = TOUCH_STATE_MOVE_VOLT_CURSOR_BOTTOM;
-            
+
             //Go and handle it
             return;
           }
         }
 
         //Down to here for the skip
-        
+
         //No other object selected so far then check again on the signal traces
         //When channel 1 or channel2 or only x movement signal that the trigger point can also be moved.
         touchstate = TOUCH_STATE_MOVE_TRIGGER_POINT;
-        
+
         //Check if touch closer to channel 1 center then channel 2 center
         if((distance_channel_1 < 30) && (distance_channel_1 < distance_channel_2))
         {
@@ -697,12 +697,12 @@ void scan_for_touch(void)
 
 void handle_main_menu_touch(void)
 {
-  //Stay in the menu as long as there is no touch outside the menu  
+  //Stay in the menu as long as there is no touch outside the menu
   while(1)
   {
     //Scan the touch panel for touch
     tp_i2c_read_status();
-    
+
     //Check if there is touch
     if(havetouch)
     {
@@ -724,10 +724,10 @@ void handle_main_menu_touch(void)
             //Save the screen under the menu
             display_set_destination_buffer(displaybuffer2);
             display_copy_rect_from_screen(150, 46, 244, 353);
-            
+
             //Show the system settings menu
             scope_open_system_settings_menu();
-            
+
             //Signal the system settings menu is opened
             systemsettingsmenuopen = 1;
           }
@@ -737,7 +737,7 @@ void handle_main_menu_touch(void)
         {
           //Close any other open menu
           close_open_menus(1);
-          
+
           //Set the button active
           scope_main_menu_picture_view(1);
 
@@ -746,7 +746,7 @@ void handle_main_menu_touch(void)
 
           //Signal viewing of pictures
           viewtype = VIEW_TYPE_PICTURE;
-          
+
           //Switch to picture view screen and stay there until return is pressed
           scope_setup_view_screen();
         }
@@ -755,7 +755,7 @@ void handle_main_menu_touch(void)
         {
           //Close any other open menu
           close_open_menus(1);
-          
+
           //Set the button active
           scope_main_menu_waveform_view(1);
 
@@ -764,7 +764,7 @@ void handle_main_menu_touch(void)
 
           //Signal viewing of pictures
           viewtype = VIEW_TYPE_WAVEFORM;
-          
+
           //Switch to picture view screen and stay there until return is pressed
           scope_setup_view_screen();
         }
@@ -773,7 +773,7 @@ void handle_main_menu_touch(void)
         {
           //Close any other open menu
           close_open_menus(1);
-          
+
           //Set the button active
           scope_main_menu_usb_connection(1);
 
@@ -783,18 +783,18 @@ void handle_main_menu_touch(void)
           //Restore the main screen before entering the USB screen
           display_set_source_buffer(displaybuffer2);
           display_copy_rect_to_screen(0, 46, 149, 233);
-          
+
           //And make a copy of it to return to
           display_set_destination_buffer(displaybuffer2);
           display_copy_rect_from_screen(0, 0, 800, 480);
-          
+
           //Show and handle the usb connection here
           scope_setup_usb_screen();
-          
+
           //Copy back the original screen to continue were left of
           display_set_source_buffer(displaybuffer2);
           display_copy_rect_to_screen(0, 0, 800, 480);
-          
+
           //Need to exit the loop here
           return;
         }
@@ -819,7 +819,7 @@ void handle_main_menu_touch(void)
 
             //Show the screen brightness slider
             scope_open_slider(395, 46, scopesettings.screenbrightness);
-            
+
             //Signal the screen brightness slider is opened
             screenbrightnessopen = 1;
           }
@@ -832,7 +832,7 @@ void handle_main_menu_touch(void)
           {
             //Close any of the sub menus if open
             close_open_menus(0);
-            
+
             //Set this item active
             scope_system_settings_grid_brightness_item(1);
 
@@ -841,7 +841,7 @@ void handle_main_menu_touch(void)
 
             //Show the screen brightness slider
             scope_open_slider(395, 104, scopesettings.gridbrightness);
-            
+
             //Signal the screen brightness slider is opened
             gridbrightnessopen = 1;
           }
@@ -851,13 +851,13 @@ void handle_main_menu_touch(void)
         {
           //Close any of the sub menus if open
           close_open_menus(0);
-          
+
           //Wait until touch is released
           tp_i2c_wait_for_touch_release();
 
           //Toggle the always trigger 50% state
           scopesettings.alwaystrigger50 ^= 1;
-          
+
           //Show the state
           scope_display_slide_button(326, 183, scopesettings.alwaystrigger50);
         }
@@ -878,7 +878,7 @@ void handle_main_menu_touch(void)
 
             //Show the start text
             scope_open_calibration_start_text();
-            
+
             //Signal the calibration text is opened
             calibrationopen = 1;
           }
@@ -888,13 +888,13 @@ void handle_main_menu_touch(void)
         {
           //Close any of the sub menus if open
           close_open_menus(0);
-          
+
           //Wait until touch is released
           tp_i2c_wait_for_touch_release();
 
           //Toggle the x-y mode display state
           scopesettings.xymodedisplay ^= 1;
-  
+
           //Show the state
           scope_display_slide_button(326, 299, scopesettings.xymodedisplay);
         }
@@ -903,13 +903,13 @@ void handle_main_menu_touch(void)
         {
           //Close any of the sub menus if open
           close_open_menus(0);
-          
+
           //Wait until touch is released
           tp_i2c_wait_for_touch_release();
 
           //Toggle the notification confirmation mode
           scopesettings.confirmationmode ^= 1;
-  
+
           //Show the state
           scope_display_slide_button(326, 358, scopesettings.confirmationmode);
         }
@@ -922,7 +922,7 @@ void handle_main_menu_touch(void)
         {
           //Update the setting in the system settings menu
           scope_system_settings_screen_brightness_value();
-          
+
           //Update the actual screen brightness
           fpga_set_translated_brightness();
         }
@@ -935,9 +935,9 @@ void handle_main_menu_touch(void)
         {
           //Update the setting in the system settings menu
           scope_system_settings_grid_brightness_value();
-          
+
           //Update the actual grid brightness if needed. There is no direct update of the background!
-        }       
+        }
       }
       //Check on calibration start text opened and being touched
       else if((calibrationopen == 1) && (xtouch >= 395) && (xtouch <= 594) && (ytouch >= 223) && (ytouch <= 280))
@@ -947,19 +947,25 @@ void handle_main_menu_touch(void)
         {
           //Highlight the button
           scope_display_ok_button(517, 230, 1);
-          
+
           //Wait until touch is released
           tp_i2c_wait_for_touch_release();
-          
+
           //Show the baseline calibration active text
           scope_show_calibrating_text();
           
           //Start the calibration process
-          
+          if(scope_do_baseline_calibration() == 1)
+          {
+            //Need to write the calibration and configuration data to FLASH
+//          signal_sys_ok();
+          }
+
+          //Need a variable for the calib status and the next function should be adapted to show failure when needed
           
           //Show the calibration successful text if all went well
           scope_show_calibration_done_text();
-          
+
           //Signal calibration has been done
           calibrationopen = 2;
         }
@@ -974,10 +980,10 @@ void handle_main_menu_touch(void)
       {
         //Close any of the menus if open
         close_open_menus(1);
-        
+
         //Touch outside the menu so wait until touch is released and then quit
         tp_i2c_wait_for_touch_release();
-        
+
         return;
       }
     }
@@ -988,12 +994,12 @@ void handle_main_menu_touch(void)
 
 void handle_channel1_menu_touch(void)
 {
-  //Stay in the menu as long as there is no touch outside the menu  
+  //Stay in the menu as long as there is no touch outside the menu
   while(1)
   {
     //Scan the touch panel for touch
     tp_i2c_read_status();
-    
+
     //Check if there is touch
     if(havetouch)
     {
@@ -1008,10 +1014,10 @@ void handle_channel1_menu_touch(void)
           {
             //Enable the channel
             scopesettings.channel1.enable = 1;
-            
+
             //Update the trigger channel selection in the FPGA as needed
             fpga_swap_trigger_channel();
-            
+
             //Display this
             scope_channel1_enable_select();
             scope_channel1_settings(0);
@@ -1024,7 +1030,7 @@ void handle_channel1_menu_touch(void)
 
             //Update the trigger channel selection in the FPGA as needed
             fpga_swap_trigger_channel();
-            
+
             //Reset the volts/div setting to max
             scopesettings.channel1.voltperdiv = 0;
 
@@ -1044,7 +1050,7 @@ void handle_channel1_menu_touch(void)
           {
             //Enable the channel
             scopesettings.channel1.fftenable = 1;
-            
+
             //Display this
             scope_channel1_fft_show();
           }
@@ -1053,7 +1059,7 @@ void handle_channel1_menu_touch(void)
           {
             //Disable the channel
             scopesettings.channel1.fftenable = 0;
-            
+
             //Display this
             scope_channel1_fft_show();
           }
@@ -1066,10 +1072,10 @@ void handle_channel1_menu_touch(void)
           {
             //Set the channel to DC coupling
             scopesettings.channel1.coupling = 0;
-            
+
             //Update the FPGA
             fpga_set_channel_1_coupling();
-            
+
             //Display this
             scope_channel1_coupling_select();
             scope_channel1_settings(0);
@@ -1079,10 +1085,10 @@ void handle_channel1_menu_touch(void)
           {
             //Set the channel to AC coupling
             scopesettings.channel1.coupling = 1;
-            
+
             //Update the FPGA
             fpga_set_channel_1_coupling();
-            
+
             //Display this
             scope_channel1_coupling_select();
             scope_channel1_settings(0);
@@ -1096,7 +1102,7 @@ void handle_channel1_menu_touch(void)
           {
             //Enable the channel
             scopesettings.channel1.magnification = 0;
-            
+
             //Display this
             scope_channel1_probe_magnification_select();
             scope_channel1_settings(0);
@@ -1106,7 +1112,7 @@ void handle_channel1_menu_touch(void)
           {
             //Disable the channel
             scopesettings.channel1.magnification = 1;
-            
+
             //Display this
             scope_channel1_probe_magnification_select();
             scope_channel1_settings(0);
@@ -1116,13 +1122,13 @@ void handle_channel1_menu_touch(void)
           {
             //Disable the channel
             scopesettings.channel1.magnification = 2;
-            
+
             //Display this
             scope_channel1_probe_magnification_select();
             scope_channel1_settings(0);
           }
         }
-        
+
         //Wait until touch is released before checking on a new position
         tp_i2c_wait_for_touch_release();
       }
@@ -1130,7 +1136,7 @@ void handle_channel1_menu_touch(void)
       {
         //Touch outside the menu so wait until touch is released and then quit
         tp_i2c_wait_for_touch_release();
-        
+
         return;
       }
     }
@@ -1141,12 +1147,12 @@ void handle_channel1_menu_touch(void)
 
 void handle_channel2_menu_touch(void)
 {
-  //Stay in the menu as long as there is no touch outside the menu  
+  //Stay in the menu as long as there is no touch outside the menu
   while(1)
   {
     //Scan the touch panel for touch
     tp_i2c_read_status();
-    
+
     //Check if there is touch
     if(havetouch)
     {
@@ -1161,10 +1167,10 @@ void handle_channel2_menu_touch(void)
           {
             //Enable the channel
             scopesettings.channel2.enable = 1;
-            
+
             //Update the trigger channel selection in the FPGA as needed
             fpga_swap_trigger_channel();
-            
+
             //Display this
             scope_channel2_enable_select();
             scope_channel2_settings(0);
@@ -1177,7 +1183,7 @@ void handle_channel2_menu_touch(void)
 
             //Update the trigger channel selection in the FPGA as needed
             fpga_swap_trigger_channel();
-            
+
             //Reset the volts/div setting to max
             scopesettings.channel2.voltperdiv = 0;
 
@@ -1197,7 +1203,7 @@ void handle_channel2_menu_touch(void)
           {
             //Enable the channel
             scopesettings.channel2.fftenable = 1;
-            
+
             //Display this
             scope_channel2_fft_show();
           }
@@ -1206,7 +1212,7 @@ void handle_channel2_menu_touch(void)
           {
             //Disable the channel
             scopesettings.channel2.fftenable = 0;
-            
+
             //Display this
             scope_channel2_fft_show();
           }
@@ -1219,10 +1225,10 @@ void handle_channel2_menu_touch(void)
           {
             //Set the channel to DC coupling
             scopesettings.channel2.coupling = 0;
-            
+
             //Update the FPGA
             fpga_set_channel_1_coupling();
-            
+
             //Display this
             scope_channel2_coupling_select();
             scope_channel2_settings(0);
@@ -1232,10 +1238,10 @@ void handle_channel2_menu_touch(void)
           {
             //Set the channel to AC coupling
             scopesettings.channel2.coupling = 1;
-            
+
             //Update the FPGA
             fpga_set_channel_1_coupling();
-            
+
             //Display this
             scope_channel2_coupling_select();
             scope_channel2_settings(0);
@@ -1249,7 +1255,7 @@ void handle_channel2_menu_touch(void)
           {
             //Enable the channel
             scopesettings.channel2.magnification = 0;
-            
+
             //Display this
             scope_channel2_probe_magnification_select();
             scope_channel2_settings(0);
@@ -1259,7 +1265,7 @@ void handle_channel2_menu_touch(void)
           {
             //Disable the channel
             scopesettings.channel2.magnification = 1;
-            
+
             //Display this
             scope_channel2_probe_magnification_select();
             scope_channel2_settings(0);
@@ -1269,13 +1275,13 @@ void handle_channel2_menu_touch(void)
           {
             //Disable the channel
             scopesettings.channel2.magnification = 2;
-            
+
             //Display this
             scope_channel2_probe_magnification_select();
             scope_channel2_settings(0);
           }
         }
-        
+
         //Wait until touch is released before checking on a new position
         tp_i2c_wait_for_touch_release();
       }
@@ -1283,7 +1289,7 @@ void handle_channel2_menu_touch(void)
       {
         //Touch outside the menu so wait until touch is released and then quit
         tp_i2c_wait_for_touch_release();
-        
+
         return;
       }
     }
@@ -1295,13 +1301,13 @@ void handle_channel2_menu_touch(void)
 void handle_acquisition_menu_touch(void)
 {
   uint32 i,x,y;
-  
-  //Stay in the menu as long as there is no touch outside the menu  
+
+  //Stay in the menu as long as there is no touch outside the menu
   while(1)
   {
     //Scan the touch panel for touch
     tp_i2c_read_status();
-    
+
     //Check if there is touch
     if(havetouch)
     {
@@ -1317,23 +1323,23 @@ void handle_acquisition_menu_touch(void)
             //Calculate the coordinates for this setting
             x = ((i & 3) * 72) + 10 + ACQ_MENU_XPOS;
             y = ((i >> 2) * 23) + 33 + ACQ_MENU_YPOS;
-            
+
             //Check if touch within this bounding box
             if((xtouch >= x) && (xtouch <= x + 68) && (ytouch >= y) && (ytouch <= y + 20))
             {
               //Set the new speed
               scopesettings.acqusitionspeed = i;
-              
+
               //Set the FPGA time base setting without changing the current time per div setting
               //This way the sampling is actually done with the set speed, but the display stays at the set time per div
               fpga_set_trigger_timebase(sample_rate_time_per_div[i]);
 
-              //Display the new setting              
+              //Display the new setting
               scope_acquisition_speed_select();
-              
+
               //Update the viable time per div settings
               scope_acquisition_timeperdiv_select();
-              
+
               //Update the top menu bar display
               scope_acqusition_settings(0);
               break;
@@ -1349,21 +1355,21 @@ void handle_acquisition_menu_touch(void)
             //Calculate the coordinates for this setting
             x = ((i & 3) * 72) + 10 + ACQ_MENU_XPOS;
             y = ((i >> 2) * 23) + 168 + ACQ_MENU_YPOS;
-            
+
             //Check if touch within this bounding box
             if((xtouch >= x) && (xtouch <= x + 68) && (ytouch >= y) && (ytouch <= y + 20))
             {
               //Set the new time per div
               scopesettings.timeperdiv = ((sizeof(time_div_texts) / sizeof(int8 *)) - 1) - i;
-              
-              //Display the new setting              
+
+              //Display the new setting
               scope_acquisition_timeperdiv_select();
               scope_acqusition_settings(0);
               break;
             }
           }
         }
-        
+
         //Wait until touch is released before checking on a new position
         tp_i2c_wait_for_touch_release();
       }
@@ -1371,7 +1377,7 @@ void handle_acquisition_menu_touch(void)
       {
         //Touch outside the menu so wait until touch is released and then quit
         tp_i2c_wait_for_touch_release();
-        
+
         return;
       }
     }
@@ -1382,12 +1388,12 @@ void handle_acquisition_menu_touch(void)
 
 void handle_trigger_menu_touch(void)
 {
-  //Stay in the menu as long as there is no touch outside the menu  
+  //Stay in the menu as long as there is no touch outside the menu
   while(1)
   {
     //Scan the touch panel for touch
     tp_i2c_read_status();
-    
+
     //Check if there is touch
     if(havetouch)
     {
@@ -1402,16 +1408,16 @@ void handle_trigger_menu_touch(void)
           {
             //Set to auto mode
             scopesettings.triggermode = 0;
-            
+
             //Set the new mode in the hardware
             fpga_set_trigger_mode();
-            
+
             //Make sure the scope is running
             scopesettings.runstate = 0;
-            
+
             //Show this on the screen
             scope_run_stop_text();
-            
+
             //Need to call some function here
 /*
 //Some trigger flags but not sure if they are needed any longer
@@ -1431,15 +1437,15 @@ void handle_trigger_menu_touch(void)
 
             //Set the new mode in the hardware
             fpga_set_trigger_mode();
-            
+
             //Make sure the scope is running
             scopesettings.runstate = 0;
-            
+
             //Show this on the screen
             scope_run_stop_text();
-            
+
             //Need to call some function here
-            
+
             //Limit time base setting to 10ms/div and down
             //If timebase < 11 make it 11
 /*
@@ -1448,7 +1454,7 @@ void handle_trigger_menu_touch(void)
             pcVar5[0x37] = '\x01';
 
             FUN_80026828();    //Set change to FPGA
- 
+
             display_run_stop_text((uint)(byte)pcVar5[0x3a]);
 
             if ((byte)pcVar5[10] < 0xb)
@@ -1458,7 +1464,7 @@ void handle_trigger_menu_touch(void)
               display_time_div_setting();
             }
 */
-            
+
             //Display this
             scope_trigger_mode_select();
             scope_trigger_settings(0);
@@ -1471,13 +1477,13 @@ void handle_trigger_menu_touch(void)
 
             //Set the new mode in the hardware
             fpga_set_trigger_mode();
-            
+
             //Make sure the scope is running
             scopesettings.runstate = 0;
-            
+
             //Show this on the screen
             scope_run_stop_text();
-            
+
             //Need to call some function here
 /*
 //Normal and single only allowed from 10ms/div to 10ns/div
@@ -1506,7 +1512,7 @@ void handle_trigger_menu_touch(void)
           {
             //Set the trigger edge to rising
             scopesettings.triggeredge = 0;
-            
+
             //Update the FPGA
             fpga_set_trigger_edge();
 
@@ -1519,7 +1525,7 @@ void handle_trigger_menu_touch(void)
           {
             //Set the trigger edge to falling
             scopesettings.triggeredge = 1;
-            
+
             //Update the FPGA
             fpga_set_trigger_edge();
 
@@ -1566,7 +1572,7 @@ void handle_trigger_menu_touch(void)
             }
           }
         }
-        
+
         //Wait until touch is released before checking on a new position
         tp_i2c_wait_for_touch_release();
       }
@@ -1574,7 +1580,7 @@ void handle_trigger_menu_touch(void)
       {
         //Touch outside the menu so wait until touch is released and then quit
         tp_i2c_wait_for_touch_release();
-        
+
         return;
       }
     }
@@ -1609,7 +1615,7 @@ void handle_right_basic_menu_touch(void)
         //Set the sample rate that belongs to the selected time per div setting
         scopesettings.acqusitionspeed = time_per_div_sample_rate[scopesettings.timeperdiv];
       }
-      
+
       //Display the changed state
       scope_run_stop_text();
     }
@@ -1624,7 +1630,7 @@ void handle_right_basic_menu_touch(void)
 
       //Button back to inactive state
       scope_page_up_button(0);
-      
+
       //Check if not on first item
       if(viewcurrentindex > 0)
       {
@@ -1656,13 +1662,15 @@ void handle_right_basic_menu_touch(void)
       scope_auto_set_button(0);
 
 /*
-      pcVar5[0x21] = '\0';            //Trigger mode
-      FUN_80026828();                 //Set trigger mode in the FPGA
+      pcVar5[0x21] = '\0';            //Trigger mode on auto
+      set_fpga_trigger_mode();        //Set trigger mode in the FPGA
       display_trigger_settings(0);
-      FUN_80002050();                 //Perform the actual auto set action?? (perform_auto_set)
+
+      perform_auto_set();             //Perform the actual auto set action. Also does the three functions above this one!!
+
       display_ch1_settings(0);
       display_ch2_settings(0);
-*/      
+*/
     }
     else
     {
@@ -1703,7 +1711,7 @@ void handle_right_basic_menu_touch(void)
 
     //Button back to inactive state
     scope_t_cursor_button(0);
-    
+
     //Toggle the enable setting
     scopesettings.timecursorsenable ^= 1;
   }
@@ -1733,7 +1741,7 @@ void handle_right_basic_menu_touch(void)
 
     //Button back to inactive state
     scope_measures_button(0);
-    
+
     //Save the screen rectangle where the menu will be displayed
     display_set_destination_buffer(displaybuffer2);
     display_copy_rect_from_screen(231, 263, 499, 214);
@@ -1759,7 +1767,7 @@ void handle_right_basic_menu_touch(void)
 
     //Button back to inactive state
     scope_save_picture_button(0);
-    
+
     //Save the picture on the SD card
     scope_save_view_item_file(VIEW_TYPE_PICTURE);
   }
@@ -1777,7 +1785,7 @@ void handle_right_basic_menu_touch(void)
 
       //Button back to inactive state
       scope_save_wave_button(0);
-    
+
       //Save the waveform on the SD card
       scope_save_view_item_file(VIEW_TYPE_WAVEFORM);
     }
@@ -1791,7 +1799,7 @@ void handle_right_basic_menu_touch(void)
 
       //Button back to inactive state
       scope_delete_wave_button(0);
-      
+
       //Ask user for confirmation of the delete
       if(handle_confirm_delete() == VIEW_CONFIRM_DELETE_YES)
       {
@@ -1847,7 +1855,7 @@ void handle_right_volts_div_menu_touch(void)
 
     //Button back to inactive state
     scope_ch1_sensitivity_control(0,0);
-    
+
     //Only if channel is enabled
     if(scopesettings.channel1.enable)
     {
@@ -1858,22 +1866,22 @@ void handle_right_volts_div_menu_touch(void)
         //The latter maybe has to do with a stored wave that is being looked at
         //The first check might have to do with not having the signal in memory to do the change on????
         //For now just allowing constant change within the max limit
-        
+
         //Step up to the next setting. (Lowering the setting)
         scopesettings.channel1.voltperdiv++;
-        
+
         //Show the change on the screen
         scope_channel1_settings(0);
-        
+
         //Only update the FPGA in normal view mode
         if(scopesettings.waveviewmode == 0)
         {
           //Set the volts per div for this channel
           fpga_set_channel_1_voltperdiv();
-          
+
           //Need a ms timed delay
         }
-        
+
       }
     }
 /*
@@ -1919,7 +1927,7 @@ void handle_right_volts_div_menu_touch(void)
 
     //Button back to inactive state
     scope_ch1_sensitivity_control(1,0);
-    
+
     //Only if channel is enabled
     if(scopesettings.channel1.enable)
     {
@@ -1929,13 +1937,13 @@ void handle_right_volts_div_menu_touch(void)
         //Original code has some limit on updating when the scope is not running on the time base setting or a previous stored volts per div setting
         //The latter maybe has to do with a stored wave that is being looked at
         //For now just allowing constant change within the max limit
-        
+
         //Step down to the next setting. (Increasing the setting)
         scopesettings.channel1.voltperdiv--;
-        
+
         //Show the change on the screen
         scope_channel1_settings(0);
-        
+
         //Only update the FPGA in normal view mode
         if(scopesettings.waveviewmode == 0)
         {
@@ -1983,7 +1991,7 @@ void handle_right_volts_div_menu_touch(void)
 
     //Button back to inactive state
     scope_ch2_sensitivity_control(0,0);
-    
+
     //Only if channel is enabled
     if(scopesettings.channel2.enable)
     {
@@ -1993,19 +2001,19 @@ void handle_right_volts_div_menu_touch(void)
         //Original code has some limit on updating when the scope is not running on the time base setting or a previous stored volts per div setting
         //The latter maybe has to do with a stored wave that is being looked at
         //For now just allowing constant change within the max limit
-        
+
         //Step up to the next setting. (Lowering the setting)
         scopesettings.channel2.voltperdiv++;
-        
+
         //Show the change on the screen
         scope_channel2_settings(0);
-        
+
         //Only update the FPGA in normal view mode
         if(scopesettings.waveviewmode == 0)
         {
           //Set the volts per div for this channel
           fpga_set_channel_2_voltperdiv();
-          
+
           //Need a ms timed delay
         }
       }
@@ -2047,7 +2055,7 @@ void handle_right_volts_div_menu_touch(void)
 
     //Button back to inactive state
     scope_ch2_sensitivity_control(1,0);
-    
+
     //Only if channel is enabled
     if(scopesettings.channel2.enable)
     {
@@ -2057,19 +2065,19 @@ void handle_right_volts_div_menu_touch(void)
         //Original code has some limit on updating when the scope is not running on the time base setting or a previous stored volts per div setting
         //The latter maybe has to do with a stored wave that is being looked at
         //For now just allowing constant change within the max limit
-        
+
         //Step down to the next setting. (Increasing the setting)
         scopesettings.channel2.voltperdiv--;
-        
+
         //Show the change on the screen
         scope_channel2_settings(0);
-        
+
         //Only update the FPGA in normal view mode
         if(scopesettings.waveviewmode == 0)
         {
           //Set the volts per div for this channel
           fpga_set_channel_2_voltperdiv();
-          
+
           //Need a ms timed delay
         }
       }
@@ -2100,7 +2108,7 @@ void handle_right_volts_div_menu_touch(void)
     }
 */
   }
-  //Check if 50% trigger of show grid button is touched
+  //Check if 50% trigger or show grid button is touched
   else if((ytouch >= 423) && (ytouch <= 477))
   {
     //Check on wave view state for which button is shown
@@ -2118,7 +2126,7 @@ void handle_right_volts_div_menu_touch(void)
       //This needs to be done for 50% trigger
       if (pcVar5[0x3a] == '\0')  //Run mode
       {
-        FUN_80029314();
+        FUN_80029314();    //perform_50_percent_trigger_setup
       }
 */
     }
@@ -2133,7 +2141,7 @@ void handle_right_volts_div_menu_touch(void)
       //Button back to inactive state
       scope_show_grid_button(0);
 /*
-      //This needs to be done for show grid    
+      //This needs to be done for show grid
       if (*(char *)(DAT_8002030c + 3) == '\x14')
       {
         *(undefined *)(DAT_8002030c + 3) = 0;
@@ -2172,13 +2180,13 @@ void handle_measures_menu_touch(void)
   int channel;
   int item;
   int found;
-  
-  //Stay in the menu as long as there is no touch outside the menu  
+
+  //Stay in the menu as long as there is no touch outside the menu
   while(1)
   {
     //Scan the touch panel for touch
     tp_i2c_read_status();
-    
+
     //Check if there is touch
     if(havetouch)
     {
@@ -2192,7 +2200,7 @@ void handle_measures_menu_touch(void)
         while((found == 0) && (channel < 2))
         {
           item = 0;
-          
+
           //For each channel 12 items
           while((found == 0) && (item<12))
           {
@@ -2207,26 +2215,26 @@ void handle_measures_menu_touch(void)
               //It looks for the first free spot and inserts itself there. This gives a messy image of the two channels interleaving with settings
               //On disable the list is shifted to fill the gap
               //For this an items in list counter might be useful
-              
+
               //A nicer setup is to reserve separate sections per channel on the screen for the enabled items and always show them in a fixed
               //order. Makes reading them easier
-              
-              
+
+
               //Draw the changed item
               scope_measures_menu_item(channel, item);
-              
+
               //Signal item found
               found = 1;
             }
-            
+
             //Next item
             item++;
           }
-          
+
           //Next channel
           channel++;
         }
-        
+
         //Wait until touch is released before checking on a new position
         tp_i2c_wait_for_touch_release();
       }
@@ -2234,7 +2242,7 @@ void handle_measures_menu_touch(void)
       {
         //Touch outside the menu so wait until touch is released and then quit
         tp_i2c_wait_for_touch_release();
-        
+
         return;
       }
     }
@@ -2257,13 +2265,13 @@ void handle_view_mode_touch(void)
 {
   int32 index;
   int32 found;
-  
+
   //Stay in this mode as long as the return is not touched
   while(1)
   {
     //Read the touch panel status
     tp_i2c_read_status();
-  
+
     //Check if the panel is touched
     if(havetouch)
     {
@@ -2280,7 +2288,7 @@ void handle_view_mode_touch(void)
         {
           //Deselect the possibly highlighted select button
           scope_select_button(0);
-          
+
           //Depending on the state take action
           if((viewselectmode == VIEW_SELECT_NONE) || (viewselectmode == VIEW_SELECT_INDIVIDUAL))
           {
@@ -2289,7 +2297,7 @@ void handle_view_mode_touch(void)
 
             //Switch to all items selected mode
             viewselectmode = VIEW_SELECT_ALL;
-            
+
             //Make sure all selected signs are displayed
             for(index=0;index<viewitemsonpage;index++)
             {
@@ -2308,7 +2316,7 @@ void handle_view_mode_touch(void)
 
             //Switch to all items deselected mode
             viewselectmode = VIEW_SELECT_NONE;
-            
+
             //Not in a selected mode any more so clear the active selected signs
             for(index=0;index<viewitemsonpage;index++)
             {
@@ -2320,7 +2328,7 @@ void handle_view_mode_touch(void)
               }
             }
           }
-          
+
           //Update the selected signs
           scope_display_selected_signs();
         }
@@ -2354,11 +2362,11 @@ void handle_view_mode_touch(void)
           {
             //Nothing selected so switch to individual select mode
             viewselectmode = VIEW_SELECT_INDIVIDUAL;
-            
+
             //Highlight the select button
             scope_select_button(1);
           }
-          
+
           //Update the selected signs
           scope_display_selected_signs();
         }
@@ -2380,7 +2388,7 @@ void handle_view_mode_touch(void)
                 break;
               }
             }
-            
+
             //Check if there is an item to delete
             if(found)
             {
@@ -2396,27 +2404,27 @@ void handle_view_mode_touch(void)
                   {
                     //Set the current index for this file
                     viewcurrentindex = index + (viewpage * VIEW_ITEMS_PER_PAGE);
-                    
+
                     //Remove the current item from the lists and delete the item from disk
                     scope_remove_item_from_lists(1);
                   }
                 }
-                
+
                 //Save the list files
                 scope_save_list_files();
-                
+
                 //Clear the select flags
                 memset(viewitemselected, VIEW_ITEM_NOT_SELECTED, VIEW_ITEMS_PER_PAGE);
-                
+
                 //Clear the select state and the button highlights
                 viewselectmode = VIEW_SELECT_NONE;
                 scope_select_all_button(0);
                 scope_select_button(0);
-                
+
                 //Redisplay the thumbnails
                 scope_count_and_display_thumbnails();
               }
-            }            
+            }
           }
         }
         //Else check if the page up button is touched
@@ -2427,17 +2435,17 @@ void handle_view_mode_touch(void)
           {
             //Clear the select mode
             viewselectmode = 0;
-            
+
             //Deselect the possibly highlighted buttons
             scope_select_all_button(0);
             scope_select_button(0);
 
             //Clear the item selected flags
             memset(viewitemselected, 0, VIEW_ITEMS_PER_PAGE);
-            
+
             //Select the previous page
             viewpage--;
-          
+
             //Display the previous page of thumbnails
             scope_display_thumbnails();
           }
@@ -2450,17 +2458,17 @@ void handle_view_mode_touch(void)
           {
             //Clear the select mode
             viewselectmode = 0;
-            
+
             //Deselect the possibly highlighted buttons
             scope_select_all_button(0);
             scope_select_button(0);
 
             //Clear the item selected flags
             memset(viewitemselected, 0, VIEW_ITEMS_PER_PAGE);
-            
+
             //Select the next page
             viewpage++;
-          
+
             //Display the next page of thumbnails
             scope_display_thumbnails();
           }
@@ -2481,7 +2489,7 @@ void handle_view_mode_touch(void)
           {
             //Signal item found
             found = 1;
-            
+
             //Quit the loop when found
             break;
           }
@@ -2489,7 +2497,7 @@ void handle_view_mode_touch(void)
           //Next item
           index++;
         }
-        
+
         //Check if touch was on one of the available items
         if(found)
         {
@@ -2507,7 +2515,7 @@ void handle_view_mode_touch(void)
               //If not make sure it gets displayed
               viewitemselected[index] = VIEW_ITEM_SELECTED_NOT_DISPLAYED;
             }
-            
+
             //Update the selected signs
             //Could improve on this with a single sign update function
             scope_display_selected_signs();
@@ -2516,10 +2524,10 @@ void handle_view_mode_touch(void)
           {
             //Need to wait for touch to release before opening the selected item
             tp_i2c_wait_for_touch_release();
-            
+
             //Set the current index for this file
             viewcurrentindex = index + (viewpage * VIEW_ITEMS_PER_PAGE);
-            
+
             //Try to load the trace data for the file indicated by the current index and view type
             if(scope_load_trace_data() == VIEW_TRACE_LOAD_OK)
             {
@@ -2528,7 +2536,7 @@ void handle_view_mode_touch(void)
               {
                 //On initialization draw the bottom menu bar with a save of the background
                 scope_setup_bottom_file_menu(VIEW_BOTTON_MENU_INIT);
-                
+
                 //Handle the touch
                 handle_picture_view_touch();
               }
@@ -2541,25 +2549,25 @@ void handle_view_mode_touch(void)
                 {
                   //Use the main touch handler for waveform view
                   touch_handler();
-                  
+
                   //Need to check on changes or just redraw the display every loop???
-                  
+
                 }
-                
-                
+
+
               }
             }
 
             //Display the file actions menu on the right side of the screen
             scope_setup_right_file_menu();
-            
+
             //Display the available thumbnails for the current view type
             scope_count_and_display_thumbnails();
           }
         }
       }
     }
-    
+
     //Need to wait for touch to release before checking again
     tp_i2c_wait_for_touch_release();
   }
@@ -2574,7 +2582,7 @@ void handle_picture_view_touch(void)
   {
     //Read the touch panel status
     tp_i2c_read_status();
-  
+
     //Check if the panel is touched
     if(havetouch)
     {
@@ -2586,7 +2594,7 @@ void handle_picture_view_touch(void)
         {
           //Toggle the menu visibility
           viewbottommenustate ^= VIEW_BOTTON_MENU_SHOW;
-          
+
           //Update accordingly
           scope_setup_bottom_file_menu(viewbottommenustate);
         }
@@ -2643,7 +2651,7 @@ void handle_picture_view_touch(void)
             {
               //Select the previous one
               viewcurrentindex--;
-              
+
               //Display the new picture item
               if(scope_display_picture_item() == VIEW_TRACE_LOAD_ERROR)
               {
@@ -2661,7 +2669,7 @@ void handle_picture_view_touch(void)
             {
               //Select the next one
               viewcurrentindex++;
-              
+
               //Display the new picture item
               if(scope_display_picture_item() == VIEW_TRACE_LOAD_ERROR)
               {
@@ -2678,7 +2686,7 @@ void handle_picture_view_touch(void)
         scope_setup_bottom_file_menu(VIEW_BOTTON_MENU_SHOW);
       }
     }
-    
+
     //Need to wait for touch to release before checking again
     tp_i2c_wait_for_touch_release();
   }
@@ -2689,36 +2697,36 @@ void handle_picture_view_touch(void)
 int32 handle_confirm_delete(void)
 {
   int32 choice = 0;
-  
+
   //Save the screen rectangle where the menu will be displayed
   display_copy_rect_from_screen(310, 192, 180, 96);
-  
+
   //display the confirm delete menu
   //Draw the background in grey
   display_set_fg_color(0x00202020);
   display_fill_rect(310, 192, 180, 96);
-  
+
   //Draw the border in a lighter grey
   display_set_fg_color(0x00303030);
   display_draw_rect(310, 192, 180, 96);
-  
+
   //Draw the buttons
   display_fill_rect(320, 228, 74, 50);
   display_fill_rect(405, 228, 74, 50);
-  
+
   //White color for text and use font_3
   display_set_fg_color(0x00FFFFFF);
   display_set_font(&font_3);
   display_text(340, 204, "Confirm to delete?");
   display_text(348, 246, "NO");
   display_text(431, 246, "YES");
-  
+
   //wait for touch
   while(1)
   {
     //Read the touch panel status
     tp_i2c_read_status();
-  
+
     //Check if the panel is touched
     if(havetouch)
     {
@@ -2727,7 +2735,7 @@ int32 handle_confirm_delete(void)
       {
         //Set the chosen option
         choice = VIEW_CONFIRM_DELETE_NO;
-        
+
         //Done so quit the loop
         break;
       }
@@ -2736,22 +2744,22 @@ int32 handle_confirm_delete(void)
       {
         //Set the chosen option
         choice = VIEW_CONFIRM_DELETE_YES;
-        
+
         //Done so quit the loop
         break;
       }
-    
+
       //Need to wait for touch to release before checking again
       tp_i2c_wait_for_touch_release();
     }
   }
-  
+
   //Need to wait for touch to release before returning
   tp_i2c_wait_for_touch_release();
 
   //Restore the original screen
   display_copy_rect_to_screen(310, 192, 180, 96);
-  
+
   //return the choice
   return(choice);
 }
@@ -2761,7 +2769,7 @@ int32 handle_confirm_delete(void)
 void close_open_menus(uint32 closemain)
 {
   //Only one of these menu's will be opened at any time
-  
+
   //Check if the screen brightness slider is open
   if(screenbrightnessopen)
   {
@@ -2793,7 +2801,7 @@ void close_open_menus(uint32 closemain)
   {
     //Set the button inactive
     scope_system_settings_calibration_item(0);
-    
+
     //Restore the screen under the calibration text
     display_set_source_buffer(displaybuffer2);
     display_copy_rect_to_screen(395, 222, 199, 59);
@@ -2820,20 +2828,20 @@ void move_trigger_point_position(void)
 {
   int32 diff;
   int32 position;
-  
+
   //Calculate the distance to move the setting with
   diff = xtouch - previousxtouch;
-  
+
   //Make it based on move speed
   if(scopesettings.movespeed)
   {
     //For slow divide by 5
     diff /= 5;
   }
-  
+
   //Calculate the new position
   position = (int32)previous_trigger_point_position + diff;
-  
+
   //Limit it on the trace portion of the screen
   if(position < 2)
   {
@@ -2845,7 +2853,7 @@ void move_trigger_point_position(void)
     //And not above 712;
     position = 712;
   }
-  
+
   //Update the current position
   scopesettings.triggerposition = position;
 }
@@ -2856,7 +2864,7 @@ void change_channel_1_offset(void)
 {
   int32 diff;
   int32 position;
-  
+
   //Calculate the distance to move the setting with based on the display mode
   if(scopesettings.xymodedisplay == 0)
   {
@@ -2868,17 +2876,17 @@ void change_channel_1_offset(void)
     //For x-y mode display use x displacement
     diff = previousxtouch - xtouch;
   }
-  
+
   //Make it based on move speed
   if(scopesettings.movespeed)
   {
     //For slow divide by 5
     diff /= 5;
   }
-  
+
   //Calculate the new position
   position = (int32)previous_channel_1_offset - diff;
-  
+
   //Limit it on the trace portion of the screen
   if(position < 6)
   {
@@ -2890,10 +2898,10 @@ void change_channel_1_offset(void)
     //And not above 394;
     position = 394;
   }
-  
+
   //Update the current position
   scopesettings.channel1.traceoffset = position;
-  
+
   //Write it to the FPGA
   fpga_set_channel_1_offset();
 }
@@ -2904,20 +2912,20 @@ void change_channel_2_offset(void)
 {
   int32 diff;
   int32 position;
-  
+
   //Calculate the distance to move the setting with
   diff = ytouch - previousytouch;
-  
+
   //Make it based on move speed
   if(scopesettings.movespeed)
   {
     //For slow divide by 5
     diff /= 5;
   }
-  
+
   //Calculate the new position
   position = (int32)previous_channel_2_offset - diff;
-  
+
   //Limit it on the trace portion of the screen
   if(position < 6)
   {
@@ -2929,10 +2937,10 @@ void change_channel_2_offset(void)
     //And not above 394;
     position = 394;
   }
-  
+
   //Update the current position
   scopesettings.channel2.traceoffset = position;
-  
+
   //Write it to the FPGA
   fpga_set_channel_2_offset();
 }
@@ -2943,20 +2951,20 @@ void change_trigger_level_offset(void)
 {
   int32 diff;
   int32 position;
-  
+
   //Calculate the distance to move the setting with
   diff = ytouch - previousytouch;
-  
+
   //Make it based on move speed
   if(scopesettings.movespeed)
   {
     //For slow divide by 5
     diff /= 5;
   }
-  
+
   //Calculate the new position
   position = (int32)previous_trigger_level_offset - diff;
-  
+
   //Limit it on the trace portion of the screen
   if(position < 6)
   {
@@ -2968,7 +2976,7 @@ void change_trigger_level_offset(void)
     //And not above 394;
     position = 394;
   }
-  
+
   //Update the current position
   scopesettings.triggeroffset = position;
 }
@@ -2979,20 +2987,20 @@ void move_left_time_cursor_position(void)
 {
   int32 diff;
   int32 position;
-  
+
   //Calculate the distance to move the setting with
   diff = xtouch - previousxtouch;
-  
+
   //Make it based on move speed
   if(scopesettings.movespeed)
   {
     //For slow divide by 5
     diff /= 5;
   }
-  
+
   //Calculate the new position
   position = (int32)previous_left_time_cursor_position + diff;
-  
+
   //Limit it on the trace portion of the screen and the right time cursor
   if(position < 3)
   {
@@ -3004,7 +3012,7 @@ void move_left_time_cursor_position(void)
     //And not right of the right cursor;
     position = scopesettings.timecursor2position - 1;
   }
-  
+
   //Update the current position
   scopesettings.timecursor1position = position;
 }
@@ -3015,20 +3023,20 @@ void move_right_time_cursor_position(void)
 {
   int32 diff;
   int32 position;
-  
+
   //Calculate the distance to move the setting with
   diff = xtouch - previousxtouch;
-  
+
   //Make it based on move speed
   if(scopesettings.movespeed)
   {
     //For slow divide by 5
     diff /= 5;
   }
-  
+
   //Calculate the new position
   position = (int32)previous_right_time_cursor_position + diff;
-  
+
   //Limit it on the trace portion of the screen and the left cursor
   if(position <= scopesettings.timecursor1position)
   {
@@ -3040,7 +3048,7 @@ void move_right_time_cursor_position(void)
     //And not beyond end of the screen;
     position = 722;
   }
-  
+
   //Update the current position
   scopesettings.timecursor2position = position;
 }
@@ -3051,20 +3059,20 @@ void move_top_volt_cursor_position(void)
 {
   int32 diff;
   int32 position;
-  
+
   //Calculate the distance to move the setting with
   diff = ytouch - previousytouch;
-  
+
   //Make it based on move speed
   if(scopesettings.movespeed)
   {
     //For slow divide by 5
     diff /= 5;
   }
-  
+
   //Calculate the new position
   position = (int32)previous_top_volt_cursor_position + diff;
-  
+
   //Limit it on the trace portion of the screen and not below the bottom cursor
   if(position < 47)
   {
@@ -3076,7 +3084,7 @@ void move_top_volt_cursor_position(void)
     //And not below the bottom cursor;
     position = scopesettings.voltcursor2position - 1;
   }
-  
+
   //Update the current position
   scopesettings.voltcursor1position = position;
 }
@@ -3087,20 +3095,20 @@ void move_bottom_volt_cursor_position(void)
 {
   int32 diff;
   int32 position;
-  
+
   //Calculate the distance to move the setting with
   diff = ytouch - previousytouch;
-  
+
   //Make it based on move speed
   if(scopesettings.movespeed)
   {
     //For slow divide by 5
     diff /= 5;
   }
-  
+
   //Calculate the new position
   position = (int32)previous_bottom_volt_cursor_position + diff;
-  
+
   //Limit it on the trace portion of the screen and not above the top cursor
   if(position <= scopesettings.voltcursor1position)
   {
@@ -3112,7 +3120,7 @@ void move_bottom_volt_cursor_position(void)
     //And not above 447;
     position = 447;
   }
-  
+
   //Update the current position
   scopesettings.voltcursor2position = position;
 }

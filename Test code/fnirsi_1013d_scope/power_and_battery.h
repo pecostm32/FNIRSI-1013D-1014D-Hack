@@ -16,9 +16,6 @@
 #define EINT_PE_CFG_REG1      ((volatile uint32 *)(0x01C20A24))
 #define EINT_PE_ENB_REG       ((volatile uint32 *)(0x01C20A30))
 
-
-#define PORTE_EINT_IRQ        0x27
-
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void battery_check_init(void);

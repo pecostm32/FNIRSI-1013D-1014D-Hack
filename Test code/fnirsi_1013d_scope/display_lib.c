@@ -1303,6 +1303,65 @@ void display_top_pointer(uint32 xpos, uint32 ypos, int8 id)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+uint8 printhexnibble(uint8 nibble)
+{
+  //Check if needs to be converted to A-F character
+  if(nibble > 9)
+  {
+    //To make alpha add 55. (55 = 'A' - 10)
+    nibble += 55;
+  }
+  else
+  {
+    //To make digit add '0'
+    nibble += '0';
+  }
+
+  return(nibble);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void display_hex(uint32 xpos, uint32 ypos, uint32 digits, int32 value)
+{
+  int8  b[13];
+  int32 i;
+  int32 shifter;
+    
+  //Limit to 8 digits
+  if(digits > 8)
+  {
+    digits = 8;
+  }
+  
+  //Set the starting shifter
+  shifter = (digits * 4) - 4;
+  
+  //Put in the hexadecimal leader
+  memcpy(b, "0x", 2);
+  
+  //Compensate for the leader
+  digits += 2;
+  
+  //Put in the digits after the leader
+  for(i=2;i<digits;i++)
+  {
+    //Add the current digit to the string
+    b[i] = printhexnibble((value >> shifter) & 0x0F);
+    
+    //Adjust the shifter
+    shifter -= 4;
+  }
+  
+  //Terminate the string
+  b[i] = 0;
+  
+  //Display the result
+  display_text(xpos, ypos, b);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 void display_decimal(uint32 xpos, uint32 ypos, int32 value)
 {
   char   b[13];

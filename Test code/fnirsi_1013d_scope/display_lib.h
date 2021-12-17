@@ -96,6 +96,7 @@ void display_top_pointer(uint32 xpos, uint32 ypos, int8 id);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+void display_hex(uint32 xpos, uint32 ypos, uint32 digits, int32 value);
 void display_decimal(uint32 xpos, uint32 ypos, int32 value);
 void display_character(uint32 xpos, uint32 ypos, int8 text);
 void display_text(uint32 xpos, uint32 ypos, int8 *text);
