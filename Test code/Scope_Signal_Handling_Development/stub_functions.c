@@ -98,9 +98,13 @@ struct tagFPGA_DATA
   uint8   param_crypt;
   uint8   param_mode;
   uint8   param_id;
+  uint8   param_length;
   uint8   param_data[7];
   
   uint8   param_0x0B_data;
+  
+  int16   param_0x12_low;
+  int16   param_0x12_high;
   
   uint8   cmd0x14count[2];
 };
@@ -373,16 +377,23 @@ void getsamples(void)
   for(i=0;i<HALF_NUMBER_OF_SAMPLES;i++)
   {
     //Adjust the samples based on a scaler and an offset. Also put in a calibration error between the two converters.
-    channel1_signal_data_2[i] = calculatesample(*sptr1++, channel1_scaler, channel1_offset, 3);
+    channel1_signal_data_2[i] = calculatesample(*sptr1++, channel1_scaler, channel1_offset, 4);
     channel1_signal_data_1[i] = calculatesample(*sptr1++, channel1_scaler, channel1_offset, 0);
 
-    channel2_signal_data_2[i] = calculatesample(*sptr2++, channel2_scaler, channel2_offset, -7);
+    channel2_signal_data_2[i] = calculatesample(*sptr2++, channel2_scaler, channel2_offset, -5);
     channel2_signal_data_1[i] = calculatesample(*sptr2++, channel2_scaler, channel2_offset, 0);
   }
-
       
   //Add a random error where the ADC1 buffer is cleared before reading.
-  
+  if((rand() % 38) == 0)
+  {
+    memset(channel1_signal_data_1, 0, HALF_NUMBER_OF_SAMPLES);
+  }
+
+  if((rand() % 49) == 0)
+  {
+    memset(channel2_signal_data_1, 0, HALF_NUMBER_OF_SAMPLES);
+  }
   
   
   //No trigger yet when data is fresh from new capture
@@ -577,6 +588,17 @@ void fpga_write_cmd(uint8 command)
               fpga_data.param_data[5] = 0;
               fpga_data.param_data[6] = 0x22;
               break;
+              
+            case 0x12:
+            {
+              int offset = (fpga_data.param_0x12_high - fpga_data.param_0x12_low) * 100;
+              
+              fpga_data.param_data[3] = offset >> 24;
+              fpga_data.param_data[4] = offset >> 16;
+              fpga_data.param_data[5] = offset >> 8;
+              fpga_data.param_data[6] = offset;
+              break;
+            }
           }
 
           //Add the crypt byte to the data
@@ -622,11 +644,37 @@ void fpga_write_cmd(uint8 command)
         //Get the parameter id for file handling
         fpga_data.param_id = (fpga_data.param_data[1] ^ fpga_data.param_crypt) >> 2;
         
+        fpga_data.param_length = (fpga_data.param_data[1] ^ fpga_data.param_crypt) & 0x03;
+        
         switch(fpga_data.param_id)
         {
           case 0x0B:
             //No checks, just get the data for now
             fpga_data.param_0x0B_data = fpga_data.param_data[6] ^ fpga_data.param_crypt;
+            break;
+            
+          case 0x12:
+            //Inefficient but quick fix
+            if(fpga_data.param_length == 3)
+            {
+              fpga_data.param_0x12_low  = (fpga_data.param_data[6] ^ fpga_data.param_crypt) | ((fpga_data.param_data[5] ^ fpga_data.param_crypt) << 8);
+              fpga_data.param_0x12_high = (fpga_data.param_data[4] ^ fpga_data.param_crypt) | ((fpga_data.param_data[3] ^ fpga_data.param_crypt) << 8);
+            }
+            else if(fpga_data.param_length == 2)
+            {
+              fpga_data.param_0x12_low  = (fpga_data.param_data[6] ^ fpga_data.param_crypt) | ((fpga_data.param_data[5] ^ fpga_data.param_crypt) << 8);
+              fpga_data.param_0x12_high = (fpga_data.param_data[4] ^ fpga_data.param_crypt);
+            }
+            else if(fpga_data.param_length == 1)
+            {
+              fpga_data.param_0x12_low  = (fpga_data.param_data[6] ^ fpga_data.param_crypt) | ((fpga_data.param_data[5] ^ fpga_data.param_crypt) << 8);
+              fpga_data.param_0x12_high = 0;
+            }
+            else
+            {
+              fpga_data.param_0x12_low  = (fpga_data.param_data[6] ^ fpga_data.param_crypt);
+              fpga_data.param_0x12_high = 0;
+            }
             break;
         }
       }
@@ -677,7 +725,7 @@ void fpga_write_byte(uint8 data)
       switch(fpga_data.current_command)
       {
         case 0x0F:
-          if(cmd0F_input == 1)
+          if(cmd0F_input == 0)
           {
             //Freeze the signal generator to allow for proper sampling
             signalgeneratorfreeze();
@@ -896,7 +944,7 @@ void fpga_set_channel_1_offset(void)
   offset = (signal_adjusters[0] * offset) / signal_adjusters[scopesettings.channel1.voltperdiv];
   
   //Write the calibrated offset data
-  channel1_offset = (1350 - (channel1_calibration_data[scopesettings.channel1.voltperdiv] - offset)) * 0.2795031;
+  channel1_offset = (1500 - (channel1_calibration_data[scopesettings.channel1.voltperdiv] - offset)) * 0.170666666666667;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -957,7 +1005,7 @@ void fpga_set_channel_2_offset(void)
   offset = (signal_adjusters[0] * offset) / signal_adjusters[scopesettings.channel2.voltperdiv];
   
   //Write the calibrated offset data
-  channel2_offset = (1350 - (channel2_calibration_data[scopesettings.channel2.voltperdiv] - offset)) * 0.2795031;
+  channel2_offset = (1500 - (channel2_calibration_data[scopesettings.channel2.voltperdiv] - offset)) * 0.170666666666667;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -1116,9 +1164,10 @@ uint16 fpga_prepare_for_transfer(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void fpga_read_adc1_data(uint8 command, uint16 *buffer, int32 count, uint32 signaladjust, uint32 multiply, uint32 offset)
+int fpga_read_adc1_data(uint8 command, uint16 *buffer, int32 count, uint32 signaladjust, uint32 multiply, uint32 offset)
 {
   register uint32 sample;
+  register uint32 skip = 1;
   
   //Send a command for getting trace data from the FPGA
   fpga_write_cmd(command);
@@ -1132,6 +1181,11 @@ void fpga_read_adc1_data(uint8 command, uint16 *buffer, int32 count, uint32 sign
   {
     //Read the data
     sample = (uint16)fpga_read_byte(); // | (fpga_read_byte() << 8);
+    
+    if(sample)
+    {
+      skip = 0;
+    }
     
     //Adjust the data for the correct voltage per div setting
     sample = (41954 * sample * signaladjust) >> 22;
@@ -1165,16 +1219,19 @@ void fpga_read_adc1_data(uint8 command, uint16 *buffer, int32 count, uint32 sign
     //One read done
     count--;
   }
+  
+  return(skip);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void fpga_read_adc2_data(uint8 command, uint16 *buffer, int32 count, uint32 signaladjust, uint32 multiply, uint32 offset, PADC2CALIBRATIONDATA calibration)
 {
-  register uint32 sample;
+  register int32 sample;
   
   //Get the compensation into a register for better performance
-  register uint32 compensation = calibration->compensation;
+  register int32 compensation = calibration->compensation;
+  register uint32 halfcomp = compensation / 2;
   
   //Send a command for getting trace data from the FPGA
   fpga_write_cmd(command);
@@ -1183,7 +1240,7 @@ void fpga_read_adc2_data(uint8 command, uint16 *buffer, int32 count, uint32 sign
   while(count)
   {
     //Read the data
-    sample = (uint16)fpga_read_byte(); // | (fpga_read_byte() << 8);
+    sample = fpga_read_byte(); // | (fpga_read_byte() << 8);
     
     //Check on what to do with the calibration compensation
     if(calibration->flag == 0)
@@ -1202,8 +1259,13 @@ void fpga_read_adc2_data(uint8 command, uint16 *buffer, int32 count, uint32 sign
     }
     else
     {
-      //Compensate and store the sample
-      sample += compensation;
+      //In case of positive compensation only when other ADC sample is high enough
+      //Check the belonging sample of the first ADC
+      if(buffer[1] > halfcomp)
+      {
+        //Compensate and store the sample
+        sample += compensation;
+      }
     }
     
     //Adjust the data for the correct voltage per div setting
@@ -1250,6 +1312,260 @@ uint16 fpga_average_trace_data(uint8 command)
 
 void fpga_set_battery_level(void)
 {
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_setup_for_calibration(void)
+{
+  //Set the channels to lowest sensitivity and trace offset
+  scopesettings.channel1.voltperdiv  = 0;
+  scopesettings.channel1.traceoffset = 200;
+  scopesettings.channel2.voltperdiv  = 0;
+  scopesettings.channel2.traceoffset = 200;
+  
+  //Set the time base to 100us/div
+  scopesettings.timeperdiv = 17;
+  
+  //Load the settings into the FPGA
+  fpga_set_channel_1_voltperdiv();
+  fpga_set_channel_1_offset();
+
+  fpga_set_channel_2_voltperdiv();
+  fpga_set_channel_2_offset();
+  
+  fpga_set_trigger_timebase(scopesettings.timeperdiv);
+  
+  //Send the command for setting the trigger level to the FPGA
+  fpga_write_cmd(0x17);
+  
+  //Write zero level to the FPGA
+  fpga_write_byte(0);
+  
+  //Wait 100ms to settle
+  timer0_delay(100);
+  
+  //Disable the trigger circuit??
+  fpga_write_cmd(0x0F);
+  fpga_write_byte(0x01);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_do_conversion(void)
+{
+  //Set the FPGA for short time base mode
+  fpga_write_cmd(0x28);
+  fpga_write_byte(0x00);
+  
+  //Reset the sample system
+  fpga_write_cmd(0x01);
+  fpga_write_byte(0x01);
+  
+  //Send check on ready command
+  fpga_write_cmd(0x05);
+  
+  //Wait for the flag to become 1
+  while((fpga_read_byte() & 1) == 0);
+  
+  //Test again to make sure it was no glitch?????
+  while((fpga_read_byte() & 1) == 0);
+  
+  //Done with reset
+  fpga_write_cmd(0x01);
+  fpga_write_byte(0x00);
+  
+  //Send check on triggered or buffer full command to the FPGA
+  fpga_write_cmd(0x0A);
+  
+  //Wait for the FPGA to signal triggered or buffer full
+  while((fpga_read_byte() & 1) == 0);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_set_channel_1_trace_offset(uint32 offset)
+{
+  channel1_offset = (1500 - offset) * 0.170666666666667;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_set_channel_2_trace_offset(uint32 offset)
+{
+  channel2_offset = (1500 - offset) * 0.170666666666667;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_write_command_0x1F(uint32 data)
+{
+  fpga_write_cmd(0x1F);
+  fpga_write_short(data);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+uint32 fpga_process_channel_adc1_samples(uint32 channelid, uint32 voltperdiv)
+{
+  register uint32 count;
+  register uint32 sample;
+  register uint32 signaladjust;
+  register uint32 command;
+  register uint32 sum = 0;
+  register uint32 divider;  
+  
+  //Set the number of samples to process based on the time base setting
+  if(scopesettings.timeperdiv < 11)
+  {
+    //For 50ms and 20ms it is only 750 samples
+    count = 750;
+  }
+  else
+  {
+    //For 10ms - 10ns it is 1500 samples
+    count = 1500;
+  }
+  
+  //Set the divider for calculating the average
+  divider = count;
+  
+  //No idea what this is for, but in normal sample processing this is a value obtained from the special ic
+  fpga_write_command_0x1F(100);
+
+  //Translate this channel volts per div setting
+  signaladjust = fpga_read_parameter_ic(0x0B, voltperdiv) & 0x0000FFFF;
+  
+  //Get the FPGA command to read from based on the trigger channel
+  command = fpga_read_parameter_ic(channelid, scopesettings.triggerchannel);
+  
+  //Send the command for selecting the channels sample buffer
+  fpga_write_cmd(command);
+  
+  //Read the data as long as there is count
+  while(count)
+  {
+    //Read the data
+    sample = fpga_read_byte();
+    
+    //Adjust the data for the correct voltage per div setting
+    sample = (41954 * sample * signaladjust) >> 22;
+    
+    //Limit the sample on max displayable
+    if(sample > 401)
+    {
+      sample = 401;
+    }
+    
+    //Add to the total sum for averaging
+    sum += sample;
+    
+    //One read done
+    count--;
+  }  
+  
+  //In the original code the first 10 samples are discarded and only 1470 samples are used for the average
+  //Need to see if this is necessary or if it is good as it is now
+  
+  //Calculate the average and return it
+  return(sum / divider);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+uint32 fpga_average_adc1_samples(uint32 channelid)
+{
+  register uint32 count;
+  register uint32 command;
+  register uint32 sum = 0;
+  register uint32 divider;  
+  
+  //Set the number of samples to process based on the time base setting
+  if(scopesettings.timeperdiv < 11)
+  {
+    //For 50ms and 20ms it is only 750 samples
+    count = 750;
+  }
+  else
+  {
+    //For 10ms - 10ns it is 1500 samples
+    count = 1500;
+  }
+  
+  //Set the divider for calculating the average
+  divider = count;
+  
+  //No idea what this is for, but in normal sample processing this is a value obtained from the special ic
+  fpga_write_command_0x1F(100);
+
+  //Get the FPGA command to read from based on the trigger channel
+  command = fpga_read_parameter_ic(channelid, scopesettings.triggerchannel);
+  
+  //Send the command for selecting the channels sample buffer
+  fpga_write_cmd(command);
+  
+  //Read the data as long as there is count
+  while(count)
+  {
+    //Add the sample to the total sum for averaging
+    sum += fpga_read_byte();
+    
+    //One read done
+    count--;
+  }  
+  
+  //In the original code the first 10 samples are discarded and only 1470 samples are used for the average
+  //Need to see if this is necessary or if it is good as it is now
+  
+  //Calculate the average and return it
+  return(sum / divider);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+uint32 fpga_average_adc2_samples(uint32 channelcmd)
+{
+  register uint32 count;
+  register uint32 command;
+  register uint32 sum = 0;
+  register uint32 divider;  
+  
+  //Set the number of samples to process based on the time base setting
+  if(scopesettings.timeperdiv < 11)
+  {
+    //For 50ms and 20ms it is only 750 samples
+    count = 750;
+  }
+  else
+  {
+    //For 10ms - 10ns it is 1500 samples
+    count = 1500;
+  }
+  
+  //Set the divider for calculating the average
+  divider = count;
+  
+  //No idea what this is for, but in normal sample processing this is a value obtained from the special ic
+  fpga_write_command_0x1F(100);
+
+  //Send the command for selecting the channels sample buffer
+  fpga_write_cmd(channelcmd);
+  
+  //Read the data as long as there is count
+  while(count)
+  {
+    //Add the sample to the total sum for averaging
+    sum += fpga_read_byte();
+    
+    //One read done
+    count--;
+  }  
+  
+  //In the original code the first 10 samples are discarded and only 1470 samples are used for the average
+  //Need to see if this is necessary or if it is good as it is now
+  
+  //Calculate the average and return it
+  return(sum / divider);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -1317,26 +1633,26 @@ void fpga_write_parameter_ic(uint8 id, uint32 value)
     
     //Take one of the length
     length--;
-  }
 
-  //Check if MLSB is actually used
-  if(parameter_buffer[4] == 0x00)
-  {
-    //Set the MLSB to a fixed value if not used
-    parameter_buffer[4] = 0x96;
-    
-    //Take one of the length
-    length--;
-  }
+    //When MSB is not used check if MLSB is actually used
+    if(parameter_buffer[4] == 0x00)
+    {
+      //Set the MLSB to a fixed value if not used
+      parameter_buffer[4] = 0x96;
 
-  //Check if LMSB is actually used
-  if(parameter_buffer[5] == 0x00)
-  {
-    //Set the LMSB to a fixed value if not used
-    parameter_buffer[5] = 0x99;
-    
-    //Take one of the length
-    length--;
+      //Take one of the length
+      length--;
+
+      //When MSB and MLSB are not used check if LMSB is actually used
+      if(parameter_buffer[5] == 0x00)
+      {
+        //Set the LMSB to a fixed value if not used
+        parameter_buffer[5] = 0x99;
+
+        //Take one of the length
+        length--;
+      }
+    }
   }
 
   //Set the parameter id mixed with the length of the value

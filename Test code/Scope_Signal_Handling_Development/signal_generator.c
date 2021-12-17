@@ -525,6 +525,11 @@ void *signalgeneratorthread(void *arg)
       signalstep(0);
       signalstep(1);
     }
+    else if(signalgeneratorfrozen == 1)
+    {
+      //Signal freeze has been acknowledged
+      signalgeneratorfrozen = 2;
+    }
   }
 
   //Cleanup on close  
@@ -1249,11 +1254,11 @@ void signalgeneratorgetsamples(int channel, double *buffer, int count, double sa
   
   int periods;
   
-  if((signalgeneratorready == 0) || (channelsettings[channel].channelenable == 0))
+  if((signalgeneratorready == 0) || (channelsettings[channel].channelenable == 0) || channelsettings[channel].frequency == 0)
   {
     for(i=0;i<count;i++)
     {
-      //Return a zero buffer is not ready or channel switched off
+      //Return a zero buffer if not ready or channel switched off or frequency is 0
       *buffer++ = 0.0;
     }
   }

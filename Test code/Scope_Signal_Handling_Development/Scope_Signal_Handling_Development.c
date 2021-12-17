@@ -320,6 +320,17 @@ void touchpanelhandler(MouseEvent *event)
   int x = motionevent->x - CalcCoordX(0);
   int y = motionevent->y - CalcCoordY(0);
   
+  //Limit the coordinates to the positive domain
+  if(x < 0)
+  {
+    x = 0;
+  }
+  
+  if(y < 0)
+  {
+    y = 0;
+  }
+  
   //Check if there is touch
   if(touchpanel->state == 1)
   {
