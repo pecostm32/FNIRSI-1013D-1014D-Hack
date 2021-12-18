@@ -212,8 +212,12 @@ void fpga_set_translated_brightness(void)
 {
   uint16 data;
   
+  //The screen brightness is based on the following formula
+  //(brightness * 560) + 4000
+  
   //Translate the 0 - 100 brightness value into data for the FPGA
-  data = fpga_read_parameter_ic(0x10, scopesettings.screenbrightness);
+//  data = fpga_read_parameter_ic(0x10, scopesettings.screenbrightness);
+  data = (scopesettings.screenbrightness * 560) + 4000;
   
   //Write it to the FPGA
   fpga_set_backlight_brightness(data);
@@ -419,12 +423,52 @@ void fpga_set_trigger_timebase(uint32 timeperdiv)
   
   //This most likely needs to be based on the acquisition speed and no longer the time per div setting, but that needs further investigation
   
+#if 0
+For the possible time base settings in the original these values are returned
+parameter 0x14 returns 0x0D (13)
+parameter 0x0A returns the variable values
+0,13,99999999
+1,13,39999999
+2,13,19999999
+3,13,9999999
+4,13,3999999
+5,13,1999999
+6,13,999999
+7,13,399999
+8,13,199999
+9,13,99999
+10,13,39999
+11,13,19999
+12,13,9999
+13,13,3999
+14,13,1999
+15,13,999
+16,0,399
+17,13,199
+18,13,99
+19,13,39
+20,13,19
+21,13,9
+22,13,3
+23,13,1
+24,13,0
+25,13,0
+26,13,0
+27,13,0
+28,13,0
+29,13,0
+#endif
+  
+  
   //Make sure the setting is in range of the table
   if(timeperdiv < (sizeof(timebase_translations) / sizeof(uint8)))
   {
+    //This translation returns a 0,1,3,9,19,39,99,199,399,999 sequence. 0 is for 500ns down. 1 is for 1us, 3 for 2us, 9 for 5us and so on.
+    //Is this some clock divider???
     data = fpga_read_parameter_ic(0x0A, timebase_translations[timeperdiv]);
 
     //Get the FPGA command that needs the setting
+    //Looks like this one returns 0x0D
     command = fpga_read_parameter_ic(0x14, 0xED);
 
     //Write the command to the FPGA
@@ -563,7 +607,8 @@ void fpga_set_trigger_level(void)
   
   //This needs to hold the adjusted level since the sample data checked is also adjusted
   //Translate the trigger channels volts per div setting
-  adjuster = fpga_read_parameter_ic(0x0B, voltperdiv) & 0x0000FFFF;
+//  adjuster = fpga_read_parameter_ic(0x0B, voltperdiv) & 0x0000FFFF;
+  adjuster = signal_adjusters[voltperdiv];
   
   //Store the result in the global settings
   scopesettings.triggerlevel = (41954 * level * adjuster) >> 22;
@@ -640,7 +685,8 @@ uint16 fpga_prepare_for_transfer(void)
   data = (data1 << 12) | (data2 << 4) | data1;
   
   //Translate it via the special ic
-  data = fpga_read_parameter_ic(0x11, data);
+//  data = fpga_read_parameter_ic(0x11, data);
+  data = (data >> 4) + 2;
  
   return(data & 0x0FFF);
 }
@@ -876,7 +922,11 @@ uint16 fpga_average_trace_data(uint8 command)
 
 void fpga_set_battery_level(void)
 {
-  uint32 data = fpga_read_parameter_ic(0x16, scopesettings.batterychargelevel * scopesettings.channel2.traceoffset);
+//  uint32 data = fpga_read_parameter_ic(0x16, scopesettings.batterychargelevel * scopesettings.channel2.traceoffset);
+  uint32 data = 32431;
+  
+  //Always returns 32431 no matter the input value, so can be send to the FPGA without this call
+  
   
   //Send the command for setting the battery level to the FPGA
   fpga_write_cmd(0x3C);
@@ -895,8 +945,8 @@ void fpga_setup_for_calibration(void)
   scopesettings.channel2.voltperdiv  = 0;
   scopesettings.channel2.traceoffset = 200;
   
-  //Set the time base to 100us/div
-  scopesettings.timeperdiv = 10;
+  //Set the time base to 20us/div
+  scopesettings.timeperdiv = 12;
   
   //Load the settings into the FPGA
   fpga_set_channel_1_voltperdiv();
@@ -905,6 +955,7 @@ void fpga_setup_for_calibration(void)
   fpga_set_channel_2_voltperdiv();
   fpga_set_channel_2_offset();
   
+  //Set the clock divider??
   fpga_set_trigger_timebase(scopesettings.timeperdiv);
   
   //Send the command for setting the trigger level to the FPGA
@@ -915,6 +966,10 @@ void fpga_setup_for_calibration(void)
   
   //Wait 100ms to settle
   timer0_delay(100);
+  
+  //Set the trigger base. This does not match with the clock divider setting??
+  scopesettings.timeperdiv = 10;
+  fpga_set_short_timebase();
   
   //Disable the trigger circuit??
   fpga_write_cmd(0x0F);
@@ -1007,7 +1062,8 @@ uint32 fpga_process_channel_adc1_samples(uint32 channelid, uint32 voltperdiv)
   fpga_write_command_0x1F(100);
 
   //Translate this channel volts per div setting
-  signaladjust = fpga_read_parameter_ic(0x0B, voltperdiv) & 0x0000FFFF;
+  //signaladjust = fpga_read_parameter_ic(0x0B, voltperdiv) & 0x0000FFFF;
+  signaladjust = signal_adjusters[voltperdiv];
   
   //Get the FPGA command to read from based on the trigger channel
   command = fpga_read_parameter_ic(channelid, scopesettings.triggerchannel);

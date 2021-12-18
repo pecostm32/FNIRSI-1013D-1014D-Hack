@@ -4,6 +4,7 @@
 #include "display_control.h"
 #include "ccu_control.h"
 #include "gpio_control.h"
+#include "variables.h"
 
 #include <string.h>
 
@@ -146,7 +147,7 @@ void sys_init_display(uint16 xsize, uint16 ysize, uint16 *address)
   //1013D version 2   0x041E004A, 0x041A0017   Most common version??
   //1013D version 3   0x041E0072, 0x041A001F
   
-#if DISPLAY_TYPE == 0  
+#if DISPLAY_TYPE == 0
   //Horizontal total time and horizontal back porch
   *TCON0_BASIC_TIMING1 = 0x041E004A;
   

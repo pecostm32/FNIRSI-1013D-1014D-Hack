@@ -1333,7 +1333,7 @@ void handle_acquisition_menu_touch(void)
               //Set the FPGA time base setting without changing the current time per div setting
               //This way the sampling is actually done with the set speed, but the display stays at the set time per div
               fpga_set_trigger_timebase(sample_rate_time_per_div[i]);
-
+              
               //Display the new setting
               scope_acquisition_speed_select();
 

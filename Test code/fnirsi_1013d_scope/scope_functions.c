@@ -4507,14 +4507,16 @@ void scope_acquire_trace_data(void)
       fpga_write_short(data);
 
       //Translate this channel volts per div setting
-      signaladjust = fpga_read_parameter_ic(0x0B, scopesettings.channel1.voltperdiv) & 0x0000FFFF;
+      //signaladjust = fpga_read_parameter_ic(0x0B, scopesettings.channel1.voltperdiv) & 0x0000FFFF;
+      signaladjust = signal_adjusters[scopesettings.channel1.voltperdiv];
 
       //Set the flag for possibly doubling and offsetting the sample data
       multiply = scopesettings.channel1.voltperdiv == 6;
 
       //It seems it actually needs this. Using a fixed command 0x20 with or without the call to the special chip makes the trace garbage
       //Get the FPGA command to read from based on the trigger channel
-      command = fpga_read_parameter_ic(0x0C, scopesettings.triggerchannel);
+//      command = fpga_read_parameter_ic(0x0C, scopesettings.triggerchannel);
+      command = 0x20;
 
       //This first read function checks on corrupted data (need to determine what the faulty value is 0x00 or 0xFF or all samples equal)
       //Read the ADC1 bytes into a trace buffer and skip samples for ADC2 data
@@ -4548,14 +4550,16 @@ void scope_acquire_trace_data(void)
       fpga_write_short(data);
 
       //Translate this channel volts per div setting
-      signaladjust = fpga_read_parameter_ic(0x0B, scopesettings.channel2.voltperdiv) & 0x0000FFFF;
+      //signaladjust = fpga_read_parameter_ic(0x0B, scopesettings.channel2.voltperdiv) & 0x0000FFFF;
+      signaladjust = signal_adjusters[scopesettings.channel2.voltperdiv];
 
       //Set the flag for possibly doubling and offsetting the sample data
       multiply = scopesettings.channel2.voltperdiv == 6;
 
       //It seems it actually needs this. Using a fixed command 0x22 with or without the call to the special chip makes the trace garbage
       //Get the FPGA command to read from based on the trigger channel
-      command = fpga_read_parameter_ic(0x0D, scopesettings.triggerchannel);
+//      command = fpga_read_parameter_ic(0x0D, scopesettings.triggerchannel);
+      command = 0x22;
 
       //The first read function can also do the check on corrupted data (need to determine what the faulty value is 0x00 or 0xFF or all samples equal)
       //Have to decide if this should then signal this capture routine that it should discard this buffer and don't update the screen.
@@ -4566,6 +4570,7 @@ void scope_acquire_trace_data(void)
 
       //Prepare FPGA for reading again
       //Send command 0x1F to the FPGA followed by the translated data returned from command 0x14
+      //This has something to do with trigger point
       fpga_write_cmd(0x1F);
       fpga_write_short(data);
 
@@ -4740,7 +4745,9 @@ uint32 scope_do_baseline_calibration(void)
   fpga_set_channel_2_voltperdiv();
   fpga_set_channel_2_offset();
   
+  //Set the clock divider
   fpga_set_trigger_timebase(scopesettings.timeperdiv);
+  
   fpga_set_trigger_level();
   
   return(flag);
@@ -4915,7 +4922,8 @@ uint32 scope_do_trace_offset_calibration(void)
   fpga_set_channel_2_offset();
 
   //Get the 5V/div signal adjuster
-  signaladjust5v = fpga_read_parameter_ic(0x0B, 0);
+  //signaladjust5v = fpga_read_parameter_ic(0x0B, 0);
+  signaladjust5v = signal_adjusters[0];
   
   //Loop through the settings
   //Setting 0 is already done and the last setting (6) is the same as the fore last setting
@@ -4936,7 +4944,8 @@ uint32 scope_do_trace_offset_calibration(void)
     fpga_do_conversion();
 
     //Get the signal adjuster for this setting
-    signaladjust = fpga_read_parameter_ic(0x0B, voltperdiv);
+    //signaladjust = fpga_read_parameter_ic(0x0B, voltperdiv);
+    signaladjust = signal_adjusters[voltperdiv];
     
     //Average the samples from the first ADC for channel 1. 0x0C is the parameter for the special IC
     channel1_bottom_average = fpga_process_channel_adc1_samples(0x0C, scopesettings.channel1.voltperdiv) + 1;
@@ -5048,7 +5057,7 @@ uint32 scope_do_adc1_adc2_difference_calibration(void)
   
   //Set the new time base setting in the FPGA
   fpga_set_trigger_timebase(scopesettings.timeperdiv);
-
+  
   //Do a conversion run and wait until it is done
   fpga_do_conversion();
   

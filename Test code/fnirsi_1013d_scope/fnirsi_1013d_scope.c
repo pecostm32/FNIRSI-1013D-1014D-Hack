@@ -158,61 +158,6 @@ int main(void)
   //Set screen brightness
   fpga_set_translated_brightness();
 
-
-
-#if 0
-  //Data read out special IC
-  if(f_open(&viewfp, "special_ic_data.txt", FA_WRITE) == FR_OK)
-  {
-    int32 offset;
-    uint32 offset1;
-    uint32 offset2;
-    int8   valuestring[100];
-    int8  *ptr;
-    
-    int8 headerstring[] = "low,high,result\n";
-
-    f_write(&viewfp, headerstring, sizeof(headerstring) - 1, 0);
-
-    for(offset1=200;offset1<=1500;offset1+=50)
-    {
-      for(offset2=1500;offset2>=200;offset2-=50)
-      {
-        offset = fpga_read_parameter_ic(0x12, (offset1 & 0x0000FFFF) | (offset2 << 16));
-
-        ptr = scope_print_decimal(valuestring, offset1, 0);
-        
-        *ptr++ = ',';
-        
-        ptr = scope_print_decimal(ptr, offset2, 0);
-        
-        *ptr++ = ',';
-        
-        if(offset < 0)
-        {
-          *ptr++ = '-';
-          
-          offset = -offset;
-        }
-        
-        ptr = scope_print_decimal(ptr, offset, 0);
-
-        *ptr++ = '\n';
-
-        f_write(&viewfp, valuestring, ptr - valuestring, 0);
-      }
-    }
-
-    //Close the file to finish the write
-    f_close(&viewfp);
-
-    //Show the saved successful message
-    scope_display_file_status_message(MESSAGE_SAVE_SUCCESSFUL, 1);
-  }
-#endif
-
-
-
   //Monitor the battery, process and display trace data and handle user input until power is switched off
   while(1)
   {
