@@ -1035,7 +1035,7 @@ void handle_channel1_menu_touch(void)
             scopesettings.channel1.voltperdiv = 0;
 
             //Set volts per div in the FPGA
-            fpga_set_channel_1_voltperdiv();
+            fpga_set_channel_voltperdiv(&scopesettings.channel1);
 
             //Display this
             scope_channel1_enable_select();
@@ -1074,7 +1074,7 @@ void handle_channel1_menu_touch(void)
             scopesettings.channel1.coupling = 0;
 
             //Update the FPGA
-            fpga_set_channel_1_coupling();
+            fpga_set_channel_coupling(&scopesettings.channel1);
 
             //Display this
             scope_channel1_coupling_select();
@@ -1087,7 +1087,7 @@ void handle_channel1_menu_touch(void)
             scopesettings.channel1.coupling = 1;
 
             //Update the FPGA
-            fpga_set_channel_1_coupling();
+            fpga_set_channel_coupling(&scopesettings.channel1);
 
             //Display this
             scope_channel1_coupling_select();
@@ -1188,7 +1188,7 @@ void handle_channel2_menu_touch(void)
             scopesettings.channel2.voltperdiv = 0;
 
             //Set volts per div in the FPGA
-            fpga_set_channel_1_voltperdiv();
+            fpga_set_channel_voltperdiv(&scopesettings.channel2);
 
             //Display this
             scope_channel2_enable_select();
@@ -1227,7 +1227,7 @@ void handle_channel2_menu_touch(void)
             scopesettings.channel2.coupling = 0;
 
             //Update the FPGA
-            fpga_set_channel_1_coupling();
+            fpga_set_channel_coupling(&scopesettings.channel2);
 
             //Display this
             scope_channel2_coupling_select();
@@ -1240,7 +1240,7 @@ void handle_channel2_menu_touch(void)
             scopesettings.channel2.coupling = 1;
 
             //Update the FPGA
-            fpga_set_channel_1_coupling();
+            fpga_set_channel_coupling(&scopesettings.channel2);
 
             //Display this
             scope_channel2_coupling_select();
@@ -1315,7 +1315,7 @@ void handle_acquisition_menu_touch(void)
       if((xtouch >= ACQ_MENU_XPOS) && (xtouch <= ACQ_MENU_XPOS + ACQ_MENU_WIDTH) && (ytouch >= ACQ_MENU_YPOS) && (ytouch <= ACQ_MENU_YPOS + ACQ_MENU_HEIGHT))
       {
         //Check on acquisition frequency being set
-        if((ytouch >= ACQ_MENU_YPOS + 32) && (ytouch <= ACQ_MENU_YPOS + 126))
+        if((ytouch >= ACQ_MENU_YPOS + 32) && (ytouch <= ACQ_MENU_YPOS + 149))
         {
           //Check on the different bounding boxes for the separate settings
           for(i=0;i<(sizeof(acquisition_speed_texts) / sizeof(int8 *));i++)
@@ -1328,11 +1328,11 @@ void handle_acquisition_menu_touch(void)
             if((xtouch >= x) && (xtouch <= x + 68) && (ytouch >= y) && (ytouch <= y + 20))
             {
               //Set the new speed
-              scopesettings.acqusitionspeed = i;
+              scopesettings.samplerate = i;
 
               //Set the FPGA time base setting without changing the current time per div setting
               //This way the sampling is actually done with the set speed, but the display stays at the set time per div
-              fpga_set_trigger_timebase(sample_rate_time_per_div[i]);
+              fpga_set_sample_rate(sample_rate_time_per_div[i]);
               
               //Display the new setting
               scope_acquisition_speed_select();
@@ -1347,14 +1347,14 @@ void handle_acquisition_menu_touch(void)
           }
         }
         //Check on time per div being set
-        else if((ytouch >= ACQ_MENU_YPOS + 167) && (ytouch <= ACQ_MENU_YPOS + 306))
+        else if((ytouch >= ACQ_MENU_YPOS + 190) && (ytouch <= ACQ_MENU_YPOS + 329))
         {
           //Check on the different bounding boxes for the separate settings
           for(i=0;i<(sizeof(time_div_texts) / sizeof(int8 *));i++)
           {
             //Calculate the coordinates for this setting
             x = ((i & 3) * 72) + 10 + ACQ_MENU_XPOS;
-            y = ((i >> 2) * 23) + 168 + ACQ_MENU_YPOS;
+            y = ((i >> 2) * 23) + 191 + ACQ_MENU_YPOS;
 
             //Check if touch within this bounding box
             if((xtouch >= x) && (xtouch <= x + 68) && (ytouch >= y) && (ytouch <= y + 20))
@@ -1613,7 +1613,7 @@ void handle_right_basic_menu_touch(void)
       if(scopesettings.runstate == 0)
       {
         //Set the sample rate that belongs to the selected time per div setting
-        scopesettings.acqusitionspeed = time_per_div_sample_rate[scopesettings.timeperdiv];
+        scopesettings.samplerate = time_per_div_sample_rate[scopesettings.timeperdiv];
       }
 
       //Display the changed state
@@ -1660,6 +1660,9 @@ void handle_right_basic_menu_touch(void)
 
       //Button back to inactive state
       scope_auto_set_button(0);
+
+      //Run auto setup
+      scope_do_auto_setup();
 
 /*
       pcVar5[0x21] = '\0';            //Trigger mode on auto
@@ -1877,7 +1880,7 @@ void handle_right_volts_div_menu_touch(void)
         if(scopesettings.waveviewmode == 0)
         {
           //Set the volts per div for this channel
-          fpga_set_channel_1_voltperdiv();
+          fpga_set_channel_voltperdiv(&scopesettings.channel1);
 
           //Need a ms timed delay
         }
@@ -1948,7 +1951,7 @@ void handle_right_volts_div_menu_touch(void)
         if(scopesettings.waveviewmode == 0)
         {
           //Set the volts per div for this channel
-          fpga_set_channel_1_voltperdiv();
+          fpga_set_channel_voltperdiv(&scopesettings.channel1);
 
           //Need a ms timed delay
         }
@@ -2012,7 +2015,7 @@ void handle_right_volts_div_menu_touch(void)
         if(scopesettings.waveviewmode == 0)
         {
           //Set the volts per div for this channel
-          fpga_set_channel_2_voltperdiv();
+          fpga_set_channel_voltperdiv(&scopesettings.channel2);
 
           //Need a ms timed delay
         }
@@ -2076,7 +2079,7 @@ void handle_right_volts_div_menu_touch(void)
         if(scopesettings.waveviewmode == 0)
         {
           //Set the volts per div for this channel
-          fpga_set_channel_2_voltperdiv();
+          fpga_set_channel_voltperdiv(&scopesettings.channel2);
 
           //Need a ms timed delay
         }
@@ -2122,13 +2125,13 @@ void handle_right_volts_div_menu_touch(void)
 
       //Button back to inactive state
       scope_50_percent_trigger_button(0);
-/*
-      //This needs to be done for 50% trigger
-      if (pcVar5[0x3a] == '\0')  //Run mode
+
+      //Only when scope is running
+      if(scopesettings.runstate == 0)
       {
-        FUN_80029314();    //perform_50_percent_trigger_setup
+        //Set the trigger level for the active trigger channel
+        scope_do_50_percent_trigger_setup();
       }
-*/
     }
     else
     {
@@ -2903,7 +2906,7 @@ void change_channel_1_offset(void)
   scopesettings.channel1.traceoffset = position;
 
   //Write it to the FPGA
-  fpga_set_channel_1_offset();
+  fpga_set_channel_offset(&scopesettings.channel1);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -2942,7 +2945,7 @@ void change_channel_2_offset(void)
   scopesettings.channel2.traceoffset = position;
 
   //Write it to the FPGA
-  fpga_set_channel_2_offset();
+  fpga_set_channel_offset(&scopesettings.channel2);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

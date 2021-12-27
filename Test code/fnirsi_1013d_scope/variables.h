@@ -18,6 +18,8 @@
 
 #define DISPLAY_TYPE                      0    //0 For most common display, 1 for shifted display
 
+#define SETTINGS_SECTOR                 700    //Location of the settings on the SD card for now
+
 #define VIEW_NOT_ACTIVE                   0
 #define VIEW_ACTIVE                       1
 
@@ -138,23 +140,147 @@
 #define ACQ_MENU_XPOS          ACQ_BUTTON_XPOS
 #define ACQ_MENU_YPOS                       46
 #define ACQ_MENU_WIDTH                     304
-#define ACQ_MENU_HEIGHT                    313
+#define ACQ_MENU_HEIGHT                    336
 
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Typedefs
 //----------------------------------------------------------------------------------------------------------------------------------
 
+typedef struct tagTouchCoords         TOUCHCOORDS,        *PTOUCHCOORDS;
+typedef struct tagScopeSettings       SCOPESETTINGS,      *PSCOPESETTINGS;
+typedef struct tagChannelSettings     CHANNELSETTINGS,    *PCHANNELSETTINGS;
+typedef struct tagMeasurements        MEASUREMENTS,       *PMEASUREMENTS;
+
 typedef struct tagThumbnailData         THUMBNAILDATA,        *PTHUMBNAILDATA;
 
 typedef struct tagTimeCalcData          TIMECALCDATA,         *PTIMECALCDATA;
 typedef struct tagVoltCalcData          VOLTCALCDATA,         *PVOLTCALCDATA;
 
-typedef struct tagADC2CalibrationData   ADC2CALIBRATIONDATA,  *PADC2CALIBRATIONDATA;
+//----------------------------------------------------------------------------------------------------------------------------------
+//Structures
+//----------------------------------------------------------------------------------------------------------------------------------
 
-//----------------------------------------------------------------------------------------------------------------------------------
-//Structs
-//----------------------------------------------------------------------------------------------------------------------------------
+struct tagTouchCoords
+{
+  uint16 x1;
+  uint16 x2;
+  uint16 y1;
+  uint16 y2;
+};
+
+struct tagChannelSettings
+{
+  //Settings
+  uint8  enable;
+  uint8  coupling;
+  uint8  magnification;
+  uint8  voltperdiv;
+  uint8  fftenable;
+
+  uint8  checkfirstadc;
+  
+  //Trace on screen position
+  uint16 traceoffset;
+  
+  //Calibration and compensation
+  int16  compensation;
+  int16  adc1compensation;
+  int16  adc2compensation;
+  uint16 calibration_factor;
+  uint16 calibration_data[7];
+  
+  //Measurements
+  uint32 min;
+  uint32 max;
+  uint32 average;
+  uint32 center;
+  uint32 peakpeak;
+  uint32 frequency;
+  uint32 lowtime;
+  uint32 hightime;
+  
+  uint32 rawaverage;
+  uint32 adc1rawaverage;
+  uint32 adc2rawaverage;
+  
+  //Sample data
+  uint16 *tracebuffer;
+  uint16 *buffer;
+  
+  //Sample gathering options
+  uint8 enabletrigger;
+  
+  //FPGA commands
+  uint8 enablecommand;            //Needs to be set to 0x02 for channel 1 and 0x03 for channel 2
+  uint8 couplingcommand;          //Needs to be set to 0x34 for channel 1 and 0x37 for channel 2
+  uint8 voltperdivcommand;        //Needs to be set to 0x33 for channel 1 and 0x36 for channel 2
+  uint8 offsetcommand;            //Needs to be set to 0x32 for channel 1 and 0x35 for channel 2
+  uint8 adc1command;              //Needs to be set to 0x20 for channel 1 and 0x22 for channel 2
+  uint8 adc2command;              //Needs to be set to 0x21 for channel 1 and 0x23 for channel 2
+};
+
+//Should these be 32 bit wide???
+struct tagMeasurements
+{
+  int16 max;
+  int16 min;
+  int16 center;
+  int16 peakpeak;
+  int16 avg;
+};
+
+struct tagScopeSettings
+{
+  CHANNELSETTINGS channel1;
+  CHANNELSETTINGS channel2;
+
+  uint16 samplecount;       //Number of samples in trace buffer
+  uint16 nofsamples;        //Number of samples to read from the FPGA
+  
+  uint8 samplerate;
+          
+  uint8 timeperdiv;
+  uint8 triggermode;
+  uint8 triggeredge;
+  uint8 triggerchannel;
+  
+  uint16 triggerposition;    //Position on screen of the trigger point in the signal displaying
+  uint16 triggeroffset;      //Screen offset of the trigger level indicator
+  uint16 triggerlevel;       //Actual trigger level set to the FPGA
+  
+  uint8 samplemode;          //New for mode select in the fpga_do_conversion function
+  
+  uint8 movespeed;
+  
+  uint8 rightmenustate;
+  uint8 waveviewmode;
+  
+  uint8 updatescreen;        //0x8019D5D7 in original code
+  uint8 batterychargelevel;
+  uint8 batterycharging;
+  uint8 runstate;            //0x8019D5DA in original code
+  
+  uint8 screenbrightness;
+  uint8 gridbrightness;
+  uint8 alwaystrigger50;     //0x8036137c in original code
+  uint8 xymodedisplay;
+  uint8 confirmationmode;
+  
+  uint8 timecursorsenable;
+  uint8 voltcursorsenable;
+  
+  uint16 timecursor1position;
+  uint16 timecursor2position;
+  
+  uint16 voltcursor1position;
+  uint16 voltcursor2position;
+  
+  uint32 previoustimerticks;
+  
+  uint8 measuresstate[2][12];
+};
+
 
 struct tagThumbnailData
 {
@@ -256,9 +382,6 @@ extern SCOPESETTINGS savedscopesettings2;
 extern MEASUREMENTS channel1measurements;
 extern MEASUREMENTS channel2measurements;
 
-extern ADC2CALIBRATIONDATA channel1adc2calibration;
-extern ADC2CALIBRATIONDATA channel2adc2calibration;
-
 extern uint16 channel1tracebuffer1[];
 extern uint16 channel1tracebuffer2[];
 extern uint16 channel1tracebuffer3[];
@@ -292,11 +415,17 @@ extern uint8 channel_1_process_anyway;
 
 extern uint16 system_ok;
 
-extern uint8 parameter_buffer[7];
-extern uint8 parameter_crypt_byte;
+extern uint16 settingsworkbuffer[256];
 
-extern uint16 settingsworkbuffer[250];
+extern uint32 channel1_min;
+extern uint32 channel1_max;
+extern uint32 channel1_center;
+extern uint32 channel1_vpp;
 
+extern uint32 channel2_min;
+extern uint32 channel2_max;
+extern uint32 channel2_center;
+extern uint32 channel2_vpp;
 
 //New variables for trace displaying
 extern double disp_xpos_per_sample;
@@ -353,11 +482,11 @@ extern uint16 previous_bottom_volt_cursor_position;
 //Calibration data
 //----------------------------------------------------------------------------------------------------------------------------------
 
-extern uint16 channel1_calibration_factor;
-extern uint16 channel1_calibration_data[];
+//extern uint16 channel1_calibration_factor;
+//extern uint16 channel1_calibration_data[];
 
-extern uint16 channel2_calibration_factor;
-extern uint16 channel2_calibration_data[];
+//extern uint16 channel2_calibration_factor;
+//extern uint16 channel2_calibration_data[];
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Predefined data
@@ -372,9 +501,11 @@ extern const uint16 timebase_adjusters[5];
 extern const uint8  timebase_translations[24];
 extern const uint32 short_timebase_settings[24];
 
+extern const uint32 sample_rate_settings[30];
+
 extern const uint8 zoom_select_settings[3][7];
 
-extern const TIMECALCDATA time_calc_data[21];
+extern const TIMECALCDATA time_calc_data[24];
 
 extern const VOLTCALCDATA volt_calc_data[3][7];
 
@@ -386,17 +517,17 @@ extern const char system_file_name[2][16];
 extern const uint8 bmpheader[70];
 
 extern const uint32 frequency_per_div[24];
-extern const uint32 sample_rate[16];
+extern const uint32 sample_rate[18];
 
 extern const uint8 time_per_div_sample_rate[24];
-extern const uint8 sample_rate_time_per_div[16];
-extern const uint8 viable_time_per_div[16][24];
+extern const uint8 sample_rate_time_per_div[18];
+extern const uint8 viable_time_per_div[18][24];
 
 extern const int8 *time_div_texts[24];
 extern const int8 time_div_text_x_offsets[24];
 
-extern const int8 *acquisition_speed_texts[16];
-extern const int8 acquisition_speed_text_x_offsets[16];
+extern const int8 *acquisition_speed_texts[18];
+extern const int8 acquisition_speed_text_x_offsets[18];
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //For touch filtering on slider movement

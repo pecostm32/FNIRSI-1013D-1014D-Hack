@@ -62,52 +62,40 @@ void   fpga_check_ready(void);
 
 void   fpga_enable_system(void);
 
-void   fpga_set_channel_1_enable(void);
-void   fpga_set_channel_1_coupling(void);
-void   fpga_set_channel_1_voltperdiv(void);
-void   fpga_set_channel_1_offset(void);
 
-void   fpga_set_channel_2_enable(void);
-void   fpga_set_channel_2_coupling(void);
-void   fpga_set_channel_2_voltperdiv(void);
-void   fpga_set_channel_2_offset(void);
+void   fpga_set_channel_enable(PCHANNELSETTINGS settings);
+void   fpga_set_channel_coupling(PCHANNELSETTINGS settings);
+void   fpga_set_channel_voltperdiv(PCHANNELSETTINGS settings);
+void   fpga_set_channel_offset(PCHANNELSETTINGS settings);
 
-void   fpga_set_trigger_timebase(uint32 timeperdiv);
+void   fpga_set_sample_rate(uint32 samplerate);
+void   fpga_set_time_base(void);
+
 void   fpga_set_trigger_channel(void);
 void   fpga_set_trigger_edge(void);
 void   fpga_swap_trigger_channel(void);
 void   fpga_set_trigger_level(void);
 void   fpga_set_trigger_mode(void);
 
-void   fpga_set_long_timebase(void);
-void   fpga_set_short_timebase(void);
+void   fpga_do_conversion(void);
 
 uint16 fpga_prepare_for_transfer(void);
 
-uint32 fpga_read_adc1_data(uint8 command, uint16 *buffer, int32 count, uint32 signaladjust, uint32 multiply, uint32 offset);
-void   fpga_read_adc2_data(uint8 command, uint16 *buffer, int32 count, uint32 signaladjust, uint32 multiply, uint32 offset, PADC2CALIBRATIONDATA calibration);
+void   fpga_read_sample_data(PCHANNELSETTINGS settings, uint32 triggerpoint);
+void   fpga_read_adc_data(PCHANNELSETTINGS settings);
 
-uint16 fpga_average_trace_data(uint8 command);
+
 
 void   fpga_set_battery_level(void);
 
 void   fpga_setup_for_calibration(void);
 
-void   fpga_do_conversion(void);
 
-void   fpga_set_channel_1_trace_offset(uint32 offset);
-void   fpga_set_channel_2_trace_offset(uint32 offset);
+void   fpga_set_channel_trace_offsets(uint32 offset);
 
-void   fpga_write_command_0x1F(uint32 data);
+void   fpga_get_auto_set_values(uint32 flags);
 
-uint32 fpga_process_channel_adc1_samples(uint32 channelid, uint32 voltperdiv);
-
-uint32 fpga_average_adc1_samples(uint32 channelid);
-uint32 fpga_average_adc2_samples(uint32 channelcmd);
-
-void   fpga_init_parameter_ic(void);
-void   fpga_write_parameter_ic(uint8 id, uint32 value);
-uint32 fpga_read_parameter_ic(uint8 id, uint32 value);
+uint32 fpga_get_zero_crossings(uint32 channel);
 
 void   fpga_delay(uint32 usec);
 

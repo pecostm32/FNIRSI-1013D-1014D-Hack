@@ -66,7 +66,7 @@ int main(void)
   //Initialize FPGA (PORT E)
   fpga_init();
 
-  //Turn of the display brightness
+  //Turn off the display brightness
   fpga_set_backlight_brightness(0x0000);
 
   //Initialize display (PORT D + DEBE)
@@ -113,33 +113,31 @@ int main(void)
   scope_load_configuration_data();
 
   //Enable or disable the channels based on the scope loaded settings
-  fpga_set_channel_1_enable();
-  fpga_set_channel_2_enable();
+  fpga_set_channel_enable(&scopesettings.channel1);
+  fpga_set_channel_enable(&scopesettings.channel2);
 
   //Set the volts per div for each channel based on the loaded scope settings
-  fpga_set_channel_1_voltperdiv();
-  fpga_set_channel_2_voltperdiv();
+  fpga_set_channel_voltperdiv(&scopesettings.channel1);
+  fpga_set_channel_voltperdiv(&scopesettings.channel2);
 
   //Set the channels AC or DC coupling based on the loaded scope settings
-  fpga_set_channel_1_coupling();
-  fpga_set_channel_2_coupling();
+  fpga_set_channel_coupling(&scopesettings.channel1);
+  fpga_set_channel_coupling(&scopesettings.channel2);
 
   //Enable something in the FPGA
   fpga_enable_system();
 
-  //Initialize the communication with the parameter IC
-  fpga_init_parameter_ic();
-
   //Setup the trigger system in the FPGA based on the loaded scope settings
-  fpga_set_trigger_timebase(scopesettings.timeperdiv);
+  fpga_set_sample_rate(scopesettings.timeperdiv);
   fpga_set_trigger_channel();
   fpga_swap_trigger_channel();   //This is a bit redundant since the correct channel should be in the loaded settings.
   fpga_set_trigger_edge();
   fpga_set_trigger_level();
   fpga_set_trigger_mode();
 
-  fpga_set_channel_1_offset();
-  fpga_set_channel_2_offset();
+  //Set the trace offsets in the FPGA
+  fpga_set_channel_offset(&scopesettings.channel1);
+  fpga_set_channel_offset(&scopesettings.channel2);
 
   //Some initialization of the FPGA??. Data written with command 0x3C
   fpga_set_battery_level();      //Only called here and in hardware check

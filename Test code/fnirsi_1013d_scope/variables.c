@@ -70,9 +70,6 @@ SCOPESETTINGS savedscopesettings2;
 MEASUREMENTS channel1measurements;
 MEASUREMENTS channel2measurements;
 
-ADC2CALIBRATIONDATA channel1adc2calibration;
-ADC2CALIBRATIONDATA channel2adc2calibration;
-
 //Need to make sure some of these are 32 bit aligned to allow usage as source and target for file operations
 uint16 channel1tracebuffer1[3000];    //In original code at 0x8019D5EA
 uint16 channel1tracebuffer2[3000];    //In original code at 0x8019ED5A
@@ -114,11 +111,17 @@ uint8 channel_1_process_anyway = 0;    //In original code at 0x8019D5A9 (Basical
 
 uint16 system_ok;                      //In original code at 0x8019D5E4
 
-uint8 parameter_buffer[7];
-uint8 parameter_crypt_byte;
+uint16 settingsworkbuffer[256];        //In original code at 0x8035344E. Used for loading from and writing to flash
 
-uint16 settingsworkbuffer[250];        //In original code at 0x8035344E. Used for loading from and writing to flash
+uint32 channel1_min;
+uint32 channel1_max;
+uint32 channel1_center;
+uint32 channel1_vpp;
 
+uint32 channel2_min;
+uint32 channel2_max;
+uint32 channel2_center;
+uint32 channel2_vpp;
 
 //New variables for trace displaying
 
@@ -212,11 +215,11 @@ uint32 viewfilesetupdata[VIEW_SETUP_DATA_SIZE / 4];          //Not in original c
 //Calibration data
 //----------------------------------------------------------------------------------------------------------------------------------
 
-uint16 channel1_calibration_factor = 0x00DC;
-uint16 channel1_calibration_data[] = { 0x054D, 0x0545, 0x0554, 0x054D, 0x0553, 0x054C, 0x054C };
+//uint16 channel1_calibration_factor = 0x00DC;
+//uint16 channel1_calibration_data[] = { 0x054D, 0x0545, 0x0554, 0x054D, 0x0553, 0x054C, 0x054C };
 
-uint16 channel2_calibration_factor = 0x00D9;
-uint16 channel2_calibration_data[] = { 0x055B, 0x0556, 0x0561, 0x055B, 0x0560, 0x055A, 0x055A };
+//uint16 channel2_calibration_factor = 0x00D9;
+//uint16 channel2_calibration_data[] = { 0x055B, 0x0556, 0x0561, 0x055B, 0x0560, 0x055A, 0x055A };
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Predefined data
@@ -224,6 +227,7 @@ uint16 channel2_calibration_data[] = { 0x055B, 0x0556, 0x0561, 0x055B, 0x0560, 0
 
 //Instead of a double time per division value using the 1 / "time per division" frequency value
 
+//For calculations on time per div and sampling rate settings translation tables are used
 const uint32 frequency_per_div[24] =
 {
          5,        10,        20,
@@ -236,7 +240,7 @@ const uint32 frequency_per_div[24] =
   50000000, 100000000, 200000000
 };
 
-const uint32 sample_rate[16] =
+const uint32 sample_rate[18] =
 {
   200000000,
   100000000,
@@ -253,13 +257,17 @@ const uint32 sample_rate[16] =
       20000,
       10000,
        5000,
-       2000
+       2000,
+       1000,
+        500
 };
 
+//----------------------------------------------------------------------------------------------------------------------------------
+//Translation tables for getting the sample rate belonging to a time per div setting and vise versa
 
 const uint8 time_per_div_sample_rate[24] =
 {
-  15, 15, 15,     //200ms/div, 100ms/div and 50ms/div  use the 2KSa/s setting
+  17, 16, 15,     //200ms/div, 100ms/div and 50ms/div  use the 2KSa/s setting
   14, 13, 12,     //20ms/div, 10ms/div, 5ms/div        use their respective settings
   11, 10,  9,     //2ms/div, 1ms/div, 500us/div        use their respective settings
    8,  7,  6,     //200us/div, 100us/div, 50us/div     use their respective settings
@@ -269,7 +277,7 @@ const uint8 time_per_div_sample_rate[24] =
    0,  0,  0      //20ns/div, 10ns/div, 5ns/div        use the 200MSa/s setting
 };
 
-const uint8 sample_rate_time_per_div[16] =
+const uint8 sample_rate_time_per_div[18] =
 {
   17,       //200MSa/s ==> 500ns/div
   16,       //100MSa/s ==>   1us/div
@@ -286,10 +294,12 @@ const uint8 sample_rate_time_per_div[16] =
    5,       // 20KSa/s ==>   5ms/div
    4,       // 10KSa/s ==>  10ms/div
    3,       //  5KSa/s ==>  20ms/div
-   2        //  2KSa/s ==>  50ms/div
+   2,       //  2KSa/s ==>  50ms/div
+   1,       //  1KSa/s ==> 100ms/div
+   0        // 500Sa/s ==> 200ms/div
 };
 
-const uint8 viable_time_per_div[16][24] =
+const uint8 viable_time_per_div[18][24] =
 {
   { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1 },
   { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
@@ -307,25 +317,11 @@ const uint8 viable_time_per_div[16][24] =
   { 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
   { 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
   { 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+  { 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+  { 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
-
-#if 0
-const int8 *time_div_texts[30] =
-{
-    "50s/div",   "20s/div",   "10s/div",
-     "5s/div",    "2s/div",    "1s/div",
-  "500ms/div", "200ms/div", "100ms/div",
-   "50ms/div",  "20ms/div",  "10ms/div",
-    "5ms/div",   "2ms/div",   "1ms/div",
-  "500us/div", "200us/div", "100us/div",
-   "50us/div",  "20us/div",  "10us/div",
-    "5us/div",   "2us/div",   "1us/div",
-  "500ns/div", "250ns/div", "100ns/div",
-   "50ns/div",  "25ns/div",  "10ns/div"
-};
-#endif
 
 const int8 *time_div_texts[24] =
 {
@@ -351,7 +347,7 @@ const int8 time_div_text_x_offsets[24] =
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-const int8 *acquisition_speed_texts[16] =
+const int8 *acquisition_speed_texts[18] =
 {
   "200MSa/s",
   "100MSa/s",
@@ -368,15 +364,18 @@ const int8 *acquisition_speed_texts[16] =
    "20KSa/s",
    "10KSa/s",
     "5KSa/s",
-    "2KSa/s"
+    "2KSa/s",
+    "1KSa/s",
+   "500Sa/s",
 };
 
-const int8 acquisition_speed_text_x_offsets[16] =
+const int8 acquisition_speed_text_x_offsets[18] =
 {
   16, 16, 23, 23,
   23, 30, 30, 30,
   19, 19, 19, 26,
-  26, 26, 33, 33
+  26, 26, 33, 33,
+  33, 26
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -397,8 +396,8 @@ const uint16 timebase_adjusters[5] = { 0x01A9, 0x00AA, 0x0055, 0x002F, 0x0014 };
 
 const uint8 timebase_translations[24] =
 {
-   9,   //200ms/div
-   9,   //100ms/div
+   7,   //200ms/div
+   8,   //100ms/div
    9,   // 50ms/div
   10,   // 20ms/div
   11,   // 10ms/div
@@ -421,6 +420,40 @@ const uint8 timebase_translations[24] =
   28,   // 20ns/div
   29,   // 10ns/div
   29,   //  5ns/div
+};
+
+const uint32 sample_rate_settings[30] =
+{
+  99999999,
+  39999999,
+  19999999,
+   9999999,
+   3999999,
+   1999999,
+    999999,
+    399999,
+    199999,
+     99999,
+     39999,
+     19999,
+      9999,
+      3999,
+      1999,
+       999,
+       399,
+       199,
+        99,
+        39,
+        19,
+         9,
+         3,
+         1,
+         0,
+         0,
+         0,
+         0,
+         0,
+         0
 };
 
 const uint32 short_timebase_settings[24] =
@@ -458,8 +491,10 @@ const uint8 zoom_select_settings[3][7] =
   { 8,  7, 5, 0, 1, 3, 4 }
 };
 
-const TIMECALCDATA time_calc_data[21] =
+const TIMECALCDATA time_calc_data[24] =
 {
+  {    400, 3, 3 },         //200ms/div
+  {    200, 3, 3 },         //100ms/div
   {    100, 3, 3 },         // 50ms/div
   {  40000, 2, 4 },         // 20ms/div
   {  20000, 2, 4 },         // 10ms/div
@@ -476,11 +511,12 @@ const TIMECALCDATA time_calc_data[21] =
   {   4000, 1, 5 },         //  2us/div
   {   2000, 1, 5 },         //  1us/div
   {   1000, 1, 5 },         //500ns/div
-  {    500, 1, 5 },         //250ns/div
+  {    400, 1, 5 },         //200ns/div
   {    200, 1, 5 },         //100ns/div
   {    100, 1, 5 },         // 50ns/div
-  {  50000, 0, 6 },         // 25ns/div
-  {  20000, 0, 6 }          // 10ns/div
+  {  40000, 0, 6 },         // 20ns/div
+  {  20000, 0, 6 },         // 10ns/div
+  {  10000, 0, 6 }          //  5ns/div
 };
 
 const VOLTCALCDATA volt_calc_data[3][7] = 
