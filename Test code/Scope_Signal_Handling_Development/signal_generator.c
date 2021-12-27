@@ -441,7 +441,7 @@ void *signalgeneratorthread(void *arg)
   channelsettings[1].phasechanged            = 1;
   
   channelsettings[1].signaltime = 0.0;
-  
+
   
   //Get the current time for duration calculation
   gettimeofday(&starttime, 0);
@@ -1254,12 +1254,22 @@ void signalgeneratorgetsamples(int channel, double *buffer, int count, double sa
   
   int periods;
   
-  if((signalgeneratorready == 0) || (channelsettings[channel].channelenable == 0) || channelsettings[channel].frequency == 0)
+  if((signalgeneratorready == 0) || (channelsettings[channel].channelenable == 0) || (channelsettings[channel].frequency == 0))
   {
+    //For zero hertz return the DC offset
+    if(signalgeneratorready && channelsettings[channel].channelenable && (channelsettings[channel].frequency == 0))
+    {
+      sample = channelsettings[channel].dcoffset;
+    }
+    else
+    {
+      sample = 0.0;
+    }
+    
     for(i=0;i<count;i++)
     {
       //Return a zero buffer if not ready or channel switched off or frequency is 0
-      *buffer++ = 0.0;
+      *buffer++ = sample;
     }
   }
   else
@@ -1339,6 +1349,103 @@ void signalgeneratorgetsamples(int channel, double *buffer, int count, double sa
       *buffer++ = sample;
     }  
   }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+double signalgeneratorgetsample(int channel, int delay, double samplerate)
+{
+  int i;
+  double sample;
+  
+  double sampletimestep = 1.0 / samplerate;
+  double signalphase;
+  
+  int periods;
+  
+  if((signalgeneratorready == 0) || (channelsettings[channel].channelenable == 0) || (channelsettings[channel].frequency == 0))
+  {
+    //For zero hertz return the DC offset
+    if(signalgeneratorready && channelsettings[channel].channelenable && (channelsettings[channel].frequency == 0))
+    {
+      sample = channelsettings[channel].dcoffset;
+    }
+    else
+    {
+      sample = 0.0;
+    }
+  }
+  else
+  {
+    //Determine the signal phase based on the scope sample rate and the signal period
+    channelsettings[channel].signaltime += (sampletimestep * delay);
+
+    //Take of the full signal periods
+    periods = channelsettings[channel].signaltime / channelsettings[channel].signalperiod;
+    channelsettings[channel].signaltime -= (periods * channelsettings[channel].signalperiod);
+
+    //Check if in positive part of the signal
+    if(channelsettings[channel].signaltime < channelsettings[channel].signaltimepart1)
+    {
+      //Determine the signal phase in radians for the positive part of the signal
+      signalphase = (channelsettings[channel].signaltime / channelsettings[channel].signaltimepart1) * PI;
+    }
+    else
+    {
+      //Determine the signal phase in radians for the negative part of the signal
+      signalphase = PI + (((channelsettings[channel].signaltime - channelsettings[channel].signaltimepart1) / channelsettings[channel].signaltimepart2) * PI);
+    }
+
+    //Take action based on the selected waveform
+    switch(channelsettings[channel].waveform)
+    {
+      //Sine wave
+      default:
+      case 0:
+        sample = channelsettings[channel].amplitude * sin(signalphase);
+        break;
+
+      //Square wave
+      case 1:
+        if(signalphase < PI)    
+          sample = channelsettings[channel].amplitude;
+        else
+          sample = -1 * channelsettings[channel].amplitude;
+        break;
+
+      //Triangle wave
+      case 2:
+        sample = channelsettings[channel].amplitude * triangle(signalphase);
+        break;
+
+      //Ramp up wave
+      case 3:
+        sample = channelsettings[channel].amplitude * rampup(signalphase);
+        break;
+
+      //Ramp down wave
+      case 4:
+        sample = channelsettings[channel].amplitude * rampdown(signalphase);
+        break;
+    }
+
+    //Add the DC offset
+    sample += channelsettings[channel].dcoffset;
+
+    //Check if sample within the signal limits
+    if(sample < channelsettings[channel].minsignal)
+    {
+      //Below then limit on minimum value
+      sample = channelsettings[channel].minsignal;
+    }
+    else if(sample > channelsettings[channel].maxsignal)
+    {
+      //Above then limit on maximum value
+      sample = channelsettings[channel].maxsignal;
+    }
+  }  
+  
+  return(sample);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

@@ -171,7 +171,8 @@ void signalgeneratorunfreeze(void);
 
 void signalgeneratorgetsamples(int channel, double *buffer, int count, double samplerate);
 
+double signalgeneratorgetsample(int channel, int delay, double samplerate);
+
 //----------------------------------------------------------------------------------------------------------------------------------
 
 #endif /* SIGNAL_GENERATOR_H */
-
