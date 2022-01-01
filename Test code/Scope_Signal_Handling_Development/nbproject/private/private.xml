@@ -4,26 +4,36 @@
         <activeConfTypeElem>1</activeConfTypeElem>
         <activeConfIndexElem>0</activeConfIndexElem>
     </data>
-    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="7">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="12">
         <file>
-            <url>signal_generator.c</url>
-            <bookmark id="7">
+            <url>stub_functions.c</url>
+            <bookmark id="12">
                 <name/>
-                <line>858</line>
+                <line>358</line>
+                <key/>
+            </bookmark>
+            <bookmark id="10">
+                <name/>
+                <line>418</line>
+                <key/>
+            </bookmark>
+            <bookmark id="8">
+                <name/>
+                <line>668</line>
+                <key/>
+            </bookmark>
+            <bookmark id="11">
+                <name/>
+                <line>903</line>
                 <key/>
             </bookmark>
         </file>
     </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_Signal_Handling_Development/signal_generator_functions.h</file>
-            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_Signal_Handling_Development/Scope_Signal_Handling_Development.c</file>
             <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_Signal_Handling_Development/Scope_Processing.c</file>
-            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_Signal_Handling_Development/signal_generator.h</file>
-            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_Signal_Handling_Development/backup/analyzer_setup.js.c</file>
-            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_Signal_Handling_Development/todo.txt</file>
-            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_Signal_Handling_Development/signal_generator_functions.c</file>
-            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_Signal_Handling_Development/signal_generator.c</file>
+            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_Signal_Handling_Development/Scope_Signal_Handling_Development.c</file>
+            <file>file:/home/peter/Data/NetbeansProjects/FNIRSI-1013D/Scope_Signal_Handling_Development/stub_functions.c</file>
         </group>
     </open-files>
 </project-private>

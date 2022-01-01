@@ -253,16 +253,27 @@ const uint32 timebase_interval_settings[24] =
         5,       5,      5      //20ns/div, 10ns/div, 5ns/div        use the 200MSa/s setting
 };
 
-const uint32 timebase_rate_settings[24] =
+
+const uint32 stub_sample_rate_settings[18] =
 {
-        500,      1000,      2000,     //200ms/div, 100ms/div and 50ms/div  use their respective settings
-       5000,     10000,     20000,     //20ms/div, 10ms/div, 5ms/div        use their respective settings
-      50000,    100000,    200000,     //2ms/div, 1ms/div, 500us/div        use their respective settings
-     500000,   1000000,   2000000,     //200us/div, 100us/div, 50us/div     use their respective settings
-    5000000,  10000000,  20000000,     //20us/div, 10us/div, 5us/div        use their respective settings
-   50000000, 100000000, 200000000,     //2us/div, 1us/div, 500ns/div        use their respective settings
-  200000000, 200000000, 200000000,     //200ns/div, 100ns/div, 50ns/div     use the 200MSa/s setting
-  200000000, 200000000, 200000000      //20ns/div, 10ns/div, 5ns/div        use the 200MSa/s setting
+  200000000,     //200MSa/s
+  100000000,     //100MSa/s
+   50000000,     // 50MSa/s
+   20000000,     // 20MSa/s
+   10000000,     // 10MSa/s
+    5000000,     //  5MSa/s
+    2000000,     //  2MSa/s
+    1000000,     //  1MSa/s
+     500000,     //500KSa/s
+     200000,     //200KSa/s
+     100000,     //100KSa/s
+      50000,     // 50KSa/s
+      20000,     // 20KSa/s
+      10000,     // 10KSa/s
+       5000,     //  5KSa/s
+       2000,     //  2KSa/s
+       1000,     //  1KSa/s
+        500,     // 500Sa/s
 };
 
 
@@ -893,35 +904,23 @@ void fpga_set_channel_offset(PCHANNELSETTINGS settings)
     channel_offset = &channel2_offset;
   }
   
-  //Do some fractional calculation with sign correction?????
-  //For now a copy of what Ghidra made of it
-  offset = ((uint64)((uint64)0x51EB851F * (uint64)(settings->traceoffset * settings->calibration_factor)) >> 37);
-  offset = (signal_adjusters[0] * offset) / signal_adjusters[settings->voltperdiv];
-  
-  //Write the calibrated offset data
-  *channel_offset = (1500 - (settings->calibration_data[settings->voltperdiv] - offset)) * 0.170666666666667;
+  //Write the offset data
+  *channel_offset = settings->dc_calibration_offset[settings->voltperdiv] * 0.170666666666667;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void fpga_set_sample_rate(uint32 timeperdiv)
+void fpga_set_sample_rate(uint32 samplerate)
 {
   //Set the sample interval based on the time base
-  if(timeperdiv < (sizeof(short_timebase_settings) / sizeof(uint32)))
+  if(samplerate < (sizeof(stub_sample_rate_settings) / sizeof(uint32)))
   {
     //Table settings ranges from setting 0 (200mS/div) to 23 (5nS/div)
-    sample_rate_set = timebase_rate_settings[timeperdiv];
+    sample_rate_set = stub_sample_rate_settings[samplerate];
   }
   
-  //For the 200ms - 20ms/div settings only 750 samples
-  if(timeperdiv > 3)
-  {
-    sample_count = 1500;
-  }
-  else
-  {
-    sample_count = 750;
-  }
+  //New setup always allows 1500 samples
+  sample_count = 1500;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -976,56 +975,48 @@ void fpga_swap_trigger_channel(void)
 void fpga_set_trigger_level(void)
 {
   uint32 voltperdiv;
-  uint32 traceoffset;
-  uint32 adjuster;
-  uint32 level;
+  uint32 traceposition;
+  int32  level;
+  
+  //The trace position on screen equals to ADC reading 128
+  //The trigger vertical position is relative to the trace position.
+  //The screen position values are volt/div related, so conversion to ADC level is needed
   
   //Check which channel is used for triggering
   if(scopesettings.triggerchannel == 0)
   {
     //Channel 1, so use its data
-    voltperdiv  = scopesettings.channel1.voltperdiv;
-    traceoffset = scopesettings.channel1.traceoffset;
+    voltperdiv    = scopesettings.channel1.voltperdiv;
+    traceposition = scopesettings.channel1.traceposition;
   }
   else
   {
     //Channel 2, so use its data
-    voltperdiv  = scopesettings.channel2.voltperdiv;
-    traceoffset = scopesettings.channel2.traceoffset;
+    voltperdiv    = scopesettings.channel2.voltperdiv;
+    traceposition = scopesettings.channel2.traceposition;
   }
   
-  //Get the adjuster for the level based on the volts per div setting
-  adjuster = signal_adjusters[voltperdiv];
   
-  //Process the data different when on lowest volts per div setting
-  if(voltperdiv == 6)
+  //The difference between the two positions determines the level offset on 128, but it needs to be scaled back first
+  level = ((((int32)traceposition - (int32)scopesettings.triggerverticalposition) * 4194304) / (41954 * signal_adjusters[voltperdiv])) + 128;
+
+#if 0  
+  level = scopesettings.triggerverticalposition - traceposition;
+  
+  level = (level * 4194304) / (41954 * signal_adjusters[voltperdiv]);
+  
+  level = level + 128;
+#endif
+  
+  //Limit on extremes
+  if(level < 0)
   {
-    //check if trigger trace offset below channel trace offset
-    if(scopesettings.triggeroffset < traceoffset)
-    {
-      //Below the trace
-      //Use the trace screen offset minus half the delta of the screen offsets and scale it with the signal adjuster setting
-      level = ((traceoffset - ((traceoffset - scopesettings.triggeroffset) / 2)) * 100) / adjuster;
-    }
-    else
-    {
-      //Above the trace
-      //Use the trace screen offset plus half the delta of the screen offsets and scale it with the signal adjuster setting
-      level = ((traceoffset + ((scopesettings.triggeroffset - traceoffset) / 2)) * 100) / adjuster;
-    }
+    level = 0;
   }
-  else
+  else if(level > 255)
   {
-    //Scale the screen offset with the signal adjuster setting
-    level = (scopesettings.triggeroffset * 100) / adjuster;
+    level = 255;
   }
-  
-  //This needs to hold the adjusted level since the sample data checked is also adjusted
-  //Translate the trigger channels volts per div setting
-  adjuster = signal_adjusters[voltperdiv];
-  
-  //Store the result in the global settings
-  scopesettings.triggerlevel = (41954 * level * adjuster) >> 22;
   
   //Save it for usage by FPGA emulator code
   trigger_level = level;
@@ -1119,15 +1110,9 @@ void fpga_read_sample_data(PCHANNELSETTINGS settings, uint32 triggerpoint)
 
 void fpga_read_adc_data(PCHANNELSETTINGS settings)
 {
-  register int32  rawsample;
-  register uint32 sample;
+  register int32  sample;
   register uint32 count;
-  register uint32 signaladjust;
-  
-  register uint32 rawsum = 0;
-  
-  //Translate this channel volts per div setting
-  signaladjust = signal_adjusters[settings->voltperdiv];
+  register uint32 sum = 0;
   
   //Set the number of samples to read
   count = scopesettings.nofsamples;
@@ -1136,42 +1121,26 @@ void fpga_read_adc_data(PCHANNELSETTINGS settings)
   while(count)
   {
     //Read the data
-    rawsample = fpga_read_byte();
+    sample = fpga_read_byte();
     
     //Sum the raw data for ADC difference calibration
-    rawsum += rawsample;
+    sum += sample;
     
     //Compensate the value for ADC in equality
-    rawsample += settings->compensation;
+    sample += settings->compensation;
     
     //Check if sample became negative
-    if(rawsample < 0)
+    if(sample < 0)
     {
       //Keep it on zero if so
-      rawsample = 0;
+      sample = 0;
     }
     
-    //Adjust the data for the correct voltage per div setting
-    sample = (41954 * rawsample * signaladjust) >> 22;
-
-    //Check on lowest volt per div setting for doubling and offsetting
-    if(settings->voltperdiv == 6)
+    //Check if sample over its max
+    if(sample > 255)
     {
-      //Multiply the sample by two
-      sample <<= 1;
-
-      //Correct the position for the set trace offset
-      //Check if the data is smaller then the offset
-      if(sample < settings->traceoffset)
-      {
-        //If so limit to top of the screen
-        sample = 0;
-      }
-      else
-      {
-        //Else take of the offset
-        sample -= settings->traceoffset;
-      }
+      //Keep it on max if so
+      sample = 255;
     }
     
     //Check if busy with second ADC data
@@ -1182,7 +1151,7 @@ void fpga_read_adc_data(PCHANNELSETTINGS settings)
       {
         //So when the compensated sample is below the positive ADC1 compensation value the reading need to be matched
         //The negative value is either equal or one less then the positive value in absolute sense
-        if(rawsample < settings->adc1compensation)
+        if(sample < settings->adc1compensation)
         {
           //Match the two readings when within compensation range
           settings->buffer[1] = sample;
@@ -1207,16 +1176,10 @@ void fpga_read_adc_data(PCHANNELSETTINGS settings)
       //When ADC2 compensation is positive save the raw sample for possible matching
       if(settings->adc2compensation > 0)
       {
-        settings->buffer[-1] = rawsample;
+        settings->buffer[-1] = sample;
       }
     }
    
-    //Limit the sample on max displayable
-    if(sample > 401)
-    {
-      sample = 401;
-    }
-    
     //Get the minimum value of the samples
     if(sample < settings->min)
     {
@@ -1246,7 +1209,7 @@ void fpga_read_adc_data(PCHANNELSETTINGS settings)
   }
  
   //Calculate the raw average for ADC difference calibration
-  settings->rawaverage = rawsum / scopesettings.nofsamples;
+  settings->rawaverage = sum / scopesettings.nofsamples;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -1261,9 +1224,9 @@ void fpga_setup_for_calibration(void)
 {
   //Set the channels to lowest sensitivity and trace offset
   scopesettings.channel1.voltperdiv  = 0;
-  scopesettings.channel1.traceoffset = 200;
+//  scopesettings.channel1.traceoffset = 200;
   scopesettings.channel2.voltperdiv  = 0;
-  scopesettings.channel2.traceoffset = 200;
+//  scopesettings.channel2.traceoffset = 200;
   
   //Set the time base to 100us/div
   scopesettings.timeperdiv = 17;
@@ -1275,7 +1238,7 @@ void fpga_setup_for_calibration(void)
   fpga_set_channel_voltperdiv(&scopesettings.channel2);
   fpga_set_channel_offset(&scopesettings.channel1);
   
-  fpga_set_sample_rate(scopesettings.timeperdiv);
+  fpga_set_sample_rate(scopesettings.samplerate);
   
   //Send the command for setting the trigger level to the FPGA
   fpga_write_cmd(0x17);
@@ -1578,8 +1541,10 @@ uint32 fpga_get_zero_crossings(uint32 channel)
     //Send the command for selecting the channels sample buffer
     fpga_write_cmd(0x20);
     
-    highlevel = scopesettings.channel1.traceoffset + 8;
-    lowlevel  = scopesettings.channel1.traceoffset - 8;
+//    highlevel = scopesettings.channel1.traceoffset + 8;
+//    lowlevel  = scopesettings.channel1.traceoffset - 8;
+    highlevel = 136;
+    lowlevel = 120;
     
     signaladjust = signal_adjusters[scopesettings.channel1.voltperdiv];
   }
@@ -1588,8 +1553,10 @@ uint32 fpga_get_zero_crossings(uint32 channel)
     //Send the command for selecting the channels sample buffer
     fpga_write_cmd(0x22);
     
-    highlevel = scopesettings.channel2.traceoffset + 8;
-    lowlevel  = scopesettings.channel2.traceoffset - 8;
+//    highlevel = scopesettings.channel2.traceoffset + 8;
+//    lowlevel  = scopesettings.channel2.traceoffset - 8;
+    highlevel = 136;
+    lowlevel = 120;
     
     signaladjust = signal_adjusters[scopesettings.channel2.voltperdiv];
   }
