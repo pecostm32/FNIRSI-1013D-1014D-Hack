@@ -95,6 +95,29 @@
 #define RUN_STOP_TEXT_HEIGHT                18
 
 //----------------------------------------------------------------------------------------------------------------------------------
+//Channel button and menu
+
+#define CH1_BUTTON_XPOS                    150
+#define CH2_BUTTON_XPOS                    260
+
+#define CH_BUTTON_YPOS                       5
+#define CH_BUTTON_WIDTH                     30
+#define CH_BUTTON_HEIGHT                    35
+
+#define CH_BUTTON_BG_WIDTH                 103
+#define CH_BUTTON_BG_HEIGHT                 35
+
+#define CH1_MENU_XPOS          CH1_BUTTON_XPOS
+#define CH2_MENU_XPOS          CH2_BUTTON_XPOS
+
+#define CH_MENU_YPOS                        46
+#define CH_MENU_WIDTH                      183
+#define CH_MENU_HEIGHT                     252
+
+#define CH1_TOUCHED_COLOR            0x000000FF
+#define CH2_TOUCHED_COLOR            0x00FF0000
+
+//----------------------------------------------------------------------------------------------------------------------------------
 //Channel 1 button and menu
 
 #define CH1_BUTTON_XPOS                    150
@@ -150,7 +173,6 @@
 typedef struct tagTouchCoords         TOUCHCOORDS,        *PTOUCHCOORDS;
 typedef struct tagScopeSettings       SCOPESETTINGS,      *PSCOPESETTINGS;
 typedef struct tagChannelSettings     CHANNELSETTINGS,    *PCHANNELSETTINGS;
-typedef struct tagMeasurements        MEASUREMENTS,       *PMEASUREMENTS;
 
 typedef struct tagThumbnailData         THUMBNAILDATA,        *PTHUMBNAILDATA;
 
@@ -181,14 +203,18 @@ struct tagChannelSettings
   uint8  checkfirstadc;
   
   //Trace on screen position
-  uint16 traceoffset;
+  uint16 traceposition;
+
+  //New setting for controlling the ground level of the ADC differential input
+  uint16 dcoffset;
   
-  //Calibration and compensation
+  //Inter ADC difference compensation
   int16  compensation;
   int16  adc1compensation;
   int16  adc2compensation;
-  uint16 calibration_factor;
-  uint16 calibration_data[7];
+  
+  //DC offset calibration for center level of the ADC's
+  uint16 dc_calibration_offset[7];
   
   //Measurements
   uint32 min;
@@ -218,16 +244,16 @@ struct tagChannelSettings
   uint8 offsetcommand;            //Needs to be set to 0x32 for channel 1 and 0x35 for channel 2
   uint8 adc1command;              //Needs to be set to 0x20 for channel 1 and 0x22 for channel 2
   uint8 adc2command;              //Needs to be set to 0x21 for channel 1 and 0x23 for channel 2
-};
-
-//Should these be 32 bit wide???
-struct tagMeasurements
-{
-  int16 max;
-  int16 min;
-  int16 center;
-  int16 peakpeak;
-  int16 avg;
+  
+  //Channel color
+  uint32 color;
+  
+  //Channel button and menu
+  uint32 buttonxpos;
+  uint32 menuxpos;
+  uint32 touchedcolor;
+  
+  uint8 *buttontext;
 };
 
 struct tagScopeSettings
@@ -245,9 +271,9 @@ struct tagScopeSettings
   uint8 triggeredge;
   uint8 triggerchannel;
   
-  uint16 triggerposition;    //Position on screen of the trigger point in the signal displaying
-  uint16 triggeroffset;      //Screen offset of the trigger level indicator
-  uint16 triggerlevel;       //Actual trigger level set to the FPGA
+  uint16 triggerhorizontalposition;    //Position on screen of the trigger point in the signal displaying
+  uint16 triggerverticalposition;      //Screen position of the trigger level indicator
+  uint16 triggerlevel;                 //Actual trigger level set to the FPGA
   
   uint8 samplemode;          //New for mode select in the fpga_do_conversion function
   
@@ -313,12 +339,6 @@ struct tagVoltCalcData
   uint8  volt_scale;
 };
 
-struct tagADC2CalibrationData
-{
-  uint16 flag;
-  uint16 compensation;
-};
-
 //----------------------------------------------------------------------------------------------------------------------------------
 //Linker variables
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -379,18 +399,17 @@ extern SCOPESETTINGS scopesettings;
 extern SCOPESETTINGS savedscopesettings1;
 extern SCOPESETTINGS savedscopesettings2;
 
-extern MEASUREMENTS channel1measurements;
-extern MEASUREMENTS channel2measurements;
+extern uint16 channel1tracebuffer1[3000];
 
-extern uint16 channel1tracebuffer1[];
-extern uint16 channel1tracebuffer2[];
-extern uint16 channel1tracebuffer3[];
-extern uint32 channel1tracebuffer4[];
+extern uint16 channel1tracebuffer2[3000];
+extern uint16 channel1tracebuffer3[3000];
+extern uint32 channel1tracebuffer4[1500];
 
-extern uint16 channel2tracebuffer1[];
-extern uint16 channel2tracebuffer2[];
-extern uint16 channel2tracebuffer3[];
-extern uint32 channel2tracebuffer4[];
+extern uint16 channel2tracebuffer1[3000];
+
+extern uint16 channel2tracebuffer2[3000];
+extern uint16 channel2tracebuffer3[3000];
+extern uint32 channel2tracebuffer4[1500];
 
 extern uint16 temptracebuffer1[];
 extern uint16 temptracebuffer2[];
@@ -494,16 +513,13 @@ extern uint16 previous_bottom_volt_cursor_position;
 
 extern const int8 *volt_div_texts[3][7];
 
-extern const uint16 signal_adjusters[7];
+extern const int16 signal_adjusters[7];
 
 extern const uint16 timebase_adjusters[5];
 
-extern const uint8  timebase_translations[24];
-extern const uint32 short_timebase_settings[24];
+extern const uint32 timebase_settings[24];
 
-extern const uint32 sample_rate_settings[30];
-
-extern const uint8 zoom_select_settings[3][7];
+extern const uint32 sample_rate_settings[18];
 
 extern const TIMECALCDATA time_calc_data[24];
 

@@ -69,7 +69,7 @@ void   fpga_set_channel_voltperdiv(PCHANNELSETTINGS settings);
 void   fpga_set_channel_offset(PCHANNELSETTINGS settings);
 
 void   fpga_set_sample_rate(uint32 samplerate);
-void   fpga_set_time_base(void);
+void   fpga_set_time_base(uint32 timebase);
 
 void   fpga_set_trigger_channel(void);
 void   fpga_set_trigger_edge(void);

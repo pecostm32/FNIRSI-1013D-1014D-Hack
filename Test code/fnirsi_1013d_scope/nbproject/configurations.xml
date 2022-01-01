@@ -79,6 +79,7 @@
                    kind="IMPORTANT_FILES_FOLDER">
       <itemPath>Makefile</itemPath>
       <itemPath>fnirsi_1013d.ld</itemPath>
+      <itemPath>test_code</itemPath>
       <itemPath>todo.txt</itemPath>
     </logicalFolder>
   </logicalFolder>
@@ -92,7 +93,7 @@
       </toolsSet>
       <compileType>
         <cTool>
-          <commandLine>-Wall -Wno-write-strings -Wno-char-subscripts -fno-stack-protector -DNO_STDLIB=1 -mcpu='arm926ej-s' -O3</commandLine>
+          <commandLine>-Wall -Wno-write-strings -Wno-char-subscripts -fno-stack-protector -DNO_STDLIB=1 -mcpu='arm926ej-s' -O3 -mfloat-abi=soft</commandLine>
           <useLinkerLibraries>false</useLinkerLibraries>
         </cTool>
         <ccTool>

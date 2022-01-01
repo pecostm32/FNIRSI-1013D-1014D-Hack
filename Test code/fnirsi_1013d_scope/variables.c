@@ -67,11 +67,9 @@ SCOPESETTINGS scopesettings;
 SCOPESETTINGS savedscopesettings1;
 SCOPESETTINGS savedscopesettings2;
 
-MEASUREMENTS channel1measurements;
-MEASUREMENTS channel2measurements;
-
 //Need to make sure some of these are 32 bit aligned to allow usage as source and target for file operations
 uint16 channel1tracebuffer1[3000];    //In original code at 0x8019D5EA
+
 uint16 channel1tracebuffer2[3000];    //In original code at 0x8019ED5A
 uint16 channel1tracebuffer3[3000];    //Target buffer for processed trace data. In original code at 0x801A916A
 
@@ -79,6 +77,7 @@ uint16 channel1tracebuffer3[3000];    //Target buffer for processed trace data. 
 uint32 channel1tracebuffer4[1500];    //In original code at 0x801AC04A
 
 uint16 channel2tracebuffer1[3000];    //In original code at 0x801A04CA
+
 uint16 channel2tracebuffer2[3000];    //In original code at 0x801A1C3A
 uint16 channel2tracebuffer3[3000];    //In original code at 0x801AA8DA
 
@@ -390,78 +389,38 @@ const int8 *volt_div_texts[3][7] =
 //----------------------------------------------------------------------------------------------------------------------------------
 
 //                                   173   175   180   180   184   184   184
-const uint16 signal_adjusters[7] = { 0xAD, 0xAF, 0xB4, 0xB4, 0xB8, 0xB8, 0xB8 };
+const int16 signal_adjusters[7] = { 0xAD, 0xAF, 0xB4, 0xB4, 0xB8, 0xB8, 0xB8 };
 
 const uint16 timebase_adjusters[5] = { 0x01A9, 0x00AA, 0x0055, 0x002F, 0x0014 };
 
-const uint8 timebase_translations[24] =
+const uint32 sample_rate_settings[18] =
 {
-   7,   //200ms/div
-   8,   //100ms/div
-   9,   // 50ms/div
-  10,   // 20ms/div
-  11,   // 10ms/div
-  12,   //  5ms/div
-  13,   //  2ms/div
-  14,   //  1ms/div
-  15,   //500us/div
-  16,   //200us/div
-  17,   //100us/div
-  18,   // 50us/div
-  19,   // 20us/div
-  20,   // 10us/div
-  21,   //  5us/div
-  22,   //  2us/div
-  23,   //  1us/div
-  24,   //500ns/div
-  25,   //200ns/div
-  26,   //100ns/div
-  27,   // 50ns/div
-  28,   // 20ns/div
-  29,   // 10ns/div
-  29,   //  5ns/div
+         0,     //200MSa/s
+         1,     //100MSa/s
+         3,     // 50MSa/s
+         9,     // 20MSa/s
+        19,     // 10MSa/s
+        39,     //  5MSa/s
+        99,     //  2MSa/s
+       199,     //  1MSa/s
+       399,     //500KSa/s
+       999,     //200KSa/s
+      1999,     //100KSa/s
+      3999,     // 50KSa/s
+      9999,     // 20KSa/s
+     19999,     // 10KSa/s
+     39999,     //  5KSa/s
+     99999,     //  2KSa/s
+    199999,     //  1KSa/s
+    399999,     // 500Sa/s
 };
 
-const uint32 sample_rate_settings[30] =
+const uint32 timebase_settings[24] =
 {
-  99999999,
-  39999999,
-  19999999,
-   9999999,
-   3999999,
-   1999999,
-    999999,
-    399999,
-    199999,
-     99999,
-     39999,
-     19999,
-      9999,
-      3999,
-      1999,
-       999,
-       399,
-       199,
-        99,
-        39,
-        19,
-         9,
-         3,
-         1,
-         0,
-         0,
-         0,
-         0,
-         0,
-         0
-};
-
-const uint32 short_timebase_settings[24] =
-{
-     800,   //200ms/div
-     800,   //100ms/div
-     800,   // 50ms/div
-     800,   // 20ms/div
+    1800,   //200ms/div
+    1800,   //100ms/div
+    1800,   // 50ms/div
+    1800,   // 20ms/div (Was 800, but that does not yield enough samples)
     1800,   // 10ms/div
     2500,   //  5ms/div
     2500,   //  2ms/div
@@ -482,13 +441,6 @@ const uint32 short_timebase_settings[24] =
   411100,   // 20ns/div
   411100,   // 10ns/div
   411100,   //  5ns/div
-};
-
-const uint8 zoom_select_settings[3][7] =
-{
-  { 8, 10, 5, 0, 2, 3, 4 },
-  { 8,  7, 6, 0, 1, 9, 4 },
-  { 8,  7, 5, 0, 1, 3, 4 }
 };
 
 const TIMECALCDATA time_calc_data[24] =

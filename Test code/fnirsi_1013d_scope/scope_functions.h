@@ -60,8 +60,8 @@ void scope_select_button(int mode);
 void scope_menu_button(int mode);
 void scope_main_return_button(int mode);
 void scope_run_stop_text(void);
-void scope_channel1_settings(int mode);
-void scope_channel2_settings(int mode);
+
+void scope_channel_settings(PCHANNELSETTINGS settings, int mode);
 void scope_acqusition_settings(int mode);
 void scope_move_speed(int mode);
 void scope_trigger_settings(int mode);
@@ -77,17 +77,11 @@ void scope_main_menu_picture_view(int mode);
 void scope_main_menu_waveform_view(int mode);
 void scope_main_menu_usb_connection(int mode);
 
-void scope_open_channel1_menu(void);
-void scope_channel1_enable_select(void);
-void scope_channel1_fft_show(void);
-void scope_channel1_coupling_select(void);
-void scope_channel1_probe_magnification_select(void);
-
-void scope_open_channel2_menu(void);
-void scope_channel2_enable_select(void);
-void scope_channel2_fft_show(void);
-void scope_channel2_coupling_select(void);
-void scope_channel2_probe_magnification_select(void);
+void scope_open_channel_menu(PCHANNELSETTINGS settings);
+void scope_channel_enable_select(PCHANNELSETTINGS settings);
+void scope_channel_fft_show(PCHANNELSETTINGS settings);
+void scope_channel_coupling_select(PCHANNELSETTINGS settings);
+void scope_channel_probe_magnification_select(PCHANNELSETTINGS settings);
 
 void scope_open_acquisition_menu(void);
 void scope_acquisition_speed_select(void);
@@ -98,7 +92,7 @@ void scope_trigger_mode_select(void);
 void scope_trigger_edge_select(void);
 void scope_trigger_channel_select(void);
 
-void scope_open_system_settings_menu(void);    //Add notification confirmation option!!
+void scope_open_system_settings_menu(void);
 void scope_system_settings_screen_brightness_item(int mode);
 void scope_system_settings_screen_brightness_value(void);
 void scope_system_settings_grid_brightness_item(int mode);
@@ -142,6 +136,8 @@ void scope_draw_volt_cursors(void);
 // Signal data processing functions
 //----------------------------------------------------------------------------------------------------------------------------------
 
+void scope_calculate_trigger_vertical_position(PCHANNELSETTINGS settings);
+
 void scope_acquire_trace_data(void);
 
 void scope_process_trigger(uint32 count);
@@ -160,7 +156,7 @@ void scope_do_auto_setup(void);
 
 void scope_display_trace_data(void);
 
-void scope_display_channel_trace(uint16 *buffer, uint32 color);
+void scope_display_channel_trace(PCHANNELSETTINGS settings);
 
 void scope_display_cursor_measurements(void);
 

@@ -36,39 +36,39 @@ void touch_handler(void)
       if(touchstate & TOUCH_STATE_MOVE_TRIGGER_POINT)
       {
         //Save the current position for it
-        previous_trigger_point_position = scopesettings.triggerposition;
+        previous_trigger_point_position = scopesettings.triggerhorizontalposition;
       }
 
       //Save the data for the selected object
       switch(touchstate & TOUCH_STATE_MASK)
       {
         case TOUCH_STATE_X_Y_MODE:
-          previous_channel_1_offset = scopesettings.channel1.traceoffset;
-          previous_channel_2_offset = scopesettings.channel2.traceoffset;
+          previous_channel_1_offset = scopesettings.channel1.traceposition;
+          previous_channel_2_offset = scopesettings.channel2.traceposition;
           break;
 
         case TOUCH_STATE_MOVE_CHANNEL_1:
-          previous_channel_1_offset = scopesettings.channel1.traceoffset;
+          previous_channel_1_offset = scopesettings.channel1.traceposition;
 
           //Check if trigger on this channel and if so save it's current offset
           if(scopesettings.triggerchannel == 0)
           {
-            previous_trigger_level_offset = scopesettings.triggeroffset;
+            previous_trigger_level_offset = scopesettings.triggerverticalposition;
           }
           break;
 
         case TOUCH_STATE_MOVE_CHANNEL_2:
-          previous_channel_2_offset = scopesettings.channel2.traceoffset;
+          previous_channel_2_offset = scopesettings.channel2.traceposition;
 
           //Check if trigger on this channel and if so save it's current offset
           if(scopesettings.triggerchannel)
           {
-            previous_trigger_level_offset = scopesettings.triggeroffset;
+            previous_trigger_level_offset = scopesettings.triggerverticalposition;
           }
           break;
 
         case TOUCH_STATE_MOVE_TRIGGER_LEVEL:
-          previous_trigger_level_offset = scopesettings.triggeroffset;
+          previous_trigger_level_offset = scopesettings.triggerverticalposition;
           break;
 
         case TOUCH_STATE_MOVE_TIME_CURSOR_LEFT:
@@ -246,49 +246,49 @@ void scan_for_touch(void)
     else if((xtouch >= CH1_BUTTON_XPOS) && (xtouch <= CH1_BUTTON_XPOS + CH1_BUTTON_BG_WIDTH))
     {
       //Set the button active
-      scope_channel1_settings(1);
+      scope_channel_settings(&scopesettings.channel1, 1);
 
       //Wait until touch is released
       tp_i2c_wait_for_touch_release();
 
       //Set the button inactive
-      scope_channel1_settings(0);
+      scope_channel_settings(&scopesettings.channel1, 0);
 
       //Save the screen rectangle where the menu will be displayed
       display_set_destination_buffer(displaybuffer2);
-      display_copy_rect_from_screen(CH1_MENU_XPOS, CH1_MENU_YPOS, CH1_MENU_WIDTH, CH1_MENU_HEIGHT);
+      display_copy_rect_from_screen(CH1_MENU_XPOS, CH_MENU_YPOS, CH_MENU_WIDTH, CH_MENU_HEIGHT);
 
       //Go and setup the channel 1 menu
-      scope_open_channel1_menu();
+      scope_open_channel_menu(&scopesettings.channel1);
 
       //Go and handle the menu touch
-      handle_channel1_menu_touch();
+      handle_channel_menu_touch(&scopesettings.channel1);
 
       //Restore the screen when done
       display_set_source_buffer(displaybuffer2);
-      display_copy_rect_to_screen(CH1_MENU_XPOS, CH1_MENU_YPOS, CH1_MENU_WIDTH, CH1_MENU_HEIGHT);
+      display_copy_rect_to_screen(CH1_MENU_XPOS, CH_MENU_YPOS, CH_MENU_WIDTH, CH_MENU_HEIGHT);
     }
     //Check if in channel 2 settings button range
     else if((xtouch >= CH2_BUTTON_XPOS) && (xtouch <= CH2_BUTTON_XPOS + CH2_BUTTON_BG_WIDTH))
     {
       //Set the button active
-      scope_channel2_settings(1);
+      scope_channel_settings(&scopesettings.channel2, 1);
 
       //Wait until touch is released
       tp_i2c_wait_for_touch_release();
 
       //Set the button inactive
-      scope_channel2_settings(0);
+      scope_channel_settings(&scopesettings.channel2, 0);
 
       //Save the screen rectangle where the menu will be displayed
       display_set_destination_buffer(displaybuffer2);
       display_copy_rect_from_screen(CH2_MENU_XPOS, CH2_MENU_YPOS, CH2_MENU_WIDTH, CH2_MENU_HEIGHT);
 
       //Go and setup the channel 1 menu
-      scope_open_channel2_menu();
+      scope_open_channel_menu(&scopesettings.channel2);
 
       //Go and handle the menu touch
-      handle_channel2_menu_touch();
+      handle_channel_menu_touch(&scopesettings.channel2);
 
       //Restore the screen when done
       display_set_source_buffer(displaybuffer2);
@@ -484,7 +484,7 @@ void scan_for_touch(void)
         //Calculate absolute distances for the active traces and cursors
 
         //Need to make the trace offset in the same orientation as the touch
-        offset = 449 - scopesettings.channel1.traceoffset;
+        offset = 449 - scopesettings.channel1.traceposition;
 
         //Check if touch point below the trace
         if(ytouch < offset)
@@ -499,7 +499,7 @@ void scan_for_touch(void)
         }
 
         //Need to make the trace offset in the same orientation as the touch
-        offset = 449 - scopesettings.channel2.traceoffset;
+        offset = 449 - scopesettings.channel2.traceposition;
 
         //Check if touch point below the trace
         if(ytouch < offset)
@@ -546,7 +546,7 @@ void scan_for_touch(void)
         if(xtouch > 660)
         {
           //Need to make the trigger level offset in the same orientation as the touch
-          offset = 449 - scopesettings.triggeroffset;
+          offset = 448 - scopesettings.triggerverticalposition;
 
           //Check if touch point below the trace
           if(ytouch < offset)
@@ -992,7 +992,7 @@ void handle_main_menu_touch(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void handle_channel1_menu_touch(void)
+void handle_channel_menu_touch(PCHANNELSETTINGS settings)
 {
   //Stay in the menu as long as there is no touch outside the menu
   while(1)
@@ -1004,281 +1004,128 @@ void handle_channel1_menu_touch(void)
     if(havetouch)
     {
       //Check if touch within the menu field
-      if((xtouch >= CH1_MENU_XPOS) && (xtouch <= CH1_MENU_XPOS + CH1_MENU_WIDTH) && (ytouch >= CH1_MENU_YPOS) && (ytouch <= CH1_MENU_YPOS + CH1_MENU_HEIGHT))
+      if((xtouch >= settings->menuxpos) && (xtouch <= settings->menuxpos + CH_MENU_WIDTH) && (ytouch >= CH_MENU_YPOS) && (ytouch <= CH_MENU_YPOS + CH_MENU_HEIGHT))
       {
         //Check on channel enable or disable
-        if((ytouch >= CH1_MENU_YPOS + 16) && (ytouch <= CH1_MENU_YPOS + 38))
+        if((ytouch >= CH_MENU_YPOS + 16) && (ytouch <= CH_MENU_YPOS + 38))
         {
           //Check on enable
-          if((xtouch >= CH1_MENU_XPOS + 78) && (xtouch <= CH1_MENU_XPOS + 110))
+          if((xtouch >= settings->menuxpos + 78) && (xtouch <= settings->menuxpos + 110))
           {
             //Enable the channel
-            scopesettings.channel1.enable = 1;
+            settings->enable = 1;
 
             //Update the trigger channel selection in the FPGA as needed
             fpga_swap_trigger_channel();
 
             //Display this
-            scope_channel1_enable_select();
-            scope_channel1_settings(0);
+            scope_channel_enable_select(settings);
+            scope_channel_settings(settings, 0);
           }
           //Check on disable
-          else if((xtouch >= CH1_MENU_XPOS + 130) && (xtouch <= CH1_MENU_XPOS + 162))
+          else if((xtouch >= settings->menuxpos + 130) && (xtouch <= settings->menuxpos + 162))
           {
             //Disable the channel
-            scopesettings.channel1.enable = 0;
+            settings->enable = 0;
 
             //Update the trigger channel selection in the FPGA as needed
             fpga_swap_trigger_channel();
 
             //Reset the volts/div setting to max
-            scopesettings.channel1.voltperdiv = 0;
+            settings->voltperdiv = 0;
 
             //Set volts per div in the FPGA
-            fpga_set_channel_voltperdiv(&scopesettings.channel1);
+            fpga_set_channel_voltperdiv(settings);
 
             //Display this
-            scope_channel1_enable_select();
-            scope_channel1_settings(0);
+            scope_channel_enable_select(settings);
+            scope_channel_settings(settings, 0);
           }
         }
         //Check on fft enable or disable
-        else if((ytouch >= CH1_MENU_YPOS + 78) && (ytouch <= CH1_MENU_YPOS + 100))
+        else if((ytouch >= CH_MENU_YPOS + 78) && (ytouch <= CH_MENU_YPOS + 100))
         {
           //Check on enable
-          if((xtouch >= CH1_MENU_XPOS + 78) && (xtouch <= CH1_MENU_XPOS + 110))
+          if((xtouch >= settings->menuxpos + 78) && (xtouch <= settings->menuxpos + 110))
           {
             //Enable the channel
-            scopesettings.channel1.fftenable = 1;
+            settings->fftenable = 1;
 
             //Display this
-            scope_channel1_fft_show();
+            scope_channel_fft_show(settings);
           }
           //Check on disable
-          else if((xtouch >= CH1_MENU_XPOS + 130) && (xtouch <= CH1_MENU_XPOS + 162))
+          else if((xtouch >= settings->menuxpos + 130) && (xtouch <= settings->menuxpos + 162))
           {
             //Disable the channel
-            scopesettings.channel1.fftenable = 0;
+            settings->fftenable = 0;
 
             //Display this
-            scope_channel1_fft_show();
+            scope_channel_fft_show(settings);
           }
         }
         //Check on coupling DC or AD
-        else if((ytouch >= CH1_MENU_YPOS + 142) && (ytouch <= CH1_MENU_YPOS + 164))
+        else if((ytouch >= CH_MENU_YPOS + 142) && (ytouch <= CH_MENU_YPOS + 164))
         {
           //Check on DC coupling
-          if((xtouch >= CH1_MENU_XPOS + 78) && (xtouch <= CH1_MENU_XPOS + 110))
+          if((xtouch >= settings->menuxpos + 78) && (xtouch <= settings->menuxpos + 110))
           {
             //Set the channel to DC coupling
-            scopesettings.channel1.coupling = 0;
+            settings->coupling = 0;
 
             //Update the FPGA
-            fpga_set_channel_coupling(&scopesettings.channel1);
+            fpga_set_channel_coupling(settings);
 
             //Display this
-            scope_channel1_coupling_select();
-            scope_channel1_settings(0);
+            scope_channel_coupling_select(settings);
+            scope_channel_settings(settings, 0);
           }
           //Check on AC coupling
-          else if((xtouch >= CH1_MENU_XPOS + 130) && (xtouch <= CH1_MENU_XPOS + 162))
+          else if((xtouch >= settings->menuxpos + 130) && (xtouch <= settings->menuxpos + 162))
           {
             //Set the channel to AC coupling
-            scopesettings.channel1.coupling = 1;
+            settings->coupling = 1;
 
             //Update the FPGA
-            fpga_set_channel_coupling(&scopesettings.channel1);
+            fpga_set_channel_coupling(settings);
 
             //Display this
-            scope_channel1_coupling_select();
-            scope_channel1_settings(0);
+            scope_channel_coupling_select(settings);
+            scope_channel_settings(settings, 0);
           }
         }
         //Check on probe magnification setting
-        else if((ytouch >= CH1_MENU_YPOS + 199) && (ytouch <= CH1_MENU_YPOS + 237))
+        else if((ytouch >= CH_MENU_YPOS + 199) && (ytouch <= CH_MENU_YPOS + 237))
         {
           //Check on 1x
-          if((xtouch >= CH1_MENU_XPOS + 78) && (xtouch <= CH1_MENU_XPOS + 98))
+          if((xtouch >= settings->menuxpos + 78) && (xtouch <= settings->menuxpos + 98))
           {
             //Enable the channel
-            scopesettings.channel1.magnification = 0;
+            settings->magnification = 0;
 
             //Display this
-            scope_channel1_probe_magnification_select();
-            scope_channel1_settings(0);
+            scope_channel_probe_magnification_select(settings);
+            scope_channel_settings(settings, 0);
           }
           //Check on 10x
-          else if((xtouch >= CH1_MENU_XPOS + 109) && (xtouch <= CH1_MENU_XPOS + 132))
+          else if((xtouch >= settings->menuxpos + 109) && (xtouch <= settings->menuxpos + 132))
           {
             //Disable the channel
-            scopesettings.channel1.magnification = 1;
+            settings->magnification = 1;
 
             //Display this
-            scope_channel1_probe_magnification_select();
-            scope_channel1_settings(0);
+            scope_channel_probe_magnification_select(settings);
+            scope_channel_settings(settings, 0);
           }
           //Check on 100x
-          else if((xtouch >= CH1_MENU_XPOS + 138) && (xtouch <= CH1_MENU_XPOS + 168))
+          else if((xtouch >= settings->menuxpos + 138) && (xtouch <= settings->menuxpos + 168))
           {
             //Disable the channel
-            scopesettings.channel1.magnification = 2;
+            settings->magnification = 2;
 
             //Display this
-            scope_channel1_probe_magnification_select();
-            scope_channel1_settings(0);
-          }
-        }
-
-        //Wait until touch is released before checking on a new position
-        tp_i2c_wait_for_touch_release();
-      }
-      else
-      {
-        //Touch outside the menu so wait until touch is released and then quit
-        tp_i2c_wait_for_touch_release();
-
-        return;
-      }
-    }
-  }
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-void handle_channel2_menu_touch(void)
-{
-  //Stay in the menu as long as there is no touch outside the menu
-  while(1)
-  {
-    //Scan the touch panel for touch
-    tp_i2c_read_status();
-
-    //Check if there is touch
-    if(havetouch)
-    {
-      //Check if touch within the menu field
-      if((xtouch >= CH2_MENU_XPOS) && (xtouch <= CH2_MENU_XPOS + CH2_MENU_WIDTH) && (ytouch >= CH2_MENU_YPOS) && (ytouch <= CH2_MENU_YPOS + CH2_MENU_HEIGHT))
-      {
-        //Check on channel enable or disable
-        if((ytouch >= CH2_MENU_YPOS + 16) && (ytouch <= CH2_MENU_YPOS + 38))
-        {
-          //Check on enable
-          if((xtouch >= CH2_MENU_XPOS + 78) && (xtouch <= CH2_MENU_XPOS + 110))
-          {
-            //Enable the channel
-            scopesettings.channel2.enable = 1;
-
-            //Update the trigger channel selection in the FPGA as needed
-            fpga_swap_trigger_channel();
-
-            //Display this
-            scope_channel2_enable_select();
-            scope_channel2_settings(0);
-          }
-          //Check on disable
-          else if((xtouch >= CH2_MENU_XPOS + 130) && (xtouch <= CH2_MENU_XPOS + 162))
-          {
-            //Disable the channel
-            scopesettings.channel2.enable = 0;
-
-            //Update the trigger channel selection in the FPGA as needed
-            fpga_swap_trigger_channel();
-
-            //Reset the volts/div setting to max
-            scopesettings.channel2.voltperdiv = 0;
-
-            //Set volts per div in the FPGA
-            fpga_set_channel_voltperdiv(&scopesettings.channel2);
-
-            //Display this
-            scope_channel2_enable_select();
-            scope_channel2_settings(0);
-          }
-        }
-        //Check on fft enable or disable
-        else if((ytouch >= CH2_MENU_YPOS + 78) && (ytouch <= CH2_MENU_YPOS + 100))
-        {
-          //Check on enable
-          if((xtouch >= CH2_MENU_XPOS + 78) && (xtouch <= CH2_MENU_XPOS + 110))
-          {
-            //Enable the channel
-            scopesettings.channel2.fftenable = 1;
-
-            //Display this
-            scope_channel2_fft_show();
-          }
-          //Check on disable
-          else if((xtouch >= CH2_MENU_XPOS + 130) && (xtouch <= CH2_MENU_XPOS + 162))
-          {
-            //Disable the channel
-            scopesettings.channel2.fftenable = 0;
-
-            //Display this
-            scope_channel2_fft_show();
-          }
-        }
-        //Check on coupling DC or AD
-        else if((ytouch >= CH2_MENU_YPOS + 142) && (ytouch <= CH2_MENU_YPOS + 164))
-        {
-          //Check on DC coupling
-          if((xtouch >= CH2_MENU_XPOS + 78) && (xtouch <= CH2_MENU_XPOS + 110))
-          {
-            //Set the channel to DC coupling
-            scopesettings.channel2.coupling = 0;
-
-            //Update the FPGA
-            fpga_set_channel_coupling(&scopesettings.channel2);
-
-            //Display this
-            scope_channel2_coupling_select();
-            scope_channel2_settings(0);
-          }
-          //Check on AC coupling
-          else if((xtouch >= CH2_MENU_XPOS + 130) && (xtouch <= CH2_MENU_XPOS + 162))
-          {
-            //Set the channel to AC coupling
-            scopesettings.channel2.coupling = 1;
-
-            //Update the FPGA
-            fpga_set_channel_coupling(&scopesettings.channel2);
-
-            //Display this
-            scope_channel2_coupling_select();
-            scope_channel2_settings(0);
-          }
-        }
-        //Check on probe magnification setting
-        else if((ytouch >= CH2_MENU_YPOS + 199) && (ytouch <= CH2_MENU_YPOS + 237))
-        {
-          //Check on 1x
-          if((xtouch >= CH2_MENU_XPOS + 78) && (xtouch <= CH2_MENU_XPOS + 98))
-          {
-            //Enable the channel
-            scopesettings.channel2.magnification = 0;
-
-            //Display this
-            scope_channel2_probe_magnification_select();
-            scope_channel2_settings(0);
-          }
-          //Check on 10x
-          else if((xtouch >= CH2_MENU_XPOS + 109) && (xtouch <= CH2_MENU_XPOS + 132))
-          {
-            //Disable the channel
-            scopesettings.channel2.magnification = 1;
-
-            //Display this
-            scope_channel2_probe_magnification_select();
-            scope_channel2_settings(0);
-          }
-          //Check on 100x
-          else if((xtouch >= CH2_MENU_XPOS + 138) && (xtouch <= CH2_MENU_XPOS + 168))
-          {
-            //Disable the channel
-            scopesettings.channel2.magnification = 2;
-
-            //Display this
-            scope_channel2_probe_magnification_select();
-            scope_channel2_settings(0);
+            scope_channel_probe_magnification_select(settings);
+            scope_channel_settings(settings, 0);
           }
         }
 
@@ -1332,7 +1179,7 @@ void handle_acquisition_menu_touch(void)
 
               //Set the FPGA time base setting without changing the current time per div setting
               //This way the sampling is actually done with the set speed, but the display stays at the set time per div
-              fpga_set_sample_rate(sample_rate_time_per_div[i]);
+              fpga_set_sample_rate(i);
               
               //Display the new setting
               scope_acquisition_speed_select();
@@ -1417,13 +1264,6 @@ void handle_trigger_menu_touch(void)
 
             //Show this on the screen
             scope_run_stop_text();
-
-            //Need to call some function here
-/*
-//Some trigger flags but not sure if they are needed any longer
-            pcVar5[0x18] = '\x01';
-            pcVar5[0x17] = '\x01';
-*/
 
             //Display this
             scope_trigger_mode_select();
@@ -1548,6 +1388,9 @@ void handle_trigger_menu_touch(void)
 
               //Update the FPGA
               fpga_set_trigger_channel();
+              
+              //Set the trigger vertical position to match channel 1 trace position
+              scope_calculate_trigger_vertical_position(&scopesettings.channel1);
 
               //Display this
               scope_trigger_channel_select();
@@ -1565,6 +1408,9 @@ void handle_trigger_menu_touch(void)
 
               //Update the FPGA
               fpga_set_trigger_channel();
+
+              //Set the trigger vertical position to match channel 1 trace position
+              scope_calculate_trigger_vertical_position(&scopesettings.channel2);
 
               //Display this
               scope_trigger_channel_select();
@@ -1874,7 +1720,7 @@ void handle_right_volts_div_menu_touch(void)
         scopesettings.channel1.voltperdiv++;
 
         //Show the change on the screen
-        scope_channel1_settings(0);
+        scope_channel_settings(&scopesettings.channel1, 0);
 
         //Only update the FPGA in normal view mode
         if(scopesettings.waveviewmode == 0)
@@ -1945,7 +1791,7 @@ void handle_right_volts_div_menu_touch(void)
         scopesettings.channel1.voltperdiv--;
 
         //Show the change on the screen
-        scope_channel1_settings(0);
+        scope_channel_settings(&scopesettings.channel1, 0);
 
         //Only update the FPGA in normal view mode
         if(scopesettings.waveviewmode == 0)
@@ -2009,7 +1855,7 @@ void handle_right_volts_div_menu_touch(void)
         scopesettings.channel2.voltperdiv++;
 
         //Show the change on the screen
-        scope_channel2_settings(0);
+        scope_channel_settings(&scopesettings.channel2, 0);
 
         //Only update the FPGA in normal view mode
         if(scopesettings.waveviewmode == 0)
@@ -2073,7 +1919,7 @@ void handle_right_volts_div_menu_touch(void)
         scopesettings.channel2.voltperdiv--;
 
         //Show the change on the screen
-        scope_channel2_settings(0);
+        scope_channel_settings(&scopesettings.channel2, 0);
 
         //Only update the FPGA in normal view mode
         if(scopesettings.waveviewmode == 0)
@@ -2858,7 +2704,7 @@ void move_trigger_point_position(void)
   }
 
   //Update the current position
-  scopesettings.triggerposition = position;
+  scopesettings.triggerhorizontalposition = position;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -2903,7 +2749,7 @@ void change_channel_1_offset(void)
   }
 
   //Update the current position
-  scopesettings.channel1.traceoffset = position;
+  scopesettings.channel1.traceposition = position;
 
   //Write it to the FPGA
   fpga_set_channel_offset(&scopesettings.channel1);
@@ -2942,7 +2788,7 @@ void change_channel_2_offset(void)
   }
 
   //Update the current position
-  scopesettings.channel2.traceoffset = position;
+  scopesettings.channel2.traceposition = position;
 
   //Write it to the FPGA
   fpga_set_channel_offset(&scopesettings.channel2);
@@ -2981,7 +2827,7 @@ void change_trigger_level_offset(void)
   }
 
   //Update the current position
-  scopesettings.triggeroffset = position;
+  scopesettings.triggerverticalposition = position;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

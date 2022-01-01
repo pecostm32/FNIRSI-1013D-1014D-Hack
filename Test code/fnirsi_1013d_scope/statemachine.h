@@ -6,6 +6,7 @@
 //----------------------------------------------------------------------------------------------------------------------------------
 
 #include "types.h"
+#include "variables.h"
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -14,8 +15,7 @@ void touch_handler(void);
 void scan_for_touch(void);
 
 void handle_main_menu_touch(void);
-void handle_channel1_menu_touch(void);
-void handle_channel2_menu_touch(void);
+void handle_channel_menu_touch(PCHANNELSETTINGS settings);
 void handle_acquisition_menu_touch(void);
 void handle_trigger_menu_touch(void);
 
