@@ -253,7 +253,7 @@ struct tagChannelSettings
   uint32 menuxpos;
   uint32 touchedcolor;
   
-  uint8 *buttontext;
+  int8 *buttontext;
 };
 
 struct tagScopeSettings
@@ -396,6 +396,8 @@ extern FATFS fs;
 
 extern SCOPESETTINGS scopesettings;
 
+CHANNELSETTINGS calibrationsettings;
+
 extern SCOPESETTINGS savedscopesettings1;
 extern SCOPESETTINGS savedscopesettings2;
 
@@ -500,6 +502,11 @@ extern uint16 previous_bottom_volt_cursor_position;
 //----------------------------------------------------------------------------------------------------------------------------------
 //Calibration data
 //----------------------------------------------------------------------------------------------------------------------------------
+
+extern uint32 samplerateindex;
+
+//Average data for calibration calculations
+extern uint32 samplerateaverage[2][6];
 
 //extern uint16 channel1_calibration_factor;
 //extern uint16 channel1_calibration_data[];

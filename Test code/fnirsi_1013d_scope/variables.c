@@ -64,6 +64,8 @@ FATFS fs;
 
 SCOPESETTINGS scopesettings;
 
+CHANNELSETTINGS calibrationsettings;
+
 SCOPESETTINGS savedscopesettings1;
 SCOPESETTINGS savedscopesettings2;
 
@@ -213,6 +215,11 @@ uint32 viewfilesetupdata[VIEW_SETUP_DATA_SIZE / 4];          //Not in original c
 //----------------------------------------------------------------------------------------------------------------------------------
 //Calibration data
 //----------------------------------------------------------------------------------------------------------------------------------
+
+uint32 samplerateindex;
+
+//Average data for calibration calculations
+uint32 samplerateaverage[2][6];
 
 //uint16 channel1_calibration_factor = 0x00DC;
 //uint16 channel1_calibration_data[] = { 0x054D, 0x0545, 0x0554, 0x054D, 0x0553, 0x054C, 0x054C };

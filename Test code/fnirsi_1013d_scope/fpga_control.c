@@ -753,62 +753,6 @@ void fpga_set_battery_level(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void fpga_setup_for_calibration(void)
-{
-  //Set the channels to lowest sensitivity and trace offset
-  scopesettings.channel1.voltperdiv  = 0;
-//  scopesettings.channel1.traceoffset = 200;
-  scopesettings.channel2.voltperdiv  = 0;
-//  scopesettings.channel2.traceoffset = 200;
-  
-  //Set the time base to 20us/div
-  scopesettings.timeperdiv = 12;
-  
-  //Load the settings into the FPGA
-  fpga_set_channel_voltperdiv(&scopesettings.channel1);
-  fpga_set_channel_offset(&scopesettings.channel1);
-
-  fpga_set_channel_voltperdiv(&scopesettings.channel2);
-  fpga_set_channel_offset(&scopesettings.channel2);
-  
-  //Set the clock divider??
-  fpga_set_sample_rate(scopesettings.samplerate);
-  
-  //Send the command for setting the trigger level to the FPGA
-  fpga_write_cmd(0x17);
-  
-  //Write zero level to the FPGA
-  fpga_write_byte(0);
-  
-  //Wait 100ms to settle
-  timer0_delay(100);
-  
-  //Set the trigger base. This does not match with the clock divider setting??
-  fpga_set_time_base(10);
-  
-  //Disable the trigger circuit
-  scopesettings.samplemode = 0;
-  
-  //Set number of samples
-  scopesettings.samplecount = 3000;
-  scopesettings.nofsamples  = 1500;
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-void fpga_set_channel_trace_offsets(uint32 offset)
-{
-  //Write the offset to channel 1
-  fpga_write_cmd(0x32);
-  fpga_write_short(offset);
-  
-  //Write the offset to channel 2
-  fpga_write_cmd(0x35);
-  fpga_write_short(offset);
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
 void fpga_write_command_0x1F(uint32 data)
 {
   fpga_write_cmd(0x1F);

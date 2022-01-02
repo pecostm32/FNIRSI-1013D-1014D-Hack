@@ -88,8 +88,6 @@ void   fpga_read_adc_data(PCHANNELSETTINGS settings);
 
 void   fpga_set_battery_level(void);
 
-void   fpga_setup_for_calibration(void);
-
 
 void   fpga_set_channel_trace_offsets(uint32 offset);
 
