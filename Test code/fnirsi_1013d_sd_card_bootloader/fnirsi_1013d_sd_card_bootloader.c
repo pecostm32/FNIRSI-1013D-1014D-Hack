@@ -16,6 +16,7 @@
 //----------------------------------------------------------------------------------------------------------------------------------
 
 #define PROGRAM_START_SECTOR      48
+#define DISPLAY_CONFIG_SECTOR    710
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -78,6 +79,13 @@ int main(void)
       //On error just frees
       while(1);
     }
+  }
+  
+  //Load the display configuration sector to DRAM before the startup screen program
+  if(sd_card_read(DISPLAY_CONFIG_SECTOR, 1, (void *)0x81BFFC00) != SD_OK)
+  {
+    //On error just frees
+    while(1);
   }
  
   //Run the startup screen program
