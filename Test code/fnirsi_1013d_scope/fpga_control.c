@@ -420,7 +420,10 @@ void fpga_set_trigger_level(void)
   
   //The difference between the two positions determines the level offset on 128, but it needs to be scaled back first
   level = ((((int32)traceposition - (int32)scopesettings.triggerverticalposition) * 4194304) / (41954 * signal_adjusters[voltperdiv])) + 128;
-  
+
+  //Set the new level in the settings
+  scopesettings.triggerlevel = level;
+
   //Limit on extremes
   if(level < 0)
   {

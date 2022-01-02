@@ -3853,8 +3853,8 @@ void scope_calculate_trigger_vertical_position(PCHANNELSETTINGS settings)
 {
   int32 position;
   
-  //Center the trigger level around 0
-  position = scopesettings.triggerlevel - 128;
+  //Center the trigger level around 0 point
+  position = 128 - scopesettings.triggerlevel;
   
   //Adjust it for the current volt per div setting
   position = (41954 * position * signal_adjusters[settings->voltperdiv]) >> 22;

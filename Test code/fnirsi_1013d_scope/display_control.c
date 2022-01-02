@@ -10,6 +10,10 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+#define DISPLAY_CONFIG_ADDRESS    (uint32*)0x81BFFC00
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 void sys_disable_display(void)
 {
   volatile uint32 *ptr;
@@ -45,6 +49,9 @@ void sys_disable_display(void)
 void sys_init_display(uint16 xsize, uint16 ysize, uint16 *address)
 {
   int32   time;
+  uint32 *ptr = DISPLAY_CONFIG_ADDRESS;
+  uint32  checksum = 0;
+  uint32  index;
   
   //Setup the used port D pins for LCD
   *PORTD_CFG0_REG = 0x22222227;   //PD00 is not used for the display
@@ -139,6 +146,31 @@ void sys_init_display(uint16 xsize, uint16 ysize, uint16 *address)
   //Set timing based on the sizes. xsize - 1 and ysize - 1
   *TCON0_BASIC_TIMING0  = ((ysize - 1) & 0x07FF) | (((xsize - 1) & 0x07FF) << 16);
   
+  //Calculate the config checksum
+  for(index=0;index<6;index++)
+  {
+    checksum += ptr[index];
+  }
+  
+  //Check the display configuration data
+  if((ptr[0] == 0xAAAAAAAA) && (ptr[1] == 0x55555555) && (ptr[4] == 0xCCCCCCCC) && (ptr[5] == 0x33333333) && (ptr[6] == checksum))
+  {
+    //Horizontal total time and horizontal back porch
+    *TCON0_BASIC_TIMING1 = ptr[2];
+
+    //Vertical front porch and vertical back porch
+    *TCON0_BASIC_TIMING2 = ptr[3];
+  }
+  else
+  {
+    //Use the default configuration
+    //Horizontal total time and horizontal back porch
+    *TCON0_BASIC_TIMING1 = 0x41E0044;
+
+    //Vertical front porch and vertical back porch
+    *TCON0_BASIC_TIMING2 = 0x41A0017;
+  }
+  
   //18--11-2021
   //Found 5 different settings throughout the software versions
   //1014D new version 0x041E0043, 0x041A0019
@@ -146,7 +178,8 @@ void sys_init_display(uint16 xsize, uint16 ysize, uint16 *address)
   //1013D version 1   0x041E0044, 0x041A0017
   //1013D version 2   0x041E004A, 0x041A0017   Most common version??
   //1013D version 3   0x041E0072, 0x041A001F
-  
+ 
+#if 0
 #if DISPLAY_TYPE == 0
   //Horizontal total time and horizontal back porch
   *TCON0_BASIC_TIMING1 = 0x041E004A;
@@ -160,7 +193,8 @@ void sys_init_display(uint16 xsize, uint16 ysize, uint16 *address)
   //Vertical front porch and vertical back porch
   *TCON0_BASIC_TIMING2 = 0x041A001F;
 #endif
-  
+#endif
+
   //Horizontal sync pulse width
   *TCON0_BASIC_TIMING3 = 0x160000;
   
