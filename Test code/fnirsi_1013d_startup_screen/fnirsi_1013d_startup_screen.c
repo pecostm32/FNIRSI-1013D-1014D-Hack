@@ -22,7 +22,7 @@
 //
 //----------------------------------------------------------------------------------------------------------------------------------
 
-#define PROGRAM_START_SECTOR      92
+#define PROGRAM_START_SECTOR              92
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -75,8 +75,8 @@ int main(void)
   //Turn on the display brightness
   fpga_set_backlight_brightness(0xEA60);
   
-  //Get the timer ticks here and add 500 to is
-  waittime = timer0_get_ticks() + 500;
+  //Get the timer ticks here and add 750 to is
+  waittime = timer0_get_ticks() + 750;
 
   //Load the main program to memory
   //Initialize the SD card
@@ -139,7 +139,7 @@ int main(void)
     }
   }
   
-  //Wait until the half a second has passed
+  //Wait until the 750 milliseconds have passed
   while(timer0_get_ticks() < waittime);
 
   //Start the main program  
