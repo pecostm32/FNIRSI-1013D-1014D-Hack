@@ -169,8 +169,11 @@ void usb_write_to_fifo(void *FIFO, void *buffer, uint32 length)
   if(alignment == 0)
   {
     //Get the number of 32 bit items to do
-    uint32 count = length >> 2;
+    uint32 count = length / 4;
 
+    //Take of the number of bytes that will be handled as 32 bit items
+    length -= (count * 4);
+    
     //Write the 32 bit items first
     while(count--)
     {
@@ -182,8 +185,11 @@ void usb_write_to_fifo(void *FIFO, void *buffer, uint32 length)
     }
 
     //Check if 16 bit item to write
-    if((length & 3) == 2)
+    if(length > 1)
     {
+      //Take of the number of bytes handled as 16 bit item
+      length -= 2;
+      
       //Write the 16 bit item
       (*(volatile uint16 *)FIFO) = *(uint16 *)buffer;
 
@@ -202,7 +208,7 @@ void usb_write_to_fifo(void *FIFO, void *buffer, uint32 length)
   else if(alignment == 2)
   {
     //Get the number of 16 bit items to do
-    uint32 count = length >> 1;
+    uint32 count = length / 2;
 
     //Write the 16 bit items first
     while(count--)
@@ -246,8 +252,11 @@ void usb_read_from_fifo(void *FIFO, void *buffer, uint32 length)
   if(alignment == 0)
   {
     //Get the number of 32 bit items to do
-    uint32 count = length >> 2;
+    uint32 count = length / 4;
 
+    //Take of the number of bytes that will be handled as 32 bit items
+    length -= (count * 4);
+    
     //Read the 32 bit items first
     while(count--)
     {
@@ -259,8 +268,11 @@ void usb_read_from_fifo(void *FIFO, void *buffer, uint32 length)
     }
 
     //Check if 16 bit item to read
-    if((length & 3) == 2)
+    if(length > 1)
     {
+      //Take of the number of bytes handled as 16 bit item
+      length -= 2;
+      
       //Read the 16 bit item
       *(uint16 *)buffer = (*(volatile uint16 *)FIFO);
 
@@ -279,7 +291,7 @@ void usb_read_from_fifo(void *FIFO, void *buffer, uint32 length)
   else if(alignment == 2)
   {
     //Get the number of 16 bit items to do
-    uint32 count = length >> 1;
+    uint32 count = length / 2;
 
     //Read the 16 bit items first
     while(count--)
