@@ -508,6 +508,9 @@ extern uint32 samplerateindex;
 //Average data for calibration calculations
 extern uint32 samplerateaverage[2][6];
 
+//Single ADC bit dc offset step per input sensitivity setting
+extern uint32 sampleratedcoffsetstep[2][6];
+
 //extern uint16 channel1_calibration_factor;
 //extern uint16 channel1_calibration_data[];
 

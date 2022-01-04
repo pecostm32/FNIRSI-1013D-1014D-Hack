@@ -221,6 +221,9 @@ uint32 samplerateindex;
 //Average data for calibration calculations
 uint32 samplerateaverage[2][6];
 
+//Single ADC bit dc offset step per input sensitivity setting
+uint32 sampleratedcoffsetstep[2][6];
+
 //uint16 channel1_calibration_factor = 0x00DC;
 //uint16 channel1_calibration_data[] = { 0x054D, 0x0545, 0x0554, 0x054D, 0x0553, 0x054C, 0x054C };
 
@@ -396,7 +399,8 @@ const int8 *volt_div_texts[3][7] =
 //----------------------------------------------------------------------------------------------------------------------------------
 
 //                                   173   175   180   180   184   184   184
-const int16 signal_adjusters[7] = { 0xAD, 0xAF, 0xB4, 0xB4, 0xB8, 0xB8, 0xB8 };
+//const int16 signal_adjusters[7] = { 0xAD, 0xAF, 0xB4, 0xB4, 0xB8, 0xB8, 0xB8 };
+const int16 signal_adjusters[7] = { 0xAD, 0xAF, 0xB4, 0xB4, 0xB8, 0xB8, 0x170 };  //368
 
 const uint16 timebase_adjusters[5] = { 0x01A9, 0x00AA, 0x0055, 0x002F, 0x0014 };
 

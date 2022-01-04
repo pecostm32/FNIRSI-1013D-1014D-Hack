@@ -3794,7 +3794,7 @@ void scope_draw_pointers(void)
     display_top_pointer(position, 47, 'H');
 
     //y position for the trigger level pointer
-    position = 448 - scopesettings.triggerverticalposition;
+    position = 441 - scopesettings.triggerverticalposition;
     
     //Limit on the top of the displayable region
     if(position < 46)
@@ -3854,7 +3854,7 @@ void scope_calculate_trigger_vertical_position(PCHANNELSETTINGS settings)
   int32 position;
   
   //Center the trigger level around 0 point
-  position = 128 - scopesettings.triggerlevel;
+  position = scopesettings.triggerlevel - 128;
   
   //Adjust it for the current volt per div setting
   position = (41954 * position * signal_adjusters[settings->voltperdiv]) >> 22;
@@ -4177,40 +4177,43 @@ uint32 scope_do_channel_calibration(void)
   int32  dcoffsetstep;
   int32  compensationsum = 0;
 
-  //Start with the first set of averages
-  samplerateindex = 0;
-
-  //Do the measurements on two sample rates. 200MSa/s and 50KSa/s
-  for(samplerate=0;samplerate<18;samplerate+=11)
+  //Calibrate for the hardware sensitivity settings
+  for(voltperdiv=0;voltperdiv<6;voltperdiv++)
   {
-    //Set the selected sample rate
-    fpga_set_sample_rate(samplerate);
+    //Set the to do sensitivity setting in the FPGA
+    calibrationsettings.voltperdiv = voltperdiv;
+    fpga_set_channel_voltperdiv(&calibrationsettings);
 
-    //Set the matching time base
-    fpga_set_time_base(sample_rate_time_per_div[samplerate]);
+    //Wait 50ms to allow the relays to settle
+    timer0_delay(50);
 
-    //Calibrate for the hardware sensitivity settings
-    for(voltperdiv=0;voltperdiv<6;voltperdiv++)
+    //Start with the first set of averages
+    samplerateindex = 0;
+  
+    //Do the measurements on two sample rates. 200MSa/s and 50KSa/s
+    for(samplerate=0;samplerate<18;samplerate+=11)
     {
-      //Set the to do sensitivity setting in the FPGA
-      calibrationsettings.voltperdiv = voltperdiv;
-      fpga_set_channel_voltperdiv(&calibrationsettings);
+      //Set the selected sample rate
+      fpga_set_sample_rate(samplerate);
+
+      //Set the matching time base
+      fpga_set_time_base(sample_rate_time_per_div[samplerate]);
 
       //Set the high DC offset in the FPGA (Lower value returns higher ADC reading)
       calibrationsettings.dc_calibration_offset[voltperdiv] = HIGH_DC_OFFSET;
       fpga_set_channel_offset(&calibrationsettings);
-      
+
       //Wait 25ms before sampling
       timer0_delay(25);
-
+      
       //Start the conversion and wait until done or touch panel active
       fpga_do_conversion();
 
       //Get the data from a sample run
       fpga_read_sample_data(&calibrationsettings, 100);
 
-      //Need the average as one reading here
-      highaverage = calibrationsettings.average;
+      //Need the average as one reading here. Only use ADC1 data
+      highaverage = calibrationsettings.adc1rawaverage;
 
       //Set the low DC offset in the FPGA (Higher value returns lower ADC reading)
       calibrationsettings.dc_calibration_offset[voltperdiv] = LOW_DC_OFFSET;
@@ -4225,8 +4228,8 @@ uint32 scope_do_channel_calibration(void)
       //Get the data from a sample run
       fpga_read_sample_data(&calibrationsettings, 100);
 
-      //Need the average as another reading here
-      lowaverage = calibrationsettings.average;
+      //Need the average as another reading here. Only use ADC1 data
+      lowaverage = calibrationsettings.adc1rawaverage;
 
       //Calculate the DC offset step for a single ADC bit change for this volt/div setting
       //Low DC offset minus high DC offset (1200 - 500) = 700. Scaled up for fixed point calculation ==> 700 << 20 = 734003200
@@ -4238,10 +4241,13 @@ uint32 scope_do_channel_calibration(void)
 
       //Set the result for this sample rate and volt per division setting
       samplerateaverage[samplerateindex][voltperdiv] = (highaverage + lowaverage) / 2;
+      
+      //Save the dc offset step for final calibration after compensation data has been determined
+      sampleratedcoffsetstep[samplerateindex][voltperdiv] = dcoffsetstep;
+      
+      //Select the next set of sample indexes
+      samplerateindex++;
     }
-
-    //Select the next set of sample indexes
-    samplerateindex++;
   }
 
   //Set the sample rate to 2MSa/s
@@ -4263,8 +4269,8 @@ uint32 scope_do_channel_calibration(void)
     //Set the new DC channel offset in the FPGA
     fpga_set_channel_offset(&calibrationsettings);
     
-    //Wait 25ms before sampling
-    timer0_delay(25);
+    //Wait 50ms before sampling
+    timer0_delay(50);
     
     //Start the conversion and wait until done or touch panel active
     fpga_do_conversion();
@@ -4273,7 +4279,7 @@ uint32 scope_do_channel_calibration(void)
     fpga_read_sample_data(&calibrationsettings, 100);
     
     //Check if the average reading is outside allowed range
-    if((calibrationsettings.average < 125) || (calibrationsettings.average > 131))
+    if((calibrationsettings.adc1rawaverage < 125) || (calibrationsettings.adc1rawaverage > 131))
     {
       //When deviation is more then 3, signal it as a failure
       flag = 0;
@@ -4295,6 +4301,13 @@ uint32 scope_do_channel_calibration(void)
   {
     //Not so clear the flag
     flag = 0;
+  }
+  
+  //Adjust the center point DC offsets with the found compensation values
+  for(voltperdiv=0;voltperdiv<6;voltperdiv++)
+  {
+    //The DC offset is based on the pre compensated ADC1 reading, so need to adjust with the average DC offset step times the ADC1 compensation value
+    calibrationsettings.dc_calibration_offset[voltperdiv] = (int16)calibrationsettings.dc_calibration_offset[voltperdiv] + (((int32)calibrationsettings.adc1compensation * (((int32)sampleratedcoffsetstep[0][voltperdiv] + (int32)sampleratedcoffsetstep[1][voltperdiv]) / 2)) >> 20);
   }
   
   //Return the result of the tests. True if all tests passed
@@ -4328,6 +4341,10 @@ void scope_do_50_percent_trigger_setup(void)
 
 void scope_do_auto_setup(void)
 {
+  
+  //For
+  
+  
   uint32 flags = 0;
   uint32 samplerate;
   uint32 voltperdiv;
@@ -4865,13 +4882,15 @@ int32 scope_get_sample(PCHANNELSETTINGS settings, int32 index)
   //Get the sample and adjust the data for the correct voltage per div setting
   sample = (41954 * sample * signal_adjusters[settings->voltperdiv]) >> 22;
 
+#if 0  
   //Check on lowest volt per div setting for doubling
   if(settings->voltperdiv == 6)
   {
     //Multiply the sample by two
     sample <<= 1;
   }
-
+#endif
+  
   //Offset the sample on the screen
   sample = settings->traceposition + sample;
 
@@ -6690,7 +6709,7 @@ void scope_load_configuration_data(void)
   scopesettings.channel1.tracebuffer = channel1tracebuffer1;
   
   
-  scopesettings.channel2.enablecommand     = 0x02;
+  scopesettings.channel2.enablecommand     = 0x03;
   scopesettings.channel2.couplingcommand   = 0x37;
   scopesettings.channel2.voltperdivcommand = 0x36;
   scopesettings.channel2.offsetcommand     = 0x35;
@@ -6706,15 +6725,6 @@ void scope_load_configuration_data(void)
   scopesettings.channel2.buttontext = "CH2";
   
   scopesettings.channel2.tracebuffer = channel2tracebuffer1;
-  
-  int i;
-  
-  for(i=0;i<7;i++)
-  {
-    scopesettings.channel1.dc_calibration_offset[i] = 750;
-    scopesettings.channel2.dc_calibration_offset[i] = 750;
-  }
-  
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
