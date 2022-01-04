@@ -905,7 +905,7 @@ void fpga_set_channel_offset(PCHANNELSETTINGS settings)
   }
   
   //Write the offset data
-  *channel_offset = settings->dc_calibration_offset[settings->voltperdiv] * 0.170666666666667;
+  *channel_offset = (1500 - settings->dc_calibration_offset[settings->voltperdiv]) * 0.170666666666667;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -996,9 +996,11 @@ void fpga_set_trigger_level(void)
     traceposition = scopesettings.channel2.traceposition;
   }
   
-  
   //The difference between the two positions determines the level offset on 128, but it needs to be scaled back first
-  level = ((((int32)traceposition - (int32)scopesettings.triggerverticalposition) * 4194304) / (41954 * signal_adjusters[voltperdiv])) + 128;
+  level = ((((int32)scopesettings.triggerverticalposition - (int32)traceposition) * 4194304) / (41954 * signal_adjusters[voltperdiv])) + 128;
+  
+  //Set the new level in the settings
+  scopesettings.triggerlevel = level;
 
 #if 0  
   level = scopesettings.triggerverticalposition - traceposition;
@@ -1197,7 +1199,6 @@ void fpga_read_adc_data(PCHANNELSETTINGS settings)
     //Add the samples for average calculation
     settings->average += sample;
     
-    
     //Store the data
     *settings->buffer = sample;
     
@@ -1216,42 +1217,6 @@ void fpga_read_adc_data(PCHANNELSETTINGS settings)
 
 void fpga_set_battery_level(void)
 {
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-void fpga_setup_for_calibration(void)
-{
-  //Set the channels to lowest sensitivity and trace offset
-  scopesettings.channel1.voltperdiv  = 0;
-//  scopesettings.channel1.traceoffset = 200;
-  scopesettings.channel2.voltperdiv  = 0;
-//  scopesettings.channel2.traceoffset = 200;
-  
-  //Set the time base to 100us/div
-  scopesettings.timeperdiv = 17;
-  
-  //Load the settings into the FPGA
-  fpga_set_channel_voltperdiv(&scopesettings.channel1);
-  fpga_set_channel_offset(&scopesettings.channel1);
-
-  fpga_set_channel_voltperdiv(&scopesettings.channel2);
-  fpga_set_channel_offset(&scopesettings.channel1);
-  
-  fpga_set_sample_rate(scopesettings.samplerate);
-  
-  //Send the command for setting the trigger level to the FPGA
-  fpga_write_cmd(0x17);
-  
-  //Write zero level to the FPGA
-  fpga_write_byte(0);
-  
-  //Wait 100ms to settle
-  timer0_delay(100);
-  
-  //Disable the trigger circuit??
-  fpga_write_cmd(0x0F);
-  fpga_write_byte(0x01);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -1309,22 +1274,6 @@ void fpga_do_conversion(void)
     //Wait for the FPGA to signal triggered or buffer full
     while((fpga_read_byte() & 1) == 0);
   }
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-void fpga_set_channel_trace_offsets(uint32 offset)
-{
-  channel1_offset = (1500 - offset) * 0.170666666666667;
-  channel2_offset = (1500 - offset) * 0.170666666666667;
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-void fpga_write_command_0x1F(uint32 data)
-{
-  fpga_write_cmd(0x1F);
-  fpga_write_short(data);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -1534,7 +1483,7 @@ uint32 fpga_get_zero_crossings(uint32 channel)
   }
   
   //No idea what this is for, but in normal sample processing this is a value obtained from the special ic
-  fpga_write_command_0x1F(100);
+//  fpga_write_command_0x1F(100);
 
   if(channel == 0)
   {
