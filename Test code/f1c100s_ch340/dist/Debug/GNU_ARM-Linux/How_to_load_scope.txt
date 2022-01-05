@@ -1,0 +1,33 @@
+===================
+Check if active
+==================
+
+sudo ./sunxi-fel version
+
+===================
+Load to RAM
+==================
+
+sudo ./sunxi-fel -p write 0x7FFFFFE0 f1c100s_ch340.bin exe 0x80000000
+ 
+
+==================
+Load package onto SD card
+
+Check if /dev/sdc is the correct device for the scope
+==================
+
+sudo umount /dev/sdc1
+
+sudo dd if=f1c100s_ch340_sd_package.bin of=/dev/sdc bs=1024 seek=8
+
+
+===================
+Remove program from SD card
+===================
+
+sudo umount /dev/sdc1
+
+sudo dd if=/dev/zero of=/dev/sdc bs=1024 seek=8 count=1
+
+
