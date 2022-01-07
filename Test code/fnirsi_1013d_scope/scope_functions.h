@@ -136,7 +136,7 @@ void scope_draw_volt_cursors(void);
 // Signal data processing functions
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_calculate_trigger_vertical_position(PCHANNELSETTINGS settings);
+void scope_calculate_trigger_vertical_position();
 
 void scope_acquire_trace_data(void);
 
@@ -148,12 +148,15 @@ uint32 scope_do_channel_calibration(void);
 void scope_do_50_percent_trigger_setup(void);
 
 void scope_do_auto_setup(void);
+void scope_autorange_channel(PCHANNELSETTINGS settings);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 // Signal data display functions
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void scope_display_trace_data(void);
+
+int32 scope_get_sample(PCHANNELSETTINGS settings, int32 index);
 
 void scope_display_channel_trace(PCHANNELSETTINGS settings);
 

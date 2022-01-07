@@ -1018,9 +1018,13 @@ void handle_channel_menu_touch(PCHANNELSETTINGS settings)
             //Update the trigger channel selection in the FPGA as needed
             fpga_swap_trigger_channel();
 
+            //Set the trigger vertical position to match the trigger channel position
+            scope_calculate_trigger_vertical_position();
+            
             //Display this
             scope_channel_enable_select(settings);
             scope_channel_settings(settings, 0);
+            scope_trigger_settings(0);
           }
           //Check on disable
           else if((xtouch >= settings->menuxpos + 130) && (xtouch <= settings->menuxpos + 162))
@@ -1031,6 +1035,9 @@ void handle_channel_menu_touch(PCHANNELSETTINGS settings)
             //Update the trigger channel selection in the FPGA as needed
             fpga_swap_trigger_channel();
 
+            //Set the trigger vertical position to match the trigger channel position
+            scope_calculate_trigger_vertical_position();
+
             //Reset the volts/div setting to max
             settings->voltperdiv = 0;
 
@@ -1040,6 +1047,7 @@ void handle_channel_menu_touch(PCHANNELSETTINGS settings)
             //Display this
             scope_channel_enable_select(settings);
             scope_channel_settings(settings, 0);
+            scope_trigger_settings(0);
           }
         }
         //Check on fft enable or disable
@@ -1390,7 +1398,7 @@ void handle_trigger_menu_touch(void)
               fpga_set_trigger_channel();
               
               //Set the trigger vertical position to match channel 1 trace position
-              scope_calculate_trigger_vertical_position(&scopesettings.channel1);
+              scope_calculate_trigger_vertical_position();
 
               //Display this
               scope_trigger_channel_select();
@@ -1409,8 +1417,8 @@ void handle_trigger_menu_touch(void)
               //Update the FPGA
               fpga_set_trigger_channel();
 
-              //Set the trigger vertical position to match channel 1 trace position
-              scope_calculate_trigger_vertical_position(&scopesettings.channel2);
+              //Set the trigger vertical position to match channel 2 trace position
+              scope_calculate_trigger_vertical_position();
 
               //Display this
               scope_trigger_channel_select();

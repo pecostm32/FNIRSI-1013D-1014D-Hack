@@ -29,12 +29,6 @@ void scope_setup_display_lib(void)
   display_set_dimensions(SCREEN_WIDTH, SCREEN_HEIGHT);
   
   disp_xpos = 0;
-  
-  disp_ch1_y = 0;
-  disp_ch2_y = 0;
-  
-  disp_ch1_prev_y = 0;
-  disp_ch2_prev_y = 0;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -86,14 +80,6 @@ void scope_setup_main_screen(void)
   
   //Show the battery charge level and charging indicator
   scope_battery_status();
-  
-#if 0  
-  //Clear some flags to make the trace part of the screen refresh
-  scopesettings.triggerflag1 = 1;
-  scopesettings.triggerflag2 = 1;
-  
-  disp_xpos = 0;  
-#endif
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -3849,15 +3835,27 @@ void scope_draw_volt_cursors(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void scope_calculate_trigger_vertical_position(PCHANNELSETTINGS settings)
+void scope_calculate_trigger_vertical_position()
 {
+  PCHANNELSETTINGS settings;
+  
+  //Select the channel based on the current trigger channel
+  if(scopesettings.triggerchannel == 0)
+  {
+    settings = &scopesettings.channel1;
+  }
+  else
+  {
+    settings = &scopesettings.channel2;
+  }
+  
   int32 position;
   
   //Center the trigger level around 0 point
   position = scopesettings.triggerlevel - 128;
   
   //Adjust it for the current volt per div setting
-  position = (41954 * position * signal_adjusters[settings->voltperdiv]) >> 22;
+  position = (position * signal_adjusters[settings->voltperdiv]) >> 22;
   
   //Add the trace center to it
   position = settings->traceposition + position;
@@ -3881,7 +3879,6 @@ void scope_calculate_trigger_vertical_position(PCHANNELSETTINGS settings)
 void scope_acquire_trace_data(void)
 {
   uint32 data;
-  uint32 signaladjust;
   
   //Check if running and not in a trace or cursor displacement state
   if((scopesettings.runstate == 0) && (touchstate == 0))
@@ -3919,52 +3916,21 @@ void scope_acquire_trace_data(void)
     //Later on used to send to the FPGA with command 0x1F
     data = fpga_prepare_for_transfer();
 
-    //Handle the returned data based on the time base setting
-    //For the range 50mS/div - 500nS/div
-    if(scopesettings.timeperdiv < 18)
+    //Just using the same calculation for every setting solves the frequency calculation error
+    //The signal representation still is correct and the trigger point seems to be more valid also
+    //The original uses time base dependent processing here, but this seems to do the trick on all ranges
+    //The software needs to verify the trigger to make it more stable
+    if(data < 750)
     {
-#if 0
-      //Check if range is 200mS/div - 20mS/div or 10mS/div - 500nS/div
-      if(scopesettings.timeperdiv < 4)
-      {
-        //For 200mS/div - 20mS/div use 10
-        //This means some fixed point in the data. Have to check if the circuit actually works and returns usable data for these settings
-        data = 10;
-      }
-      else
-#endif        
-      {
-        //For 10mS/div - 500nS/div add or subtract data based on from FPGA returned value
-        if(data < 750)
-        {
-          //Less then 750 make it bigger
-          data = data + 3345;
-        }
-        else
-        {
-          //More then 750 make it smaller
-          data = data - 750;
-        }
-      }
+      //Less then 750 make it bigger
+      data = data + 3345;
     }
     else
     {
-      //Get correction value for the time base range 250nS/div - 10nS/div
-      signaladjust = timebase_adjusters[scopesettings.timeperdiv - 18];
-
-      //Check if need to add or subtract
-      if(data < signaladjust)
-      {
-        //Perform some other adjustment
-        data = 4095 - (signaladjust - data);
-      }
-      else
-      {
-        //Take adjuster of
-        data = data - signaladjust;
-      }
+      //More then 750 make it smaller
+      data = data - 750;
     }
-
+    
     //Only need a single count variable for both channels, since they run on the same sample rate
     //This can be changed to a global define
     scopesettings.nofsamples  = 1500;
@@ -3983,7 +3949,7 @@ void scope_acquire_trace_data(void)
         scopesettings.triggerlevel = scopesettings.channel1.center;
         
         //Set the trigger vertical position position to match the new trigger level
-        scope_calculate_trigger_vertical_position(&scopesettings.channel1);
+        scope_calculate_trigger_vertical_position();
       }
     }
 
@@ -4000,19 +3966,14 @@ void scope_acquire_trace_data(void)
         scopesettings.triggerlevel = scopesettings.channel2.center;
         
         //Set the trigger vertical position position to match the new trigger level
-        scope_calculate_trigger_vertical_position(&scopesettings.channel2);
+        scope_calculate_trigger_vertical_position();
       }
     }
 
 
-
-
+    //Need to improve on this for a more stable displaying. On the low sample rate settings it seems to flip between two positions.
     //Determine the trigger position based on the selected trigger channel
     scope_process_trigger(scopesettings.nofsamples);
-    
-    
-      //Need to find the trigger point near the center of the buffer
-      //And calculate the sample starting point based on the trigger position on the screen and the acquisition speed and time per div setting??
 
   }
 }
@@ -4021,22 +3982,22 @@ void scope_acquire_trace_data(void)
 
 void scope_process_trigger(uint32 count)
 {
-  uint16 *buffer;
+  uint8  *buffer;
   uint32  index;
   uint32  level = scopesettings.triggerlevel;
-  uint32 sample1;
-  uint32 sample2;
+  uint32  sample1;
+  uint32  sample2;
   
   //Select the trace buffer to process based on the trigger channel
   if(scopesettings.triggerchannel == 0)
   {
     //Channel 1 buffer
-    buffer = channel1tracebuffer1;
+    buffer = (uint8 *)channel1tracebuffer;
   }
   else
   {
     //Channel 2 buffer
-    buffer = channel2tracebuffer1;
+    buffer = (uint8 *)channel2tracebuffer;
   }
 
   disp_have_trigger = 0;
@@ -4046,6 +4007,8 @@ void scope_process_trigger(uint32 count)
   index = count - 5;
   count = 10;
 
+  //Need a better check here, maybe over a wider range of samples
+  
   while(count--)
   {
     sample1 = buffer[index];
@@ -4099,7 +4062,7 @@ uint32 scope_do_baseline_calibration(void)
   calibrationsettings.adc2command       = 0x21;
 
   //Use the trace buffer of this channel
-  calibrationsettings.tracebuffer = channel1tracebuffer1;
+  calibrationsettings.tracebuffer = (uint8 *)channel1tracebuffer;
 
   //Calibrate this channel
   flag &= scope_do_channel_calibration();
@@ -4129,7 +4092,7 @@ uint32 scope_do_baseline_calibration(void)
   calibrationsettings.adc2command       = 0x23;
 
   //Use the trace buffer of this channel
-  calibrationsettings.tracebuffer = channel2tracebuffer1;
+  calibrationsettings.tracebuffer = (uint8 *)channel2tracebuffer;
 
   //Calibrate this channel
   flag &= scope_do_channel_calibration();
@@ -4323,38 +4286,24 @@ void scope_do_50_percent_trigger_setup(void)
   {
     //Use the channel 1 center value
     scopesettings.triggerlevel = scopesettings.channel1.center;
-
-    //Set the trigger vertical position position to match the new trigger level
-    scope_calculate_trigger_vertical_position(&scopesettings.channel1);
   }
   else
   {
     //Use the channel 2 center value
     scopesettings.triggerlevel = scopesettings.channel2.center;
-
-    //Set the trigger vertical position position to match the new trigger level
-    scope_calculate_trigger_vertical_position(&scopesettings.channel2);
   }
+
+  //Set the trigger vertical position position to match the new trigger level
+  scope_calculate_trigger_vertical_position();
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
 void scope_do_auto_setup(void)
 {
-  
-  //For
-  
-  
-  uint32 flags = 0;
-  uint32 samplerate;
-  uint32 voltperdiv;
-  uint32 minvpplevel;
-  uint32 center1;
-  uint32 center2;
-  uint32 offset;
-  uint32 channel;
-  uint32 zerocrossings;
-  uint32 triggerchannelvpp;
+  int32  screentime;
+  int32  timeperdiv;
+  int32  samplerate;
   
   //No need to do auto setup if no channel is enabled
   if((scopesettings.channel1.enable == 0) && (scopesettings.channel2.enable == 0))
@@ -4362,307 +4311,262 @@ void scope_do_auto_setup(void)
     return;
   }
   
-  //Check on which bottom check level needs to be used
-  if((scopesettings.channel1.enable) && (scopesettings.channel2.enable))
-  {
-    //Both channels enabled then use a lower level. Smaller section of the display available per channel so lower value
-    minvpplevel = 70;
-    
-    //Give both traces it's own location on screen
-    center1 = 300;
-    center2 = 100;
-  }
-  else
-  {
-    //Only one channel enabled then more screen space available for it so higher value
-    minvpplevel = 110;
-    
-    //Used channel will be set on the middle of the display
-    center1 = 200;
-    center2 = 200;
-  }
+  //Disable the trigger circuit
+  scopesettings.samplemode = 0;
   
-  //Might need to do this on different sample rate settings
+  //Set number of samples
+  //This can be changed to a global define
+  scopesettings.samplecount = 3000;
+  scopesettings.nofsamples  = 1500;
   
-  //Need an extra function to do a single channel using the new sample function
-  //Better approach is to sample on 500mV/div
-  //When signal > x level test it at 2.5V/div      when signal < y level test it at 100mV/div
-  //When still to big use 5V/div                   when still to small use 50mV/div
-  //So a binary search setup.
+  //Send the command for setting the trigger level to the FPGA
+  fpga_write_cmd(0x17);
+  fpga_write_byte(0);
   
+  //Clear the compensation values 
+  calibrationsettings.adc1compensation = 0;
+  calibrationsettings.adc2compensation = 0;
   
-  
-  
-  //Setup for channel 1 if it is enabled
-  if(scopesettings.channel1.enable)
-  {
-    //Trace offset on low end
-//    scopesettings.channel1.traceoffset = 200;
-    fpga_set_channel_offset(&scopesettings.channel1);
-    
-    //Signal channel is enabled and needs to be done
-    flags |= 0x01;
-  }
-
-  //Setup for channel 2 if it is enabled
-  if(scopesettings.channel2.enable)
-  {
-    //Trace offset on low end
-//    scopesettings.channel2.traceoffset = 200;
-    fpga_set_channel_offset(&scopesettings.channel2);
-    
-    //Signal channel is enabled and needs to be done
-    flags |= 0x02;
-  }
-
-  //Walk through the sensitivity settings until enabled channels are done
-  for(voltperdiv=0;voltperdiv < 6 && flags != 0;voltperdiv++)
-  {
-    //Check if channel still needs to be done
-    if(flags & 0x01)
-    {
-      //Set the current sensitivity
-      scopesettings.channel1.voltperdiv = voltperdiv;
-      fpga_set_channel_voltperdiv(&scopesettings.channel1);
-    }
-    
-    //Check if channel still needs to be done
-    if(flags & 0x02)
-    {
-      //Set the current sensitivity
-      scopesettings.channel2.voltperdiv = voltperdiv;
-      fpga_set_channel_voltperdiv(&scopesettings.channel2);
-    }
-    
-    //Get the needed values for the enabled channels
-    fpga_get_auto_set_values(flags);
-  
-    //Check the channel data if not yet done
-    if(flags & 0x01)
-    {
-      //Check if signal in good range 
-      if((channel1_max >= 301) || (channel1_min < 100) || (channel1_vpp > minvpplevel))
-      {
-        //When signal in range stop scanning the channel
-        flags &= 0x02;
-      }
-    }    
-
-    //Check the channel data if not yet done
-    if(flags & 0x02)
-    {
-      //Check if signal in good range 
-      if((channel2_max >= 301) || (channel2_min < 100) || (channel2_vpp > minvpplevel))
-      {
-        //When signal in range stop scanning the channel
-        flags &= 0x01;
-      }
-    }    
-  }
-  
-  //Check if channel enabled
-  if(scopesettings.channel1.enable)
-  {
-    //Check if on fore last sensitivity still not done
-    if(flags & 0x01)
-    {
-      //Switch to last sensitivity if so
-      scopesettings.channel1.voltperdiv = 6;
-      fpga_set_channel_voltperdiv(&scopesettings.channel1);
-    }
-
-    //Adjust the center line based on targeted center
-    if(channel1_center < center1)
-    {
-      //Calculate a new trace offset
-//      scopesettings.channel1.traceoffset += (center1 - channel1_center);
-      
-      //Make sure it is not out of range
-//      if(scopesettings.channel1.traceoffset > 385)
-      {
-//        scopesettings.channel1.traceoffset = 385;
-      }
-    }
-    else
-    {
-      //Calculate the needed offset
-      offset = channel1_center - center1;
-       
-      //Check if current setting large enough to subtract the offset
-//      if(scopesettings.channel1.traceoffset > offset)
-      {
-        //Take of the found offset
-//        scopesettings.channel1.traceoffset -= offset;
-      }
-//      else
-      {
-        //Limit on zero
-//        scopesettings.channel1.traceoffset = 0;
-      }
-    }
-    
-    //Write the new offset to the FPGA
-    fpga_set_channel_offset(&scopesettings.channel1);
-    
-    //Display the new channel setting
-    scope_channel_settings(&scopesettings.channel1, 0);
-  }
-  
-  //Check if channel enabled
-  if(scopesettings.channel2.enable)
-  {
-    //Check if on fore last sensitivity still not done
-    if(flags & 0x02)
-    {
-      //Switch to last sensitivity if so
-      scopesettings.channel2.voltperdiv = 6;
-      fpga_set_channel_voltperdiv(&scopesettings.channel2);
-    }
-
-    //Adjust the center line based on targeted center
-    if(channel2_center < center2)
-    {
-      //Calculate a new trace offset
-//      scopesettings.channel2.traceoffset += (center2 - channel2_center);
-      
-      //Make sure it is not out of range
-//      if(scopesettings.channel2.traceoffset > 385)
-      {
-//        scopesettings.channel2.traceoffset = 385;
-      }
-    }
-    else
-    {
-      //Calculate the needed offset
-      offset = channel2_center - center2;
-       
-      //Check if current setting large enough to subtract the offset
-//      if(scopesettings.channel2.traceoffset > offset)
-      {
-        //Take of the found offset
-//        scopesettings.channel2.traceoffset -= offset;
-      }
-//      else
-      {
-        //Limit on zero
-//        scopesettings.channel2.traceoffset = 0;
-      }
-    }
-    
-    //Write the new offset to the FPGA
-    fpga_set_channel_offset(&scopesettings.channel2);
-    
-    //Display the new channel setting
-    scope_channel_settings(&scopesettings.channel2, 0);
-  }
-  
-  //Set the trigger level based on the trigger channel
+  //Check on which channel to use for time per division setting
   if(scopesettings.triggerchannel == 0)
   {
-    //Use the channel 1 trace offset for 50% trigger setting
-//    scopesettings.triggeroffset = scopesettings.channel1.traceoffset;
-    
-    //Set the channel to use
-    channel = 0;
-    
-    //Set the vpp of this channel for checking on enough signal fro time base adjusting
-    triggerchannelvpp = channel1_vpp;
+    //Setup for channel 1 calibration
+    calibrationsettings.voltperdivcommand = 0x33;
+    calibrationsettings.offsetcommand     = 0x32;
+    calibrationsettings.adc1command       = 0x20;
+    calibrationsettings.adc2command       = 0x21;
+
+    //Use the trace buffer of this channel
+    calibrationsettings.tracebuffer = (uint8 *)channel1tracebuffer;
   }
   else
   {
-    //Use the channel 2 trace offset for 50% trigger setting
-//    scopesettings.triggeroffset = scopesettings.channel2.traceoffset;
-    
-    //Set the channel to use
-    channel = 1;
-    
-    //Set the vpp of this channel for checking on enough signal fro time base adjusting
-    triggerchannelvpp = channel2_vpp;
+    //Setup for channel 2 calibration
+    calibrationsettings.voltperdivcommand = 0x36;
+    calibrationsettings.offsetcommand     = 0x35;
+    calibrationsettings.adc1command       = 0x22;
+    calibrationsettings.adc2command       = 0x23;
+
+    //Use the trace buffer of this channel
+    calibrationsettings.tracebuffer = (uint8 *)channel2tracebuffer;
   }
+  
+  //Use the most sensitive hardware setting and set it in the FPGA
+  calibrationsettings.voltperdiv = 5;
+  fpga_set_channel_voltperdiv(&calibrationsettings);
 
-#if 0  
-  //The signal level needs to be high enough to determine the time base setting
-  if(triggerchannelvpp > 24)
+  //Wait 50ms to allow the relays to settle
+  timer0_delay(50);
+
+  //Do the measurements on four sample rates. 200MSa/s, 2MSa/s, 20KSa/s and 1000Sa/s
+  for(samplerate=0;samplerate<4;samplerate++)
   {
-    //Set the level in the FPGA
-    fpga_set_trigger_level();
+    //Set the selected sample rate
+    fpga_set_sample_rate(samplerate_for_autosetup[samplerate]);
 
-    //Switch to auto trigger
-    scopesettings.triggermode = 0;
-    fpga_set_trigger_mode();
+    //Set the matching time base
+    fpga_set_time_base(sample_rate_time_per_div[samplerate_for_autosetup[samplerate]]);
 
-    //Disable the trigger circuit??
-    fpga_write_cmd(0x0F);
-    fpga_write_byte(0x01);
+    //Start the conversion and wait until done or touch panel active
+    fpga_do_conversion();
 
+    //Get the data from a sample run
+    fpga_read_sample_data(&calibrationsettings, 100);
     
-    //This needs to be changed to work with the new sample rate setup
-    //Need to determine the number of zero crossings at the selected sample rate and
-    //based on the result select a proper time per div to show a minimum number of periods on the screen (4)
-    
-    //Loop through time base settings
-    for(samplerate=0;samplerate<16;samplerate++)
+    //Check if there is a frequency reading and break the loop if so
+    if(calibrationsettings.frequencyvalid)
     {
-      //Select the current sample rate setting
-      fpga_set_sample_rate(samplerate);
+      break;
+    }
+  }
+  
+  //When there is a frequency reading determine the needed time per division setting
+  if(calibrationsettings.frequencyvalid)
+  {
+    //Can't use the frequency here since it is based on the scopesettings.samplerate variable, which is not used here
+    //Calculate the time in nanoseconds for getting three periods on the screen
+    screentime = (float)calibrationsettings.periodtime * sample_time_converters[samplerate_for_autosetup[samplerate]];
 
-      //Do a conversion run and wait until it is done
-      fpga_do_conversion();
-
-      //Get the number of zero crossings for this channel
-      zerocrossings = fpga_get_zero_crossings(channel);
-
-      
-      if(zerocrossings > 15)
+    //Match the found time to the nearest time per division setting
+    for(timeperdiv=0;timeperdiv<24;timeperdiv++)
+    {
+      //When the found time is higher than the selected time per division quit the search
+      if(screentime > time_per_div_matching[timeperdiv])
       {
         break;
       }
     }
-    
-    scopesettings.timeperdiv = sample_rate_time_per_div[samplerate];
-    
-    if(samplerate == 0)
+
+    //Check if not on the first setting
+    if(timeperdiv)
     {
-      if(zerocrossings > 175)
-      {
-        scopesettings.timeperdiv = 23;
-      }
-      else if(zerocrossings > 150)
-      {
-        scopesettings.timeperdiv = 22;
-      }
-      else if(zerocrossings > 125)
-      {
-        scopesettings.timeperdiv = 21;
-      }
-      else if(zerocrossings > 100)
-      {
-        scopesettings.timeperdiv = 20;
-      }
-      else if(zerocrossings > 75)
-      {
-        scopesettings.timeperdiv = 19;
-      }
-      else if(zerocrossings > 50)
-      {
-        scopesettings.timeperdiv = 18;
-      }
+      //If so take one of to get to the right one to use. Also ensures not selecting a non existing setting if none found
+      timeperdiv--;
     }
+    
+    //Select the found time per division
+    scopesettings.timeperdiv = timeperdiv;
+    scopesettings.samplerate = time_per_div_sample_rate[timeperdiv];
   }
   else
   {
-    //Switch to 20us/div when there is not enough signal
+    //Set a default sample rate and time per division setting
     scopesettings.timeperdiv = 12;
-    scopesettings.samplerate = 5;
-    fpga_set_sample_rate(5);
+    scopesettings.samplerate = time_per_div_sample_rate[12];
+  }
+    
+  //Set the new sample rate in the FPGA
+  fpga_set_sample_rate(scopesettings.samplerate);
+    
+  //Show the new settings
+  scope_acqusition_settings(0);
+  
+  //Range the input sensitivity on the enabled channels
+  //Check on which bottom check level needs to be used
+  if((scopesettings.channel1.enable) && (scopesettings.channel2.enable))
+  {
+    //Both channels enabled then use a lower level. Smaller section of the display available per channel so lower value
+    scopesettings.channel1.maxscreenspace = 1900;
+    scopesettings.channel2.maxscreenspace = 1900;
+    
+    //Give both traces it's own location on screen
+    scopesettings.channel1.traceposition = 300;
+    scopesettings.channel2.traceposition = 100;
+  }
+  else
+  {
+    //Only one channel enabled then more screen space available for it so higher value
+    scopesettings.channel1.maxscreenspace = 3900;
+    scopesettings.channel2.maxscreenspace = 3900;
+    
+    //Used channel will be set on the middle of the display
+    scopesettings.channel1.traceposition = 200;
+    scopesettings.channel2.traceposition = 200;
   }
   
-  //Set the sample rate that belongs to the selected time per div setting
-  scopesettings.samplerate = time_per_div_sample_rate[scopesettings.timeperdiv];
+  //Check if channel 1 is enabled and range it if so
+  if(scopesettings.channel1.enable)
+  {
+    scope_autorange_channel(&scopesettings.channel1);
+  }
   
-  //Show the new setting on the screen
-  scope_acqusition_settings(0);
-#endif  
+  //Check if channel 2 is enabled and range it if so
+  if(scopesettings.channel2.enable)
+  {
+    scope_autorange_channel(&scopesettings.channel2);
+  }
+  
+  //Adjust the trigger level to 50% setting
+  scope_do_50_percent_trigger_setup();
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_autorange_channel(PCHANNELSETTINGS settings)
+{
+  uint32 screenpixels;
+  uint32 range;
+  
+  //Need to see if there is a DC component in play. Switch to AC if so
+
+
+  //As small DC component is not an issue.
+  //Need to check on the fit on the screen compared to the peak peak value
+  //This means looking at the min and max measurements
+  
+  //When it does not fit switch to AC setting and redo the measurements when the max or min is out of range
+  //Or lower / raise the signal center with the DC offset in the signal
+  
+
+  //Use the 500mV/div setting and set it in the FPGA
+  settings->voltperdiv = 3;
+  fpga_set_channel_voltperdiv(settings);
+
+  //Wait 50ms to allow the relays to settle
+  timer0_delay(50);
+  
+  //Start the conversion and wait until done
+  fpga_do_conversion();
+
+  //Get the data from a sample run
+  fpga_read_sample_data(settings, 100);
+  
+  //Convert the peak peak reading to screen pixels
+  screenpixels = (settings->peakpeak * signal_adjusters[settings->voltperdiv]) >> 22;
+  
+  //Calculate a fixed point range to determine the volts per division setting, based on the available screen space
+  range = settings->maxscreenspace / screenpixels;
+  
+  //Check if signal is at least 10 times smaller then the max range
+  if(range >= 100)
+  {
+    //If so use the 50mV/div sensitivity
+    settings->voltperdiv = 6;
+  }
+  //Else check if signal is at least 5 times smaller then the max range
+  else if(range >= 50)
+  {
+    //If so use the 100mV/div sensitivity
+    settings->voltperdiv = 5;
+  }
+  //Else check if signal is at least 2.5 times smaller then the max range
+  else if(range >= 25)
+  {
+    //If so use the 200mV/div sensitivity
+    settings->voltperdiv = 4;
+  }
+  //Else check if signal is at least 1 times smaller then the max range
+  else if(range >= 10)
+  {
+    //If so use the 500mV/div sensitivity
+    settings->voltperdiv = 3;
+  }
+  else
+  {
+    //Signal out of range on the 500mV/div setting
+    //So use the for 2.5V/div sensitivity setting and set it in the FPGA
+    settings->voltperdiv = 1;
+    fpga_set_channel_voltperdiv(settings);
+
+    //Wait 50ms to allow the relays to settle
+    timer0_delay(50);
+
+    //Start the conversion and wait until done
+    fpga_do_conversion();
+    
+    //Get the data from a sample run
+    fpga_read_sample_data(settings, 100);
+
+    //Convert the peak peak reading to screen pixels
+    screenpixels = (settings->peakpeak * signal_adjusters[settings->voltperdiv]) >> 22;
+
+    //Calculate a fixed point range to determine the volts per division setting, based on the available screen space
+    range = settings->maxscreenspace / screenpixels;
+    
+    //Check if signal is at least 2.5 times smaller then the max range.
+    if(range >= 25)
+    {
+      //If so use the 1V/div sensitivity
+      settings->voltperdiv = 2;
+    }
+    //Else check if signal is at least 1 times smaller then the max range
+    else if(range >= 10)
+    {
+      //If so use the 2.5V/div sensitivity
+      settings->voltperdiv = 1;
+    }
+    else
+    {
+      //Out of range so use the 5V/div sensitivity
+      settings->voltperdiv = 0;
+    }
+  }
+
+  //Set the new setting in the FPGA
+  fpga_set_channel_voltperdiv(settings);
+  
+  //Update the display
+  scope_channel_settings(settings, 0);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -4680,9 +4584,6 @@ void scope_display_trace_data(void)
   //  The user changes the sample rate or the time per div setting. Might need to block the setting of the sample rate when stopped because that makes no change to the current sample buffer.
   //  The user moves pointers around. Trace up and down should work, and trigger left and right. Changing the trigger level should not do anything, or even be disabled
   
-  //Have to allow for moving the traces when either stopped or moving the traces without new samples coming in!!!!
-
-  //For trace moving this requires additional code to overcome the offset being done in the FPGA
   
 
   //Need to compensate for the position being on the left side of the pointer
@@ -4804,7 +4705,7 @@ void scope_display_trace_data(void)
     
     uint32 index;
     
-    uint16 *sptr1,*sptr2;
+    int8 *sptr1,*sptr2;
     
     //Need two samples per buffer
     uint32 x1,x2;
@@ -4813,8 +4714,8 @@ void scope_display_trace_data(void)
     
     index = disp_trigger_index - 325;
     
-    sptr1 = &channel1tracebuffer1[index];
-    sptr2 = &channel2tracebuffer1[index];
+    sptr1 = (int8 *)&channel1tracebuffer[index];
+    sptr2 = (int8 *)&channel2tracebuffer[index];
       
     
     //This bit needs to be adapted to the new sample handling!!!!!
@@ -4880,16 +4781,7 @@ int32 scope_get_sample(PCHANNELSETTINGS settings, int32 index)
   sample = (int32)settings->tracebuffer[index] - 128;
 
   //Get the sample and adjust the data for the correct voltage per div setting
-  sample = (41954 * sample * signal_adjusters[settings->voltperdiv]) >> 22;
-
-#if 0  
-  //Check on lowest volt per div setting for doubling
-  if(settings->voltperdiv == 6)
-  {
-    //Multiply the sample by two
-    sample <<= 1;
-  }
-#endif
+  sample = (sample * signal_adjusters[settings->voltperdiv]) >> 22;
   
   //Offset the sample on the screen
   sample = settings->traceposition + sample;
@@ -5038,7 +4930,7 @@ void scope_display_cursor_measurements(void)
       //Get the time delta based on the cursor positions
       delta = scopesettings.timecursor2position - scopesettings.timecursor1position;
       
-      //Get the time calculation data for this time base setting. Only for the short time bases so take of the first 9
+      //Get the time calculation data for this time base setting.
       PTIMECALCDATA tcd = (PTIMECALCDATA)&time_calc_data[scopesettings.timeperdiv];
       
       //For the time multiply with the scaling factor and display based on the time scale
@@ -5048,7 +4940,7 @@ void scope_display_cursor_measurements(void)
       scope_print_value(displaytext, delta, tcd->time_scale, "T ", "S");
       display_text(10, 52, displaytext);
       
-      //Calculate the frequency for this time. Need to adjust for stay within 32 bits
+      //Calculate the frequency for this time. Need to adjust for it to stay within 32 bits
       delta /= 10;
       delta = 1000000000 / delta;
       
@@ -5103,6 +4995,28 @@ void scope_display_cursor_measurements(void)
 
 void scope_display_measurements(void)
 {
+  char   displaytext[10];
+  
+  //Use white text and font_0
+  display_set_fg_color(0x00FFFFFF);
+  display_set_font(&font_0);
+  
+  //Need a scale table based on set sample rate
+  
+  
+  if(scopesettings.channel1.enable && scopesettings.channel1.frequencyvalid)
+  {
+    //Format the frequency for displaying
+    scope_print_value(displaytext, scopesettings.channel1.frequency, freq_calc_data[scopesettings.samplerate].freq_scale, "F1 ", "Hz");
+    display_text(10, 454, displaytext);
+  }  
+  
+  if(scopesettings.channel2.enable && scopesettings.channel2.frequencyvalid)
+  {
+    //Format the frequency for displaying
+    scope_print_value(displaytext, scopesettings.channel2.frequency, freq_calc_data[scopesettings.samplerate].freq_scale, "F2 ", "Hz");
+    display_text(380, 454, displaytext);
+  }  
   
 }
 
@@ -5760,6 +5674,7 @@ void scope_save_view_item_file(int32 type)
       //Write the setup data to the file
       if((result = f_write(&viewfp, viewfilesetupdata, sizeof(viewfilesetupdata), 0)) == FR_OK)
       {
+#if 0        
         //Write the trace data to the file
         //Save the channel 1 sample data
         if((result = f_write(&viewfp, (uint8 *)channel1tracebuffer4, 3000, 0)) == FR_OK)
@@ -5791,6 +5706,7 @@ void scope_save_view_item_file(int32 type)
             }
           }
         }
+#endif        
       }
     }
 
@@ -5920,7 +5836,7 @@ int32 scope_load_trace_data(void)
       {
         //Copy the loaded data to the settings
         scope_restore_setup_from_file();
-
+#if 0
         //Load the channel 1 sample data
         if((result = f_read(&viewfp, (uint8 *)channel1tracebuffer4, 3000, 0)) == FR_OK)
         {
@@ -5957,6 +5873,7 @@ int32 scope_load_trace_data(void)
             }
           }
         }
+#endif        
       }
     }
     else
@@ -6378,7 +6295,7 @@ void scope_create_thumbnail(uint32 filenumber, PTHUMBNAILDATA thumbnaildata)
 {
   uint32  count;
   uint8  *dptr;
-  uint16 *sptr;
+  uint16 *sptr = 0;
   
   //The number of samples needs to be reduced by a factor 4
   //The original code does this in a stupid way, without filtering the data. For now I will use similar method without doing everything 4 times
@@ -6428,7 +6345,7 @@ void scope_create_thumbnail(uint32 filenumber, PTHUMBNAILDATA thumbnaildata)
     //Only take 176 samples
     count = 176;
     dptr = thumbnaildata->channel1data;
-    sptr = (uint16 *)channel1ypoints + 2;
+//    sptr = (uint16 *)channel1ypoints + 2;
     
     //Do all the samples
     while(count)
@@ -6458,7 +6375,7 @@ void scope_create_thumbnail(uint32 filenumber, PTHUMBNAILDATA thumbnaildata)
     //Only take 176 samples
     count = 176;
     dptr = thumbnaildata->channel2data;
-    sptr = (uint16 *)channel2ypoints + 2;
+//    sptr = (uint16 *)channel2ypoints + 2;
     
     //Do all the samples
     while(count)
@@ -6706,7 +6623,7 @@ void scope_load_configuration_data(void)
   
   scopesettings.channel1.buttontext = "CH1";
 
-  scopesettings.channel1.tracebuffer = channel1tracebuffer1;
+  scopesettings.channel1.tracebuffer = (uint8 *)channel1tracebuffer;
   
   
   scopesettings.channel2.enablecommand     = 0x03;
@@ -6724,7 +6641,7 @@ void scope_load_configuration_data(void)
 
   scopesettings.channel2.buttontext = "CH2";
   
-  scopesettings.channel2.tracebuffer = channel2tracebuffer1;
+  scopesettings.channel2.tracebuffer = (uint8 *)channel2tracebuffer;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

@@ -129,6 +129,7 @@ int main(void)
 
   //Setup the trigger system in the FPGA based on the loaded scope settings
   fpga_set_sample_rate(scopesettings.samplerate);
+  fpga_set_time_base(scopesettings.timeperdiv);
   fpga_set_trigger_channel();
   fpga_swap_trigger_channel();   //This is a bit redundant since the correct channel should be in the loaded settings.
   fpga_set_trigger_edge();

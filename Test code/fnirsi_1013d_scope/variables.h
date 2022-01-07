@@ -178,6 +178,7 @@ typedef struct tagThumbnailData         THUMBNAILDATA,        *PTHUMBNAILDATA;
 
 typedef struct tagTimeCalcData          TIMECALCDATA,         *PTIMECALCDATA;
 typedef struct tagVoltCalcData          VOLTCALCDATA,         *PVOLTCALCDATA;
+typedef struct tagFreqCalcData          FREQCALCDATA,         *PFREQCALCDATA;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Structures
@@ -199,8 +200,6 @@ struct tagChannelSettings
   uint8  magnification;
   uint8  voltperdiv;
   uint8  fftenable;
-
-  uint8  checkfirstadc;
   
   //Trace on screen position
   uint16 traceposition;
@@ -222,19 +221,37 @@ struct tagChannelSettings
   uint32 average;
   uint32 center;
   uint32 peakpeak;
+  uint32 frequencyvalid;
   uint32 frequency;
   uint32 lowtime;
   uint32 hightime;
+  uint32 periodtime;
   
+  //Frequency determination work variables
+  uint32 highlevel;
+  uint32 lowlevel;
+  uint32 state;
+  uint32 zerocrossings;
+  uint32 lowsamplecount;
+  uint32 lowdivider;
+  uint32 highsamplecount;
+  uint32 highdivider;
+  uint32 previousindex;
+  
+  //Auto ranging space
+  uint32 maxscreenspace;
+  
+  //Calibration measurement data
   uint32 rawaverage;
   uint32 adc1rawaverage;
   uint32 adc2rawaverage;
   
   //Sample data
-  uint16 *tracebuffer;
-  uint16 *buffer;
+  uint8 *tracebuffer;
+  uint8 *buffer;
   
   //Sample gathering options
+  uint8 checkfirstadc;
   uint8 enabletrigger;
   
   //FPGA commands
@@ -339,6 +356,12 @@ struct tagVoltCalcData
   uint8  volt_scale;
 };
 
+struct tagFreqCalcData
+{
+  uint32 sample_rate;
+  uint8  freq_scale;
+};
+        
 //----------------------------------------------------------------------------------------------------------------------------------
 //Linker variables
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -401,38 +424,14 @@ CHANNELSETTINGS calibrationsettings;
 extern SCOPESETTINGS savedscopesettings1;
 extern SCOPESETTINGS savedscopesettings2;
 
-extern uint16 channel1tracebuffer1[3000];
+extern uint32 channel1tracebuffer[750];
 
-extern uint16 channel1tracebuffer2[3000];
-extern uint16 channel1tracebuffer3[3000];
-extern uint32 channel1tracebuffer4[1500];
-
-extern uint16 channel2tracebuffer1[3000];
-
-extern uint16 channel2tracebuffer2[3000];
-extern uint16 channel2tracebuffer3[3000];
-extern uint32 channel2tracebuffer4[1500];
-
-extern uint16 temptracebuffer1[];
-extern uint16 temptracebuffer2[];
-
-extern uint32 channel1ypoints[];
-extern uint32 channel2ypoints[];
+extern uint32 channel2tracebuffer[750];
 
 extern uint16 disp_xpos;
 
-extern uint16 disp_ch1_y;
-extern uint16 disp_ch2_y;
-
-extern uint16 disp_ch1_prev_y;
-extern uint16 disp_ch2_prev_y;
-
-extern uint8 zoom_select;
-
 extern uint16 disp_x_start;
 extern uint16 disp_sample_count;
-
-extern uint8 channel_1_process_anyway;
 
 extern uint16 system_ok;
 
@@ -459,13 +458,6 @@ extern uint32 disp_trigger_index;
 
 extern int32 disp_xstart;
 extern int32 disp_xend;
-
-
-//----------------------------------------------------------------------------------------------------------------------------------
-//Test data
-//----------------------------------------------------------------------------------------------------------------------------------
-
-extern uint32 saved_sample_buffers_count;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Distances of touch point to traces and cursors
@@ -511,29 +503,29 @@ extern uint32 samplerateaverage[2][6];
 //Single ADC bit dc offset step per input sensitivity setting
 extern uint32 sampleratedcoffsetstep[2][6];
 
-//extern uint16 channel1_calibration_factor;
-//extern uint16 channel1_calibration_data[];
-
-//extern uint16 channel2_calibration_factor;
-//extern uint16 channel2_calibration_data[];
-
 //----------------------------------------------------------------------------------------------------------------------------------
 //Predefined data
 //----------------------------------------------------------------------------------------------------------------------------------
 
 extern const int8 *volt_div_texts[3][7];
 
-extern const int16 signal_adjusters[7];
-
-extern const uint16 timebase_adjusters[5];
+extern const int32 signal_adjusters[7];
 
 extern const uint32 timebase_settings[24];
 
 extern const uint32 sample_rate_settings[18];
 
+extern const float sample_time_converters[18];
+
+extern const uint32 time_per_div_matching[24];
+
+extern const uint32 samplerate_for_autosetup[4];
+
 extern const TIMECALCDATA time_calc_data[24];
 
 extern const VOLTCALCDATA volt_calc_data[3][7];
+
+extern const FREQCALCDATA freq_calc_data[18];
 
 extern const char *magnitude_scaler[8];
 

@@ -69,45 +69,16 @@ CHANNELSETTINGS calibrationsettings;
 SCOPESETTINGS savedscopesettings1;
 SCOPESETTINGS savedscopesettings2;
 
-//Need to make sure some of these are 32 bit aligned to allow usage as source and target for file operations
-uint16 channel1tracebuffer1[3000];    //In original code at 0x8019D5EA
+uint32 channel1tracebuffer[750];
 
-uint16 channel1tracebuffer2[3000];    //In original code at 0x8019ED5A
-uint16 channel1tracebuffer3[3000];    //Target buffer for processed trace data. In original code at 0x801A916A
+uint32 channel2tracebuffer[750];
 
-//declared as uint32 for use with file functions, but used with shorts (3000)
-uint32 channel1tracebuffer4[1500];    //In original code at 0x801AC04A
-
-uint16 channel2tracebuffer1[3000];    //In original code at 0x801A04CA
-
-uint16 channel2tracebuffer2[3000];    //In original code at 0x801A1C3A
-uint16 channel2tracebuffer3[3000];    //In original code at 0x801AA8DA
-
-//declared as uint32 for use with file functions, but used with shorts (3000)
-uint32 channel2tracebuffer4[1500];    //In original code at 0x801AD7BA
-
-uint16 temptracebuffer1[3000];         //In original code at 0x801AEF26  (0x801AEF2A)
-uint16 temptracebuffer2[3000];         //In original code at 0x801B8B60  (0x801B8B6A)
-
-//declared as uint32 for use with file functions, but used with shorts (1000)
-uint32 channel1ypoints[500];          //At 0x801C374A in original code
-uint32 channel2ypoints[500];          //At 0x801C374A + 2000 in original code = 0x801C3F1A
 
 uint16 disp_xpos = 0;                  //In original code at 0x80192EAA
-
-uint16 disp_ch1_y = 0;
-uint16 disp_ch2_y = 0;
-
-uint16 disp_ch1_prev_y = 0;
-uint16 disp_ch2_prev_y = 0;
-
-uint8 zoom_select = 0;
 
 uint16 disp_x_start = 0;               //In original code at 0x8019D5BA
 uint16 disp_sample_count = 0;          //In original code at 0x8019D5BC
 
-
-uint8 channel_1_process_anyway = 0;    //In original code at 0x8019D5A9 (Basically a channel setting)
 
 
 uint16 system_ok;                      //In original code at 0x8019D5E4
@@ -136,12 +107,6 @@ uint32 disp_trigger_index;            //Trigger point in the sample buffers
 
 int32 disp_xstart;
 int32 disp_xend;
-
-//----------------------------------------------------------------------------------------------------------------------------------
-//Test data
-//----------------------------------------------------------------------------------------------------------------------------------
-
-uint32 saved_sample_buffers_count = 0;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Distances of touch point to traces and cursors
@@ -223,12 +188,6 @@ uint32 samplerateaverage[2][6];
 
 //Single ADC bit dc offset step per input sensitivity setting
 uint32 sampleratedcoffsetstep[2][6];
-
-//uint16 channel1_calibration_factor = 0x00DC;
-//uint16 channel1_calibration_data[] = { 0x054D, 0x0545, 0x0554, 0x054D, 0x0553, 0x054C, 0x054C };
-
-//uint16 channel2_calibration_factor = 0x00D9;
-//uint16 channel2_calibration_data[] = { 0x055B, 0x0556, 0x0561, 0x055B, 0x0560, 0x055A, 0x055A };
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Predefined data
@@ -397,12 +356,11 @@ const int8 *volt_div_texts[3][7] =
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
-
-//                                   173   175   180   180   184   184   184
-//const int16 signal_adjusters[7] = { 0xAD, 0xAF, 0xB4, 0xB4, 0xB8, 0xB8, 0xB8 };
-const int16 signal_adjusters[7] = { 0xAD, 0xAF, 0xB4, 0xB4, 0xB8, 0xB8, 0x170 };  //368
-
-const uint16 timebase_adjusters[5] = { 0x01A9, 0x00AA, 0x0055, 0x002F, 0x0014 };
+//HW means done in hardware
+//SW means done in software
+//                                       HW       HW       HW       HW       HW       HW        SW
+//                                       5V     2.5V       1V    500mV    200mV    100mV      50mV
+const int32 signal_adjusters[7] = { 7258042, 7341950, 7551720, 7551720, 7719536, 7719536, 15439072 };
 
 const uint32 sample_rate_settings[18] =
 {
@@ -424,6 +382,67 @@ const uint32 sample_rate_settings[18] =
      99999,     //  2KSa/s
     199999,     //  1KSa/s
     399999,     // 500Sa/s
+};
+
+//For the conversion of the period time calculated in the sample acquisition loop a sample rate based factor is needed.
+//Based on a minimum of 2.5 periods on the screen the conversion yields a time per division number, that needs to be matched
+//with the nearest possible setting. The input is scaled up with a factor 1048576, so an extra division is done on it.
+//The 15204352 is the factor times the number of screen divisions. (1048576 * 14.5)
+//To get the result in nanoseconds for matching the division time a multiplication with 1000000000 is done
+const float sample_time_converters[18] =
+{
+  (0.000000005 * 2500000000.0) / 15204352.0,
+  (0.000000010 * 2500000000.0) / 15204352.0,
+  (0.000000020 * 2500000000.0) / 15204352.0,
+  (0.000000050 * 2500000000.0) / 15204352.0,
+  (0.000000100 * 2500000000.0) / 15204352.0,
+  (0.000000200 * 2500000000.0) / 15204352.0,
+  (0.000000500 * 2500000000.0) / 15204352.0,
+  (0.000001000 * 2500000000.0) / 15204352.0,
+  (0.000002000 * 2500000000.0) / 15204352.0,
+  (0.000005000 * 2500000000.0) / 15204352.0,
+  (0.000010000 * 2500000000.0) / 15204352.0,
+  (0.000020000 * 2500000000.0) / 15204352.0,
+  (0.000050000 * 2500000000.0) / 15204352.0,
+  (0.000100000 * 2500000000.0) / 15204352.0,
+  (0.000200000 * 2500000000.0) / 15204352.0,
+  (0.000500000 * 2500000000.0) / 15204352.0,
+  (0.001000000 * 2500000000.0) / 15204352.0,
+  (0.002000000 * 2500000000.0) / 15204352.0,
+};
+
+//Division time in nanoseconds for matching the needed time per div setting in auto set
+const uint32 time_per_div_matching[24] =
+{
+  200000000,
+  100000000,
+   50000000,
+   20000000,
+   10000000,
+    5000000,
+    2000000,
+    1000000,
+     500000,
+     200000,
+     100000,
+      50000,
+      20000,
+      10000,
+       5000,
+       2000,
+       1000,
+        500,
+        200,
+        100,
+         50,
+         20,
+         10,
+          5,
+};
+
+const uint32 samplerate_for_autosetup[4] =
+{
+  0, 6, 12, 16
 };
 
 const uint32 timebase_settings[24] =
@@ -482,11 +501,34 @@ const TIMECALCDATA time_calc_data[24] =
   {  10000, 0, 6 }          //  5ns/div
 };
 
-const VOLTCALCDATA volt_calc_data[3][7] = 
+const VOLTCALCDATA volt_calc_data[3][7] =
 {
   { {  10000, 3 },  {  5000, 3 }, {  2000, 3 }, {  1000, 3 }, {  400, 3 }, {  200, 3 }, {  100, 3 } },
   { { 100000, 3 },  { 50000, 3 }, { 20000, 3 }, { 10000, 3 }, { 4000, 3 }, { 2000, 3 }, { 1000, 3 } },
   { {   1000, 4 },  {   500, 4 }, {   200, 4 }, {   100, 4 }, {   40, 4 }, {   20, 4 }, {   10, 4 } }
+};
+
+
+const FREQCALCDATA freq_calc_data[18] =
+{
+  {   20000000, 5 },     //200MSa/s
+  {   10000000, 5 },     //100MSa/s
+  {    5000000, 5 },     // 50MSa/s
+  { 2000000000, 4 },     // 20MSa/s
+  { 1000000000, 4 },     // 10MSa/s
+  {  500000000, 4 },     //  5MSa/s
+  {  200000000, 4 },     //  2MSa/s
+  {  100000000, 4 },     //  1MSa/s
+  {   50000000, 4 },     //500KSa/s
+  {   20000000, 4 },     //200KSa/s
+  {   10000000, 4 },     //100KSa/s
+  {    5000000, 4 },     // 50KSa/s
+  { 2000000000, 3 },     // 20KSa/s
+  { 1000000000, 3 },     // 10KSa/s
+  {  500000000, 3 },     //  5KSa/s
+  {  200000000, 3 },     //  2KSa/s
+  {  100000000, 3 },     //  1KSa/s
+  {   50000000, 3 }      // 500Sa/s
 };
 
 const char *magnitude_scaler[8] = { "p", "n", "u", "m", "", "K", "M", "G"};
@@ -519,11 +561,11 @@ const char system_file_name[2][16] =
 //Consist of basic bitmap header followed by a DIB header (BITMAPINFOHEADER + BITMAPV3INFOHEADER)
 //Could probably do with BITMAPV2INFOHEADER but the original uses V3
 //The bitmap height is using a negative value for reversing the top to bottom lines. This allows just writing the frame buffer to the file
-const uint8 bmpheader[70] = 
+const uint8 bmpheader[70] =
 {
   //Header identifier
   'B', 'M',
-  
+
   //Size of the file in bytes
    PICTURE_FILE_SIZE        & 0xFF,
   (PICTURE_FILE_SIZE >>  8) & 0xFF,
@@ -531,17 +573,17 @@ const uint8 bmpheader[70] =
   (PICTURE_FILE_SIZE >> 24) & 0xFF,
 
   //Reserved
-  0, 0, 0, 0, 
-  
+  0, 0, 0, 0,
+
   //Offset to the pixel array
    PICTURE_PIXEL_OFFSET        & 0xFF,
   (PICTURE_PIXEL_OFFSET >>  8) & 0xFF,
   (PICTURE_PIXEL_OFFSET >> 16) & 0xFF,
   (PICTURE_PIXEL_OFFSET >> 24) & 0xFF,
-  
+
   //Size of DIB header
   56, 0, 0, 0,
-  
+
   //Bitmap width in pixels
    800        & 0xFF,
   (800 >>  8) & 0xFF,
@@ -553,13 +595,13 @@ const uint8 bmpheader[70] =
   (-480 >>  8) & 0xFF,
   (-480 >> 16) & 0xFF,
   (-480 >> 24) & 0xFF,
-  
+
   //Number of color planes
   1, 0,
-  
+
   //Number of bits per pixel
   16, 0,
-  
+
   //Compression method (BI_BITFIELDS)
   3, 0, 0, 0,
 
@@ -580,11 +622,11 @@ const uint8 bmpheader[70] =
 
   //Number of colors important
   0, 0, 0, 0,
-  
+
   //Mask fields for BI_BITFIELDS compression
   //Red mask 0x0000F800
   0, 0xF8, 0, 0,
-  
+
   //Green mask 0x000007E0
   0xE0, 7, 0, 0,
 
@@ -596,9 +638,9 @@ const uint8 bmpheader[70] =
 };
 
 
-    
-    
-    
-    
+
+
+
+
 
 //----------------------------------------------------------------------------------------------------------------------------------

@@ -89,11 +89,6 @@ void   fpga_read_adc_data(PCHANNELSETTINGS settings);
 void   fpga_set_battery_level(void);
 
 
-void   fpga_set_channel_trace_offsets(uint32 offset);
-
-void   fpga_get_auto_set_values(uint32 flags);
-
-uint32 fpga_get_zero_crossings(uint32 channel);
 
 void   fpga_delay(uint32 usec);
 
