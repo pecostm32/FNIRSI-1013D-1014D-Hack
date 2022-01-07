@@ -396,8 +396,8 @@ uint32 findtriggerpoint(void)
     sample1 = buffer[index];
     sample2 = buffer[index + 1];
 
-    if(((trigger_edge == 0) && (sample1 < trigger_level) && (sample2 > trigger_level)) ||
-       ((trigger_edge == 1) && (sample1 > trigger_level) && (sample2 < trigger_level)))
+    if(((trigger_edge == 0) && (sample1 < trigger_level) && (sample2 >= trigger_level)) ||
+       ((trigger_edge == 1) && (sample1 >= trigger_level) && (sample2 < trigger_level)))
     {
       //Set the current index as trigger point
       sample_index = index - (sample_count / 2);
@@ -997,7 +997,7 @@ void fpga_set_trigger_level(void)
   }
   
   //The difference between the two positions determines the level offset on 128, but it needs to be scaled back first
-  level = ((((int32)scopesettings.triggerverticalposition - (int32)traceposition) * 4194304) / (41954 * signal_adjusters[voltperdiv])) + 128;
+  level = ((((int32)scopesettings.triggerverticalposition - (int32)traceposition) * 4194304) / signal_adjusters[voltperdiv]) + 128;
   
   //Set the new level in the settings
   scopesettings.triggerlevel = level;
@@ -1053,6 +1053,8 @@ uint16 fpga_prepare_for_transfer(void)
 
 void fpga_read_sample_data(PCHANNELSETTINGS settings, uint32 triggerpoint)
 {
+  uint32 threshold;
+  
   //Clear min and max and average for new calculations
   settings->min     = 0x7FFFFFFF;
   settings->max     = 0;
@@ -1077,6 +1079,35 @@ void fpga_read_sample_data(PCHANNELSETTINGS settings, uint32 triggerpoint)
   
   //Save the calculated measurements
   settings->adc1rawaverage = settings->rawaverage;
+  
+  //Calculate the signal center for frequency determination
+  settings->center = (settings->max + settings->min) / 2;
+  
+  //Calculate a zero crossing threshold value. Minimum spread is 8 to suppress noise
+  threshold = ((settings->max - settings->min) / 10) + 4;
+  
+  //Set levels for detecting zero crossings
+  settings->highlevel = settings->center + threshold;
+  settings->lowlevel  = settings->center - threshold;
+  
+  //Initialize the frequency determination
+  settings->zerocrossings   = 0;
+  settings->lowsamplecount  = 0;
+  settings->lowdivider      = 0;
+  settings->highsamplecount = 0;
+  settings->highdivider     = 0;
+  
+  //See in which state the signal starts
+  if(settings->tracebuffer[1] > settings->highlevel)
+  {
+    //Above high it is a one
+    settings->state = 1;
+  }
+  else
+  {
+    //Below start with a zero
+    settings->state = 0;
+  }
   
   //Send command 0x1F to the FPGA followed by the translated data returned from command 0x14
   fpga_write_cmd(0x1F);
@@ -1106,6 +1137,30 @@ void fpga_read_sample_data(PCHANNELSETTINGS settings, uint32 triggerpoint)
   
   //Calculate the signal center
   settings->center = (settings->max + settings->min) / 2;
+  
+  //Calculate the frequency if possible
+  if(settings->zerocrossings > 2)
+  {
+    //Signal valid frequency determination possible
+    settings->frequencyvalid = 1;
+    
+    //Calculate the average high time of the signal expressed in samples
+    settings->hightime = ((settings->highsamplecount << 20) / settings->highdivider) * 2;
+    
+    //Calculate the average low time of the signal expressed in samples
+    settings->lowtime = ((settings->lowsamplecount << 20) / settings->lowdivider) * 2;
+    
+    //Calculate the period time expressed in samples
+    settings->periodtime = settings->hightime + settings->lowtime;
+    
+    //Calculate the frequency
+    settings->frequency = ((uint64)freq_calc_data[scopesettings.samplerate].sample_rate << 20) / settings->periodtime;
+  }
+  else
+  {
+    //Signal no valid frequency determination possible
+    settings->frequencyvalid = 0;
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -1148,37 +1203,38 @@ void fpga_read_adc_data(PCHANNELSETTINGS settings)
     //Check if busy with second ADC data
     if(settings->checkfirstadc)
     {
-      //When ADC1 compensation is positive it bottoms out on this value
+      //When ADC1 compensation is positive, ADC1 bottoms out on this value
+      //Near the top ADC2 reaches the top value first, so same method is needed
       if(settings->adc1compensation > 0)
       {
-        //So when the compensated sample is below the positive ADC1 compensation value the reading need to be matched
-        //The negative value is either equal or one less then the positive value in absolute sense
+        //So when the compensated ADC2 sample is below the ADC1 compensation value the reading needs to be matched
         if(sample < settings->adc1compensation)
         {
           //Match the two readings when within compensation range
           settings->buffer[1] = sample;
         }
-      }
-      else
-      {
-        //When ADC1 compensation is negative, ADC2 reading might need to be matched
-        if(*settings->buffer < settings->adc2compensation)
+        //Or when the compensated ADC1 sample is above max value ADC2 can reach the reading also needs to be matched
+        else if(settings->buffer[1] > (255 + settings->adc2compensation))
         {
-          //If that is the case get the adjusted value from the buffer
+          //Use the compensated ADC1 sample in that case
           sample = settings->buffer[1];
         }
       }
-    }
-    else
-    {
-      //When ADC2 compensation is positive it will bottom out on this value
-      //So when the compensated sample is below the made positive ADC1 compensation value the readings need to be matched
-      //For this the raw ADC1 sample is written to the ADC2 location
-      
-      //When ADC2 compensation is positive save the raw sample for possible matching
-      if(settings->adc2compensation > 0)
+      //When ADC1 compensation is negative, ADC2 bottoms out on it's compensation value
+      else if(settings->adc1compensation < 0)
       {
-        settings->buffer[-1] = sample;
+        //So when the compensated ADC1 sample is below the ADC2 compensation value the reading needs to be matched
+        if(settings->buffer[1] < settings->adc2compensation)
+        {
+          //Use the compensated ADC1 sample in that case
+          sample = settings->buffer[1];
+        }
+        //Or when the compensated ADC2 sample is above max value ADC1 can reach the reading also needs to be matched
+        else if(sample > (255 + settings->adc1compensation))
+        {
+          //Match the two readings when within compensation range
+          settings->buffer[1] = sample;
+        }
       }
     }
    
@@ -1201,6 +1257,73 @@ void fpga_read_adc_data(PCHANNELSETTINGS settings)
     
     //Store the data
     *settings->buffer = sample;
+    
+    //Check if busy with second ADC data to see if frequency determination can be done
+    if(settings->checkfirstadc)
+    {
+      //Check against the high level
+      if(sample > settings->highlevel)
+      {
+        //If above, check if in low state
+        if(settings->state == 0)
+        {
+          //If so flip the state
+          settings->state = 1;
+          
+          //Check if first zero crossing detected
+          if(settings->zerocrossings == 0)
+          {
+            //Set the previous index if so
+            settings->previousindex = count;
+          }
+          else
+          {
+            //Calculate the total number of samples in the low parts of the signal
+            settings->lowsamplecount += settings->previousindex - count;
+            
+            //Add one to the low divider for average calculation
+            settings->lowdivider++;
+            
+            //Set the new previous index
+            settings->previousindex = count;
+          }
+
+          //Found a zero crossing
+          settings->zerocrossings++;
+        }
+      }
+      //Check against the low level
+      else if(sample < settings->lowlevel)
+      {
+        //If below check if in high state
+        if(settings->state == 1)
+        {
+          //If so flip the state
+          settings->state = 0;
+
+          //Check if first zero crossing detected
+          if(settings->zerocrossings == 0)
+          {
+            //Set the previous index if so
+            settings->previousindex = count;
+          }
+          else
+          {
+            //Calculate the total number of samples in the high parts of the signal
+            settings->highsamplecount += settings->previousindex - count;
+            
+            //Add one to the low divider for average calculation
+            settings->highdivider++;
+            
+            //Set the new previous index
+            settings->previousindex = count;
+          }
+          
+          //Found a zero crossing
+          settings->zerocrossings++;
+        }
+      }
+    }    
     
     //Skip a sample to allow for ADC2 data to be placed into
     settings->buffer += 2;
@@ -1274,289 +1397,6 @@ void fpga_do_conversion(void)
     //Wait for the FPGA to signal triggered or buffer full
     while((fpga_read_byte() & 1) == 0);
   }
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-uint32 fpga_get_center_level(uint32 command, uint32 voltperdiv)
-{
-  //Do a 1000 samples
-  register uint32 count = 1000;
-  register uint32 min = 0x0FFFFFFF;
-  register uint32 max = 0x00000000;
-  register uint32 sample;
-  register uint32 signaladjust;
-  
-  uint32 channel;
-  double scaler;
-  double offset;
-  
-  //Translate this channel volts per div setting
-  signaladjust = signal_adjusters[voltperdiv];
-  
-  //Freeze the signal generator to allow for proper sampling
-  //Needed for the simulator only
-  signalgeneratorfreeze();
-  
-  if(command == 0x24)
-  {
-    channel = 0;
-    scaler = channel1_scaler;
-    offset = channel1_offset;
-  }
-  else
-  {
-    channel = 1;
-    scaler = channel2_scaler;
-    offset = channel2_offset;
-  }
-  
-  //Read the data as long as there is count
-  while(count)
-  {
-    //Read the data
-    sample = calculatesample(signalgeneratorgetsample(channel, (1001 - count), sample_rate_set), scaler, offset, 0);
-  
-    //Adjust the data for the correct voltage per div setting
-    sample = (41954 * sample * signaladjust) >> 22;
-    
-    //Limit the sample on max displayable
-    if(sample > 401)
-    {
-      sample = 401;
-    }
-    
-    //Check against minimum value to get the lowest reading
-    if(sample < min)
-    {
-      min = sample;
-    }
-
-    //Check against maximum value to get the highest reading
-    if(sample > max)
-    {
-      max = sample;
-    }
-    
-    //One sample done
-    count --;
-  }
-  
-  //Unfreeze the signal generator
-  //Needed for the simulator only
-  signalgeneratorunfreeze();
-  
-  //Return the center value based on the min and the max values
-  return((max + min) / 2); 
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-void fpga_get_auto_set_values(uint32 flags)
-{
-  //Do a 1000 samples
-  register uint32 count = 1000;
-  register uint32 sample;
-  
-  //Freeze the signal generator to allow for proper sampling
-  //Needed for the simulator only
-  signalgeneratorfreeze();
-  
-  //Initialize the min and max when channel is selected
-  if(flags & 0x01)
-  {
-    channel1_min = 0x0FFFFFFF;
-    channel1_max = 0x00000000;
-  }  
-
-  //Initialize the min and max when channel is selected and enabled
-  if(flags & 0x02)
-  {
-    channel2_min = 0x0FFFFFFF;
-    channel2_max = 0x00000000;
-  }  
-
-  //Read the data as long as there is count
-  while(count)
-  {
-    //Get and process the sample when the channels is selected
-    if(flags & 0x01)
-    {
-      //Read the data
-      sample = calculatesample(signalgeneratorgetsample(0, (1001 - count), sample_rate_set), channel1_scaler, channel1_offset, 0);
-
-      //Adjust the data for the correct voltage per div setting
-      sample = (41954 * sample * signal_adjusters[scopesettings.channel1.voltperdiv]) >> 22;
-
-      //Limit the sample on max displayable
-      if(sample > 401)
-      {
-        sample = 401;
-      }
-
-      //Check against minimum value to get the lowest reading
-      if(sample < channel1_min)
-      {
-        channel1_min = sample;
-      }
-
-      //Check against maximum value to get the highest reading
-      if(sample > channel1_max)
-      {
-        channel1_max = sample;
-      }
-    }
- 
-    //Get and process the sample when the channels is selected
-    if(flags & 0x02)
-    {
-      //Read the data
-      sample = calculatesample(signalgeneratorgetsample(1, (1001 - count), sample_rate_set), channel2_scaler, channel2_offset, 0);
-
-      //Adjust the data for the correct voltage per div setting
-      sample = (41954 * sample * signal_adjusters[scopesettings.channel2.voltperdiv]) >> 22;
-
-      //Limit the sample on max displayable
-      if(sample > 401)
-      {
-        sample = 401;
-      }
-
-      //Check against minimum value to get the lowest reading
-      if(sample < channel2_min)
-      {
-        channel2_min = sample;
-      }
-
-      //Check against maximum value to get the highest reading
-      if(sample > channel2_max)
-      {
-        channel2_max = sample;
-      }
-    }
-    
-    //One sample done
-    count --;
-  }
-  
-  //Calculate the center and vpp values when channel is selected
-  if(flags & 0x01)
-  {
-    channel1_center = (channel1_max + channel1_min) >> 1;
-    channel1_vpp    =  channel1_max - channel1_min;
-  }  
-
-  //Calculate the center and vpp values when channel is selected
-  if(flags & 0x02)
-  {
-    channel2_center = (channel2_max + channel2_min) >> 1;
-    channel2_vpp    =  channel2_max - channel2_min;
-  }
-  
-  //Unfreeze the signal generator
-  //Needed for the simulator only
-  signalgeneratorunfreeze();
-}
-
-//----------------------------------------------------------------------------------------------------------------------------------
-
-uint32 fpga_get_zero_crossings(uint32 channel)
-{
-  register uint32 count;
-  register uint32 sample;
-  register uint32 zerocrossings = 0;
-  register uint32 state = 0;
-  register uint32 highlevel;
-  register uint32 lowlevel;
-  register uint32 signaladjust;
-  
-  //Set the number of samples to process based on the time base setting
-  if(scopesettings.timeperdiv < 4)
-  {
-    //For 50ms and 20ms it is only 750 samples
-    count = 750;
-  }
-  else
-  {
-    //For 10ms - 10ns it is 1500 samples
-    count = 1500;
-  }
-  
-  //No idea what this is for, but in normal sample processing this is a value obtained from the special ic
-//  fpga_write_command_0x1F(100);
-
-  if(channel == 0)
-  {
-    //Send the command for selecting the channels sample buffer
-    fpga_write_cmd(0x20);
-    
-//    highlevel = scopesettings.channel1.traceoffset + 8;
-//    lowlevel  = scopesettings.channel1.traceoffset - 8;
-    highlevel = 136;
-    lowlevel = 120;
-    
-    signaladjust = signal_adjusters[scopesettings.channel1.voltperdiv];
-  }
-  else
-  {
-    //Send the command for selecting the channels sample buffer
-    fpga_write_cmd(0x22);
-    
-//    highlevel = scopesettings.channel2.traceoffset + 8;
-//    lowlevel  = scopesettings.channel2.traceoffset - 8;
-    highlevel = 136;
-    lowlevel = 120;
-    
-    signaladjust = signal_adjusters[scopesettings.channel2.voltperdiv];
-  }
-  
-  //Read the data as long as there is count
-  while(count)
-  {
-    //Get the sample
-    sample = fpga_read_byte();
-    
-    //Adjust the data for the correct voltage per div setting
-    sample = (41954 * sample * signaladjust) >> 22;
-
-    //Limit the sample on max displayable
-    if(sample > 401)
-    {
-      sample = 401;
-    }
-    
-    //Check against the high level
-    if(sample > highlevel)
-    {
-      //If above check if in low state
-      if(state == 0)
-      {
-        //If so flip the state
-        state = 1;
-
-        //Found a zero crossing
-        zerocrossings++;
-      }
-    }
-    //Check against the low level
-    else if(sample < lowlevel)
-    {
-      //If below check if in high state
-      if(state == 1)
-      {
-        //If so flip the state
-        state = 0;
-        
-        //Found a zero crossing
-        zerocrossings++;
-      }
-    }
-    
-    //One read done
-    count--;
-  }
-  
-  return(zerocrossings);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
