@@ -6,17 +6,17 @@
 //----------------------------------------------------------------------------------------------------------------------------------
 
 //Global memory assignment for USB device
-uint8 usb_rx[1024];                     //Buffer for USB receive data
-uint8 volatile usb_rx_in_idx = 0;       //Index for putting data into the USB receive buffer
-uint8 volatile usb_rx_out_idx = 0;      //Index for taking data from the USB receive buffer. Set volatile since it changes in interrupt routine.
+uint8 usb_rx[1024];                      //Buffer for USB receive data
+uint32 volatile usb_rx_in_idx = 0;       //Index for putting data into the USB receive buffer
+uint32 volatile usb_rx_out_idx = 0;      //Index for taking data from the USB receive buffer. Set volatile since it changes in interrupt routine.
 
-uint8 usb_tx[1024];                     //Buffer for USB transmit data
-uint8 volatile usb_tx_in_idx = 0;       //Index for putting data into the USB transmit buffer
-uint8 volatile usb_tx_out_idx = 0;      //Index for taking data from the USB transmit buffer. Set volatile since it changes in interrupt routine.
+uint8 usb_tx[1024];                      //Buffer for USB transmit data
+uint32 volatile usb_tx_in_idx = 0;       //Index for putting data into the USB transmit buffer
+uint32 volatile usb_tx_out_idx = 0;      //Index for taking data from the USB transmit buffer. Set volatile since it changes in interrupt routine.
 
-uint32 volatile fifobuffer[128];        //Buffer to read FIFO data in on EP2 out
+uint32 volatile fifobuffer[128];         //Buffer to read FIFO data in on EP2 out
 
-uint32 volatile EP2DisableTX = 0;       //Flag to disable the endpoint 2 transmission function.
+uint32 volatile EP2DisableTX = 0;        //Flag to disable the endpoint 2 transmission function.
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -157,7 +157,7 @@ int16 ch340Receive(void)
 //Function for putting a character in the USB transmit buffer
 void ch340Send(uint8 c)
 {
-  uint8 charsfree;
+  uint32 charsfree;
 
   //Wait until there is room in the transmit buffer
   do
@@ -200,7 +200,7 @@ void usb_ch340_out_ep_callback(void *fifo, int length)
   //Put the bytes in the receive buffer
   ptr = (uint8 *)fifobuffer;
   
-  //Copy the data from the PMA to the receive buffer
+  //Copy the data from the FIFO buffer to the receive buffer
   while(length--)
   {
     //Put the byte in the receive buffer
