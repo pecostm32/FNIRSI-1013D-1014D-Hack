@@ -1431,6 +1431,29 @@ void tp_i2c_read_status(void)
         xtouch = 120;
         ytouch = 250;
       }
+      //Else check if iv item view mode
+      else if(viewactive == VIEW_ACTIVE)
+      {
+        //Check if in waveform viewing
+        if(scopesettings.waveviewmode)
+        {
+          xtouch = 10;
+          ytouch = 20;
+        }
+        //Check if in picture viewing
+        else if(viewbottommenustate & VIEW_BOTTOM_MENU_ACTIVE)
+        {
+          //Signal touch to return from it
+          xtouch = 100;
+          ytouch = 450;
+        }
+        else
+        {
+          //Signal touch to return from it
+          xtouch = 750;
+          ytouch = 50;
+        }
+      }
       else
       {
         xtouch = 10;
@@ -1626,24 +1649,24 @@ DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void *buff)
       return(STA_NODISK);
     }
     
-    //Check if buffer is valid
-    if(buff)
+    if(cmd == CTRL_SYNC)
     {
-      if(cmd == CTRL_SYNC)
+      return(RES_OK);
+    }
+    else if(cmd == GET_SECTOR_COUNT)
+    {
+      //Seek the requested location
+      if(fseek(sd_emu_file, 0, SEEK_END))
       {
-        return(RES_OK);
+        //Error while seeking
+        return(RES_ERROR);
       }
-      else if(cmd == GET_SECTOR_COUNT)
+
+      //Check if buffer is valid
+      if(buff)
       {
-        //Seek the requested location
-        if(fseek(sd_emu_file, 0, SEEK_END))
-        {
-          //Error while seeking
-          return(RES_ERROR);
-        }
-        
         *(uint32 *)buff = (ftell(sd_emu_file) + 511) / 512;
-        
+
         return(RES_OK);
       }
     }

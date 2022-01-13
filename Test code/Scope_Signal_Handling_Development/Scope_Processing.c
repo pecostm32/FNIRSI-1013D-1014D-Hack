@@ -249,7 +249,7 @@ void *scopeprocessingthread(void *arg)
     touch_handler();
   }
 
-  //Could emulate parameter save here
+  //Emulate parameter save here
   //Check if not in view mode
   if(viewactive == VIEW_NOT_ACTIVE)
   {
