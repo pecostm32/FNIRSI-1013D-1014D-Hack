@@ -71,14 +71,14 @@ SCOPESETTINGS savedscopesettings2;
 
 uint32 channel1tracebuffer[750];
 
+DISPLAYPOINTS channel1pointsbuffer[730];      //Buffer to store the x,y positions of the trace on the display
+
 uint32 channel2tracebuffer[750];
 
+DISPLAYPOINTS channel2pointsbuffer[730];      //Buffer to store the x,y positions of the trace on the display
 
-uint16 disp_xpos = 0;                  //In original code at 0x80192EAA
 
-uint16 disp_x_start = 0;               //In original code at 0x8019D5BA
-uint16 disp_sample_count = 0;          //In original code at 0x8019D5BC
-
+uint16 thumbnailtracedata[730];
 
 
 uint16 system_ok;                      //In original code at 0x8019D5E4
@@ -150,8 +150,10 @@ uint16 prevxtouch = 0;
 //Data for picture and waveform view mode
 //----------------------------------------------------------------------------------------------------------------------------------
 
-FIL viewfp;                         //Since files are not opened concurrent using a global file pointer
-
+FIL     viewfp;                         //Since files are not opened concurrent using a global file pointer
+DIR     viewdir;
+FILINFO viewfileinfo;
+  
 char viewfilename[32];              //The original code uses a large buffer to create all the needed file names in. Here the file name is created when needed
 
 uint8 viewactive;                   //Not in the original code. Used to avoid copying settings to the flash
@@ -168,14 +170,15 @@ uint16 viewcurrentindex;            //Used for selecting previous or next item w
 
 uint16 viewavailableitems;          //Also done differently in the original code
 
-uint8 viewitemselected[VIEW_ITEMS_PER_PAGE];                 //In original code this is at 0x8035A98B. Flags to signal if an item is selected or not
+uint8 viewitemselected[VIEW_ITEMS_PER_PAGE];                 //Flags to signal if an item is selected or not
 
-uint32 viewthumbnaildata[VIEW_THUMBNAIL_DATA_SIZE / 4];      //In original code at 0x802F19CE. 400000 bytes, but to make sure it is dword aligned declared as uint32
+THUMBNAILDATA viewthumbnaildata[VIEW_MAX_ITEMS];
 
-uint32 viewfilenumberdata[VIEW_FILE_NUMBER_DATA_SIZE / 4];   //In original code at 0x8035A99C. 2000 bytes, but to make sure it is dword aligned declared as uint32
+uint16 viewfilenumberdata[VIEW_MAX_ITEMS];
 
-                                                             //The original code uses a large buffer to load all the data into and writes it in one go to a file. This requires a lot of extra memory
-uint32 viewfilesetupdata[VIEW_SETUP_DATA_SIZE / 4];          //Not in original code. 1000 bytes for storing the system settings to save to file or to load from file
+uint8 viewbitmapheader[PICTURE_HEADER_SIZE];
+
+uint32 viewfilesetupdata[VIEW_NUMBER_OF_SETTINGS];
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Calibration data
@@ -535,24 +538,22 @@ const char *magnitude_scaler[8] = { "p", "n", "u", "m", "", "K", "M", "G"};
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+const PATHINFO view_file_path[2] = 
+{
+  { "\\pictures\\",  10 },
+  { "\\waveforms\\", 11 }
+};
+
 const char view_file_extension[2][5] =
 {
   { ".bmp" },
   { ".wav" }
 };
 
-//----------------------------------------------------------------------------------------------------------------------------------
-
-const char list_file_name[2][13] =
+const char *thumbnail_file_names[2] =
 {
-  { "piclist.sys" },
-  { "wavelist.sys" }
-};
-
-const char system_file_name[2][16] =
-{
-  { "pic_system.sys" },
-  { "wave_system.sys" }
+  "\\pictures\\bmp_thumbnails.sys",
+  "\\waveforms\\wav_thumbnails.sys"
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -560,8 +561,8 @@ const char system_file_name[2][16] =
 //Setup the bitmap header
 //Consist of basic bitmap header followed by a DIB header (BITMAPINFOHEADER + BITMAPV3INFOHEADER)
 //Could probably do with BITMAPV2INFOHEADER but the original uses V3
-//The bitmap height is using a negative value for reversing the top to bottom lines. This allows just writing the frame buffer to the file
-const uint8 bmpheader[70] =
+//The bitmap height is using a negative value for reversing the top to bottom lines. This allows for just writing the frame buffer to the file
+const uint8 bmpheader[PICTURE_HEADER_SIZE] =
 {
   //Header identifier
   'B', 'M',
@@ -576,10 +577,10 @@ const uint8 bmpheader[70] =
   0, 0, 0, 0,
 
   //Offset to the pixel array
-   PICTURE_PIXEL_OFFSET        & 0xFF,
-  (PICTURE_PIXEL_OFFSET >>  8) & 0xFF,
-  (PICTURE_PIXEL_OFFSET >> 16) & 0xFF,
-  (PICTURE_PIXEL_OFFSET >> 24) & 0xFF,
+   PICTURE_HEADER_SIZE        & 0xFF,
+  (PICTURE_HEADER_SIZE >>  8) & 0xFF,
+  (PICTURE_HEADER_SIZE >> 16) & 0xFF,
+  (PICTURE_HEADER_SIZE >> 24) & 0xFF,
 
   //Size of DIB header
   56, 0, 0, 0,

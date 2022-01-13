@@ -165,17 +165,17 @@ DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void *buff)
   //Check if the SD card device is addressed
   if(pdrv == DEV_SD)
   {
-    //Check if buffer is valid
-    if(buff)
+    if(cmd == CTRL_SYNC)
     {
-      if(cmd == CTRL_SYNC)
-      {
-        return(RES_OK);
-      }
-      else if(cmd == GET_SECTOR_COUNT)
+      return(RES_OK);
+    }
+    else if(cmd == GET_SECTOR_COUNT)
+    {
+      //Check if buffer is valid
+      if(buff)
       {
         *(uint32 *)buff = cardsectors;
-        
+
         return(RES_OK);
       }
     }

@@ -99,12 +99,11 @@ int main(void)
   }
 
 #ifndef USE_TP_CONFIG
+#ifdef SAVE_TP_CONFIG
   //Save the touch panel configuration to be save
   save_tp_config();
 #endif
-
-  //In the original code there is some hardware check function here. Actions are not performed unless some data in the FLASH is not set
-  //This tests the basic hardware and verifies the touch panel
+#endif
 
   //Setup the USB interface
   usb_device_init();
@@ -131,7 +130,6 @@ int main(void)
   fpga_set_sample_rate(scopesettings.samplerate);
   fpga_set_time_base(scopesettings.timeperdiv);
   fpga_set_trigger_channel();
-  fpga_swap_trigger_channel();   //This is a bit redundant since the correct channel should be in the loaded settings.
   fpga_set_trigger_edge();
   fpga_set_trigger_level();
   fpga_set_trigger_mode();
@@ -143,20 +141,11 @@ int main(void)
   //Some initialization of the FPGA??. Data written with command 0x3C
   fpga_set_battery_level();      //Only called here and in hardware check
 
-  //In the original code there is another hardware check function here. Actions are not performed unless some data in the FLASH is not set
-  //This is for testing the analog response
-  //When all tests run through the flash is updated to no longer run the hardware tests.
-
-
-  //Here a function is called that looks at some system file????? Firmware upgrade!!!
-  
-  
   //Setup the main parts of the screen
   scope_setup_main_screen();
 
   //Set screen brightness
   fpga_set_translated_brightness();
- 
   
   //Monitor the battery, process and display trace data and handle user input until power is switched off
   while(1)

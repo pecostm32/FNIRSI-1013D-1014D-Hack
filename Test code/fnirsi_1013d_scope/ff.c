@@ -6399,49 +6399,64 @@ FRESULT f_readdir (
 #if FF_USE_FIND
 //----------------------------------------------------------------------------------------------------------------------------------
 //Find Next File                                                       
+//  DIR* dp,    //Pointer to the open directory object
+//  FILINFO* fno  //Pointer to the file information structure
 //----------------------------------------------------------------------------------------------------------------------------------
 
-FRESULT f_findnext (
-  DIR* dp,    //Pointer to the open directory object
-  FILINFO* fno  //Pointer to the file information structure
-)
+FRESULT f_findnext (DIR* dp, FILINFO* fno)
 {
   FRESULT res;
 
-
-  for(;;) {
-    res = f_readdir(dp, fno);    //Get a directory item
-    if(res != FR_OK || !fno || !fno->fname[0]) break;  //Terminate if any error or end of directory
-    if(pattern_match(dp->pat, fno->fname, 0, FIND_RECURS)) break;    //Test for the file name
+  for(;;)
+  {
+    //Get a directory item    
+    res = f_readdir(dp, fno);
+    
+    //Terminate if any error or end of directory    
+    if(res != FR_OK || !fno || !fno->fname[0])
+      break;
+    
+    //Test for the file name    
+    if(pattern_match(dp->pat, fno->fname, 0, FIND_RECURS))
+      break;
+    
 #if FF_USE_LFN && FF_USE_FIND == 2
-    if(pattern_match(dp->pat, fno->altname, 0, FIND_RECURS)) break;  //Test for alternative name if exist
+    //Test for alternative name if exist    
+    if(pattern_match(dp->pat, fno->altname, 0, FIND_RECURS))
+      break;
 #endif
   }
-  return res;
+  
+  return(res);
 }
 
 
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Find First File                                                      
+//  DIR* dp,        //Pointer to the blank directory object
+//  FILINFO* fno,      //Pointer to the file information structure
+//  const TCHAR* path,    //Pointer to the directory to open
+//  const TCHAR* pattern  //Pointer to the matching pattern
 //----------------------------------------------------------------------------------------------------------------------------------
 
-FRESULT f_findfirst (
-  DIR* dp,        //Pointer to the blank directory object
-  FILINFO* fno,      //Pointer to the file information structure
-  const TCHAR* path,    //Pointer to the directory to open
-  const TCHAR* pattern  //Pointer to the matching pattern
-)
+FRESULT f_findfirst (DIR* dp, FILINFO* fno, const TCHAR* path, const TCHAR* pattern)
 {
   FRESULT res;
 
-
-  dp->pat = pattern;    //Save pointer to pattern string
-  res = f_opendir(dp, path);    //Open the target directory
-  if(res == FR_OK) {
-    res = f_findnext(dp, fno);  //Find the first item
+  //Save pointer to pattern string
+  dp->pat = pattern;
+  
+  //Open the target directory  
+  res = f_opendir(dp, path);
+  
+  if(res == FR_OK)
+  {
+    //Find the first item    
+    res = f_findnext(dp, fno);
   }
-  return res;
+  
+  return(res);
 }
 
 #endif  //FF_USE_FIND

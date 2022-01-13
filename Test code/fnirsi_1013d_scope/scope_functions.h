@@ -37,8 +37,8 @@ void scope_setup_bottom_file_menu(int mode);
 void scope_control_button(int mode);
 void scope_run_stop_button(int mode);
 void scope_auto_set_button(int mode);
-void scope_page_up_button(int mode);
-void scope_page_down_button(int mode);
+void scope_previous_wave_button(int mode);
+void scope_next_wave_button(int mode);
 void scope_t_cursor_button(int mode);
 void scope_v_cursor_button(int mode);
 void scope_measures_button(int mode);
@@ -47,11 +47,25 @@ void scope_save_wave_button(int mode);
 void scope_delete_wave_button(int mode);
 void scope_50_percent_trigger_button(int mode);
 void scope_show_grid_button(int mode);
+
 void scope_ch1_sensitivity_control(int type, int mode);
 void scope_ch2_sensitivity_control(int type, int mode);
 
+void scope_return_button(int mode);
 void scope_select_all_button(int mode);
 void scope_select_button(int mode);
+void scope_delete_button(int mode);
+void scope_page_up_button(int mode);
+void scope_page_down_button(int mode);
+
+//----------------------------------------------------------------------------------------------------------------------------------
+// Bitmap control bar functions
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_bmp_return_button(int mode);
+void scope_bmp_delete_button(int mode);
+void scope_bmp_previous_button(int mode);
+void scope_bmp_next_button(int mode);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 // Top bar functions
@@ -148,7 +162,8 @@ uint32 scope_do_channel_calibration(void);
 void scope_do_50_percent_trigger_setup(void);
 
 void scope_do_auto_setup(void);
-void scope_autorange_channel(PCHANNELSETTINGS settings);
+
+uint32 scope_check_channel_range(PCHANNELSETTINGS settings);
 
 //----------------------------------------------------------------------------------------------------------------------------------
 // Signal data display functions
@@ -172,35 +187,42 @@ char *scope_print_decimal(char *buffer, uint32 value, uint32 decimalplace);
 // File display functions
 //----------------------------------------------------------------------------------------------------------------------------------
 
-//These two functions are for save guarding the operational settings when switched to a view mode
-//This differs from the original code where they save more data and prepare it for writing to file
+//These two functions are for save guarding the operational settings when switched to waveform view mode
 void scope_save_setup(PSCOPESETTINGS settings);
 void scope_restore_setup(PSCOPESETTINGS settings);
 
 //These two functions are for the system settings, preparing for and restoring from file
 void scope_prepare_setup_for_file(void);
 void scope_restore_setup_from_file(void);
+int32 scope_check_waveform_file(void);
 
 void scope_print_file_name(uint32 filenumber);
 
-void scope_load_list_files(void);                      //Add error handling!!
-void scope_save_list_files(void);                      //Add error handling!!
+int32 scope_load_thumbnail_file(void);
+int32 scope_save_thumbnail_file(void);
 
 void scope_save_view_item_file(int32 type);
 
-void scope_remove_item_from_lists(uint32 delete);
+void scope_remove_item_from_thumbnails(uint32 delete);
 
-int32 scope_load_trace_data(void);                     //Need to finish this one. Trace data displaying!!!
+int32 scope_load_trace_data(void);
 
-void scope_sync_list_files(void);
+int32 scope_load_bitmap_data(void);
 
-void scope_count_and_display_thumbnails(void);
+void scope_sync_thumbnail_files(void);                 //Check this function!!!
 
-void scope_display_thumbnails(void);                   //Add displaying the file number or name to this function
+void scope_initialize_and_display_thumbnails(void);
 
-void scope_display_thumbnail_data(uint32 xpos, uint32 ypos, PTHUMBNAILDATA thumbnaildata, uint32 channel);
+void scope_display_thumbnails(void);                   //Need to add xy mode displaying
 
-void scope_create_thumbnail(uint32 filenumber, PTHUMBNAILDATA thumbnaildata);
+void scope_display_thumbnail_data(uint32 xstart, uint32 xend, uint32 ypos, uint32 color, uint8 *buffer);
+
+void scope_create_thumbnail(PTHUMBNAILDATA thumbnaildata);  //Need to add xy mode displaying
+
+void scope_thumbnail_set_trace_data(PCHANNELSETTINGS settings, uint8 *buffer);
+void scope_thumbnail_calculate_trace_data(int32 xstart, int32 ystart, int32 xend, int32 yend);
+
+void scope_thumbnail_draw_pointer(uint32 xpos, uint32 ypos, uint32 direction, uint32 color);
 
 int32 scope_display_picture_item(void);
 
@@ -222,7 +244,9 @@ void scope_restore_config_data(void);
 //----------------------------------------------------------------------------------------------------------------------------------
 
 #ifndef USE_TP_CONFIG
+#ifdef SAVE_TP_CONFIG
 void save_tp_config(void);
+#endif
 #endif
 
 //----------------------------------------------------------------------------------------------------------------------------------

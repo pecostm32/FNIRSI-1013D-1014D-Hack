@@ -13,10 +13,17 @@
 #include "ff.h"
 
 //----------------------------------------------------------------------------------------------------------------------------------
-//Defines
+//Version info
 //----------------------------------------------------------------------------------------------------------------------------------
 
-#define DISPLAY_TYPE                      0    //0 For most common display, 1 for shifted display
+#define VERSION_STRING             "V0.001"
+
+#define VERSION_STRING_XPOS             690
+#define VERSION_STRING_YPOS              24
+
+//----------------------------------------------------------------------------------------------------------------------------------
+//Defines
+//----------------------------------------------------------------------------------------------------------------------------------
 
 #define SETTINGS_SECTOR                 700    //Location of the settings on the SD card for now
 
@@ -28,6 +35,8 @@
 #define VIEW_ITEM_WIDTH                 182
 #define VIEW_ITEM_HEIGHT                120
 
+#define VIEW_ITEM_TRACE_POINTS          182
+
 #define VIEW_ITEM_XNEXT                 182
 #define VIEW_ITEM_YNEXT                 120
 
@@ -35,7 +44,6 @@
 
 #define VIEW_THUMBNAIL_DATA_SIZE     400000
 #define VIEW_FILE_NUMBER_DATA_SIZE     2000
-#define VIEW_SETUP_DATA_SIZE           1000
 
 #define VIEW_MAX_ITEMS                 1000
 
@@ -66,16 +74,39 @@
 #define VIEW_BOTTON_MENU_INIT             3     //This is a combination of init and show, so show needs to be 1
 #define VIEW_BOTTON_MENU_SHOW             1     //Needs to be 1 / 0 for the show and hide since an exor is used to toggle the modes
 #define VIEW_BOTTON_MENU_HIDE             0
+#define VIEW_BOTTOM_MENU_ACTIVE           8     //A flag needed for the simulator to signal picture viewing is active, so it can give touch on quit
 
 #define VIEW_TRACE_LOAD_OK                0
 #define VIEW_TRACE_LOAD_ERROR             1
 
+#define VIEW_BITMAP_LOAD_OK               0
+#define VIEW_BITMAP_LOAD_ERROR            1
+
 #define VIEW_CONFIRM_DELETE_NO            1
 #define VIEW_CONFIRM_DELETE_YES           2
 
+#define VIEW_NUMBER_OF_SETTINGS         200
+
+#define CHANNEL1_SETTING_OFFSET          10
+#define CHANNEL2_SETTING_OFFSET          40
+#define TRIGGER_SETTING_OFFSET           70
+#define OTHER_SETTING_OFFSET            100
+#define CURSOR_SETTING_OFFSET           130
+#define MEASUREMENT_SETTING_OFFSET      160
+
+#define WAVEFORM_FILE_VERSION    0x01010101    //Version 1.1.1.1
+
+#define WAVEFORM_FILE_ERROR             200
+
+#define THUMBNAIL_POINTER_RIGHT           0
+#define THUMBNAIL_POINTER_LEFT            1
+#define THUMBNAIL_POINTER_DOWN            2
+
+#define PICTURE_HEADER_SIZE               70
 #define PICTURE_DATA_SIZE                 (800 * 480 * 2)                              //trace data
-#define PICTURE_PIXEL_OFFSET              (70 + 15000)                                 //Bitmap header + trace data
-#define PICTURE_FILE_SIZE                 (PICTURE_PIXEL_OFFSET + PICTURE_DATA_SIZE)   //Bitmap header + trace data + pixel data
+#define PICTURE_FILE_SIZE                 (PICTURE_HEADER_SIZE + PICTURE_DATA_SIZE)    //Bitmap header + pixel data
+
+#define PICTURE_HEADER_MISMATCH           100
 
 #define MESSAGE_SAVE_SUCCESSFUL           0
 #define MESSAGE_FILE_CREATE_FAILED        1
@@ -83,6 +114,19 @@
 #define MESSAGE_FILE_WRITE_FAILED         3
 #define MESSAGE_FILE_READ_FAILED          4
 #define MESSAGE_FILE_SEEK_FAILED          5
+#define MESSAGE_FILE_DELETE_FAILED        6
+
+#define MESSAGE_DIRECTORY_CREATE_FAILED   7
+
+#define MESSAGE_FILE_SYSTEM_FAILED        8
+
+#define MESSAGE_THUMBNAIL_FILE_CORRUPT    9
+#define MESSAGE_THUMBNAIL_FILE_FULL      10
+
+#define MESSAGE_BMP_HEADER_MISMATCH      11
+
+#define MESSAGE_WAV_VERSION_MISMATCH     12
+#define MESSAGE_WAV_CHECKSUM_ERROR       13
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Menu positions and dimensions
@@ -118,38 +162,6 @@
 #define CH2_TOUCHED_COLOR            0x00FF0000
 
 //----------------------------------------------------------------------------------------------------------------------------------
-//Channel 1 button and menu
-
-#define CH1_BUTTON_XPOS                    150
-#define CH1_BUTTON_YPOS                      5
-#define CH1_BUTTON_WIDTH                    30
-#define CH1_BUTTON_HEIGHT                   35
-
-#define CH1_BUTTON_BG_WIDTH                103
-#define CH1_BUTTON_BG_HEIGHT                35
-
-#define CH1_MENU_XPOS          CH1_BUTTON_XPOS
-#define CH1_MENU_YPOS                       46
-#define CH1_MENU_WIDTH                     183
-#define CH1_MENU_HEIGHT                    252
-
-//----------------------------------------------------------------------------------------------------------------------------------
-//Channel 2 button and menu
-
-#define CH2_BUTTON_XPOS                    260
-#define CH2_BUTTON_YPOS                      5
-#define CH2_BUTTON_WIDTH                    30
-#define CH2_BUTTON_HEIGHT                   35
-
-#define CH2_BUTTON_BG_WIDTH                103
-#define CH2_BUTTON_BG_HEIGHT                35
-
-#define CH2_MENU_XPOS          CH2_BUTTON_XPOS
-#define CH2_MENU_YPOS                       46
-#define CH2_MENU_WIDTH                     183
-#define CH2_MENU_HEIGHT                    252
-
-//----------------------------------------------------------------------------------------------------------------------------------
 // Acquisition button and menu
 
 #define ACQ_BUTTON_XPOS                    380
@@ -170,11 +182,16 @@
 //Typedefs
 //----------------------------------------------------------------------------------------------------------------------------------
 
-typedef struct tagTouchCoords         TOUCHCOORDS,        *PTOUCHCOORDS;
-typedef struct tagScopeSettings       SCOPESETTINGS,      *PSCOPESETTINGS;
-typedef struct tagChannelSettings     CHANNELSETTINGS,    *PCHANNELSETTINGS;
+typedef struct tagTouchCoords           TOUCHCOORDS,          *PTOUCHCOORDS;
+
+typedef struct tagDisplayPoints         DISPLAYPOINTS,        *PDISPLAYPOINTS;
+
+typedef struct tagChannelSettings       CHANNELSETTINGS,      *PCHANNELSETTINGS;
+typedef struct tagScopeSettings         SCOPESETTINGS,        *PSCOPESETTINGS;
 
 typedef struct tagThumbnailData         THUMBNAILDATA,        *PTHUMBNAILDATA;
+
+typedef struct tagPathInfo              PATHINFO,             *PPATHINFO;
 
 typedef struct tagTimeCalcData          TIMECALCDATA,         *PTIMECALCDATA;
 typedef struct tagVoltCalcData          VOLTCALCDATA,         *PVOLTCALCDATA;
@@ -191,6 +208,16 @@ struct tagTouchCoords
   uint16 y1;
   uint16 y2;
 };
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+struct tagDisplayPoints
+{
+  uint16 x;
+  uint16 y;  
+};
+
+//----------------------------------------------------------------------------------------------------------------------------------
 
 struct tagChannelSettings
 {
@@ -250,6 +277,10 @@ struct tagChannelSettings
   uint8 *tracebuffer;
   uint8 *buffer;
   
+  //Screen data
+  PDISPLAYPOINTS tracepoints;
+  uint32         noftracepoints;
+  
   //Sample gathering options
   uint8 checkfirstadc;
   uint8 enabletrigger;
@@ -273,6 +304,8 @@ struct tagChannelSettings
   int8 *buttontext;
 };
 
+//----------------------------------------------------------------------------------------------------------------------------------
+
 struct tagScopeSettings
 {
   CHANNELSETTINGS channel1;
@@ -282,7 +315,6 @@ struct tagScopeSettings
   uint16 nofsamples;        //Number of samples to read from the FPGA
   
   uint8 samplerate;
-          
   uint8 timeperdiv;
   uint8 triggermode;
   uint8 triggeredge;
@@ -292,21 +324,22 @@ struct tagScopeSettings
   uint16 triggerverticalposition;      //Screen position of the trigger level indicator
   uint16 triggerlevel;                 //Actual trigger level set to the FPGA
   
-  uint8 samplemode;          //New for mode select in the fpga_do_conversion function
+  uint8 samplemode;                    //New for mode select in the fpga_do_conversion function
   
   uint8 movespeed;
   
   uint8 rightmenustate;
   uint8 waveviewmode;
   
-  uint8 updatescreen;        //0x8019D5D7 in original code
+  uint8 updatescreen;
   uint8 batterychargelevel;
   uint8 batterycharging;
-  uint8 runstate;            //0x8019D5DA in original code
+  uint8 runstate;
   
   uint8 screenbrightness;
   uint8 gridbrightness;
-  uint8 alwaystrigger50;     //0x8036137c in original code
+  uint8 gridenable;
+  uint8 alwaystrigger50;
   uint8 xymodedisplay;
   uint8 confirmationmode;
   
@@ -324,24 +357,33 @@ struct tagScopeSettings
   uint8 measuresstate[2][12];
 };
 
+//----------------------------------------------------------------------------------------------------------------------------------
 
 struct tagThumbnailData
 {
-  uint8 filenumbermsb;
-  uint8 filenumberlsb;
-  uint8 channel1traceoffset;
-  uint8 channel2traceoffset;
-  uint8 triggerlevelscreenoffset;
-  uint8 triggerpositiononscreen;
+  int8  filename[33];
   uint8 channel1enable;
   uint8 channel2enable;
-  uint8 traceposition;
-  uint8 tracesamples;
+  uint8 channel1traceposition;
+  uint8 channel2traceposition;
+  uint8 triggerverticalposition;
+  uint8 triggerhorizontalposition;
   uint8 xydisplaymode;
-  uint8 reserved[9];
-  uint8 channel1data[180];
-  uint8 channel2data[200];
+  uint8 disp_xstart;
+  uint8 disp_xend;
+  uint8 channel1data[VIEW_ITEM_TRACE_POINTS];
+  uint8 channel2data[VIEW_ITEM_TRACE_POINTS];
 };
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+struct tagPathInfo
+{
+  char   *name;
+  uint32  length;
+};
+
+//----------------------------------------------------------------------------------------------------------------------------------
 
 struct tagTimeCalcData
 {
@@ -350,11 +392,15 @@ struct tagTimeCalcData
   uint8  freq_scale;
 };
 
+//----------------------------------------------------------------------------------------------------------------------------------
+
 struct tagVoltCalcData
 {
   uint32 mul_factor;
   uint8  volt_scale;
 };
+
+//----------------------------------------------------------------------------------------------------------------------------------
 
 struct tagFreqCalcData
 {
@@ -426,12 +472,13 @@ extern SCOPESETTINGS savedscopesettings2;
 
 extern uint32 channel1tracebuffer[750];
 
+extern DISPLAYPOINTS channel1pointsbuffer[730];
+
 extern uint32 channel2tracebuffer[750];
 
-extern uint16 disp_xpos;
+extern DISPLAYPOINTS channel2pointsbuffer[730];
 
-extern uint16 disp_x_start;
-extern uint16 disp_sample_count;
+extern uint16 thumbnailtracedata[730];
 
 extern uint16 system_ok;
 
@@ -529,10 +576,11 @@ extern const FREQCALCDATA freq_calc_data[18];
 
 extern const char *magnitude_scaler[8];
 
-extern const char view_file_extension[2][5];
-extern const char list_file_name[2][13];
-extern const char system_file_name[2][16];
-extern const uint8 bmpheader[70];
+extern const PATHINFO view_file_path[2];
+extern const char     view_file_extension[2][5];
+extern const char    *thumbnail_file_names[2];
+
+extern const uint8 bmpheader[PICTURE_HEADER_SIZE];
 
 extern const uint32 frequency_per_div[24];
 extern const uint32 sample_rate[18];
@@ -557,9 +605,11 @@ extern uint16 prevxtouch;
 //Data for picture and waveform view mode
 //----------------------------------------------------------------------------------------------------------------------------------
 
-extern FIL viewfp;
+extern FIL     viewfp;
+extern DIR     viewdir;
+extern FILINFO viewfileinfo;
 
-extern char viewfilename[];
+extern char viewfilename[32];
 
 extern uint8 viewactive;
 
@@ -578,11 +628,13 @@ extern uint16 viewavailableitems;
 
 extern uint8 viewitemselected[VIEW_ITEMS_PER_PAGE];
 
-extern uint32 viewthumbnaildata[VIEW_THUMBNAIL_DATA_SIZE / 4];
+extern THUMBNAILDATA viewthumbnaildata[VIEW_MAX_ITEMS];
 
-extern uint32 viewfilenumberdata[VIEW_FILE_NUMBER_DATA_SIZE / 4];
+extern uint16 viewfilenumberdata[VIEW_MAX_ITEMS];
 
-extern uint32 viewfilesetupdata[VIEW_SETUP_DATA_SIZE / 4];
+extern uint8 viewbitmapheader[PICTURE_HEADER_SIZE];
+
+extern uint32 viewfilesetupdata[VIEW_NUMBER_OF_SETTINGS];
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Display data
