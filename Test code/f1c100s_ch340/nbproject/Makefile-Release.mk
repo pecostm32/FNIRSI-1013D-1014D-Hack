@@ -38,16 +38,21 @@ OBJECTFILES= \
 	${OBJECTDIR}/ccu_control.o \
 	${OBJECTDIR}/ch340_class.o \
 	${OBJECTDIR}/commands.o \
+	${OBJECTDIR}/display_control.o \
+	${OBJECTDIR}/display_lib.o \
 	${OBJECTDIR}/f1c100s_ch340.o \
 	${OBJECTDIR}/fpga_control.o \
+	${OBJECTDIR}/icons.o \
 	${OBJECTDIR}/interrupt.o \
 	${OBJECTDIR}/memcmp.o \
 	${OBJECTDIR}/memcpy.o \
 	${OBJECTDIR}/memmove.o \
 	${OBJECTDIR}/memset.o \
+	${OBJECTDIR}/sin_cos_math.o \
 	${OBJECTDIR}/start.o \
 	${OBJECTDIR}/timer.o \
-	${OBJECTDIR}/usb_interface.o
+	${OBJECTDIR}/usb_interface.o \
+	${OBJECTDIR}/variables.o
 
 
 # C Compiler Flags
@@ -89,6 +94,16 @@ ${OBJECTDIR}/commands.o: commands.c
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/commands.o commands.c
 
+${OBJECTDIR}/display_control.o: display_control.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/display_control.o display_control.c
+
+${OBJECTDIR}/display_lib.o: display_lib.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/display_lib.o display_lib.c
+
 ${OBJECTDIR}/f1c100s_ch340.o: f1c100s_ch340.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
@@ -98,6 +113,11 @@ ${OBJECTDIR}/fpga_control.o: fpga_control.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/fpga_control.o fpga_control.c
+
+${OBJECTDIR}/icons.o: icons.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/icons.o icons.c
 
 ${OBJECTDIR}/interrupt.o: interrupt.c
 	${MKDIR} -p ${OBJECTDIR}
@@ -120,6 +140,11 @@ ${OBJECTDIR}/memset.o: memset.s
 	${MKDIR} -p ${OBJECTDIR}
 	$(AS) $(ASFLAGS) -o ${OBJECTDIR}/memset.o memset.s
 
+${OBJECTDIR}/sin_cos_math.o: sin_cos_math.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/sin_cos_math.o sin_cos_math.c
+
 ${OBJECTDIR}/start.o: start.s
 	${MKDIR} -p ${OBJECTDIR}
 	$(AS) $(ASFLAGS) -o ${OBJECTDIR}/start.o start.s
@@ -133,6 +158,11 @@ ${OBJECTDIR}/usb_interface.o: usb_interface.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/usb_interface.o usb_interface.c
+
+${OBJECTDIR}/variables.o: variables.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/variables.o variables.c
 
 # Subprojects
 .build-subprojects:

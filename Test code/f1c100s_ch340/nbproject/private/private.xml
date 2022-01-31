@@ -7,15 +7,21 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/f1c100s_ch340/usb_interface.h</file>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/f1c100s_ch340/f1c100s_ch340.c</file>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/f1c100s_ch340/ch340_class.h</file>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/f1c100s_ch340/usb_interface.c</file>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/f1c100s_ch340/commands.c</file>
-            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/f1c100s_ch340/fpga_control.c</file>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/f1c100s_ch340/ch340_class.c</file>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/f1c100s_ch340/fpga_control.h</file>
             <file>file:/home/peter/Data/NetbeansProjects/F1C100s/f1c100s_ch340/commands.h</file>
+            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/f1c100s_ch340/usb_interface.h</file>
+            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/f1c100s_ch340/ch340_class.h</file>
+            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/f1c100s_ch340/variables.h</file>
+            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/f1c100s_ch340/display_control.c</file>
+            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/f1c100s_ch340/f1c100s_ch340.h</file>
+            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/f1c100s_ch340/fpga_control.c</file>
+            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/f1c100s_ch340/variables.c</file>
+            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/f1c100s_ch340/display_lib.h</file>
+            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/f1c100s_ch340/f1c100s_ch340.c</file>
+            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/f1c100s_ch340/commands.c</file>
+            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/f1c100s_ch340/usb_interface.c</file>
+            <file>file:/home/peter/Data/NetbeansProjects/F1C100s/f1c100s_ch340/display_lib.c</file>
         </group>
     </open-files>
 </project-private>
