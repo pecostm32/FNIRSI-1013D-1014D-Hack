@@ -1,3 +1,8 @@
+The hacking stopped and the new firmware being developed has been moved to another repository:
+
+https://github.com/pecostm32/FNIRSI_1013D_Firmware
+
+
 # FNIRSI-1013D-Hack
 Resources gathered for reverse engineering the FNIRSI-1013D scope
 
