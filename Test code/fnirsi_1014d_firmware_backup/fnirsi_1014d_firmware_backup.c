@@ -66,7 +66,7 @@ int main(void)
   fpga_init();
   
   //Turn of the display brightness
-  fpga_set_backlight_brightness(0x0000);
+  fpga_set_backlight_brightness(0x00);
   
   //Initialize display (PORT D + DEBE)
   sys_init_display(SCREEN_WIDTH, SCREEN_HEIGHT, (uint16 *)maindisplaybuffer);
@@ -79,7 +79,7 @@ int main(void)
   {
     //Show SD card error message on failure
     //Set max screen brightness
-    fpga_set_backlight_brightness(0xEA60);
+    fpga_set_backlight_brightness(0x78);
 
     //Clear the display
     display_set_fg_color(0x00000000);
@@ -98,7 +98,7 @@ int main(void)
   usb_device_init();
   
   //Display the startup screen  
-  fpga_set_backlight_brightness(0xEA60);
+  fpga_set_backlight_brightness(0x78);
   draw_startup_screen();
 
   //Text in light blue

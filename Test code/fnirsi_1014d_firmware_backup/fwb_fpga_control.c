@@ -199,10 +199,10 @@ void fpga_write_int(uint32 data)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void fpga_set_backlight_brightness(uint16 brightness)
+void fpga_set_backlight_brightness(uint8 brightness)
 {
   fpga_write_cmd(0x38);
-  fpga_write_short(brightness);
+  fpga_write_byte(brightness);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

@@ -52,7 +52,7 @@ uint16 fpga_read_short(void);
 
 void fpga_write_int(uint32 data);
 
-void fpga_set_backlight_brightness(uint16 brightness);
+void fpga_set_backlight_brightness(uint8 brightness);
 
 uint16 fpga_get_version(void);
 
