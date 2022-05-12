@@ -1,0 +1,21 @@
+==================
+Load firmware onto SD card
+==================
+Make sure to use the device the SD card is mounted at on your device
+-------------------
+
+sudo umount /dev/sdc1
+
+sudo dd if=fnirsi_1014d_startup_with_fel.bin of=/dev/sdc bs=1024 seek=8
+
+===================
+Remove program from SD card
+===================
+Make sure to use the device the SD card is mounted at on your device
+-------------------
+
+sudo umount /dev/sdc1
+
+sudo dd if=/dev/zero of=/dev/sdc bs=1024 seek=8 count=1
+
+
