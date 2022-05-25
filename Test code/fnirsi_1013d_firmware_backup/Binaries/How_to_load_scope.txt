@@ -1,0 +1,28 @@
+======================
+Check FEL is if active
+======================
+
+sudo ./sunxi-fel version
+
+======================
+Load to RAM with FEL
+======================
+
+sudo ./sunxi-fel -p write 0x7FFFFFE0 fnirsi_1013d_firmware_backup.bin exe 0x80000000
+ 
+
+======================
+Make sd card
+======================
+
+//Unmount the partition to allow dd to work
+sudo umount /dev/sdc1
+
+//Firmware backup package
+sudo dd if=fnirsi_1013d_fwb.bin of=/dev/sdc bs=1024 seek=8
+
+//Clear the brom boot sector
+sudo dd if=empty_sector of=/dev/sdc bs=1024 seek=8 count=1
+
+
+
