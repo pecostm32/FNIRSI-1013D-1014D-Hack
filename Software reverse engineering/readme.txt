@@ -1,3 +1,5 @@
+31-MAY-2022 Added cmsis_svd file for the GD32E230 and used it in Ghidra for using the peripherals in the listings
+
 16-NOVEMBER-2021 Combined archive for both the 1013D as wel as the 1014D version of the FNIRSI scopes
 
 15-OCTOBER-2021  Explored the firmware update code which is the first executable found at address 0x6000 in the flash
