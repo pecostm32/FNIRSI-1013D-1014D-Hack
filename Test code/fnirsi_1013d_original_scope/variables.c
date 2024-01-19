@@ -119,6 +119,17 @@ uint8 parameter_crypt_byte;
 
 uint16 settingsworkbuffer[250];        //In original code at 0x8035344E. Used for loading from and writing to flash
 
+uint32 channel1_min;
+uint32 channel1_max;
+uint32 channel1_center;
+uint32 channel1_vpp;
+
+uint32 channel2_min;
+uint32 channel2_max;
+uint32 channel2_center;
+uint32 channel2_vpp;
+
+
 //----------------------------------------------------------------------------------------------------------------------------------
 //Test data
 //----------------------------------------------------------------------------------------------------------------------------------

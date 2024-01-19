@@ -236,6 +236,16 @@ extern uint8 parameter_crypt_byte;
 
 extern uint16 settingsworkbuffer[250];
 
+extern uint32 channel1_min;
+extern uint32 channel1_max;
+extern uint32 channel1_center;
+extern uint32 channel1_vpp;
+
+extern uint32 channel2_min;
+extern uint32 channel2_max;
+extern uint32 channel2_center;
+extern uint32 channel2_vpp;
+
 //----------------------------------------------------------------------------------------------------------------------------------
 //Test data
 //----------------------------------------------------------------------------------------------------------------------------------

@@ -41,7 +41,7 @@ struct tagMeasurements
 {
   int16 max;
   int16 min;
-  int16 maxplushalfmin;
+  int16 center;
   int16 peakpeak;
   int16 avg;
 };

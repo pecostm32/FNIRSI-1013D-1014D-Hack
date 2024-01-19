@@ -1294,7 +1294,7 @@ void handle_trigger_menu_touch(void)
           //Check on auto
           if((xtouch >= 629) && (xtouch <= 649))
           {
-            //Enable the channel
+            //Select auto trigger mode
             scopesettings.triggermode = 0;
             
             //Need to call some function here
@@ -1317,7 +1317,7 @@ void handle_trigger_menu_touch(void)
           //Check on single
           else if((xtouch >= 661) && (xtouch <= 681))
           {
-            //Disable the channel
+            //Select single mode
             scopesettings.triggermode = 1;
 
             //Need to call some function here
@@ -1348,7 +1348,7 @@ void handle_trigger_menu_touch(void)
           //Check on normal
           else if((xtouch >= 692) && (xtouch <= 713))
           {
-            //Disable the channel
+            //Select normal mode
             scopesettings.triggermode = 2;
 
             //Need to call some function here
@@ -1552,14 +1552,8 @@ void handle_right_basic_menu_touch(void)
       //Button back to inactive state
       scope_auto_set_button(0);
 
-/*
-      pcVar5[0x21] = '\0';            //Trigger mode
-      FUN_80026828();                 //Set trigger mode in the FPGA
-      display_trigger_settings(0);
-      FUN_80002050();                 //Perform the actual auto set action?? (perform_auto_set)
-      display_ch1_settings(0);
-      display_ch2_settings(0);
-*/      
+      //Run auto setup
+      scope_do_auto_setup();
     }
     else
     {
@@ -2005,7 +1999,7 @@ void handle_right_volts_div_menu_touch(void)
     }
 */
   }
-  //Check if 50% trigger of show grid button is touched
+  //Check if 50% trigger or show grid button is touched
   else if((ytouch >= 423) && (ytouch <= 477))
   {
     //Check on wave view state for which button is shown
@@ -2019,13 +2013,13 @@ void handle_right_volts_div_menu_touch(void)
 
       //Button back to inactive state
       scope_50_percent_trigger_button(0);
-/*
-      //This needs to be done for 50% trigger
-      if (pcVar5[0x3a] == '\0')  //Run mode
+      
+      //Only when scope is running
+      if(scopesettings.runstate == 0)
       {
-        FUN_80029314();
+        //Set the trigger level for the active trigger channel
+        scope_do_50_percent_trigger_setup();
       }
-*/
     }
     else
     {

@@ -4650,97 +4650,6 @@ void scope_get_short_timebase_data(void)
     }
 #endif        
     
-    
-#if 0
-    //Process the data to screen data
-    for(inpidx=0,prvidx=1;inpidx<pscopesettings->iNeededSamples;inpidx+=pscopesettings->dTimeBaseStep)
-    {
-      //Get the current integer index into the sample buffer
-      index = inpidx;
-
-      //Check if linear approximation needs to be done. (Only when step < 1) pixels are skipped if so.
-      if(index != prvidx)
-      {
-        //Set new previous index
-        prvidx = index;
-
-        //Setup pointer to the sample
-        ptr = sptr + index;
-
-        //Check if beyond end of the buffer
-        if(ptr >= eptr)
-          ptr -= TRIGGERBUFFERSIZE;
-
-        //Calculate y point based on input value and gain
-        y = *ptr * pscopesettings->dVerticalGain;
-        
-        //Find max value for DC offset calculation
-        if(y > max)
-          max = y;
-        
-        //Find min value for DC offset calculation
-        if(y < min)
-          min = y;
-
-        //Calculate y position based on vertical position, gain and input value
-        y = pscopesettings->iVerticalPosition - y;
-
-        //Remember last pixel used for drawing to calculate last screen pixel
-        lastx = x;
-        py = y;
-
-        //Store the current pixel coordinates
-        xbuffer[idx] = x;
-        ybuffer[idx] = y;
-        
-        idx++;
-      }
-
-      //Point to next pixel
-      x++;
-    }
-
-    //When step less then 1 the last pixel needs to be interpolated between current sample and next sample.
-    if(pscopesettings->dTimeBaseStep < 1)
-    {
-      //Calculate the scaler for the last y value based on the x distance from the last drawn position to the end of the screen
-      //divided by the x distance it takes to where the next position should be drawn (Number of x steps per sample)
-      double scaler =  (pscopesettings->iScreenWidth - lastx) / (1 / pscopesettings->dTimeBaseStep);
-
-      //Get the current integer index into the sample buffer for retrieving the last sample
-      index = inpidx;
-
-      //Setup pointer to the last sample
-      ptr = sptr + index;
-
-      //Check if beyond end of the buffer
-      if(ptr >= eptr)
-        ptr -= TRIGGERBUFFERSIZE;
-
-      //Calculate y point based on input value and gain
-      y = *ptr * pscopesettings->dVerticalGain;
-
-      //Find max value for DC offset calculation
-      if(y > max)
-        max = y;
-
-      //Find min value for DC offset calculation
-      if(y < min)
-        min = y;
-
-      //Calculate y position based on vertical position, gain and input value
-      y = pscopesettings->iVerticalPosition - y;
-      
-      //Calculate the y position for the last pixel based on linear interpolation
-      xbuffer[idx] = pscopesettings->iScreenWidth;
-      ybuffer[idx] = py + ((y - py) / scaler);
-      
-      //Make sure all coordinates are stored in the database
-      idx++;
-    }
-#endif
-    
-    
 #if 0
     //Check if triggered on this channel
     if(scopesettings.triggerchannel == 0)
@@ -4886,6 +4795,10 @@ void scope_get_short_timebase_data(void)
     
     //Check on signal being large enough and otherwise clear it with some noise
     //scope_evaluate_trace_data((uint16 *)channel1tracebuffer4, &channel1measurements, scopesettings.channel1.voltperdiv, scopesettings.channel1.traceoffset);
+    
+    
+    //Based on scopesettings.alwaystrigger50 the trigger level needs to be adjusted
+    
     
     //SKip for now
     //And if some variable is 0 call another one
@@ -5927,7 +5840,7 @@ void scope_calculate_min_max_avg(uint16 *buffer, PMEASUREMENTS measurements)
   measurements->max = max;
   measurements->avg = avg / cnt1;
   measurements->peakpeak = max - min;
-  measurements->maxplushalfmin = max + (min >> 1); 
+  measurements->center = (max + min) >> 1;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -6414,6 +6327,276 @@ uint32 scope_do_adc1_adc2_difference_calibration(void)
   
   //Signal ok when the differences are less then 26
   return((channel1adc2calibration.compensation < 26) && (channel2adc2calibration.compensation < 26));
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_do_50_percent_trigger_setup(void)
+{
+  uint32 command;
+  uint32 voltperdiv;
+  
+  //Check which channel is the active trigger channel
+  if(scopesettings.triggerchannel == 0)
+  {
+    //FPGA command for getting channel 1 samples
+    command = 0x24;
+    voltperdiv = scopesettings.channel1.voltperdiv;
+  }
+  else
+  {
+    //FPGA command for getting channel 2 samples
+    command = 0x26;
+    voltperdiv = scopesettings.channel2.voltperdiv;
+  }
+  
+  //Need min and max values from 1000 readings
+  //Samples need to be adjusted as normal and limited on 401
+  scopesettings.triggeroffset = fpga_get_center_level(command, voltperdiv);
+  
+  //Set the new level in the FPGA
+  fpga_set_trigger_level();
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void scope_do_auto_setup(void)
+{
+  uint32 flags = 0;
+  uint32 voltperdiv;
+  uint32 minvpplevel;
+  uint32 center1;
+  uint32 center2;
+  uint32 offset;
+  
+  //No need to do auto setup if no channel is enabled
+  if((scopesettings.channel1.enable == 0) && (scopesettings.channel2.enable == 0))
+  {
+    return;
+  }
+  
+  //Check on which bottom check level needs to be used
+  if((scopesettings.channel1.enable) && (scopesettings.channel2.enable))
+  {
+    //Both channels enabled use lower value??
+    minvpplevel = 70;
+    
+    center1 = 300;
+    center2 = 100;
+  }
+  else
+  {
+    //Only one channel enabled use this value??
+    minvpplevel = 110;
+    
+    center1 = 200;
+    center2 = 200;
+  }
+  
+  //Setup for channel 1 if it is enabled
+  if(scopesettings.channel1.enable)
+  {
+    //Trace offset on low end
+    scopesettings.channel1.traceoffset = 200;
+    fpga_set_channel_1_offset();
+    
+    //Signal channel is enabled and needs to be done
+    flags |= 0x01;
+  }
+
+  //Setup for channel 2 if it is enabled
+  if(scopesettings.channel2.enable)
+  {
+    //Trace offset on low end
+    scopesettings.channel2.traceoffset = 200;
+    fpga_set_channel_2_offset();
+    
+    //Signal channel is enabled and needs to be done
+    flags |= 0x02;
+  }
+
+  //Walk through the sensitivity settings until enabled channels are done
+  for(voltperdiv=0;voltperdiv<6 && flags!=0;voltperdiv++)
+  {
+    //Check if channel still needs to be done
+    if(flags & 0x01)
+    {
+      //Set the current sensitivity
+      scopesettings.channel1.voltperdiv = voltperdiv;
+      fpga_set_channel_1_voltperdiv();
+    }
+    
+    //Check if channel still needs to be done
+    if(flags & 0x02)
+    {
+      //Set the current sensitivity
+      scopesettings.channel2.voltperdiv = voltperdiv;
+      fpga_set_channel_2_voltperdiv();
+    }
+    
+    fpga_get_auto_set_values(flags);
+  
+    //Check the channel data if not yet done
+    if(flags & 0x01)
+    {
+      //Check if signal in good range 
+      if((channel1_max >= 301) || (channel1_min < 100) || (channel1_vpp > minvpplevel))
+      {
+        //When signal in range stop scanning the channel
+        flags &= 0x2;
+      }
+    }    
+
+    //Check the channel data if not yet done
+    if(flags & 0x02)
+    {
+      //Check if signal in good range 
+      if((channel2_max >= 301) || (channel2_min < 100) || (channel2_vpp > minvpplevel))
+      {
+        //When signal in range stop scanning the channel
+        flags &= 0x1;
+      }
+    }    
+  }
+  
+  //Need a check if channel is not done and switch to lowest sensitivity if so
+
+  if(flags & 0x02)
+  {
+    scopesettings.channel2.voltperdiv = 6;
+    fpga_set_channel_2_voltperdiv();
+  }
+  
+  
+  //Check if channel enabled
+  if(scopesettings.channel1.enable)
+  {
+    //Check if on fore last sensitivity still not done
+    if(flags & 0x01)
+    {
+      //Switch to last sensitivity if so
+      scopesettings.channel1.voltperdiv = 6;
+      fpga_set_channel_1_voltperdiv();
+    }
+
+    //Adjust the center line based on targeted center
+    if(channel1_center < center1)
+    {
+      //Calculate a new trace offset
+      scopesettings.channel1.traceoffset += (center1 - channel1_center);
+      
+      //Make sure it is not out of range
+      if(scopesettings.channel1.traceoffset > 385)
+      {
+        scopesettings.channel1.traceoffset = 385;
+      }
+    }
+    else
+    {
+      //Calculate the needed offset
+      offset = channel1_center - center1;
+       
+      //Check if current setting large enough to subtract the offset
+      if(scopesettings.channel1.traceoffset > offset)
+      {
+        //Take of the found offset
+        scopesettings.channel1.traceoffset -= offset;
+      }
+      else
+      {
+        //Limit on zero
+        scopesettings.channel1.traceoffset = 0;
+      }
+    }
+    
+    //Write the new offset to the FPGA
+    fpga_set_channel_1_offset();
+    
+    //Display the new channel setting
+    scope_channel1_settings(0);
+  }
+  
+  
+  //Check if channel enabled
+  if(scopesettings.channel2.enable)
+  {
+    //Check if on fore last sensitivity still not done
+    if(flags & 0x02)
+    {
+      //Switch to last sensitivity if so
+      scopesettings.channel2.voltperdiv = 6;
+      fpga_set_channel_2_voltperdiv();
+    }
+
+    //Adjust the center line based on targeted center
+    if(channel2_center < center2)
+    {
+      //Calculate a new trace offset
+      scopesettings.channel2.traceoffset += (center2 - channel2_center);
+      
+      //Make sure it is not out of range
+      if(scopesettings.channel2.traceoffset > 385)
+      {
+        scopesettings.channel2.traceoffset = 385;
+      }
+    }
+    else
+    {
+      //Calculate the needed offset
+      offset = channel2_center - center2;
+       
+      //Check if current setting large enough to subtract the offset
+      if(scopesettings.channel2.traceoffset > offset)
+      {
+        //Take of the found offset
+        scopesettings.channel2.traceoffset -= offset;
+      }
+      else
+      {
+        //Limit on zero
+        scopesettings.channel2.traceoffset = 0;
+      }
+    }
+    
+    //Write the new offset to the FPGA
+    fpga_set_channel_2_offset();
+    
+    //Display the new channel setting
+    scope_channel2_settings(0);
+  }
+  
+  //Set the trigger level based on the trigger channel
+  if(scopesettings.triggerchannel == 0)
+  {
+    //Use the channel 1 trace offset for 50% trigger setting
+    scopesettings.triggeroffset = scopesettings.channel1.traceoffset;
+  }
+  else
+  {
+    //Use the channel 2 trace offset for 50% trigger setting
+    scopesettings.triggeroffset = scopesettings.channel2.traceoffset;
+  }
+
+  //Set the level in the FPGA
+  fpga_set_trigger_level();
+  
+  
+  //To determine the needed time base setting the scope needs a vpp reading of 24 on one of the channels.
+  //Best to make is so that it switches to the one that has this signal if the trigger channel is below
+  
+  
+  //Need to determine an average period time by finding the zero crossings in the samples
+  //Can this be done while sampling
+  
+  //For this version of the code use 
+  
+  
+  
+  
+  
+  
+  //If both channels lack enough signal depending on enabled of course switch to 20us/div
+  
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

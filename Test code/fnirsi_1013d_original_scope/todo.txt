@@ -1,0 +1,1675 @@
+----------------------------------------------------------------------------------------------------------------------------------
+
+Files modified for baseline calibration
+statemachine.c        line 936 for calling the calibration function
+scope_functions.c     added several function
+scope_functions.h
+fpga_control.c        added several function
+fpga_control.h
+
+
+----------------------------------------------------------------------------------------------------------------------------------
+
+Wireshark filter
+reject keyboard and mouse
+!(usb.dst == "1.2.1")  && !(usb.src == "1.2.1")  &&!(usb.dst == "1.2.2") && !(usb.src == "1.2.2") && !(usb.dst == "1.2.3") && !(usb.src == "1.2.3")
+
+----------------------------------------------------------------------------------------------------------------------------------
+
+USB sticks in bakje rechter plank achterin 3de rij van rechts
+Scope ligt in rechter deel van linker kast
+
+----------------------------------------------------------------------------------------------------------------------------------
+
+For a new FPGA programming it needs to be possible to calibrate the two ADC's to match each other. With nothing connected the readings should be the same.
+If not have the FPGA correct one of them
+
+----------------------------------------------------------------------------------------------------------------------------------
+
+1014D reversal left of after sys_display_init
+
+----------------------------------------------------------------------------------------------------------------------------------
+
+Develop some display test code, with which it is possible to adjust the parameters via USB. Maybe based on the CH340 implementation.
+
+----------------------------------------------------------------------------------------------------------------------------------
+
+Picture view has an error when the picture view is opened the traces are drawn with a wrong offset!!!!
+  This looks like a problem with the trace data in the short time base settings. Offsets are correct for long time base settings
+
+
+USB connect has some strange issue that some files do not show the size or data when the connection is made, but after a refresh it shows the correct info????
+
+Improve on calibration. Maybe add proper calibration against know source voltage for the different ranges and magnifications.
+
+Need to fix battery charge display. Needs to be drawn in offscreen memory and copied when done. Also need to make it more stable with a better filter
+
+
+Create test code where the sample buffer is written to the SD card. Fill up the thumbnail buffer and write it to a file based on the time base setting.
+Display save result and wait for touch to continue. Only do this once per time base setting. Have the file name show the time base setting.
+Do 100 waveforms or so. Check if the file is on the card. If not then do the buffering and save.
+
+----------------------------------------------------------------------------------------------------------------------------------
+
+Still some funny business going on. The 4GB SD card that works with the HDD bay won't work in the scope????
+Might have to do with the type of the card. Check the SD card code on the different types and handling of it.
+
+----------------------------------------------------------------------------------------------------------------------------------
+
+https://superuser.com/questions/610819/how-to-resize-img-file-created-with-dd
+
+Resizing a raw disk image file
+1) sudo losetup -f                                             (find a free loop device)
+2) sudo losetup /dev/loop0 sd_card.img                         (Setup the image as a loop device)
+3) sudo partprobe /dev/loop0                                   (Hook in the partitions. This will mount them if possible)
+4) sudo umount /dev/loop0p1                                    (Unmount the partition(s))
+5) sudo gparted /dev/loop0                                     (Start gparted for manipulating the partition)
+6) sudo losetup -d /dev/loop0                                  (Remove the loop device used)
+7) fdisk -l new_scope_sd_card.img                              (Get image file partition information to find the last byte used (7411711))
+8) truncate --size=$[(7411711+1)*512] new_scope_sd_card.img    (Truncate the file to remove the not used part)
+9) sudo chown peter:peter new_scope_sd_card.img                (Turn the file over to user, also need to do the group???? (chown [OPTIONS] USER[:GROUP] FILE(s)))
+
+Clear the brom boot region
+sudo dd if=/dev/zero of=/dev/sdc bs=1024 seek=8 count=1
+
+----------------------------------------------------------------------------------------------------------------------------------
+
+Add a bit of code to the USB mass storage handling to prevent removal. This needs to be shown on the display. Maybe a lock symbol and clearing the ON/OFF text, to make it more robust
+  The scsi commands are being sent, but discarded by the scope code. Also add code to disconnect interrupt to have the scope return to scope mode??
+
+Disabled settings save, so that during development it does not write to flash to often, by removing the scope_save_configuration_data() function call in power down interrupt
+
+Cleanup #include files after everything needed has been moved to variables.c and .h
+
+Convert immediate settings to #defines. Think of runstate, waveviewmode etc.
+
+Once USB part is finished some parts of the view code concerning non existent .bmp or .wav files needs to be tested
+
+Need to add the code to the USB touch handling for refactoring the sys files
+
+Fonts need to be constant data, to make sure it is in the binary. Problem is with data being 0 (spaces) being treaded as something else then .rodata (most likely .bss)
+Already made a sort of fix for font_3, but need to look into this further
+
+
+Need to figure out where channel1ypoints and channel2ypoints are cleared and filled with trace points
+
+Add a file number to the displaying of the thumbnails, so one can see which thumbnail is which file, also add the file name to the picture or waveform being viewed
+
+Check SD card code when accessed with the last sector!!!!! Seemed to cause a hang when the last sector was address via USB SCSI
+
+In long time base modes the drawing of a trace is corrupted when a channel was off and is enabled. A line is then drawn from the top of the screen, resulting in a left artifact in the top menu bar
+It also leads to misalignment with the trace pointer when switched on and of during displaying
+
+There is also a problem when set to the most sensitive volt/div setting. The trace jumps up, so maybe the multiply is at the wrong point. Channel 2 is different to channel 1 in magnitude???
+This has to do with the trace offset being handled in the FPGA. Need to compensate for this!!!
+
+Test the up sampling functions
+
+Finish the trace display functionality
+
+Implement calibration
+
+Implement auto set
+
+Implement FFT
+
+Implement measurements calculation and displaying
+
+Make a better protection against data corruption for the settings in the flash. Do a crc calculation??
+
+Implement update the firmware code
+
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+Improve the display lib to have
+1) screen buffer pointer
+2) draw buffer pointer
+3) source buffer pointer
+4) destination buffer pointer
+
+All drawing function need to use the draw buffer pointer
+Copy to and from screen need to use the screen buffer
+Drawing directly to screen can then still be done by setting the draw buffer to the screen memory
+This will make the save and restore of the screen buffer obsolete
+
+Need text draw function with alignment options: left, center, right
+
+Idea for wider trace drawing. On the line before draw a single pixel. Go to the next line minus one pixel and draw three pixels.
+Again go to the next line minus one pixel (center of the three pixels) and draw another one. This basically draws a star like dot
+Would be fun to see what it does.
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+Add a system information item on one of the menus with at least a version number of the software
+
+1/2  need to fix trace display to first build the screen in a buffer and then copy it over the actual screen. This will reduce on the flickering
+     Same is needed for the brightness slider
+
+Fix the x-y mode display centering and direction of x movement
+  As it is now the new top x pointer moves in opposite direction of the signal center and the signal center is off center
+
+Fix trigger level offset when switching from channel 1 to channel 2 as trigger input
+
+For switch between run and stop fill in the remainder of the settings
+
+usb code
+
+check on trigger mode selection if there is a check on time base limit (50mS/div)
+  Code shows limits on when in single or normal trigger mode
+
+
+short time base capture and display
+measurements calculation and display
+calibration code
+
+----------------------------------------------------------------------------------------------------------------------------------
+
+v New setup to run from SD card:
+
+  1) A SD card bootloader that does not wait on the FPGA and loads to higher memory the startup screen and main program loader
+  2) Startup screen program that waits on the FPGA, and displays the startup screen. Then loads the actual scope program to 0x80000000 and starts it
+  3) The main scope program more or less as is at the moment. (Loose the startup screen)
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+v The linux image that works uses a fat16 partition of 8Mib with the boot and lba flags set. It has a second partition that is ext4 and holds the rootfs
+  Can I make a card that boots with a bit of unallocated space and a partition that is fat32. Yes!!
+  Need to figure out how this works. Boot loader needs to be present at location 0x2000 on the card.
+
+
+v Need to figure out if it is possible to make a boot loader that is less then 32KB with the use of FatFs to read from the SD card. Otherwise raw SD card reading can be done,
+  but this means the actual program code must be on a fixed location on the card.
+  Worked it out to run with fixed locations on the SD card. It is possible to make a two stage bootloader where the second stage uses FatFs. It is to big for the first stage.
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+v USB hangs after a file delete. re-sync of the list files goes wrong!!!!
+
+v Implement USB code
+
+v Flash file packer aanpassen zodat standaard de bitmap ingelezen wordt en in de uitvoer wordt geplaatst en dat de benodigde check dwords voor een firmware update gemaakt worden
+
+v Implement power off detect for settings saving
+
+v Implement cursor measurements display
+
+v Implement the settings save and load code
+v   Calibration data needs to be moved to variables and is set with calibration and loaded from flash on startup. (Saved on power down)
+
+v In long time base trace displaying the trace disappears underneath the file save message. The grid does not????? Delay at the wrong moment????
+
+v  time base settings change
+v  trace and cursor movement
+
+v battery state monitoring
+
+v flash write code
+
+v sd card code
+
+v  change the trace pointers for x-y mode. Don't show the trigger pointers. Set channel 1 on the top bar and keep channel 2 on the left.
+   Still need to limit on the allowed range, so channel 1 can't go beyond certain points.
+
+v Fix an issue with view item pages. AT some point it is possible to go down to an empty next page!! Not sure when this happens, so need to check this when the delete functionality works.
+  At the moment there is a problem with the FatFs code. It does not delete, create or write to files, despite it not being read only setup.
+
+v Look into line on bottom of the screen seen when trace is displayed after displaying thumbnails screen with at least 13 thumbnails
+
+v Add a configuration option making notification conformation optional!!!
+
+v For menu handling a lock needs to be implemented to avoid an open menu opening again when touch is on that menu open button. As is now it closes the menu
+  and opens it again when touch is released. So need some status bits to create a filter on the currently open menu, or add a wait until touch is released
+  after a menu has been closed (Added wait for touch release when touch detected outside the menu regions)
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+Use FEL mode to read SD register 0x01C0F078 and see which bit is active??? SD/MMC 0
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+Implemented
+system setup
+timer interrupt
+touch panel interface
+display library
+flash read/write
+sd card functionality
+fpga interface functions
+user interface
+part of the trace handling. Long time base settings 50S-100mS works in roll mode and is done. Short time base 50mS-10nS partially implemented. Channel 1 data is fetched and displayed raw. Part of the processing is implemented.
+
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+For the display lib a check on limits included on the drawing functions is needed
+  For example the channel 1 menu needs an extra pixel and line in the slide on function call to see the bounding rectangle on the right and bottom
+
+  This has been looked at and changed. In several drawing functions where the width and height were added to the positions one is
+  taken of to correct for the end pixel. (0 + 10 pixels should be 9, it being the 10th pixel and not 10 which is the 11th pixel)
+
+  still needed is bounds checking on the character drawing
+
+  could do with speed improvement on filling with a color, like memcpy did for copying a line. memset won't work since it uses bytes
+  and not shorts
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+Interrupt handling needs improvement. Since only three interrupts are used option is to only handle these
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+Need to see if drawing in a secondary buffer and copying to screen afterwards makes the screen less jumpy
+  This is the case so needs to be wider used.
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+v  Verify if fpga command 0x17 is 50% trigger setting. It looks like it is trigger level setting
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+For several settings extra handling code needs to be added.
+  For the channels the volts / div, coupling etc need to be written to the fpga
+  For the trigger the same applies plus some additional variables being set. This needs to be investigated.
+  See touch_handler.c in reverse engineering for more info
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+v Need to check the code for sliding speed if it matches the original in step sizes. The question is if that is why my code is slower
+  or that it has to do with DRAM settings or some CPU clock settings
+
+  It has to do with the code. It needs optimization or memcpy from standard lib. Problem with that is the standard io that needs
+  to be implemented. Fixed with found memcpy source code
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+Optimization kills the rounded rectangles so need to figure out what is going wrong!!!
+On the real hardware it looks ok, so maybe a bug in the emulator
+There definitely is a bug in the emulator. When set to -O0 it works, but on -O1 there is a problem with drawing or signal calculation
+So most likely a mul type instruction is wrong
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+Check in 1014D if timebase is also limited when in single or normal trigger mode
+In single the longest time is 10mS/div
+In normal it is 50mS/div
+
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+possible setup for menu handling with tables could be a linked list that is expandable.
+  When a sub menu is opened the list to check is extended.
+
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+
+//==================================================================================================================================
+
+
+//A decision needs to be made which trace needs to be handled as long as there is continued touch
+
+//For x displacement it checks if on a time cursor (when enabled) and if not it always moves the trigger point. Can happen simultaneous with y displacement
+
+//For x touch below 60 the trace lines have preference
+
+//For y displacement it checks if on a volts cursor (when enabled) and if not it checks if within one of the traces and moves them. There is an exception
+//on x touch (last 70 pixels on trace display) being near the trigger level pointer. If so that one is favored. Y needs to be on trigger level.
+
+//For the traces it seems to allow for signal width in selecting, so a min max y per channel is needed
+
+//Cursors can not be swapped. left cursor cannot go right of right cursor and vice versa. Same for top cursor and bottom cursor
+
+//Volt cursor takes precedence over time cursor
+
+//Move fast or slow setting determine the size of the movement taken. As long as touch is maintained the line remains selected and in slow mode it only moves a fraction of
+//the displacement. This is why they use the two step action. On the first the touchstate variable is set to 2 and the selection is made for which object needs to be moved.
+//In the second step the touch is scanned just for getting new coordinates. On release the touchstate is reset to 0. 
+
+    //When in x-y mode no object can be selected. Just select some special state for this and move channel 1 on x displacement and channel 2 on y displacement
+
+    //Else for normal mode
+    //Need the absolute distances to the lines on the display.
+
+    //When x touch is below 60 see if close to the trace pointers and favor them
+
+    //When x touch is above 660 see if close to the trigger level pointer if it is enabled of course
+
+
+    //volt cursors take precedence over the others
+    //then time cursors
+    //then the trace lines, channel 1 should take precedence over channel 1.
+
+    //When the trace lines are being moved the cursor position can also move
+    //This is not the case when the cursors are moved
+
+
+//==================================================================================================================================
+
+
+    //check if there is touch
+    if(havetouch)
+    {
+      display_set_fg_color(0x00BB7733);
+      display_fill_rect(xtouch, ytouch, 40, 40);
+    }
+    else
+    {
+      display_set_fg_color(0x00000000);
+      display_fill_rect(xtouch, ytouch, 40, 40);
+    }
+
+
+uint8 tp_config_data[] =
+{
+  0xFF, 0x00, 0x04, 0x58, 0x02, 0x0A, 0xFD, 0x00, 0x01, 0x08, 0x28, 0x08, 0x5A, 0x3C, 0x03, 0x05,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x18, 0x1A, 0x1E, 0x14, 0x87, 0x29, 0x0A, 0x75, 0x77,
+  0xB2, 0x04, 0x00, 0x00, 0x00, 0x9A, 0x01, 0x11, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x50, 0xA0, 0x94, 0xD5, 0x02, 0x08, 0x00, 0x00, 0x04, 0xA1, 0x55, 0x00, 0x8F,
+  0x62, 0x00, 0x7F, 0x71, 0x00, 0x73, 0x82, 0x00, 0x69, 0x95, 0x00, 0x69, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x02, 0x04, 0x06, 0x08, 0x0A, 0x0C, 0x0E, 0x10, 0x12, 0x14, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02,
+  0x04, 0x06, 0x08, 0x0A, 0x0C, 0x1D, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x24, 0x26, 0x28, 0xFF, 0xFF,
+  0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x01
+};
+
+extern uint8 havetouch;
+extern uint16 xtouch;
+extern uint16 ytouch;
+
+
+extern FONTDATA font_0;
+
+
+int8 printhexnibble(uint8 nibble);
+
+
+
+
+  uint32 point;
+
+
+      //Calculate the x touch position. Panel returns point in range of 0 to 1024. Scope needs 0 to 800.
+//      point = data[0] | (data[1] << 8);
+//      xtouch = ((point * 100) / 128);
+
+      //Keep it within max range
+      if(xtouch > 800)
+      {
+        xtouch = 800;
+      }
+
+
+      //Calculate the y touch position. Panel returns point in range of 0 to 600. Scope needs 0 to 480.
+//      point = data[2] | (data[3] << 8);
+//      ytouch = (point * 80) / 100;
+
+      //Keep it within max range
+      if(ytouch > 480)
+      {
+        ytouch = 480;
+      }
+
+
+  int8 buffer[20];
+  
+
+    //Check the touch panel status
+    tp_i2c_read_status();
+    
+    display_set_fg_color(0x00000000);
+
+    display_fill_rect(10, 50, 100, 60);
+
+    display_set_fg_color(0x00FFFFFF);
+
+    buffer[0] = '0';
+    buffer[1] = 'x';
+    buffer[2] = printhexnibble((xtouch >> 12) & 0x0F);
+    buffer[3] = printhexnibble((xtouch >>  8) & 0x0F);
+    buffer[4] = printhexnibble((xtouch >>  4) & 0x0F);
+    buffer[5] = printhexnibble( xtouch        & 0x0F);
+    buffer[6] = 0;
+      
+    display_set_font(&font_0);
+//    display_text(10, 50, buffer);
+    
+    buffer[2] = printhexnibble((ytouch >> 12) & 0x0F);
+    buffer[3] = printhexnibble((ytouch >>  8) & 0x0F);
+    buffer[4] = printhexnibble((ytouch >>  4) & 0x0F);
+    buffer[5] = printhexnibble( ytouch        & 0x0F);
+    
+//    display_text(10, 70, buffer);
+
+
+
+int8 printhexnibble(uint8 nibble)
+{
+  //Check if needs to be converted to A-F character
+  if(nibble > 9)
+  {
+    //To make alpha add 55. (55 = 'A' - 10)
+    nibble += 55;
+  }
+  else
+  {
+    //To make digit add '0'
+    nibble += '0';
+  }
+
+  return(nibble);
+}
+
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+
+  memcpy(textbuffer, "CID DATA: 0x", 12);
+  printhexdword(cidnumbers[0], &textbuffer[12]);
+  printhexdword(cidnumbers[1], &textbuffer[20]);
+  printhexdword(cidnumbers[2], &textbuffer[28]);
+  printhexdword(cidnumbers[3], &textbuffer[36]);
+  textbuffer[44] = 0;
+  
+  //Display the message in yellow
+  display_set_fg_color(0x00FFFF00);
+  display_set_font(&font_3);
+  display_text(30, 70, textbuffer);
+
+#ifdef DEBUG_SD      
+  memcpy(textbuffer, "CARD TYPE:   ", 12);
+  textbuffer[12] = '0' + cardtype;
+  textbuffer[13] = 0;
+  
+  //Display the message in yellow
+  display_set_fg_color(0x00FFFF00);
+  display_set_font(&font_3);
+  display_text(30, 70, textbuffer);
+#endif
+
+    while(1);
+
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+#ifdef DEBUG_SD      
+    memcpy(textbuffer, "CMD8 resp:   ", 12);
+    printhexdword(command.response[0], &textbuffer[12]);
+    textbuffer[20] = 0;
+
+    //Display the message in yellow
+    display_set_fg_color(0x00FFFF00);
+    display_set_font(&font_3);
+    display_text(30, 130, textbuffer);
+#endif
+
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+    viewpages = (viewavailableitems + (VIEW_ITEMS_PER_PAGE - 1)) / VIEW_ITEMS_PER_PAGE;
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+
+#include "display_lib.h"
+
+extern FONTDATA font_3;
+
+char textbuffer[64];
+
+//#define DEBUG_SD
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+
+int8 printhexnibble(uint8 nibble)
+{
+  //Check if needs to be converted to A-F character
+  if(nibble > 9)
+  {
+    //To make alpha add 55. (55 = 'A' - 10)
+    nibble += 55;
+  }
+  else
+  {
+    //To make digit add '0'
+    nibble += '0';
+  }
+
+  return(nibble);
+}
+
+void printhexdword(uint32 dword, char *buffer)
+{
+  int i;
+  
+  for(i=0;i<8;i++)
+  {
+    *buffer++ = printhexnibble((dword >> (4 * (7 - i)) & 0x0F));
+  }
+  
+  *buffer = 0;
+}
+
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+
+#include "display_lib.h"
+
+extern FONTDATA font_0;
+
+char textbuffer[64];
+
+//#define DEBUG_SD
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+
+int8 printhexnibble(uint8 nibble)
+{
+  //Check if needs to be converted to A-F character
+  if(nibble > 9)
+  {
+    //To make alpha add 55. (55 = 'A' - 10)
+    nibble += 55;
+  }
+  else
+  {
+    //To make digit add '0'
+    nibble += '0';
+  }
+
+  return(nibble);
+}
+
+void printhexbyte(uint8 byte, char *buffer)
+{
+  *buffer++ = printhexnibble((byte >> 4) & 0x0F);
+  *buffer++ = printhexnibble(byte & 0x0F);
+  
+  *buffer = 0;
+}
+
+void printhexdword(uint32 dword, char *buffer)
+{
+  int i;
+  
+  for(i=0;i<8;i++)
+  {
+    *buffer++ = printhexnibble((dword >> (4 * (7 - i)) & 0x0F));
+  }
+  
+  *buffer = 0;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+  
+char textbuffer[64];
+  
+    display_text(30, 50, "FILE OPEN FAILED");
+
+    if(result < 10)
+    {
+      textbuffer[0] = (char)result + '0';
+      textbuffer[1] = 0;
+      display_text(30, 70, textbuffer);
+    }
+    else if(result < 100)
+    {
+      textbuffer[0] = (char)(result / 10) + '0';
+      textbuffer[1] = (char)(result % 10) + '0';
+      textbuffer[2] = 0;
+      display_text(30, 70, textbuffer);
+    }
+    else
+    {
+      display_text(30, 70, "error > 100");
+    }
+    
+    
+    
+//    while(1);
+
+
+
+    display_text(30, 50, "FILE READ OK");
+
+    while(1);
+
+    display_text(30, 50, "FILE NOT THERE");
+
+    while(1);
+    
+
+    //Display the messages in yellow
+    display_set_fg_color(0x00FFFF00);
+    display_set_font(&font_0);
+    
+    char textbuffer[64];
+    uint32 xpos = 5;
+    uint32 ypos = 5;
+    
+    
+    
+    result = viewitemsonpage;
+    
+    if(result < 10)
+    {
+      textbuffer[0] = result + '0';
+      textbuffer[1] = 0;
+      display_text(xpos, ypos, textbuffer);
+    }
+    else if(result < 100)
+    {
+      textbuffer[0] = (result / 10) + '0';
+      textbuffer[1] = (result % 10) + '0';
+      textbuffer[2] = 0;
+      display_text(xpos, ypos, textbuffer);
+    }
+    else if(result < 1000)
+    {
+      textbuffer[0] = (result / 100) + '0';
+      textbuffer[1] = ((result % 100) / 10) + '0';
+      textbuffer[2] = (result % 10) + '0';
+      textbuffer[3] = 0;
+      display_text(xpos, ypos, textbuffer);
+    }
+    else
+    {
+      display_text(xpos, ypos, "X");
+    }
+    
+    while(1);
+    
+    
+
+      char textbuffer[64];
+
+      //White color for text and use font_3
+      display_set_fg_color(0x00FFFFFF);
+      display_set_font(&font_3);
+
+      if(result < 10)
+      {
+        textbuffer[0] = result + '0';
+        textbuffer[1] = 0;
+        display_text(20, 60, textbuffer);
+      }
+      else if(result < 100)
+      {
+        textbuffer[0] = (result / 10) + '0';
+        textbuffer[1] = (result % 10) + '0';
+        textbuffer[2] = 0;
+        display_text(20, 60, textbuffer);
+      }
+
+      
+
+
+
+  //Display the messages in yellow
+  display_set_fg_color(0x00FFFF00);
+  display_set_font(&font_0);
+
+
+  memcpy(textbuffer, "CID DATA:       0x", 18);
+  printhexdword(cardcid[0], &textbuffer[18]);
+  printhexdword(cardcid[1], &textbuffer[26]);
+  printhexdword(cardcid[2], &textbuffer[34]);
+  printhexdword(cardcid[3], &textbuffer[42]);
+  textbuffer[50] = 0;
+  
+  display_text(30, 50, textbuffer);
+
+
+  memcpy(textbuffer, "CSD DATA:       0x", 18);
+  printhexdword(cardcsd[0], &textbuffer[18]);
+  printhexdword(cardcsd[1], &textbuffer[26]);
+  printhexdword(cardcsd[2], &textbuffer[34]);
+  printhexdword(cardcsd[3], &textbuffer[42]);
+  textbuffer[50] = 0;
+  
+  display_text(30, 70, textbuffer);
+
+  
+  memcpy(textbuffer, "cardsize:        ", 16);
+  printhexdword(cardsize, &textbuffer[16]);
+  textbuffer[24] = 0;
+
+  display_text(30, 90, textbuffer);
+
+  
+  memcpy(textbuffer, "cardsectors:     ", 16);
+  printhexdword(cardsectors, &textbuffer[16]);
+  textbuffer[24] = 0;
+
+  display_text(30, 110, textbuffer);
+
+  
+  memcpy(textbuffer, "cardmid:         ", 16);
+  printhexbyte(cardmid, &textbuffer[16]);
+  textbuffer[18] = 0;
+
+  display_text(30, 130, textbuffer);
+
+
+  memcpy(textbuffer, "productname:     ", 16);
+  memcpy(&textbuffer[16], cardpnm, 5);
+  textbuffer[21] = 0;
+
+  display_text(30, 150, textbuffer);
+  
+
+  memcpy(textbuffer, "productserial:   ", 16);
+  printhexdword(cardpsn, &textbuffer[16]);
+  textbuffer[24] = 0;
+
+  display_text(30, 170, textbuffer);
+
+  
+  while(1);
+  
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+        //Check on trigger mode
+        if((ytouch >= 57) && (ytouch <= 95))
+        {
+          //Check on auto
+          if((xtouch >= 629) && (xtouch <= 649))
+          {
+            //Enable the channel
+            scopesettings.triggermode = 0;
+            
+            //Need to call some function here
+            
+            //Display this
+            scope_trigger_mode_select();
+            scope_trigger_settings(0);
+          }
+          //Check on single
+          else if((xtouch >= 661) && (xtouch <= 681))
+          {
+            //Disable the channel
+            scopesettings.triggermode = 1;
+
+            //Need to call some function here
+            
+
+            
+            //Display this
+            scope_trigger_mode_select();
+            scope_trigger_settings(0);
+          }
+          //Check on normal
+          else if((xtouch >= 692) && (xtouch <= 713))
+          {
+            //Disable the channel
+            scopesettings.triggermode = 2;
+
+            //Need to call some function here
+            
+            //Display this
+            scope_trigger_mode_select();
+            scope_trigger_settings(0);
+          }
+        }
+        //Check on trigger edge
+        else if((ytouch >= 125) && (ytouch <= 147))
+        {
+          //Check on rising
+          if((xtouch >= 626) && (xtouch <= 666))
+          {
+            //Enable the channel
+            scopesettings.triggeredge = 0;
+            
+            //Need to call some function here
+            
+            //Display this
+            scope_trigger_edge_select();
+            scope_trigger_settings(0);
+          }
+          //Check on falling
+          else if((xtouch >= 671) && (xtouch <= 716))
+          {
+            //Enable the channel
+            scopesettings.triggeredge = 1;
+            
+            //Need to call some function here
+            
+            //Display this
+            scope_trigger_edge_select();
+            scope_trigger_settings(0);
+          }
+        }
+        //Check on trigger channel
+        else if((ytouch >= 188) && (ytouch <= 210))
+        {
+          //Check on DC coupling
+          if((xtouch >= 632) && (xtouch <= 664))
+          {
+            //Set the channel 1 as trigger source
+            scopesettings.triggerchannel = 0;
+            
+            //Need to call some function here
+            
+            //Display this
+            scope_trigger_channel_select();
+            scope_trigger_settings(0);
+          }
+          //Check on AC coupling
+          else if((xtouch >= 680) && (xtouch <= 712))
+          {
+            //Set channel 2 as trigger source
+            scopesettings.triggerchannel = 1;
+
+            //Need to call some function here
+            
+            //Display this
+            scope_trigger_channel_select();
+            scope_trigger_settings(0);
+          }
+        }
+
+
+
+//======================================================
+
+//On input old can be 11 to 29 and new can be 10 to 29
+        
+//Table with 3 rows and 7 columns
+//index backup % 3 and diff + 3
+
+//Need to set some variable here for sample point selection in the buffer when stopped and time base is changed.
+
+//There are errors in this scaling system. For example sampled on 100nS and then zoomed to 25nS is actually zoom to 20nS
+
+//For ((backup % 3) == 0)   12, 15, 18, 21, 24, 27
+//div between new and old, going down in time (up in setting)
+//0 ==> 0    5ms      500us                500ns      50ns
+//1 ==> 2    2ms      200us                250ns      25ns
+//2 ==> 3    1ms      100us                100ns      10ns
+//3 ==> 4    500us     50us                 50ns
+
+//The other way round, going up in time
+//1 ==> 5
+//2 ==> 10
+//3 ==> 8
+
+//For ((backup % 3) == 1)  13, 16, 19, 22, 25, 28
+//div between new and old, going down in time (up in setting)
+//0 ==> 0     2ms      200us
+//1 ==> 1     1ms      100us
+//2 ==> 9     500us     50us
+//3 ==> 4     200us     20us
+
+//The other way round, going up in time
+//0 ==> 0     2ms      200us
+//1 ==> 6     5ms      500us
+//2 ==> 7    10ms        1ms
+//3 ==> 8                2ms
+
+
+//For ((backup % 3) == 2)  11, 14, 17, 20, 23, 26, 29
+//div between new and old, going down in time (up in setting)
+//0 ==> 0         100ns
+//1 ==> 1          50ns
+//2 ==> 3          25ns
+//3 ==> 4          10ns
+
+//The other way round, going up in time
+//0 ==> 0       1ms   100us
+//1 ==> 5       2ms   200us
+//2 ==> 7       5ms   500us
+//3 ==> 8      10ms     1ms
+
+
+//======================================================
+
+It would be very interesting to see the actual code written by the developers and compare it to what Ghidra made of it.
+
+For example is this bit compiler cleverness or written this way.
+
+Ghidra output
+[code]if ((uint)((ulonglong)(uint)*(byte *)(iVar3 + 0xb) * (ulonglong)DAT_8001af94 >> 0x21) * -3 + (uint)*(byte *)(iVar3 + 0xb) == 0)[/code]
+
+Translated to some variable name and used constant
+[code]if (((((ulonglong)backup * (ulonglong)0xAAAAAAAB) >> 0x21) * -3) + backup) == 0)[/code]
+
+And my take on it
+[code]if((backup % 3) == 0)[/code]
+
+Getting the short time base trace data capturing and handling reversed is quite the task. There are a lot of variables that still have no real meaning on what they are for and loads of code that do some processing on the data. Still progressing but it takes a lot of energy :(
+
+Analyzing the output of Ghidra, searching what the value of a constant is, or which variable is pointed to. By now I know quite a bit of them by heart, but something like "*(char *)(iVar3 + 10)" is harder to read then "timeperdiv" or "*(char *)(iVar3 + 0x3a)" which is "runstate"
+
+Guess it will take a couple of day's to get through this bit :popcorn:
+
+//======================================================
+
+
+//--------------------------------------------------------------------------------------
+//FLASH handling
+//Probleem is twee ledig.
+
+//A) de clock kan te hoog zijn, maar lijkt in de scope ook zo te staan
+
+//B) voor het ontvangen na het zenden moet wellicht de rx fifo gewist worden. In de originele software
+//   doen ze dat in de spi_transfer functie, waar ze na het schrijven de fifo lezen en de data negeren als er geen rx buffer is
+//   mijns inziens kan je dat ook voor elkaar krijgen door voor het lezen te starten te zorgen dat de fifo gereset wordt
+
+//   Dus nog eens goed hier naar kijken!!!!!!
+
+
+
+
+
+
+  if(f_open(&viewfp, "my_test.txt", FA_CREATE_ALWAYS | FA_WRITE) == FR_OK)
+  {
+//    if(f_write(&viewfp, "Dit is een test van een file maken", 34, 0))
+    
+    f_close(&viewfp);
+  }
+  else
+  {
+    //Clear the display
+    display_set_fg_color(0x00000000);
+    display_fill_rect(0, 0, 800, 480);
+
+    //Display the message in red
+    display_set_fg_color(0x00FF0000);
+    display_set_font(&font_3);
+    display_text(30, 50, "FILE CREATE ERROR");
+    
+    while(1);
+  }
+
+
+  if(f_unlink("pic_system.sys"))
+  {
+    //Show SD card error message on failure
+    //Set max screen brightness
+    fpga_set_backlight_brightness(0xEA60);
+
+    //Clear the display
+    display_set_fg_color(0x00000000);
+    display_fill_rect(0, 0, 800, 480);
+
+    //Display the message in red
+    display_set_fg_color(0x00FF0000);
+    display_set_font(&font_3);             //Check on which font this should be. With font_3 the space is corrupted!!!???
+    display_text(30, 50, "FILE DELETE ERROR");
+    
+  }
+
+
+
+  =====================================================================================================================================================================
+
+  //Initialize some variables for now
+  systemsettingsmenuopen = 0;
+  screenbrightnessopen = 0;
+  gridbrightnessopen = 0;
+  calibrationopen = 0;
+  
+  touchstate = 0;
+  havetouch = 0;
+  xtouch = 0;
+  ytouch = 0;
+  
+  viewtype = VIEW_TYPE_PICTURE;
+
+  
+  scopesettings.rightmenustate = 0;
+  scopesettings.waveviewmode = 0;
+
+  scopesettings.runstate = 0;
+
+  scopesettings.movespeed = 0;
+
+  scopesettings.channel1.enable = 1;
+  scopesettings.channel1.coupling = 0;
+  scopesettings.channel1.magnification = 0;
+  scopesettings.channel1.voltperdiv = 4;
+  scopesettings.channel1.fftenable = 0;
+  scopesettings.channel1.traceoffset = 220;
+  
+  scopesettings.channel2.enable = 0;
+  scopesettings.channel2.coupling = 0;
+  scopesettings.channel2.magnification = 0;
+  scopesettings.channel2.voltperdiv = 3;
+  scopesettings.channel2.fftenable = 0;
+  scopesettings.channel2.traceoffset = 155;
+  
+  scopesettings.triggermode = 0;
+  scopesettings.triggeredge = 1;
+  scopesettings.triggerchannel = 0;
+  
+  scopesettings.triggerposition = 350;
+  scopesettings.triggeroffset = 225;
+  scopesettings.triggerlevel = 20;
+  
+  scopesettings.timeperdivbackup = 24;
+  scopesettings.timeperdiv = 24;
+  
+  scopesettings.triggerflag1 = 0;
+  scopesettings.triggerflag2 = 0;
+  scopesettings.triggerflag3 = 0;
+  scopesettings.triggerflag4 = 0;
+  
+  scopesettings.updatescreen = 1;
+  
+  scopesettings.batterychargelevel = 10;
+  scopesettings.batterycharging = 0;
+  
+  scopesettings.screenbrightness = 67;
+  scopesettings.gridbrightness = 46;
+  scopesettings.alwaystrigger50 = 1;
+  scopesettings.xymodedisplay = 0;
+  
+  scopesettings.confirmationmode = 1;
+  
+  scopesettings.timecursorsenable = 0;
+  scopesettings.timecursor1position = 78;
+  scopesettings.timecursor2position = 358;
+
+ 
+  scopesettings.voltcursorsenable = 0;
+  scopesettings.voltcursor1position = 169;
+  scopesettings.voltcursor2position = 234;
+
+  scopesettings.previoustimerticks = 0;
+  
+  int channel;
+  int item;
+  
+  for(channel=0;channel<2;channel++)
+  {
+    //For each channel 12 items
+    for(item=0;item<12;item++)
+    {
+      scopesettings.measuresstate[channel][item] = 0;
+    }
+  }
+  
+  scopesettings.measuresstate[0][4] = 1;
+  scopesettings.measuresstate[0][7] = 1;
+
+  scopesettings.measuresstate[1][2] = 1;
+  scopesettings.measuresstate[1][10] = 1;
+
+=====================================================================================================================================================================
+
+  //                            Use an index for this   0    1    2    3   4    5    6    7
+  //Need a function to determine the magnitude factor ("p", "n", "u", "m", "", "K", "M", "G")
+  //Need a function to print the three allowed digits with a possible decimal point
+  //For time add a "S"
+  //For frequency add a "Hz"
+  //For volt add a "V"
+  
+  
+      //Calculate the cursor delta here based on the cursor positions
+      
+      //For voltage it is max three digits ranging from 4.00KV to 1mV
+      //Need a consistent display method where either all the digits are shown or when there is no fraction don't show it, so make the decimals flexible
+      
+
+for voltage it is also 50 pixels per division
+So depends on the magnification and the volts/div setting
+
+
+
+      //Need a scaler since 5GHz does not fit 32 bits
+      
+      //As there are 50 pixels per division and at max 722 pixels 
+      //the minimum for a time base setting is 1/50
+      //the maximum is 722/50
+      
+      //This means the delta needs to be multiplied by 20 * the range factor
+      
+      //Range settings
+      
+      //Start milli seconds
+      //50mS   1ms    to 722mS
+      
+      //start micro seconds                      factor. Use the 3 significant digits. Need a decimal place detect based on the magnitude
+      //20mS   0.4mS  to 288.8mS       2000*20 = 40000
+      //10mS   0.2mS  to 144.4mS       1000*20 = 20000
+      // 5ms   0.1mS  to  72.2mS        500*20 = 10000
+      // 2mS   0.04mS to  28.88mS       200*20 =  4000
+      // 1mS   0.02mS to  14.44mS       100*20 =  2000
+      //500uS                            50*20 =  1000
+      //200uS                            20*20 =   400
+      //100uS                            10*20 =   200
+      // 50uS                             5*20 =   100
+      
+      //Value > 100000 needs next magnitude and divide by 1000
+      //Below determine the decimal point based on magnitude
+      // < 1000 means x.yy else
+      // < 10000 means xx.y else
+      // < 100000 means xxx
+      
+      //Start nano second
+      // 20uS
+      //  \
+      //  /
+      // 50nS
+      
+      //Start pico seconds
+      // 25nS
+      // 10nS
+      
+      //Displayed as 200uS to 144mS  (5KHz - 6.92Hz)
+      //This means the value needs to range from 200 to 144000 with magnitude start is 'u', value over 1000 needs to switch to 'm'
+      //For frequency this needs the 'M' indicator and value needs interpretation and magnitude needs to go down
+      //  100000000 ==> M ==> 1.00
+      //< 100000000 ==> K ==> xxx
+      //<  10000000 ==> K ==> xx.x
+      //<   1000000 ==> K ==> x.xx
+      //<    100000 ==>   ==> xxx
+      
+      //This means it is possible to use a table with a magnitude indicator and a range setting per time base setting
+      
+      //For the frequency it is different way round and needs the division??
+      //1000000000 / time value
+      
+      //For frequency the multiplier needs to be a factor 10 smaller
+      
+      //Need to be able to display from 1.38Hz (722mS) to 5.00GHz (200pS)
+      //This is full screen 50mS/div to cursor delta 1 on 10nS/div
+ 
+  
+  
+  //Time cursor enable
+  //T for time
+  //F for frequency
+  
+  //Volt cursor enable
+  //V1 for channel 1 voltage  (+channel 1 enable)
+  //V2 for channel 2 voltage  (+channel 2 enable)
+  
+  //default height 51
+  
+  //Time enabled
+  //height 83
+  //first text line 51
+  //second text line 67
+  
+  //Volt enabled
+  //add 16 height per enabled channel
+  //text positions depend on time and channels enabled
+  //First text  without it is 51, with it is 83
+  //Second text  without it is 67 or 51, with it is 99 or 83
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+void scope_display_channel_trace(uint16 *buffer, uint16 xpos, uint16 count, uint32 color)
+{
+  register uint32 index = 0;
+  register uint32 sample1, sample2;
+
+  display_set_fg_color(color);
+  
+  sample1 = buffer[index++];
+  
+  while(index < count)
+  {
+    sample2 = buffer[index++];
+
+    display_draw_line(xpos, sample1, xpos + 1, sample2);
+    
+    xpos++;
+    
+    sample1 = sample2;
+  }
+}
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+void scope_up_sample_x_2(uint16 *buffer, uint32 count)   //In original code an offset is used, but it is always 0
+{
+  uint32 cnt;
+  uint32 sample;
+  uint16 *ptr1 = temptracebuffer1;
+  uint16 *ptr2 = buffer;
+  
+  //More efficient way of doing this would be to handle the samples from the end and keep them in a single buffer
+  //Need to investigate this further
+  //This has to do with what the FPGA returns. The time base setting in the FPGA is the same for these time base settings
+  //So some manipulation of the samples needs to be done.
+  //Base is 500nS/div so for 250nS/div they are doubled, for 100nS/div they are multiplied by 5, so probably for 50nS/div times 10
+  
+  //Only do half the samples
+  cnt = count >> 1;
+  
+  //Check if odd number of samples to process
+  if(cnt & 1)
+  {
+    //Copy the odd sample
+    *ptr1 = *ptr2;
+  }
+  else
+  {
+    //Point to before data since copy loop starts on next data
+    ptr1 -= 2;
+    ptr2--;
+  }
+  
+  //Handle two samples per loop
+  cnt >>= 1;
+  
+  //Process the samples
+  while(cnt)
+  {
+    //Copy samples with an interleave in the destination
+    ptr1[2] = ptr2[1];
+    ptr1[4] = ptr2[2];
+    
+    //Point to next destination and source
+    ptr1 += 4;
+    ptr2 += 2;
+    
+    //Two samples done
+    cnt--;
+  }
+  
+  //Average a sample in between
+  cnt = (count >> 1) - 1;
+  
+  //Check if odd number of samples to process
+  if(cnt & 1)
+  {
+    //Point to the buffer
+    ptr1 = temptracebuffer1;
+    
+    //Average the odd sample
+    ptr1[1] = (ptr1[0] + ptr1[2]) >> 1;
+  }
+  else
+  {
+    //Point to before data since copy loop starts on next data
+    ptr1 = temptracebuffer1 - 2;
+  }
+  
+  //Handle two samples per loop
+  cnt >>= 1;
+
+  //Process the samples
+  while(cnt)
+  {
+    //Get the middle sample
+    sample = ptr1[4];
+    
+    //Average the in between samples
+    ptr1[3] = (ptr1[2] + sample) >> 1;
+    ptr1[5] = (sample + ptr1[6]) >> 1;
+    
+    //Point to next set to handle
+    ptr1 += 4;
+    
+    //Two samples done
+    cnt--;
+  }
+
+  //Point to the buffers to copy back the samples to the original buffer
+  ptr1 = temptracebuffer1;
+  ptr2 = buffer;
+  
+  //Check if odd number of samples to process
+  if(count & 1)
+  {
+    *ptr2 = *ptr1;
+  }
+  else
+  {
+    //Point to before data since copy loop starts on next data
+    ptr1--;
+    ptr2--;
+  }
+  
+  //Two samples at a time so half the count
+  cnt = count >> 1;
+  
+  //Copy the samples
+  while(cnt)
+  {
+    //Do two samples per loop
+    ptr2[1] = ptr1[1];
+    ptr2[2] = ptr1[2];
+    
+    //Point to next destination and source
+    ptr1 += 2;
+    ptr2 += 2;
+    
+    //Two samples done
+    cnt--;
+  }
+}
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+void scope_up_sample_x_5(uint16 * buffer, uint32 count)
+{
+  uint32 cnt1, cnt2;
+  uint32 sample1, sample2;
+  int32  delta;
+  uint16 *ptr1 = temptracebuffer1;
+  uint16 *ptr2 = buffer;
+  
+  //Only one fifth of the samples
+  cnt1 = count / 5;
+  
+  //Check if odd number of samples to process
+  if(cnt1 & 1)
+  {
+    //Copy the odd sample
+    *ptr1 = *ptr2;
+  }
+  else
+  {
+    //Point to before data since copy loop starts on next data
+    ptr1 -= 5;
+    ptr2--;
+  }
+  
+  //Handle two samples per loop
+  cnt2 = cnt1 >> 1;
+  
+  //Process the samples
+  while(cnt2)
+  {
+    //Copy samples with an interleave of 5 in the destination
+    ptr1[5]  = ptr2[1];
+    ptr1[10] = ptr2[2];
+    
+    //Point to next destination and source
+    ptr1 += 10;
+    ptr2 += 2;
+    
+    //Two samples done
+    cnt2--;
+  }
+  
+  //One less sample to do
+  cnt1--;
+  
+  //Point to the buffer to work in
+  ptr1 = temptracebuffer1;
+  
+  //Process the samples to be interpolated in between the copied ones
+  while(cnt1)
+  {
+    //The original code uses a different approach
+    //Need to check if this is correct
+    //Get the samples shifted up for fractional calculations 10.22 bits
+    sample1 = ptr1[0] << 22;
+    sample2 = ptr1[5] << 22;
+    
+    //Calculate a delta step between the samples
+    delta = (sample1 - sample2) / 5;
+    
+    for(cnt2=1;cnt2<5;cnt2++)
+    {
+      //Calculate the next sample with fixed point calculation
+      sample1 += delta;
+      
+      //Store the decimal part of it
+      ptr1[cnt2] = sample1 >> 22;
+    }
+    
+    //One set of samples done
+    cnt1--;
+  }
+  
+  //Point to the buffers to copy back the samples to the original buffer
+  ptr1 = temptracebuffer1;
+  ptr2 = buffer;
+  
+  //Check if odd number of samples to process
+  if(count & 1)
+  {
+    *ptr2 = *ptr1;
+  }
+  else
+  {
+    //Point to before data since copy loop starts on next data
+    ptr1--;
+    ptr2--;
+  }
+  
+  //Two samples at a time so half the count
+  cnt1 = count >> 1;
+  
+  //Copy the samples
+  while(cnt1)
+  {
+    //Do two samples per loop
+    ptr2[1] = ptr1[1];
+    ptr2[2] = ptr1[2];
+    
+    //Point to next destination and source
+    ptr1 += 2;
+    ptr2 += 2;
+    
+    //Two samples done
+    cnt1--;
+  }
+}
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+void scope_up_sample_x_10(uint16 * buffer, uint32 count)
+{
+  uint32 cnt1, cnt2;
+  uint32 sample1, sample2;
+  int32  delta;
+  uint16 *ptr1 = temptracebuffer1;
+  uint16 *ptr2 = buffer;
+  
+  //Only one tenth of the samples
+  cnt1 = count / 10;
+  
+  //Check if odd number of samples to process
+  if(cnt1 & 1)
+  {
+    //Copy the odd sample
+    *ptr1 = *ptr2;
+  }
+  else
+  {
+    //Point to before data since copy loop starts on next data
+    ptr1 -= 10;
+    ptr2--;
+  }
+  
+  //Handle two samples per loop
+  cnt2 = cnt1 >> 1;
+  
+  //Process the samples
+  while(cnt2)
+  {
+    //Copy samples with an interleave of 10 in the destination
+    ptr1[10] = ptr2[1];
+    ptr1[20] = ptr2[2];
+    
+    //Point to next destination and source
+    ptr1 += 20;
+    ptr2 += 2;
+    
+    //Two samples done
+    cnt2--;
+  }
+
+  //One less sample to do
+  cnt2 = cnt1 - 1;
+  
+  //Point to the buffer to work in
+  ptr1 = temptracebuffer1;
+  
+  //Process the samples to be interpolated in between the copied ones
+  while(cnt2)
+  {
+    //The original code uses a different approach
+    //Need to check if this is correct
+    //Get the samples shifted up for fractional calculations 10.22 bits
+    sample1 = ptr1[0]  << 22;
+    sample2 = ptr1[10] << 22;
+    
+    //Calculate a delta step between the samples
+    delta = (sample1 - sample2) / 10;
+    
+    for(cnt2=1;cnt2<10;cnt2++)
+    {
+      //Calculate the next sample with fixed point calculation
+      sample1 += delta;
+      
+      //Store the decimal part of it
+      ptr1[cnt2] = sample1 >> 22;
+    }
+    
+    //Point to next set of samples to do
+    ptr1 += 10;
+    
+    //One set of samples done
+    cnt2--;
+  }
+  
+  //One less sample to do
+  cnt2 = cnt1 - 1;
+
+  //Point to another buffer for destination and the 5th before sample in the temporary buffer
+  ptr1 = temptracebuffer2;
+  ptr2 = temptracebuffer1 - 5;
+  
+  //Check if odd number of samples to process
+  if(cnt1 & 1)
+  {
+    //Copy the odd sample
+    ptr1[10] = ptr2[10];
+  }
+  
+  //Half the number to do since two samples per loop
+  cnt2 >>= 1;
+  
+  //Do them all
+  while(cnt2)
+  {
+    //Copy the samples with an offset of 5 samples in the source, which is a calculated sample.
+    ptr1[10] = ptr2[10];
+    ptr1[20] = ptr2[20];
+    
+    //Point to next set of samples to do
+    ptr1 += 10;
+    ptr2 += 10;
+    
+    //One set of samples done
+    cnt2--;
+  }
+  
+  //Up sample a second set based on already up sampled samples
+  //Two samples less to do
+  cnt2 = cnt1 - 2;
+  
+  //Point to the buffer to work in
+  ptr1 = temptracebuffer2;
+  
+  //Process the samples to be interpolated in between the copied ones
+  while(cnt2)
+  {
+    //The original code uses a different approach
+    //Need to check if this is correct
+    //Get the samples shifted up for fractional calculations 10.22 bits
+    sample1 = ptr1[0]  << 22;
+    sample2 = ptr1[10] << 22;
+    
+    //Calculate a delta step between the samples
+    delta = (sample1 - sample2) / 10;
+    
+    for(cnt2=1;cnt2<10;cnt2++)
+    {
+      //Calculate the next sample with fixed point calculation
+      sample1 += delta;
+      
+      //Store the decimal part of it
+      ptr1[cnt2] = sample1 >> 22;
+    }
+    
+    //Point to next set of samples to do
+    ptr1 += 10;
+    
+    //One set of samples done
+    cnt2--;
+  }
+  
+  //Copy back to original buffer an average of the two temporary samples
+  //Do half the input count
+  cnt1 = count >> 1;
+  
+  
+  //Needs more processing here, but not sure if it is really needed and if the found errors are actual errors
+  
+  
+  
+  
+}
+
+=====================================================================================================================================================================
+
+
+I made a list of what is done and what still needs to be implemented, which is still quite a bit :palm:
+
+Implemented so far:
+[list]
+[li]System setup[/li]
+[li]Timer interrupt[/li]
+[li]Touch panel interface[/li]
+[li]Flash reading and writing[/li]
+[li]SD card functionality based on FatFs[/li]
+[li]USB interface with mass storage functionality[/li]
+[li]FPGA interface functions[/li]
+[li]Display library[/li]
+[li]Battery charge measurement[/li]
+[li]Power off interrupt for settings save[/li]
+[li]Saving and loading of the settings to and from flash[/li]
+[li]Cursor measurements display[/li]
+[li]SD card boot loader for startup screen program[/li]
+[li]Startup screen program for showing the startup screen and loading the main scope program[/li]
+[li][s]Touch panel calibration after update[/s] No longer needed since it now uses the existing configuration[/li]
+[li][s]Firmware update (This means both code within my version as creating an actual firmware update that can be loaded on a scope)[/s] No longer needed since the switch to SD card boot[/li]
+[li]User interface
+[list]
+[li]The main screen with all the menus[/li]
+[li]The picture view screen with picture view almost done. (Still needs displaying of the trace data)[/li]
+[li]The waveform view screen with waveform view almost done. (Still needs displaying of the trace data)[/li]
+[li]Saving of pictures and waveforms[/li]
+[/list]
+[/li]
+[li]Trace data handling and displaying
+[list]
+[li]Long time base settings 50S-100mS. (This is in roll mode and fully done, except for an error in the highest vertical resolution setting)[/li]
+[li]Short time base settings 50mS-10nS. (This is partially implemented. Channel 1 data is fetched and displayed raw. Only part of the processing is implemented.)[/li]
+[/list]
+[/li]
+[/list]
+
+Still to do:
+[list]
+[li]Finish the picture and waveform single item view. Needs the trace data processing functionality[/li]
+[li]Trace processing and displaying for the short time bases (50mS-10nS)[/li]
+[li]Calibration[/li]
+[li]Auto set[/li]
+[li]Measurements calculations and displaying[/li]
+[li]FFT calculation and displaying[/li]
+[li]Possibly needed display calibration functionality[/li]
+[/list]
+
+So still a lot of work ahead of me.
+
+=====================================================================================================================================================================
+

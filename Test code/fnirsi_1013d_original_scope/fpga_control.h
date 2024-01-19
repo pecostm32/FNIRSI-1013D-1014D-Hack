@@ -103,6 +103,11 @@ uint32 fpga_process_channel_adc1_samples(uint32 channelid, uint32 voltperdiv);
 uint32 fpga_average_adc1_samples(uint32 channelid);
 uint32 fpga_average_adc2_samples(uint32 channelcmd);
 
+uint32 fpga_get_center_level(uint32 command, uint32 voltperdiv);
+
+void   fpga_get_auto_set_values(uint32 flags);
+
+
 void   fpga_init_parameter_ic(void);
 void   fpga_write_parameter_ic(uint8 id, uint32 value);
 uint32 fpga_read_parameter_ic(uint8 id, uint32 value);

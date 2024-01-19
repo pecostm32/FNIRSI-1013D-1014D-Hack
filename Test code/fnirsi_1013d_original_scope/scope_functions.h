@@ -171,6 +171,10 @@ uint32 scope_do_baseline_calibration(void);
 uint32 scope_do_trace_offset_calibration(void);
 uint32 scope_do_adc1_adc2_difference_calibration(void);
 
+void scope_do_50_percent_trigger_setup(void);
+
+void scope_do_auto_setup(void);
+
 //----------------------------------------------------------------------------------------------------------------------------------
 // Signal data display functions
 //----------------------------------------------------------------------------------------------------------------------------------

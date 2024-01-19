@@ -985,6 +985,181 @@ uint32 fpga_average_adc2_samples(uint32 channelcmd)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
+uint32 fpga_get_center_level(uint32 command, uint32 voltperdiv)
+{
+  //Do a 1000 samples
+  register uint32 count = 1000;
+  register uint32 min = 0x0FFFFFFF;
+  register uint32 max = 0x00000000;
+  register uint32 sample;
+  register uint32 signaladjust;
+  
+  //Translate this channel volts per div setting
+  signaladjust = fpga_read_parameter_ic(0x0B, voltperdiv) & 0x0000FFFF;
+  
+  //Have to make sure it does not need the command before every reading.
+  //The original code uses both methods  
+  //Send a command for getting trace data from the FPGA
+  fpga_write_cmd(command);
+  
+  //Set the bus for reading
+  FPGA_BUS_DIR_IN();
+  
+  //Set the control lines for reading a command
+  FPGA_DATA_READ();
+
+  //Read the data as long as there is count
+  while(count)
+  {
+    //Variable delay based on the current count
+    fpga_delay(1001 - count);
+    
+    //Clock the data to the output of the FPGA
+    FPGA_PULSE_CLK();
+ 
+    //Read the data
+    sample = FPGA_GET_DATA();
+  
+    //Adjust the data for the correct voltage per div setting
+    sample = (41954 * sample * signaladjust) >> 22;
+    
+    //Limit the sample on max displayable
+    if(sample > 401)
+    {
+      sample = 401;
+    }
+    
+    //Check against minimum value to get the lowest reading
+    if(sample < min)
+    {
+      min = sample;
+    }
+
+    //Check against maximum value to get the highest reading
+    if(sample > max)
+    {
+      max = sample;
+    }
+    
+    //One sample done
+    count --;
+  }
+  
+  //Return the center value based on the min and the max values
+  return((max + min) / 2); 
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+void fpga_get_auto_set_values(uint32 flags)
+{
+  //Do a 1000 samples
+  register uint32 count = 1000;
+  register uint32 sample;
+  
+  //Initialize the min and max when channel is selected
+  if(flags & 0x01)
+  {
+    channel1_min = 0x0FFFFFFF;
+    channel1_max = 0x00000000;
+  }  
+
+  //Initialize the min and max when channel is selected and enabled
+  if(flags & 0x02)
+  {
+    channel1_min = 0x0FFFFFFF;
+    channel1_max = 0x00000000;
+  }  
+
+  //Read the data as long as there is count
+  while(count)
+  {
+    //Variable delay based on the current count
+    fpga_delay(1001 - count);
+    
+    //Get and process the sample when the channels is selected
+    if(flags & 0x01)
+    {
+      //Send a command for getting trace data from the FPGA
+      fpga_write_cmd(0x24);
+
+      //Read the data
+      sample = fpga_read_byte();
+
+      //Adjust the data for the correct voltage per div setting
+      sample = (41954 * sample * signal_adjusters[scopesettings.channel1.voltperdiv]) >> 22;
+
+      //Limit the sample on max displayable
+      if(sample > 401)
+      {
+        sample = 401;
+      }
+
+      //Check against minimum value to get the lowest reading
+      if(sample < channel1_min)
+      {
+        channel1_min = sample;
+      }
+
+      //Check against maximum value to get the highest reading
+      if(sample > channel1_max)
+      {
+        channel1_max = sample;
+      }
+    }
+ 
+    //Get and process the sample when the channels is selected
+    if(flags & 0x02)
+    {
+      //Send a command for getting trace data from the FPGA
+      fpga_write_cmd(0x26);
+
+      //Read the data
+      sample = fpga_read_byte();
+
+      //Adjust the data for the correct voltage per div setting
+      sample = (41954 * sample * signal_adjusters[scopesettings.channel2.voltperdiv]) >> 22;
+
+      //Limit the sample on max displayable
+      if(sample > 401)
+      {
+        sample = 401;
+      }
+
+      //Check against minimum value to get the lowest reading
+      if(sample < channel2_min)
+      {
+        channel2_min = sample;
+      }
+
+      //Check against maximum value to get the highest reading
+      if(sample > channel2_max)
+      {
+        channel2_max = sample;
+      }
+    }
+    
+    //One sample done
+    count --;
+  }
+  
+  //Calculate the center and vpp values when channel is selected
+  if(flags & 0x01)
+  {
+    channel1_center = (channel1_max + channel1_min) >> 1;
+    channel1_vpp    =  channel1_max - channel1_min;
+  }  
+
+  //Calculate the center and vpp values when channel is selected
+  if(flags & 0x02)
+  {
+    channel2_center = (channel2_max + channel2_min) >> 1;
+    channel2_vpp    =  channel2_max - channel2_min;
+  }  
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
 void fpga_init_parameter_ic(void)
 {
   int i;
