@@ -1,0 +1,7 @@
+This emulator is based on what I made for the 1013D to allow getting better insight in
+the code while developing new firmware for it based on the work done for the 1013D.
+
+It needs a modified binary of the scope firmware to disable the SD card, because that part
+is not emulated.
+
+The speed is not optimal, but for tracing the code it is sufficient.
