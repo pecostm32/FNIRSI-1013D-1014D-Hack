@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="100">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+      <itemPath>armv5tl.h</itemPath>
+      <itemPath>armv5tl_thumb.h</itemPath>
+      <itemPath>armv5tl_thumb_structs.h</itemPath>
+      <itemPath>buttons.h</itemPath>
+      <itemPath>f1c100s.h</itemPath>
+      <itemPath>f1c100s_ccu.h</itemPath>
+      <itemPath>f1c100s_debe.h</itemPath>
+      <itemPath>f1c100s_intc.h</itemPath>
+      <itemPath>f1c100s_spi.h</itemPath>
+      <itemPath>f1c100s_structs.h</itemPath>
+      <itemPath>f1c100s_tcon.h</itemPath>
+      <itemPath>f1c100s_timer.h</itemPath>
+      <itemPath>f1c100s_uart.h</itemPath>
+      <itemPath>mousehandling.h</itemPath>
+      <itemPath>oscilloscope_emulator.h</itemPath>
+      <itemPath>rotary_dial.h</itemPath>
+      <itemPath>types.h</itemPath>
+      <itemPath>user_interface_functions.h</itemPath>
+      <itemPath>xlibfunctions.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <itemPath>armv5tl.c</itemPath>
+      <itemPath>armv5tl_thumb.c</itemPath>
+      <itemPath>buttons.c</itemPath>
+      <itemPath>f1c100s.c</itemPath>
+      <itemPath>f1c100s_ccu.c</itemPath>
+      <itemPath>f1c100s_debe.c</itemPath>
+      <itemPath>f1c100s_dramc.c</itemPath>
+      <itemPath>f1c100s_intc.c</itemPath>
+      <itemPath>f1c100s_pio.c</itemPath>
+      <itemPath>f1c100s_spi.c</itemPath>
+      <itemPath>f1c100s_tcon.c</itemPath>
+      <itemPath>f1c100s_timer.c</itemPath>
+      <itemPath>f1c100s_uart.c</itemPath>
+      <itemPath>mousehandling.c</itemPath>
+      <itemPath>oscilloscope_emulator.c</itemPath>
+      <itemPath>rotary_dial.c</itemPath>
+      <itemPath>user_interface_functions.c</itemPath>
+      <itemPath>xlibfunctions.c</itemPath>
+    </logicalFolder>
+    <logicalFolder name="TestFiles"
+                   displayName="Test Files"
+                   projectFiles="false"
+                   kind="TEST_LOGICAL_FOLDER">
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+      <itemPath>todo.txt</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Debug" type="1">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <standard>3</standard>
+          <commandlineTool>gcc</commandlineTool>
+          <incDir>
+            <pElem>/usr/include/freetype2</pElem>
+          </incDir>
+        </cTool>
+        <linkerTool>
+          <linkerAddLib>
+            <pElem>/usr/lib/x86_64-linux-gnu</pElem>
+          </linkerAddLib>
+          <linkerLibItems>
+            <linkerLibStdlibItem>Mathematics</linkerLibStdlibItem>
+          </linkerLibItems>
+          <commandLine>-lX11 -lXft -lXrandr -lpthread</commandLine>
+        </linkerTool>
+      </compileType>
+      <item path="armv5tl.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="armv5tl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="armv5tl_thumb.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="armv5tl_thumb.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="armv5tl_thumb_structs.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="buttons.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="buttons.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_ccu.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_ccu.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_debe.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_debe.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_dramc.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_intc.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_intc.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_pio.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_spi.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_spi.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_structs.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_tcon.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_tcon.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_timer.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_timer.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_uart.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_uart.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="mousehandling.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="mousehandling.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="oscilloscope_emulator.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="oscilloscope_emulator.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="rotary_dial.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="rotary_dial.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="types.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="user_interface_functions.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="user_interface_functions.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="xlibfunctions.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="xlibfunctions.h" ex="false" tool="3" flavor2="0">
+      </item>
+    </conf>
+    <conf name="Release" type="1">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+        </cTool>
+        <ccTool>
+          <developmentMode>5</developmentMode>
+        </ccTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <asmTool>
+          <developmentMode>5</developmentMode>
+        </asmTool>
+      </compileType>
+      <item path="armv5tl.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="armv5tl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="armv5tl_thumb.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="armv5tl_thumb.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="armv5tl_thumb_structs.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="buttons.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="buttons.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_ccu.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_ccu.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_debe.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_debe.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_dramc.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_intc.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_intc.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_pio.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_spi.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_spi.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_structs.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_tcon.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_tcon.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_timer.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_timer.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="f1c100s_uart.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="f1c100s_uart.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="mousehandling.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="mousehandling.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="oscilloscope_emulator.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="oscilloscope_emulator.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="rotary_dial.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="rotary_dial.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="types.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="user_interface_functions.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="user_interface_functions.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="xlibfunctions.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="xlibfunctions.h" ex="false" tool="3" flavor2="0">
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>
