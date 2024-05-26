@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="100">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+      <itemPath>Scope_Processing.h</itemPath>
+      <itemPath>Scope_Signal_Handling_Development.h</itemPath>
+      <itemPath>buttons.h</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1014d_scope/diskio.h</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1014d_scope/display_lib.h</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1014d_scope/ff.h</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1014d_scope/ffconf.h</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1014d_scope/fnirsi_1014d_scope.h</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1014d_scope/font_structs.h</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1014d_scope/fpga_control.h</itemPath>
+      <itemPath>mousehandling.h</itemPath>
+      <itemPath>resources.h</itemPath>
+      <itemPath>rotary_dial.h</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1014d_scope/scope_functions.h</itemPath>
+      <itemPath>sg_buttons.h</itemPath>
+      <itemPath>sg_led.h</itemPath>
+      <itemPath>sg_rotary_dial.h</itemPath>
+      <itemPath>signal_generator.h</itemPath>
+      <itemPath>signal_generator_functions.h</itemPath>
+      <itemPath>sim_user_interface_functions.h</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1014d_scope/sin_cos_math.h</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1014d_scope/statemachine.h</itemPath>
+      <itemPath>stub_functions.h</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1014d_scope/types.h</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1014d_scope/user_interface_functions.h</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1014d_scope/variables.h</itemPath>
+      <itemPath>xlibfunctions.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <itemPath>../../F1C100s/fnirsi_1014d_scope/1014D_fonts.c</itemPath>
+      <itemPath>Scope_Processing.c</itemPath>
+      <itemPath>Scope_Signal_Handling_Development.c</itemPath>
+      <itemPath>buttons.c</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1014d_scope/display_lib.c</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1014d_scope/ff.c</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1014d_scope/ffunicode.c</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1014d_scope/icons.c</itemPath>
+      <itemPath>mousehandling.c</itemPath>
+      <itemPath>rotary_dial.c</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1014d_scope/scope_functions.c</itemPath>
+      <itemPath>sg_buttons.c</itemPath>
+      <itemPath>sg_led.c</itemPath>
+      <itemPath>sg_rotary_dial.c</itemPath>
+      <itemPath>signal_generator.c</itemPath>
+      <itemPath>signal_generator_functions.c</itemPath>
+      <itemPath>sim_user_interface_functions.c</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1014d_scope/sin_cos_math.c</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1014d_scope/statemachine.c</itemPath>
+      <itemPath>stub_functions.c</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1014d_scope/user_interface_functions.c</itemPath>
+      <itemPath>../../F1C100s/fnirsi_1014d_scope/variables.c</itemPath>
+      <itemPath>xlibfunctions.c</itemPath>
+    </logicalFolder>
+    <logicalFolder name="TestFiles"
+                   displayName="Test Files"
+                   projectFiles="false"
+                   kind="TEST_LOGICAL_FOLDER">
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+      <itemPath>backup/analyzer_setup.js.c</itemPath>
+      <itemPath>todo.txt</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Debug" type="1">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <standard>3</standard>
+          <commandlineTool>gcc</commandlineTool>
+          <incDir>
+            <pElem>/usr/include/freetype2</pElem>
+            <pElem>../../F1C100s/fnirsi_1014d_scope</pElem>
+          </incDir>
+        </cTool>
+        <linkerTool>
+          <linkerAddLib>
+            <pElem>/usr/lib/x86_64-linux-gnu</pElem>
+          </linkerAddLib>
+          <linkerLibItems>
+            <linkerLibStdlibItem>Mathematics</linkerLibStdlibItem>
+          </linkerLibItems>
+          <commandLine>-lX11 -lXft -lXrandr -lpthread</commandLine>
+        </linkerTool>
+      </compileType>
+      <item path="../../F1C100s/fnirsi_1014d_scope/1014D_fonts.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/diskio.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/display_lib.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/display_lib.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/ff.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/ff.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/ffconf.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/ffunicode.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/fnirsi_1014d_scope.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/font_structs.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/fpga_control.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/icons.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/scope_functions.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/scope_functions.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/sin_cos_math.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/sin_cos_math.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/statemachine.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/statemachine.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/types.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/user_interface_functions.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/user_interface_functions.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/variables.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/variables.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="Scope_Processing.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="Scope_Processing.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Scope_Signal_Handling_Development.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="Scope_Signal_Handling_Development.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="buttons.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="buttons.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="mousehandling.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="mousehandling.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="resources.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="rotary_dial.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="rotary_dial.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="sg_buttons.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="sg_buttons.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="sg_led.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="sg_led.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="sg_rotary_dial.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="sg_rotary_dial.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="signal_generator.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="signal_generator.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="signal_generator_functions.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="signal_generator_functions.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="sim_user_interface_functions.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="sim_user_interface_functions.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="stub_functions.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="stub_functions.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="xlibfunctions.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="xlibfunctions.h" ex="false" tool="3" flavor2="0">
+      </item>
+    </conf>
+    <conf name="Release" type="1">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+        </cTool>
+        <ccTool>
+          <developmentMode>5</developmentMode>
+        </ccTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <asmTool>
+          <developmentMode>5</developmentMode>
+        </asmTool>
+      </compileType>
+      <item path="../../F1C100s/fnirsi_1014d_scope/1014D_fonts.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/diskio.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/display_lib.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/display_lib.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/ff.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/ff.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/ffconf.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/ffunicode.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/fnirsi_1014d_scope.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/font_structs.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/fpga_control.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/icons.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/scope_functions.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/scope_functions.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/sin_cos_math.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/sin_cos_math.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/statemachine.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/statemachine.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/types.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/user_interface_functions.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/user_interface_functions.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/variables.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="../../F1C100s/fnirsi_1014d_scope/variables.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="Scope_Processing.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="Scope_Processing.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Scope_Signal_Handling_Development.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="Scope_Signal_Handling_Development.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="buttons.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="buttons.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="mousehandling.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="mousehandling.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="resources.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="rotary_dial.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="rotary_dial.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="sg_buttons.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="sg_buttons.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="sg_led.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="sg_led.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="sg_rotary_dial.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="sg_rotary_dial.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="signal_generator.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="signal_generator.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="signal_generator_functions.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="signal_generator_functions.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="sim_user_interface_functions.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="sim_user_interface_functions.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="stub_functions.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="stub_functions.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="xlibfunctions.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="xlibfunctions.h" ex="false" tool="3" flavor2="0">
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>
