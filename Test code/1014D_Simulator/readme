@@ -1,0 +1,8 @@
+A simulator for the FNIRSI 1014D scope.
+
+This simulator needs some of the FNIRSI-1014D scope source files to make it work on the PC.
+It is intended for the development of that scope software on the PC, to make it easier to do
+the testing and the debugging.
+
+Since the new open source firmware is still in development the repository for it is private
+and will be set public when a first version is good enough for testing.
