@@ -193,6 +193,14 @@ void F1C100sUARTRead(F1C100S_UART *registers, u_int32_t address, u_int32_t mode)
       break;
       
     case UART_LSR:
+      registers->lsr.m_32bit = 0x60;
+        
+      //Check if UART1 is being addressed
+      if(address == 0x01C25414)
+      {
+        //Just signal that there is data to be read
+        registers->lsr.m_32bit |= 0x01;
+      }
       break;
       
     case UART_MSR:

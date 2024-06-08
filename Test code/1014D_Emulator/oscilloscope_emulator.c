@@ -321,8 +321,8 @@ int main(int argc,char **argv)
   usleep(50000);
   
   //Image for the scope display
-  x = BORDER_SIZE + (40 * xc.scaler);
-  y = BORDER_SIZE + (80 * xc.scaler);
+  x = BORDER_SIZE + (42 * xc.scaler);
+  y = BORDER_SIZE + (81 * xc.scaler);
   width = 800 * xc.scaler;
   height = 480 * xc.scaler;
   

@@ -26,7 +26,7 @@ typedef struct tagFLASH_MEMORY             FLASH_MEMORY;
 
 typedef struct tagDISPLAY_MEMORY           DISPLAY_MEMORY;
 
-typedef struct tagTOUCH_PANEL_DATA         TOUCH_PANEL_DATA;
+typedef struct tagCLOCK_SYNTHESIZER_DATA   CLOCK_SYNTHESIZER_DATA;
 
 typedef struct tagFPGA_DATA                FPGA_DATA;
 
@@ -73,21 +73,18 @@ struct tagDISPLAY_MEMORY
 
 //----------------------------------------------------------------------------------------------------------------------------------
 //Data for touch panel handling
-struct tagTOUCH_PANEL_DATA
+struct tagCLOCK_SYNTHESIZER_DATA
 {
   u_int8_t  i2c_currentbyte;
   u_int8_t  i2c_currentbit;
   u_int8_t  i2c_state;
   
-  u_int8_t  panel_state;              //Process state for the panel state machine
-  u_int8_t  panel_mode;               //Data direction mode for the current data stream
-  u_int16_t panel_address;            //Internal address for panel read and write actions
-  u_int8_t  panel_data[0x200];        //Panel has a lot of registers. For easy implementation set to 0x200 (address range 0x8000 - 0x8200)
+  u_int8_t  cs_state;                 //Process state for the clock synthesizer state machine
+  u_int8_t  cs_mode;                  //Data direction mode for the current data stream
   
   u_int8_t  prev_port_data;
   
-  u_int8_t  mouse_down;               //Signal from mouse touch panel that there is touch
-  u_int8_t  mouse_prev;               //Previous value to detect the change from touch to no touch
+  FILE      *trace_file;              //File to write the data written to the clock synthesizer to
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------

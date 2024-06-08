@@ -11,69 +11,6 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-//#define MY_BREAK_POINT 0x800306f4
-//#define MY_BREAK_POINT 0x8002CF3C      //function called from setup_display_lib
-//#define MY_BREAK_POINT 0x8002FAD4      //faulty jump due to missing data
-//#define MY_BREAK_POINT 0x800197AC
-//#define MY_BREAK_POINT 0x8003534C
-//#define MY_BREAK_POINT 0x80035334      //call to sys_init_uart0
-//#define MY_BREAK_POINT 0x800182FC      //In this data is multiplied by 0x78
-//#define MY_BREAK_POINT 0x80035320      //main
-//#define MY_BREAK_POINT  0x80035350   //call to touch panel setup
-//#define MY_BREAK_POINT  0x800353d4   //Infinit loop after sd card error
-
-
-//#define MY_BREAK_POINT  0x8001933C     //Within setup_display_lib function
-
-//#define MY_BREAK_POINT_1  0x8001d0D0
-//#define MY_BREAK_POINT_2  0x8001d0D8
-
-//#define MY_BREAK_POINT_1  0x8001cdc8   //Function that calls a function pointer
-
-//#define MY_BREAK_POINT_2  0x8002f028   //Within the function called via the function pointer
-//#define MY_BREAK_POINT_1  0x8002f02C   //Function that calls a function pointer
-
-
-//#define MY_BREAK_POINT_1  0x80023F88   //SD card stuf
-
-//#define MY_BREAK_POINT_1  0x80035444    //Start of endless main loop
-
-//#define MY_BREAK_POINT_1  0x80017AD4     //I2C read after port read
-
-//#define MY_BREAK_POINT_1  0x80017BC0      //I2C after byte read res in r4
-
-//800178e0
-//#define MY_BREAK_POINT_1  0x80017868      //After I2C coordinate read r1,r3 x
-//#define MY_BREAK_POINT_2  0x800178A8      //r1,r12 y
-
-
-//#define MY_BREAK_POINT_1  0x80024ED4      //end of init parameter storage
-//#define MY_BREAK_POINT_1  0x80025090      //end of write parameter storage
-
-//#define MY_BREAK_POINT_2  0x80024AF8        //end of get setting from parameter storage
-//#define MY_BREAK_POINT_1  0x80024A74        //first check on 0x55
-
-//#define MY_BREAK_POINT_1  0x800178B4
-
-//#define MY_BREAK_POINT_1  0x80035350     //Call from main to tp_i2c_setup
-
-//#define MY_BREAK_POINT_1  0x80018c28       //End of display text (Call FUN_80019A6C)
-
-//#define MY_BREAK_POINT_1  0x800193cc       //Something within possible save context function
-
-//#define MY_BREAK_POINT_1  0x800353d4   //endless loop in main
-
-//#define MY_BREAK_POINT_1  0x8000b6f4   //Use of font 0
-
-//#define MY_BREAK_POINT_1  0x80018024  //font function
-//#define MY_BREAK_POINT_2  0x80018030  //font function
-
-
-//#define MY_BREAK_POINT_1  0x8001263c  //End of time div print
-
-//#define MY_BREAK_POINT_2  0x80013608    //after 50ns processing
-
-//#define MY_BREAK_POINT_1  0x80013608  //while loop in test code
 
 #define MY_BREAK_POINT_2  0x8000aacc    //after 25ns processing
 
@@ -82,47 +19,20 @@
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-//#define MY_TRACE_START_POINT    0x8003532c   //Call to some_memory_stuff (now mmu_setup)
 
-//#define MY_TRACE_START_POINT    0x8001933C  //Address where setup_display_lib is called
-
-//#define MY_TRACE_START_POINT    0x8002f028  //Address where setup_display_lib is called
-//#define MY_TRACE_STOP_POINT    0x8001933C  //Address where setup_display_lib is called
-
-//#define MY_TRACE_START_POINT    0x80035360   //Address where sd card setup and check is called
-//#define MY_TRACE_START_POINT    0x80035444   //Address where the main loop starts
-
-//#define MY_TRACE_START_POINT    0x8003534c     //Address in main from where setup_display lib is called
-
-//#define MY_TRACE_START_POINT    0x80018bf8    //Display text function
-
-//#define MY_TRACE_START_POINT    0x80035390    //Main start of sd error on display
-
-//#define MY_TRACE_START_POINT    0x80012280   //Usage of font 0
-
-//#define MY_TRACE_START_POINT    0x80000658
-//#define MY_TRACE_START_POINT    0x8000aa04   //50ns data processing
-
-#define MY_TRACE_START_POINT    0x8000460c   //25ns data processing
+#define MY_TRACE_START_POINT    0x00000000
 
 
 //#define TRACE_ENABLED
 
+//#define FPGA_TRACE
+
 //----------------------------------------------------------------------------------------------------------------------------------
 
-#define TRACE_FILE_NAME         "test_trace"
-//#define TRACE_FILE_NAME           "mmu_p15_setup"
+#define TRACE_FILE_NAME         "Bootloader_Trace/bootloader_trace"
 
-//#define TRACE_FILE_NAME         "screen_buf_clear"
-//#define TRACE_FILE_NAME         "sd_card_check"
-//#define TRACE_FILE_NAME         "main_loop_trace_2/main_loop"
-//#define TRACE_FILE_NAME         "setup_display_lib_trace/display_setup"
 
-//#define TRACE_FILE_NAME         "display_text_trace/display_text"
-//#define TRACE_FILE_NAME         "display_text_test/display_text_test"
-//#define TRACE_FILE_NAME         "main_startup/main_startup"
-//#define TRACE_FILE_NAME         "data_processing/50ns"
-//#define TRACE_FILE_NAME         "data_processing/B_25ns"
+//#define CS_TRACE_FILE           "clock_synthesizer_data.txt"
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -162,7 +72,7 @@ void *armcorethread(void *arg)
   FILE *fp = fopen("scope_spl.bin", "rb");
 //  FILE *fp = fopen("fnirsi_1013d_bootloader.bin", "rb");
   
-  
+//    FILE *fp = fopen("/home/peter/Data/NetbeansProjects/F1C100s/fnirsi_sd_card_bootloader/dist/Debug/GNU_ARM-Linux/fnirsi_sd_card_bootloader.bin", "rb");
   
   if(fp)
   {
@@ -173,7 +83,7 @@ void *armcorethread(void *arg)
 
   //Open the flash image
   arm_core.FlashFilePointer = fopen("FNIRSI_1014D_full_flash_backup.bin", "rb");
-//  arm_core.FlashFilePointer = fopen("W25Q32_scope.bin", "rb");
+//  arm_core.FlashFilePointer = fopen("1014D_test_code.bin", "rb");
   
   //Open the parameter storage file
   arm_core.fpgadata.param_file = fopen("scope_settings.bin", "rb+");
@@ -193,6 +103,11 @@ void *armcorethread(void *arg)
   if(arm_core.fpgadata.param_file)
   {
     fclose(arm_core.fpgadata.param_file);
+  }
+
+  if(arm_core.clocksynthesizerdata.trace_file)
+  {
+    fclose(arm_core.clocksynthesizerdata.trace_file);
   }
   
   //Exit the thread the way it is supposed to
@@ -283,14 +198,24 @@ void ArmV5tlSetup(PARMV5TL_CORE core)
   
   //Setup port handling functions
   core->f1c100s_port[0].porthandler = PortAHandler;
-  core->f1c100s_port[0].portdata = &core->touchpaneldata;
+  core->f1c100s_port[0].portdata = &core->clocksynthesizerdata;
+  
+#ifdef CS_TRACE_FILE
+  core->clocksynthesizerdata.trace_file = fopen(CS_TRACE_FILE, "w");
+#else
+  core->clocksynthesizerdata.trace_file = 0;
+#endif  
 
   core->f1c100s_port[4].porthandler = PortEHandler;
   core->f1c100s_port[4].portdata = &core->fpgadata;
   
+#ifdef FPGA_TRACE
   sprintf(core->fpgadata.file_name, "fpga_trace/fpga_trace_tst");
   sprintf(tracefilename, "%s_%06d.txt", core->fpgadata.file_name, core->fpgadata.file_index);
   core->fpgadata.trace_file = fopen(tracefilename, "w");
+#else
+  core->fpgadata.trace_file = 0;
+#endif
   
 //  core->fpgadata.param_trace = fopen("param_trace/param_trace_3.txt", "w");
   

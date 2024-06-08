@@ -615,7 +615,7 @@ struct tagARMV5TL_CORE
   //Storage for display and flash memory handling
   DISPLAY_MEMORY            displaymemory;            //Display memory handling data
   FLASH_MEMORY              flashmemory;              //Flash memory handling data
-  TOUCH_PANEL_DATA          touchpaneldata;           //Touch panel handling data
+  CLOCK_SYNTHESIZER_DATA    clocksynthesizerdata;     //Clock synthesizer data
   FPGA_DATA                 fpgadata;                 //FPGA handling data
   
   //Flash file pointer
