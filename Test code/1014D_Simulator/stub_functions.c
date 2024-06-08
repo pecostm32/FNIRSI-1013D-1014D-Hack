@@ -1332,10 +1332,10 @@ void fpga_do_conversion(void)
   if(scopesettings.samplemode == 1)
   {
     //Make sure the last command is erased
-    userinterfacedata.command = 0;
+    toprocesscommand = 0;
     
     //Wait for the FPGA to signal triggered or user input is given
-    while(((fpga_read_byte() & 1) == 0) && (uart1_get_data() == 0));
+    while(((fpga_read_byte() & 1) == 0) && (uart1_get_user_input() == 0));
     
     //Disable trigger system???
     fpga_write_cmd(0x0F);
@@ -1390,21 +1390,33 @@ void usb_device_enable(void)
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-void wait_for_user_input(void)
+uint8 uart1_receive_data(void)
 {
-  //Make sure the last command is erased
-  userinterfacedata.command = 0;
+  //Check if there is user input
+  if(userinterfaceflag == 1)
+  {
+    //If so clear it for new input
+    userinterfaceflag = 0;
 
-  //Wait for the user to push a button or rotate a dial on the front panel of the scope
-  while(uart1_get_data() == 0);
-
-  //Signal last command has been handled
-  userinterfacedata.command = 0;
+    //Return the command
+    return(userinterfacecommand);
+  }
+  
+  //Nothing there so return 0
+  return(0);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
-int uart1_get_data(void)
+void uart1_wait_for_user_input(void)
+{
+  //Wait for the user to push a button or rotate a dial on the front panel of the scope
+  while((lastreceivedcommand = uart1_receive_data()) == 0);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------
+
+uint8 uart1_get_user_input(void)
 {
   //When the window is closed emulate the power off input
   if(quit_scopeprocessing_thread_on_zero == 0)
@@ -1414,19 +1426,12 @@ int uart1_get_data(void)
   
   //Check if polling the user interface is needed
   //When a command has been received but not processed yet it should be skipped
-  if(userinterfacedata.command == 0)
+  if(toprocesscommand == 0)
   {
-    //Check if there is user input
-    if(userinterfaceflag == 1)
-    {
-      //If so clear it for new input
-      userinterfaceflag = 0;
-      
-      userinterfacedata.command = userinterfacecommand;
-    }
+    toprocesscommand = uart1_receive_data();
   }
   
-  return(userinterfacedata.command);
+  return(toprocesscommand);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

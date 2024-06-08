@@ -158,14 +158,8 @@ void *scopeprocessingthread(void *arg)
   //Set screen brightness
   fpga_set_translated_brightness();
   
-  //Make sure the last command is erased
-  userinterfacedata.command = 0;
-
   //Discard the first response from the user interface controller
-  uart1_get_data();
-
-  //Signal last command has been handled
-  userinterfacedata.command = 0;
+  uart1_receive_data();
   
   //Initialize the state machine
   sm_init();
