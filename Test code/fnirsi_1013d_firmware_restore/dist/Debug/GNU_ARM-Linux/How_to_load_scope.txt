@@ -1,0 +1,50 @@
+===================
+Check if active
+==================
+
+sudo ./sunxi-fel version
+
+===================
+Load to RAM
+==================
+
+
+sudo ./sunxi-fel -p write 0x7FFFFFE0 fnirsi_1013d_firmware_restore.bin exe 0x80000000
+
+sudo ./sunxi-fel -p write 0x7FFFFFE0 fnirsi_1013d_startup_from_sd_card.bin exe 0x80000000
+
+
+sudo ./sunxi-fel -p write 0x7FFFFFE0 fnirsi_1013d_firmware_backup.bin exe 0x80000000
+
+sudo ./sunxi-fel -p write 0x80000000 original_corrected_tp.bin exe 0x80000000
+
+===================
+Read flash
+==================
+
+sudo ./sunxi-fel -p spiflash-read 2621440 8192 flash_write_test.bin
+
+sudo ./sunxi-fel -p spiflash-read 159744 8192 flash_start_prog.bin
+
+ 
+
+===================
+Make sd card
+==================
+
+sudo umount /dev/sdc1
+
+sudo dd if=fnirsi_1013d_startup_with_fel.bin of=/dev/sdc bs=1024 seek=8
+
+
+sudo dd if=fnirsi_1013d_bootloader.bin of=/dev/sdc bs=1024 seek=8
+
+
+
+
+//Firmware backup package
+sudo dd if=fnirsi_1013d_fwr.bin of=/dev/sdc bs=1024 seek=8
+
+//Clear the brom boot sector
+sudo dd if=empty_sector of=/dev/sdc bs=1024 seek=8 count=1
+
